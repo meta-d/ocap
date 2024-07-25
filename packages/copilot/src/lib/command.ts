@@ -1,5 +1,6 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { BaseStringPromptTemplate, ChatPromptTemplate } from '@langchain/core/prompts'
+import { BaseRetriever } from '@langchain/core/retrievers'
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
 import { BaseCheckpointSaver, CompiledStateGraph, StateGraph } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
@@ -26,12 +27,8 @@ export interface CopilotCommand<T = any> {
    * Description of the command
    */
   description: string
-  // /**
-  //  * @deprecated use suggestions
-  //  * 
-  //  * Examples of the command usage
-  //  */
-  // examples?: string[]
+
+  examplesRetriever?: BaseRetriever
   /**
    * Input suggestions
    */
@@ -72,8 +69,12 @@ export interface CopilotCommand<T = any> {
     interruptAfter?: string[]
   }
 
-  createGraph?: (options: CreateGraphOptions) => Promise<StateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string> |
-    CompiledStateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string>>
+  createGraph?: (
+    options: CreateGraphOptions
+  ) => Promise<
+    | StateGraph<T, Partial<T>, '__start__' | 'tools' | 'agent' | string>
+    | CompiledStateGraph<T, Partial<T>, '__start__' | 'tools' | 'agent' | string>
+  >
 
   // For history management
   historyCursor?: () => number

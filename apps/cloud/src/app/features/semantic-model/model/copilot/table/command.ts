@@ -3,7 +3,7 @@ import { CopilotAgentType } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { injectAgentFewShotTemplate } from '../../../../../@core/copilot'
+import { injectAgentFewShotTemplate, injectExampleRetriever } from '../../../../../@core/copilot'
 import { injectTableCreator } from './graph'
 import { TABLE_COMMAND_NAME } from './types'
 
@@ -12,6 +12,7 @@ export function injectTableCommand() {
   const translate = inject(TranslateService)
   const createTableCreator = injectTableCreator()
 
+  const examplesRetriever = injectExampleRetriever(TABLE_COMMAND_NAME, { k: 5, score: 0.8, vectorStore: null })
   const fewShotPrompt = injectAgentFewShotTemplate(TABLE_COMMAND_NAME, { k: 1, vectorStore: null })
   return injectCopilotCommand(TABLE_COMMAND_NAME, {
     alias: 't',
@@ -24,6 +25,7 @@ export function injectTableCommand() {
       interruptBefore: ['tools']
     },
     fewShotPrompt,
+    examplesRetriever,
     createGraph: createTableCreator
   })
 }

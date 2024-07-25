@@ -1,9 +1,19 @@
+import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama'
 import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { MaxMarginalRelevanceSearchOptions } from '@langchain/core/vectorstores'
 import { OpenAIEmbeddings } from '@langchain/openai'
-import { AIEmbeddings, AiBusinessRole, ICopilotExample, ICopilotRole } from '@metad/contracts'
+import {
+	AiBusinessRole,
+	AiProvider,
+	AiProviderRole,
+	ICopilot,
+	ICopilotExample,
+	ICopilotRole,
+	OllamaEmbeddingsProviders,
+	OpenAIEmbeddingsProviders
+} from '@metad/contracts'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -81,7 +91,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 				}
 			}
 
-			return results.filter(([, _score]) => (1 - _score) > (score ?? 0.7)).map(([doc]) => doc)
+			return results.filter(([, _score]) => 1 - _score > (score ?? 0.7)).map(([doc]) => doc)
 		}
 
 		return []
@@ -116,7 +126,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		const vectorStore = await this.getVectorStore(tenantId, entity.role)
 		if (vectorStore) {
 			await vectorStore.updateExamples([entity])
-			super.update(entity.id, { vector: true })
+			super.update(entity.id, { provider: vectorStore.provider, vector: true })
 		}
 
 		return entity
@@ -136,7 +146,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		const vectorStore = await this.getVectorStore(tenantId, entity.role)
 		if (vectorStore) {
 			await vectorStore.updateExamples([entity])
-			super.update(entity.id, { vector: true })
+			super.update(entity.id, { provider: vectorStore.provider, vector: true })
 		}
 
 		return entity
@@ -157,26 +167,29 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		return result
 	}
 
-	private async getEmbeddings(tenantId: string, organizationId: string = null) {
-		const where = {}
-		if (tenantId) {
-			where['tenantId'] = tenantId
-		}
-		if (organizationId) {
-			where['organizationId'] = organizationId
-		}
-		const result = await this.copilotService.findAll({ where })
-		const copilot = result.items[0]
-		if (copilot && copilot.enabled && AIEmbeddings.includes(copilot.provider)) {
-			const embeddings = new OpenAIEmbeddings({
-				verbose: true,
-				apiKey: copilot.apiKey,
-				configuration: {
-					baseURL: copilot.apiHost
-				}
-			})
-
-			return embeddings
+	/**
+	 * Create embeddings for tenant and organization
+	 *
+	 * @param tenantId
+	 * @param organizationId
+	 * @returns
+	 */
+	private async getEmbeddings(copilot: ICopilot) {
+		if (copilot) {
+			if (OpenAIEmbeddingsProviders.includes(copilot.provider)) {
+				return new OpenAIEmbeddings({
+					verbose: true,
+					apiKey: copilot.apiKey,
+					configuration: {
+						baseURL: copilot.apiHost
+					}
+				})
+			} else if (OllamaEmbeddingsProviders.includes(copilot.provider)) {
+				return new OllamaEmbeddings({
+					baseUrl: copilot.apiHost,
+					model: copilot.defaultModel
+				})
+			}
 		}
 
 		return null
@@ -186,13 +199,24 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		tenantId: string,
 		role?: AiBusinessRole | string,
 		command: string = null,
-		organizationId: string = null
+		// organizationId: string = null
 	) {
 		const id = tenantId + `:${role || 'default'}${command ? ':' + command : ''}`
 		if (!this.vectorStores.has(id)) {
-			const embeddings = await this.getEmbeddings(tenantId, organizationId)
+			// const secondaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Secondary)
+			const primaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Primary)
+			let copilot: ICopilot = null
+			// if (secondaryCopilot?.enabled) {
+			// 	copilot = secondaryCopilot
+			// } else 
+			if (primaryCopilot?.enabled) {
+				copilot = primaryCopilot
+			}
+
+			const embeddings = await this.getEmbeddings(copilot)
+
 			if (embeddings) {
-				const vectorStore = new PGMemberVectorStore(embeddings, {
+				const vectorStore = new PGMemberVectorStore(copilot.provider, embeddings, {
 					pool: this.pgPool,
 					tableName: 'copilot_example_vector',
 					collectionTableName: 'copilot_example_collection',
@@ -234,10 +258,12 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		const { createRole, clearRole } = options || {}
 		const roleNames = uniq(entities.map((example) => example.role))
 
-		for await (const role of roles) {
-			try {
-				await this.commandBus.execute(new CopilotRoleCreateCommand(role))
-			} catch (error) {}
+		if (roles) {
+			for await (const role of roles) {
+				try {
+					await this.commandBus.execute(new CopilotRoleCreateCommand(role))
+				} catch (error) {}
+			}
 		}
 
 		// Auto create role if not existed
@@ -261,12 +287,12 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 				await this.repository.remove(items)
 			}
 
-			const examples = entities.filter((item) => role ? item.role === role : !item.role)
+			const examples = entities.filter((item) => (role ? item.role === role : !item.role)).map((example) => ({...example, input: example.input?.trim(), output: example.output?.trim() }))
 			const roleExamples = await Promise.all(examples.map((entity) => super.create(entity)))
 			results.push(...roleExamples)
 			if (roleExamples.length && vectorStore) {
 				await vectorStore.addExamples(roleExamples)
-				await Promise.all(roleExamples.map((entity) => super.update(entity.id, { vector: true })))
+				await Promise.all(roleExamples.map((entity) => super.update(entity.id, { provider: vectorStore.provider, vector: true })))
 			}
 		}
 
@@ -278,6 +304,7 @@ class PGMemberVectorStore {
 	vectorStore: PGVectorStore
 
 	constructor(
+		public provider: AiProvider,
 		public embeddings: EmbeddingsInterface,
 		_dbConfig: PGVectorStoreArgs
 	) {

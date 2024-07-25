@@ -1,25 +1,15 @@
 import { inject } from '@angular/core'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { CopilotAgentType, CreateGraphOptions, Team } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
-import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
+import { injectAgentFewShotTemplate, injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { CUBE_MODELER_NAME } from '../cube'
 import { DIMENSION_MODELER_NAME } from '../dimension'
 import { injectCreateModelerGraph } from './graph'
-import {
-  ChatPromptTemplate,
-  PromptTemplate,
-  SystemMessagePromptTemplate,
-  AIMessagePromptTemplate,
-  HumanMessagePromptTemplate,
-} from "@langchain/core/prompts";
-import {
-  AIMessage,
-  HumanMessage,
-  SystemMessage,
-} from "@langchain/core/messages";
+import { MODELER_COMMAND_NAME } from './types'
 
 export function injectModelerCommand() {
   const logger = inject(NGXLogger)
@@ -27,9 +17,9 @@ export function injectModelerCommand() {
   const modelService = inject(SemanticModelService)
   const createModelerGraph = injectCreateModelerGraph()
 
-  const commandName = 'modeler'
-  const fewShotPrompt = injectAgentFewShotTemplate(commandName, { k: 1, vectorStore: null })
-  return injectCopilotCommand(commandName, {
+  const examplesRetriever = injectExampleRetriever(MODELER_COMMAND_NAME, { k: 5, vectorStore: null })
+  const fewShotPrompt = injectAgentFewShotTemplate(MODELER_COMMAND_NAME, { k: 1, vectorStore: null })
+  return injectCopilotCommand(MODELER_COMMAND_NAME, {
     alias: 'm',
     description: translate.instant('PAC.MODEL.Copilot.CommandModelerDesc', {
       Default: 'Describe model requirements or structure'
@@ -51,10 +41,11 @@ export function injectModelerCommand() {
         llm
       })
     },
+    examplesRetriever,
     suggestion: {
       promptTemplate: ChatPromptTemplate.fromMessages([
-        ["system", `用简短的一句话补全用户可能的提问，直接输出答案不要解释`],
-        ["human", '{input}'],
+        ['system', `用简短的一句话补全用户可能的提问，仅输出源提示后面补全的内容，不需要解释，使用与原提示同样的语言`],
+        ['human', '{input}']
       ])
     }
   })

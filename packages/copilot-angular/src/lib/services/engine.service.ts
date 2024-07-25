@@ -1062,10 +1062,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     input: string,
     options: { command: CopilotCommand; context: CopilotContext; signal?: AbortSignal }
   ): Promise<SuggestionOutput> {
-    const { command, context, signal } = options
-    // Context content
-    const contextContent = context ? await recognizeContext(input, context) : null
-    const params = await recognizeContextParams(input, context)
+    const { command, signal } = options
 
     if (command.fewShotPrompt) {
       input = await command.fewShotPrompt.format({ input })
@@ -1079,7 +1076,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
         if (command.suggestion?.promptTemplate) {
           const chain = command.suggestion.promptTemplate.pipe((secondaryLLM ?? llm).bindTools([SuggestionOutputTool]))
             .pipe(new StringOutputParser())
-          return await chain.invoke({ input, context: contextContent, signal, verbose })
+          return await chain.invoke({
+            input,
+            role: this.copilot.rolePrompt(),
+            language: this.copilot.languagePrompt(),
+            signal,
+            verbose
+          })
         } else {
           throw new Error('No completion template found')
         }

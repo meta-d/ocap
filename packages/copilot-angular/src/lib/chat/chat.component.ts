@@ -50,6 +50,7 @@ import {
   CopilotContextItem,
   SuggestionOutput,
   nanoid,
+  nonBlank,
 } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import {
@@ -65,6 +66,7 @@ import {
   debounceTime,
   delay,
   filter,
+  map,
   of,
   startWith,
   switchMap,
@@ -277,7 +279,7 @@ export class NgmCopilotChatComponent {
   public promptControl = new FormControl<string>('')
   readonly prompt = toSignal(this.promptControl.valueChanges.pipe(filter((value) => typeof value === 'string')), { initialValue: '' })
 
-  readonly #promptWords = computed(() => this.prompt()?.split(' '))
+  readonly #promptWords = computed(() => this.prompt()?.split(' ') ?? [])
   readonly lastWord = computed(() => this.#promptWords()[this.#promptWords().length - 1])
   readonly #contextWord = computed(() =>
     this.#promptWords()
@@ -296,6 +298,14 @@ export class NgmCopilotChatComponent {
   readonly beforeLastWord = computed(() => {
     const words = this.prompt()?.split(' ')
     return words.splice(0, words.length - 1).join(' ')
+  })
+
+  /**
+   * The first word is a command
+   */
+  readonly commandWord = computed(() => {
+    const firstWord = this.#promptWords().filter(nonBlank)[0]
+    return firstWord?.startsWith('/') ? firstWord : null
   })
 
   readonly commandWithContext = computed(() => {
@@ -422,6 +432,24 @@ export class NgmCopilotChatComponent {
   readonly #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
   readonly messageCopied = signal<string[]>([])
   readonly editingMessageId = signal<string>(null)
+
+  readonly input = toSignal(this.promptControl.valueChanges
+    .pipe(
+      debounceTime(AUTO_SUGGESTION_DEBOUNCE_TIME),
+      filter((text) => !AUTO_SUGGESTION_STOP.includes(text.slice(-1))),
+      map((text) => text.trim())
+    ))
+  readonly examplesRetriever = computed(() => this.command()?.examplesRetriever)
+  readonly examples = derivedAsync(() => {
+    const examplesRetriever = this.examplesRetriever()
+    const input = this.input()
+    if (!examplesRetriever) {
+      return null
+    }
+    return examplesRetriever.invoke(input).then((docs) => docs.map((doc) => ({
+      text: doc.metadata['input']
+    })))
+  })
 
   /**
   |--------------------------------------------------------------------------
@@ -807,4 +835,8 @@ export class NgmCopilotChatComponent {
     await this.copilotEngine.finish(conversation)
   }
 
+  pickExample(text: string) {
+    this.promptControl.setValue(`${this.commandWord()} ${text}`, {emitEvent: false})
+    this.promptCompletion.set(null)
+  }
 }

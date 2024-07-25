@@ -1,18 +1,18 @@
 import { inject } from '@angular/core'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { ToolNode } from '@langchain/langgraph/prebuilt'
-import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
+import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions, Team } from '@metad/copilot'
+import { injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
 import { SemanticModelService } from '../../model.service'
 import { CUBE_MODELER_NAME, injectRunCubeModeler } from '../cube'
 import { DIMENSION_MODELER_NAME, injectRunDimensionModeler } from '../dimension/'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { createSupervisorAgent } from './supervisor'
 import { ModelerState } from './types'
-import { injectExampleReferencesRetriever } from 'apps/cloud/src/app/@core/copilot'
 
 const superState: StateGraphArgs<ModelerState>['channels'] = {
-  ...Team.createState(),
+  ...Team.createState()
 }
 
 export function injectCreateModelerGraph() {
@@ -22,7 +22,7 @@ export function injectCreateModelerGraph() {
   const selectTablesTool = injectSelectTablesTool()
   const queryTablesTool = injectQueryTablesTool()
 
-  const referencesRetriever = injectExampleReferencesRetriever('modeler/references', {k: 3, vectorStore: null})
+  const referencesRetriever = injectExampleRetriever('modeler/references', { k: 3, vectorStore: null })
 
   const dimensions = modelService.dimensions
 

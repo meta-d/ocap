@@ -189,15 +189,15 @@
 </div>
 
 <div class="relative m-3 border rounded-2xl shadow-sm overflow-hidden border-neutral-100 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800"
-    [class.ngm-colpilot__active]="isFoucs(userInput)"
-    (click)="userInput.focus()"
+  [class.ngm-colpilot__active]="isFoucs(userInput)"
+  (click)="userInput.focus()"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
 
     <div class="relative flex flex-col m-1">
 
       @if (command() || context()) {
-        <div class="flex flex-col divide-y overflow-hidden rounded-b-md rounded-t-xl bg-white dark:bg-black">
+        <div class="flex flex-col overflow-hidden rounded-b-md rounded-t-xl bg-white dark:bg-black">
           <div class="flex items-center py-2 gap-2 pl-3 pr-1.5 text-sm whitespace-nowrap">
             @if (command()) {
               <span class="font-bold">{{command().name}}</span>
@@ -211,6 +211,14 @@
             }
             @if (command()) {
               <span class="overflow-hidden text-ellipsis">{{command().description}}</span>
+            }
+          </div>
+
+          <div class="flex flex-wrap">
+            @for (example of examples(); track example.text) {
+              <span class="inline-flex m-1 cursor-pointer hover:underline items-center rounded-md px-2 py-1 text-xs font-medium border border-neutral-100 dark:border-neutral-800"
+                (click)="pickExample(example.text)"
+              >{{example.text}}</span>
             }
           </div>
         </div>
