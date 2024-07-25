@@ -862,6 +862,7 @@ export const ZhHans = {
       StoryStyleCommandDesc: '请描述想要的故事样式',
       StoryPageCommandDesc: '请描述新的故事页面',
       PleaseSelectWidget: '请先选择一个微件',
+      CommandPageDesc: '描述你想要的页面',
       PredefinedPrompts: [
         '/story 设置为暗色主题',
         '/story-style 设置科技感渐变色背景颜色',
