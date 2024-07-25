@@ -1,39 +1,28 @@
 import { Signal, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, ActivatedRouteSnapshot, Router } from '@angular/router'
-import { DynamicStructuredTool } from '@langchain/core/tools'
+import { Router } from '@angular/router'
 import { CopilotAgentType } from '@metad/copilot'
 import { createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
 import { makeTablePrompt } from '@metad/core'
-import { EntityType, PropertyHierarchy } from '@metad/ocap-core'
+import { EntityType } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { ModelDimensionService } from '../../dimension/dimension.service'
 import { SemanticModelService } from '../../model.service'
 import { markdownTableData } from '../../utils'
-import { HierarchySchema } from '../schema'
+import { injectCreateHierarchyTool } from './tools'
 import { timeLevelFormatter } from './types'
 
 export function injectHierarchyCommand(dimensionService: ModelDimensionService, tableTypes: Signal<EntityType[]>) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const modelService = inject(SemanticModelService)
-  const route = inject(ActivatedRoute)
   const router = inject(Router)
 
-  const dimension = toSignal(dimensionService.dimension$)
+  const createHierarchyTool = injectCreateHierarchyTool()
 
-  const createHierarchyTool = new DynamicStructuredTool({
-    name: 'createHierarchy',
-    description: 'Create or edit hierarchy in dimension.',
-    schema: HierarchySchema,
-    func: async (h) => {
-      logger.debug(`Execute copilot action 'createHierarchy':`, h)
-      dimensionService.upsertHierarchy(h as Partial<PropertyHierarchy>)
-      return translate.instant('PAC.MODEL.Copilot.CreatedHierarchy', { Default: 'Created hierarchy!' })
-    }
-  })
+  const dimension = toSignal(dimensionService.dimension$)
 
   let urlSnapshot = router.url
 
@@ -75,7 +64,7 @@ ${tableTypes()
           '\n{context}' +
           `\n{system}`
       ).partial({
-        system: systemContext,
+        system: systemContext
       })
 
       return {

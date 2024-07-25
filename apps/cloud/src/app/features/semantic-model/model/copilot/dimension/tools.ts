@@ -1,5 +1,6 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
+import { nanoid } from '@metad/copilot'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
@@ -40,7 +41,14 @@ export function injectCreateHierarchyTool() {
     }),
     func: async ({ dimension, hierarchy }) => {
       logger.debug(`Execute copilot action 'createHierarchy' for dimension: '${dimension}' using:`, hierarchy)
-      modelService.upsertHierarchy({ dimension, hierarchy })
+      modelService.upsertHierarchy({
+        dimension,
+        hierarchy: {
+          ...hierarchy,
+          __id__: nanoid(),
+          levels: hierarchy.levels?.map((level) => ({ ...level, __id__: nanoid() }))
+        }
+      })
       return translate.instant('PAC.MODEL.Copilot.CreatedHierarchy', { Default: 'Created hierarchy!' })
     }
   })
