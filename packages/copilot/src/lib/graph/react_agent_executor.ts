@@ -8,8 +8,9 @@ import {
   Runnable,
   RunnableInterface,
   RunnableLambda,
+  RunnableToolLike,
 } from "@langchain/core/runnables";
-import { DynamicTool, StructuredTool } from "@langchain/core/tools";
+import { DynamicTool, StructuredTool, StructuredToolInterface } from "@langchain/core/tools";
 
 import {
   BaseLanguageModelCallOptions,
@@ -70,7 +71,7 @@ export function createReactAgent(
   } = props;
   const schema: StateGraphArgs<AgentState>["channels"] = createCopilotAgentState()
 
-  let toolClasses: (StructuredTool | DynamicTool)[];
+  let toolClasses: (StructuredToolInterface | DynamicTool | RunnableToolLike)[];
   if (!Array.isArray(tools)) {
     toolClasses = tools.tools;
   } else {

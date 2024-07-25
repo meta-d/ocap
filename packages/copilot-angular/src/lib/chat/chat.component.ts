@@ -48,6 +48,7 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotContextItem,
+  SuggestionOutput,
   nanoid,
 } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
@@ -458,9 +459,14 @@ export class NgmCopilotChatComponent {
       }),
       catchError(() => of(null))
     )
-    .subscribe((output: any) => {
-      console.log(output)
-      this.promptCompletion.set(output.input)
+    .subscribe((output: SuggestionOutput) => {
+      if (typeof output === 'string') {
+        this.promptCompletion.set(output)
+      } else if (output) {
+        this.promptCompletion.set(output.input)
+      } else {
+        this.promptCompletion.set('')
+      }
     })
 
   constructor() {

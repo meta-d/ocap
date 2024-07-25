@@ -168,7 +168,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.Ollama]: {
     models: [
       {
-        id: 'llama2',
+        id: 'llama3',
         name: 'LLama 3'
       },
       {
@@ -182,7 +182,11 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'phi3',
         name: 'Phi-3'
-      }
+      },
+      {
+        id: 'llama3-groq-tool-use',
+        name: 'Llama3 Groq Tool Use'
+      },
     ]
   }
 }

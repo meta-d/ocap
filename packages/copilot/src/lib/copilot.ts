@@ -1,9 +1,9 @@
-import { ChatOllama } from '@langchain/community/chat_models/ollama'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatOpenAI, ClientOptions } from '@langchain/openai'
 import { BehaviorSubject, catchError, combineLatest, map, of, shareReplay, switchMap } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { AI_PROVIDERS, AiProvider, BusinessRoleType, ICopilot } from './types'
+import { NgmChatOllama } from './chat_models/chat-ollama'
 
 function modelsUrl(copilot: ICopilot) {
   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -118,7 +118,7 @@ function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOpti
         temperature: 0
       }) as T
     case AiProvider.Ollama:
-      return new ChatOllama({
+      return new NgmChatOllama({
         baseUrl: copilot.apiHost || null,
         model: copilot.defaultModel,
         headers: {
