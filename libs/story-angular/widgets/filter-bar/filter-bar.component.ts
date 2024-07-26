@@ -34,11 +34,12 @@ import {
   MemberSource,
   Property,
   Syntax,
-  TimeGranularity
+  TimeGranularity,
+  VariableProperty
 } from '@metad/ocap-core'
 import { ComponentSettingsType, FilterControlType } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { assign, compact, isEqual, merge, pick } from 'lodash-es'
+import { assign, compact, isEqual, merge, omit, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, combineLatest, EMPTY, firstValueFrom, Observable } from 'rxjs'
 import { distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
@@ -211,26 +212,26 @@ export class NxSmartFilterBarComponent
     })
   )
 
-  private readonly defaultSlicers$ = this.options$.pipe(
-    map((options) => {
-      if (options?.filters) {
-        return Object.keys(options.filters).reduce((acc, key) => {
-          if (options.filters[key].options?.defaultMembers?.length) {
-            acc[key] = {
-              dimension: {
-                dimension: key
-              },
-              members: options.filters[key].options.defaultMembers
-            }
-          }
-          return acc
-        }, {})
-      }
+  // private readonly defaultSlicers$ = this.options$.pipe(
+  //   map((options) => {
+  //     if (options?.filters) {
+  //       return Object.keys(options.filters).reduce((acc, key) => {
+  //         if (options.filters[key].options?.defaultMembers?.length) {
+  //           acc[key] = {
+  //             dimension: {
+  //               dimension: key
+  //             },
+  //             members: options.filters[key].options.defaultMembers
+  //           }
+  //         }
+  //         return acc
+  //       }, {})
+  //     }
 
-      return null
-    }),
-    distinctUntilChanged(isEqual)
-  )
+  //     return null
+  //   }),
+  //   distinctUntilChanged(isEqual)
+  // )
 
   /**
    * State for combination slicer
@@ -271,6 +272,23 @@ export class NxSmartFilterBarComponent
             dimension: filter.dimension,
             members: options.filters[filter.name].options.defaultMembers
           }
+        } else if (filter.dimension.members?.length) {
+          if (filter.controlType === FilterControlType.Variable) {
+            value = {
+              dimension: {
+                dimension: (<VariableProperty>filter.property).referenceDimension,
+                hierarchy: (<VariableProperty>filter.property).referenceHierarchy
+              },
+              members: filter.dimension.members
+            }
+          } else {
+            value = {
+              dimension: omit(filter.dimension, 'members'),
+              members: filter.dimension.members
+            }
+          }
+        }
+        if (value) {
           defaultSlicers.push(value)
         }
         const formCtrl = new FormControl(value)
@@ -377,7 +395,7 @@ export class NxSmartFilterBarComponent
           this.settingsService
             ?.openDesigner(
               ComponentSettingsType.FilterBarField,
-              this.options.filters?.[name] ?? {},
+              this.options?.filters?.[name] ?? {},
               `${this.key}/${name}`
             )
             .pipe(tap((options: any) => this.updateFieldOptions({ key: name, options }))) ?? EMPTY
@@ -388,6 +406,7 @@ export class NxSmartFilterBarComponent
 
   readonly updateFieldOptions = this.updater(
     (state, { key, options }: { key: string; options: FilterBarFieldOptions }) => {
+      state.options ??= {}
       state.options.filters = state.options.filters || {}
       state.options.filters[key] = options
     }
