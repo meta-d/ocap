@@ -1,11 +1,25 @@
 import { inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { DataSettingsSchema, DimensionSchema, markdownEntityType, MeasureSchema, VariableSchema } from '@metad/core'
+import {
+  DataSettingsSchema,
+  DimensionMemberSchema,
+  markdownEntityType,
+  MeasureSchema,
+  SlicerSchema,
+  tryFixSlicer,
+  VariableSchema
+} from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { omit } from '@metad/ocap-core'
+import { DataSettings, omit } from '@metad/ocap-core'
 import { FilterControlType, NxStoryService, WidgetComponentType } from '@metad/story/core'
-import { createWidgetSchema } from '@metad/story/story'
+import {
+  chartAnnotationCheck,
+  ChartSchema,
+  ChartWidgetSchema,
+  completeChartAnnotation,
+  createWidgetSchema
+} from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import z from 'zod'
@@ -40,7 +54,6 @@ export function injectPickCubeTool() {
   return pickCubeTool
 }
 
-
 export function injectCreateFilterBarTool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
@@ -51,16 +64,11 @@ export function injectCreateFilterBarTool() {
     schema: z.object({
       dataSettings: DataSettingsSchema,
       widget: createWidgetSchema({
-        dimensions: z.array(DimensionSchema),
+        dimensions: z.array(DimensionMemberSchema)
       })
     }),
     func: async ({ dataSettings, widget }) => {
-      logger.debug(
-        `Execute copilot action 'createFilterBar' using dataSettings:`,
-        dataSettings,
-        `widget:`,
-        widget
-      )
+      logger.debug(`Execute copilot action 'createFilterBar' using dataSettings:`, dataSettings, `widget:`, widget)
       try {
         storyService.createStoryWidget({
           ...omit(widget, 'dimensions'),
@@ -81,7 +89,6 @@ export function injectCreateFilterBarTool() {
   })
 }
 
-
 export function injectCreateKPITool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
@@ -97,12 +104,7 @@ export function injectCreateKPITool() {
       })
     }),
     func: async ({ dataSettings, widget }) => {
-      logger.debug(
-        `Execute copilot action 'createKPI' using dataSettings:`,
-        dataSettings,
-        `widget:`,
-        widget
-      )
+      logger.debug(`Execute copilot action 'createKPI' using dataSettings:`, dataSettings, `widget:`, widget)
       try {
         storyService.createStoryWidget({
           ...omit(widget, 'kpiValue', 'kpiTarget'),
@@ -126,7 +128,6 @@ export function injectCreateKPITool() {
   })
 }
 
-
 export function injectCreateVariableTool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
@@ -137,7 +138,7 @@ export function injectCreateVariableTool() {
     schema: z.object({
       dataSettings: DataSettingsSchema,
       widget: createWidgetSchema({
-        variable: VariableSchema.describe('variable'),
+        variable: VariableSchema.describe('variable')
       })
     }),
     func: async ({ dataSettings, widget }) => {
@@ -169,4 +170,95 @@ export function injectCreateVariableTool() {
       return `The new input control widget has been created!`
     }
   })
+}
+
+export function injectCreateInputControlTool() {
+  const logger = inject(NGXLogger)
+  const storyService = inject(NxStoryService)
+
+  return new DynamicStructuredTool({
+    name: 'createInputControl',
+    description: 'Create a input control widget for dimension',
+    schema: z.object({
+      dataSettings: DataSettingsSchema,
+      widget: createWidgetSchema({
+        dimension: DimensionMemberSchema
+      })
+    }),
+    func: async ({ dataSettings, widget }) => {
+      logger.debug(`Execute copilot action 'createInputControl' using dataSettings:`, dataSettings, `widget:`, widget)
+
+      try {
+        storyService.createStoryWidget({
+          ...omit(widget, 'dimension'),
+          dataSettings: {
+            ...dataSettings,
+            dimension: widget.dimension
+          },
+          options: {},
+          component: WidgetComponentType.InputControl
+        })
+      } catch (error: any) {
+        return `Error while creating the input control: ${error.message}`
+      }
+
+      return `The new input control widget has been created!`
+    }
+  })
+}
+
+export function injectCreateChartTool() {
+  const logger = inject(NGXLogger)
+  const storyService = inject(NxStoryService)
+
+  const createChartTool = new DynamicStructuredTool({
+    name: 'createChartWidget',
+    description: 'Create a new widget in story page.',
+    schema: z.object({
+      dataSettings: DataSettingsSchema,
+      widget: createWidgetSchema({
+        chart: ChartSchema.describe('Chart configuration'),
+        slicers: z.array(
+          SlicerSchema
+        )
+        .optional()
+        .describe('The slicers used by the chart data')
+      }),
+    }),
+    func: async ({ dataSettings, widget }) => {
+      logger.debug(
+        '[Story] [AI Copilot] [Command tool] [createChartWidget] inputs:',
+        'dataSettings:',
+        dataSettings,
+        'position:',
+        widget,
+        'widget:',
+      )
+
+      const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings as DataSettings))
+
+      try {
+        storyService.createStoryWidget({
+          component: WidgetComponentType.AnalyticalCard,
+          position: widget.position ?? { x: 0, y: 0, rows: 5, cols: 5 },
+          title: widget.title,
+          dataSettings: {
+            ...(dataSettings ?? {}),
+            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(widget.chart, entityType)),
+            selectionVariant: {
+              selectOptions: (widget.slicers ?? ((<any>widget.chart).slicers as any[]))?.map((slicer) =>
+                tryFixSlicer(slicer, entityType)
+              )
+            }
+          }
+        })
+      } catch (error) {
+        return `Error: ${error}`
+      }
+
+      return `The new chart widget has been created!`
+    }
+  })
+
+  return createChartTool
 }
