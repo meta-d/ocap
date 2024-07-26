@@ -65,7 +65,8 @@
             [ngClass]="{
               'ngm-option__dimension': property.role === AggregationRole.dimension,
               'ngm-option__hierarchy': property.role === AggregationRole.hierarchy,
-              'ngm-option__level': property.role === AggregationRole.level
+              'ngm-option__level': property.role === AggregationRole.level,
+              'ngm-option__hidden': property.visible === false
             }"
           >
             <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [displayDensity]="DisplayDensity.cosy" [highlight]="search" ></ngm-entity-property>

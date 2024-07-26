@@ -451,8 +451,8 @@
               (click)="repleaceContext(word.text, item)"
             >
               <div class="flex-1 flex items-center overflow-hidden">
-                <span class="flex-1 text-ellipsis overflow-hidden" [ngmHighlight]="contextMenuSearch()" [content]="item.caption">{{item.caption}}</span>
-                <span class="text-sm text-ellipsis overflow-hidden italic opacity-50" [ngmHighlight]="contextMenuSearch()" [content]="item.key">{{item.key}}</span>
+                <span class="flex-1 text-ellipsis overflow-hidden" [title]="item.caption" [ngmHighlight]="contextMenuSearch()" [content]="item.caption">{{item.caption}}</span>
+                <span class="flex-1 text-sm text-ellipsis overflow-hidden italic opacity-50" [title]="item.key" [ngmHighlight]="contextMenuSearch()" [content]="item.key">{{item.key}}</span>
               </div>
             </button>
         </cdk-virtual-scroll-viewport>

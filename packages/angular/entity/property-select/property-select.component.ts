@@ -44,7 +44,7 @@ import {
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from 'rxjs'
-import { distinctUntilChanged, filter, map, shareReplay, startWith, combineLatestWith, debounceTime, pairwise, switchMap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, shareReplay, startWith, combineLatestWith, debounceTime, switchMap } from 'rxjs/operators'
 import { MatSelect, MatSelectModule } from '@angular/material/select'
 import { getEntityMeasures, PropertyAttributes } from '@metad/ocap-core'
 import { DisplayDensity, NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
@@ -296,6 +296,10 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
             if (levels?.length > 1) {
               levels.forEach((level) => {
                 options.push(level)
+              })
+            } else {
+              levels.forEach((level) => {
+                options.push({...level, visible: false})
               })
             }
           })

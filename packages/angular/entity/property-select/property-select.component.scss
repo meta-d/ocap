@@ -61,5 +61,10 @@ $prefix-color: (#{$prefix}, color);
     .mat-mdc-option.ngm-option__measure {
       padding-left: 16px;
     }
+
+    .ngm-option__hidden {
+      display: none;
+      visibility: hidden;
+    }
   }
 }

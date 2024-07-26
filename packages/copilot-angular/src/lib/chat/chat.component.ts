@@ -836,7 +836,11 @@ export class NgmCopilotChatComponent {
   }
 
   pickExample(text: string) {
-    this.promptControl.setValue(`${this.commandWord()} ${text}`, {emitEvent: false})
+    let prompt = this.commandWord()
+    if (this.context()) {
+      prompt += ` @${this.context().uKey}`
+    }
+    this.promptControl.setValue(`${prompt} ${text}`, {emitEvent: false})
     this.promptCompletion.set(null)
   }
 }

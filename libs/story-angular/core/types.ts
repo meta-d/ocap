@@ -479,7 +479,8 @@ export interface StoryFeed extends Partial<AdminData> {
 export enum WidgetComponentType {
   AnalyticalCard = 'AnalyticalCard',
   AnalyticalGrid = 'AnalyticalGrid',
-  StoryFilterBar = 'StoryFilterBar',
+  // StoryFilterBar = 'StoryFilterBar',
+  FilterBar = 'FilterBar',
   KpiCard = 'KpiCard',
   InputControl = 'InputControl',
   AnalyticalGeography = 'AnalyticalGeography',
@@ -493,7 +494,7 @@ export enum WidgetComponentType {
 
 export enum ComponentSettingsType {
   Story = 'Story',
-  StoryFilterBar = 'StoryFilterBar',
+  StoryFilterBar = WidgetComponentType.FilterBar,
   FilterBarField = 'FilterBarField',
   LinkedAnalysis = 'LinkedAnalysis',
   StoryPoint = 'StoryPoint',

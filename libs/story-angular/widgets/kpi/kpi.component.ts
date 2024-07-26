@@ -60,7 +60,7 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   public readonly trend$ = this.kpiValue$.pipe(filter((kpiValue) => !isNil(kpiValue?.arrow)))
   public readonly additionalDataPoints$ = this.dataService.additionalDataPoints$.pipe(
     map((kpiValues) =>
-      kpiValues.map((kpiValue) => {
+      kpiValues?.map((kpiValue) => {
         switch (this.options?.additionalDataPoint?.value) {
           case 'Value':
             break
@@ -82,7 +82,7 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
         return kpiValue
       })
     ),
-    map((additionals) => (additionals.length > 0 ? additionals : null))
+    map((additionals) => (additionals?.length > 0 ? additionals : null))
   )
 
   /**

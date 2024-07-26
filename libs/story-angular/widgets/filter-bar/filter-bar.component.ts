@@ -9,7 +9,9 @@ import {
   OnDestroy,
   Output,
   ViewContainerRef,
-  inject
+  computed,
+  inject,
+  signal
 } from '@angular/core'
 import { FormBuilder, FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
@@ -100,7 +102,7 @@ export class NxSmartFilterBarComponent
   // filters
   form = new FormBuilder().group({})
   today = new FormControl()
-  selected: string
+  // selected: string
 
   get selectionFieldsAnnotation() {
     return this.dataSettings?.selectionFieldsAnnotation
@@ -118,7 +120,7 @@ export class NxSmartFilterBarComponent
   ]).pipe(
     map(([dataSettings, entityType]) => {
       const selectionFields = dataSettings.selectionFieldsAnnotation
-      if (!selectionFields) {
+      if (!selectionFields?.propertyPaths) {
         return []
       }
 
@@ -143,14 +145,14 @@ export class NxSmartFilterBarComponent
         })
     }),
     distinctUntilChanged(isEqual),
-    takeUntilDestroyed(this.destroyRef),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
   // 合并字段 Options
   public readonly controls$ = combineLatest([
     this._controls$,
-    this.options$.pipe(distinctUntilChanged(isEqual)),
+    this.options$.pipe(distinctUntilChanged(isEqual), startWith(null)),
     this.form.valueChanges.pipe(
       filter(() => this.options?.cascadingEffect),
       distinctUntilChanged(isEqual),
@@ -241,6 +243,14 @@ export class NxSmartFilterBarComponent
   get loading() {
     return Array.from(this._controlsLoading.values()).includes(true)
   }
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly enabledToday = computed(() => this.optionsSignal()?.today?.enable)
+  readonly selectedField = signal<string>(null)
 
   /**
   |--------------------------------------------------------------------------
@@ -340,7 +350,7 @@ export class NxSmartFilterBarComponent
           event.preventDefault()
         }
 
-        this.selected = name
+        this.selectedField.set(name)
         return this.settingsService
             ?.openDesigner(
               ComponentSettingsType.FilterBarField,
@@ -361,9 +371,9 @@ export class NxSmartFilterBarComponent
 
   readonly saveAsDefaultMembers = this.updater(
     (state) => {
-      console.log(this.form.value)
-      state.options.filters = state.options.filters || {}
-      Object.keys(this.form.value).forEach((key) => {
+      state.options ??= {}
+      state.options.filters ??= {}
+      Object.keys(this.form.value ?? {}).forEach((key) => {
         const value = this.form.value[key]
         if (value?.members) {
           state.options.filters[key] = state.options.filters[key] ?? {} as FilterBarFieldOptions
@@ -380,7 +390,7 @@ export class NxSmartFilterBarComponent
 
   @HostListener('click', ['$event'])
   private handleClick(event) {
-    this.selected = null
+    this.selectedField.set(null)
   }
   
   ngOnDestroy(): void {

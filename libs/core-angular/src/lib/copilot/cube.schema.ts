@@ -81,6 +81,10 @@ export const CalculationSchema = z.object({
   }).optional().describe('The formatting config of this measure')
 })
 
+export const VariableSchema = z.object({
+  variable: z.string().describe('The name of the variable'),
+})
+
 /**
  * Due to the instability of the AI's returned results, it is necessary to attempt to fix dimensions for different situations:
  * The dimensional attributes returned by AI may be level, hierarchy or dimension.

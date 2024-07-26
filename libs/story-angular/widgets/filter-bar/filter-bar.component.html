@@ -1,76 +1,78 @@
 <form [formGroup]="form" (ngSubmit)="onGo()" novalidate >
   <div class="ngm-smart-filter-bar--content grid grid-cols-1 gap-2">
+    @if (enabledToday()) {
+      <ngm-today-filter class="ngm-smart-filter-bar_filter col"
+        [granularity]="options.today?.granularity"
+        [granularitySequence]="options.today?.granularitySequence"
+        [defaultValue]="options.today?.defaultValue"
+        [formControl]="today"
+        [appearance]="styling?.appearance"
+        [displayDensity]="styling?.appearance?.displayDensity"
+      />
+    }
 
-    <ngm-today-filter *ngIf="options?.today?.enable" class="ngm-smart-filter-bar_filter col"
-      [granularity]="options.today?.granularity"
-      [granularitySequence]="options.today?.granularitySequence"
-      [defaultValue]="options.today?.defaultValue"
-      [formControl]="today"
-      [appearance]="styling?.appearance"
-      [displayDensity]="styling?.appearance?.displayDensity"
-      >
-    </ngm-today-filter>
+    @for (control of controls$ | async; track control.name) {
+      <div class="ngm-smart-filter-bar_filter col"
+        [ngClass]="{actived: control.name === selectedField()}"
+        (click)="onSelectField({name: control.name, event: $event, type: control.controlType})">
 
-    <div *ngFor="let control of controls$ | async; trackBy: trackByName" class="ngm-smart-filter-bar_filter col"
-      [ngClass]="{actived: control.name === selected}"
-      (click)="onSelectField({name: control.name, event: $event, type: control.controlType})">
-
-      <ng-container [ngSwitch]="control.controlType">
-        <!--  -->
-        <ngm-member-datepicker *ngSwitchCase="FilterControlType.Datepicker" class="w-full h-full"
-          [label]="control.options.label"
-          [placeholder]="control.options.placeholder"
-          [appearance]="styling?.appearance?.appearance"
-          [displayDensity]="styling?.appearance?.displayDensity"
-          [dataSettings]="control.dataSettings"
-          [dimension]="control.dimension"
-          [required]="control.required"
-          [defaultValue]="control.options.defaultValue"
-          [formControlName]="control.name"
-          [ngStyle]="control.styling"
-          [selectionType]="control.options?.selectionType"
-          [displayDensity]="styling?.appearance?.displayDensity"
-          [granularity]="control.options?.granularity"
-        >
-        </ngm-member-datepicker>
-
-        <ngm-smart-select *ngSwitchCase="ControlType.dropDownList" class="w-full h-full"
-          [formControlName]="control.name"
-          [dataSettings]="control.dataSettings"
-          [dimension]="control.dimension"
-          [options]="control.options"
-          [appearance]="styling?.appearance"
-          [ngStyle]="control.styling"
-          (loadingChanging)="onLoadingChanging($event, control.name)"
+        <ng-container [ngSwitch]="control.controlType">
+          <!--  -->
+          <ngm-member-datepicker *ngSwitchCase="FilterControlType.Datepicker" class="w-full h-full"
+            [label]="control.options.label"
+            [placeholder]="control.options.placeholder"
+            [appearance]="styling?.appearance?.appearance"
+            [displayDensity]="styling?.appearance?.displayDensity"
+            [dataSettings]="control.dataSettings"
+            [dimension]="control.dimension"
+            [required]="control.required"
+            [defaultValue]="control.options.defaultValue"
+            [formControlName]="control.name"
+            [ngStyle]="control.styling"
+            [selectionType]="control.options?.selectionType"
+            [displayDensity]="styling?.appearance?.displayDensity"
+            [granularity]="control.options?.granularity"
           >
-        </ngm-smart-select>
+          </ngm-member-datepicker>
 
-        <ngm-member-tree-select *ngSwitchCase="FilterControlType.TreeSelect" class="w-full h-full"
-          [formControlName]="control.name"
-          [dataSettings]="control.dataSettings"
-          [dimension]="control.dimension"
-          [required]="control.required"
-          [appearance]="styling?.appearance"
-          [options]="control.options"
-          [ngStyle]="control.styling"
-          (loadingChanging)="onLoadingChanging($event, control.name)"
-        >
-        </ngm-member-tree-select>
+          <ngm-smart-select *ngSwitchCase="ControlType.dropDownList" class="w-full h-full"
+            [formControlName]="control.name"
+            [dataSettings]="control.dataSettings"
+            [dimension]="control.dimension"
+            [options]="control.options"
+            [appearance]="styling?.appearance"
+            [ngStyle]="control.styling"
+            (loadingChanging)="onLoadingChanging($event, control.name)"
+            >
+          </ngm-smart-select>
 
-        <ngm-smart-filter *ngSwitchDefault class="w-full h-full"
-          [formControlName]="control.name"
-          [dataSettings]="control.dataSettings"
-          [dimension]="control.dimension"
-          [options]="control.options"
-          [appearance]="styling?.appearance"
-          [required]="control.required"
-          [ngStyle]="control.styling"
-          (loadingChanging)="onLoadingChanging($event, control.name)"
-        ></ngm-smart-filter>
+          <ngm-member-tree-select *ngSwitchCase="FilterControlType.TreeSelect" class="w-full h-full"
+            [formControlName]="control.name"
+            [dataSettings]="control.dataSettings"
+            [dimension]="control.dimension"
+            [required]="control.required"
+            [appearance]="styling?.appearance"
+            [options]="control.options"
+            [ngStyle]="control.styling"
+            (loadingChanging)="onLoadingChanging($event, control.name)"
+          >
+          </ngm-member-tree-select>
 
-      </ng-container>
-    <!-- <mat-error *ngIf="form.get(control.name).errors?.required">*必输</mat-error> -->
-    </div>
+          <ngm-smart-filter *ngSwitchDefault class="w-full h-full"
+            [formControlName]="control.name"
+            [dataSettings]="control.dataSettings"
+            [dimension]="control.dimension"
+            [options]="control.options"
+            [appearance]="styling?.appearance"
+            [required]="control.required"
+            [ngStyle]="control.styling"
+            (loadingChanging)="onLoadingChanging($event, control.name)"
+          ></ngm-smart-filter>
+
+        </ng-container>
+      <!-- <mat-error *ngIf="form.get(control.name).errors?.required">*必输</mat-error> -->
+      </div>
+    }
 
     <ng-content select=".ngm-custom-filter"></ng-content>
 
