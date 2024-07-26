@@ -212,27 +212,6 @@ export class NxSmartFilterBarComponent
     })
   )
 
-  // private readonly defaultSlicers$ = this.options$.pipe(
-  //   map((options) => {
-  //     if (options?.filters) {
-  //       return Object.keys(options.filters).reduce((acc, key) => {
-  //         if (options.filters[key].options?.defaultMembers?.length) {
-  //           acc[key] = {
-  //             dimension: {
-  //               dimension: key
-  //             },
-  //             members: options.filters[key].options.defaultMembers
-  //           }
-  //         }
-  //         return acc
-  //       }, {})
-  //     }
-
-  //     return null
-  //   }),
-  //   distinctUntilChanged(isEqual)
-  // )
-
   /**
    * State for combination slicer
    */
@@ -267,25 +246,26 @@ export class NxSmartFilterBarComponent
     controls.forEach((filter: NxFilterControl) => {
       if (!this.form.contains(filter.name)) {
         let value = null
+        let dimension = null
+        if (filter.controlType === FilterControlType.Variable) {
+          const variable = <VariableProperty>filter.property
+          dimension = {
+            dimension: variable.referenceDimension,
+            hierarchy: variable.referenceHierarchy,
+            parameter: variable.name
+          }
+        } else {
+          dimension = omit(filter.dimension, 'members')
+        }
         if (options?.filters?.[filter.name]?.options?.defaultMembers) {
           value = {
-            dimension: filter.dimension,
+            dimension,
             members: options.filters[filter.name].options.defaultMembers
           }
         } else if (filter.dimension.members?.length) {
-          if (filter.controlType === FilterControlType.Variable) {
-            value = {
-              dimension: {
-                dimension: (<VariableProperty>filter.property).referenceDimension,
-                hierarchy: (<VariableProperty>filter.property).referenceHierarchy
-              },
-              members: filter.dimension.members
-            }
-          } else {
-            value = {
-              dimension: omit(filter.dimension, 'members'),
-              members: filter.dimension.members
-            }
+          value = {
+            dimension,
+            members: filter.dimension.members
           }
         }
         if (value) {

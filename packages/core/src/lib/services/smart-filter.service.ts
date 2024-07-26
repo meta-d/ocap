@@ -1,4 +1,4 @@
-import { combineLatest, distinctUntilChanged, filter, map, Observable, switchMap, withLatestFrom } from 'rxjs'
+import { combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, withLatestFrom } from 'rxjs'
 import { hierarchize } from '../annotations'
 import { DSCoreService } from '../ds-core.service'
 import {
@@ -113,13 +113,13 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
 
   private variables$: Observable<ISlicer[]>
 
-  constructor(dsCoreService: DSCoreService, private _smartFilterBar: SmartFilterBarService) {
+  constructor(dsCoreService: DSCoreService, private _smartFilterBar?: SmartFilterBarService) {
     super(dsCoreService)
 
-    this.variables$ = this._smartFilterBar.onChange().pipe(
+    this.variables$ = this._smartFilterBar?.onChange().pipe(
       map((slicers) => slicers.filter((slicer) => !!slicer.dimension?.parameter)),
       distinctUntilChanged(isEqual)
-    )
+    ) ?? of([])
   }
 
   override onInit() {
