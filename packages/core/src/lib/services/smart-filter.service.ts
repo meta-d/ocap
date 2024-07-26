@@ -1,4 +1,4 @@
-import { combineLatest, distinctUntilChanged, filter, map, switchMap, withLatestFrom } from 'rxjs'
+import { combineLatest, distinctUntilChanged, filter, map, Observable, switchMap, withLatestFrom } from 'rxjs'
 import { hierarchize } from '../annotations'
 import { DSCoreService } from '../ds-core.service'
 import {
@@ -7,9 +7,10 @@ import {
   getEntityHierarchy,
   IDimensionMember
 } from '../models'
-import { C_MEASURES, Dimension, getPropertyHierarchy, IMember, QueryOptions } from '../types'
+import { C_MEASURES, Dimension, getPropertyHierarchy, IMember, ISlicer, QueryOptions } from '../types'
 import { isEqual, isNil, uniqBy } from '../utils'
 import { SmartBusinessService, SmartBusinessState } from './smart-business.service'
+import { SmartFilterBarService } from './smart-filter-bar.service'
 
 
 export enum TypeAheadType {
@@ -110,8 +111,15 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
     })
   )
 
-  constructor(dsCoreService: DSCoreService) {
+  private variables$: Observable<ISlicer[]>
+
+  constructor(dsCoreService: DSCoreService, private _smartFilterBar: SmartFilterBarService) {
     super(dsCoreService)
+
+    this.variables$ = this._smartFilterBar.onChange().pipe(
+      map((slicers) => slicers.filter((slicer) => !!slicer.dimension?.parameter)),
+      distinctUntilChanged(isEqual)
+    )
   }
 
   override onInit() {
@@ -196,7 +204,8 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
 
     const propertyName = getPropertyHierarchy(dimension)
 
-    return super.selectQuery(options).pipe(
+    return this.variables$.pipe(
+      switchMap((filters) => super.selectQuery({ ...options, filters })),
       map((result) => {
         const valueProperty = dimension.hierarchy || dimension.dimension
         const captionProperty = dimension.memberCaption || hProperty?.memberCaption

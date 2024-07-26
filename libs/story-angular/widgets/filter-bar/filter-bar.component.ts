@@ -3,20 +3,24 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
+  effect,
   EventEmitter,
   HostBinding,
   HostListener,
+  inject,
   OnDestroy,
   Output,
-  ViewContainerRef,
-  computed,
-  inject,
-  signal
+  signal,
+  ViewContainerRef
 } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormBuilder, FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
+import { AbstractStoryWidget, ControlType } from '@metad/core'
 import { SmartFilterOptions } from '@metad/ocap-angular/controls'
 import { NgmAppearance, NgmSmartBusinessService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
+import { NgmAdvancedFilterComponent } from '@metad/ocap-angular/selection'
 import {
   cloneDeep,
   DataSettings,
@@ -26,31 +30,19 @@ import {
   IAdvancedFilter,
   isEmpty,
   ISlicer,
+  isVariableProperty,
   MemberSource,
+  Property,
   Syntax,
-  TimeGranularity,
+  TimeGranularity
 } from '@metad/ocap-core'
-import {
-  AbstractStoryWidget,
-  ControlType,
-} from '@metad/core'
 import { ComponentSettingsType, FilterControlType } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { assign, compact, isEqual, merge, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, combineLatest, EMPTY, firstValueFrom, Observable } from 'rxjs'
-import {
-  distinctUntilChanged,
-  filter,
-  map,
-  shareReplay,
-  startWith,
-  switchMap,
-  tap,
-} from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { CascadingEffect, FilterBarFieldOptions, ISmartFilterBarOptions } from './types'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { NgmAdvancedFilterComponent } from '@metad/ocap-angular/selection'
 
 export interface NxFilterControl {
   required?: boolean
@@ -58,6 +50,7 @@ export interface NxFilterControl {
   placeholder?: string
   dataSettings?: DataSettings
   dimension: Dimension
+  property?: Property
   name: string
   controlType?: ControlType | FilterControlType
   options: Partial<
@@ -70,13 +63,12 @@ export interface NxFilterControl {
   appearance: NgmAppearance
 }
 
-
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-widget-filter-bar',
   templateUrl: './filter-bar.component.html',
   styleUrls: ['./filter-bar.component.scss'],
-  providers: [ NgmSmartBusinessService ],
+  providers: [NgmSmartBusinessService]
 })
 export class NxSmartFilterBarComponent
   extends AbstractStoryWidget<ISmartFilterBarOptions>
@@ -90,9 +82,9 @@ export class NxSmartFilterBarComponent
   protected readonly _dialog = inject(MatDialog)
   protected readonly _cdr = inject(ChangeDetectorRef)
   private readonly _viewContainerRef = inject(ViewContainerRef)
-  protected readonly smartFilterBarService? = inject(NgmSmartFilterBarService, {optional: true})
-  protected readonly logger? = inject(NGXLogger, {optional: true})
-  private readonly settingsService? = inject(NxSettingsPanelService, {optional: true})
+  protected readonly smartFilterBarService? = inject(NgmSmartFilterBarService, { optional: true })
+  protected readonly logger? = inject(NGXLogger, { optional: true })
+  private readonly settingsService? = inject(NxSettingsPanelService, { optional: true })
 
   @Output() go = new EventEmitter()
   @Output() loadingChanging = new EventEmitter<boolean>()
@@ -112,12 +104,9 @@ export class NxSmartFilterBarComponent
     map((dataSettings) => !(dataSettings?.dataSource && dataSettings?.entitySet))
   )
   private readonly entityType$ = this.dataService.selectEntityType()
-  public readonly syntax$ = this.entityType$.pipe(map(({syntax}) => syntax))
-  
-  private readonly _controls$ = combineLatest([
-    this.dataSettings$,
-    this.entityType$
-  ]).pipe(
+  public readonly syntax$ = this.entityType$.pipe(map(({ syntax }) => syntax))
+
+  private readonly _controls$ = combineLatest([this.dataSettings$, this.entityType$]).pipe(
     map(([dataSettings, entityType]) => {
       const selectionFields = dataSettings.selectionFieldsAnnotation
       if (!selectionFields?.propertyPaths) {
@@ -134,13 +123,18 @@ export class NxSmartFilterBarComponent
         })
         .filter(({ field, property }) => !!field && !!property)
         .map(({ field, property }) => {
+          let controlType = null
+          if (isVariableProperty(property)) {
+            controlType = FilterControlType.Variable
+          }
           return {
             name: getPropertyName(field),
             dimension: field,
             label: property.caption || field.dimension,
             dataSettings: pick(dataSettings, 'dataSource', 'entitySet'),
-            options: {
-            }
+            controlType,
+            options: {},
+            property
           } as NxFilterControl
         })
     }),
@@ -156,7 +150,7 @@ export class NxSmartFilterBarComponent
     this.form.valueChanges.pipe(
       filter(() => this.options?.cascadingEffect),
       distinctUntilChanged(isEqual),
-      startWith(null),
+      startWith(null)
     )
   ]).pipe(
     map(([controls, options, slicers]) => {
@@ -192,9 +186,13 @@ export class NxSmartFilterBarComponent
             controlType: controlOptions?.controlType ?? control.controlType,
             label: option.label || control.label,
             placeholder: option.placeholder || control.placeholder,
-            options: merge({
-              autocomplete: true
-            }, control.options, option),
+            options: merge(
+              {
+                autocomplete: true
+              },
+              control.options,
+              option
+            ),
             styling: controlOptions?.styling,
             appearance: this.styling?.appearance
           } as NxFilterControl
@@ -252,6 +250,8 @@ export class NxSmartFilterBarComponent
   readonly enabledToday = computed(() => this.optionsSignal()?.today?.enable)
   readonly selectedField = signal<string>(null)
 
+  readonly defaultSlicers = signal<ISlicer[]>(null, { equal: isEqual })
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -262,17 +262,33 @@ export class NxSmartFilterBarComponent
   private controlsSub = this._controls$.subscribe((controls) => {
     const options = this.options
     this.form.reset()
-    controls.map((filter: NxFilterControl) => {
+    const defaultSlicers = []
+    controls.forEach((filter: NxFilterControl) => {
       if (!this.form.contains(filter.name)) {
-        const formCtrl = options?.filters?.[filter.name]?.options?.defaultMembers ? new FormControl({
-          dimension: filter.dimension,
-          members: options.filters[filter.name].options.defaultMembers
-        }): new FormControl()
+        let value = null
+        if (options?.filters?.[filter.name]?.options?.defaultMembers) {
+          value = {
+            dimension: filter.dimension,
+            members: options.filters[filter.name].options.defaultMembers
+          }
+          defaultSlicers.push(value)
+        }
+        const formCtrl = new FormControl(value)
 
         this.form.setControl(filter.name, formCtrl)
       }
     })
+
+    this.defaultSlicers.set(defaultSlicers)
   })
+
+  private defaultSlicersEffect = effect(
+    () => {
+      this.smartFilterBarService.change(this.defaultSlicers())
+      this.onGo()
+    },
+    { allowSignalWrites: true }
+  )
 
   ngAfterViewInit(): void {
     // 当前日期变化刷新数据
@@ -281,7 +297,12 @@ export class NxSmartFilterBarComponent
     combineLatest([this.form.valueChanges, this.combinationSlicer$])
       .pipe(
         map(([values, combinationSlicer]: [{ [key: string]: ISlicer }, IAdvancedFilter]) => {
-          return compact([...Object.values(values).filter((slicer) => !isEmpty(slicer?.members)).map(cloneDeep), combinationSlicer])
+          return compact([
+            ...Object.values(values)
+              .filter((slicer) => !isEmpty(slicer?.members))
+              .map(cloneDeep),
+            combinationSlicer
+          ])
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -308,19 +329,20 @@ export class NxSmartFilterBarComponent
 
   async openCombinationSlicer() {
     const entityType = await firstValueFrom(this.entityType$)
-    const combinationSlicer = await firstValueFrom(this._dialog
-      .open(NgmAdvancedFilterComponent, {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          dataSettings: pick(this.dataSettings, 'dataSource', 'entitySet'),
-          entityType,
-          syntax: entityType.syntax,
-          advancedFilter: this.combinationSlicer$.value
-        }
-      })
-      .afterClosed()
+    const combinationSlicer = await firstValueFrom(
+      this._dialog
+        .open(NgmAdvancedFilterComponent, {
+          viewContainerRef: this._viewContainerRef,
+          data: {
+            dataSettings: pick(this.dataSettings, 'dataSource', 'entitySet'),
+            entityType,
+            syntax: entityType.syntax,
+            advancedFilter: this.combinationSlicer$.value
+          }
+        })
+        .afterClosed()
     )
-    
+
     // Cancel:="" Dismiss:=undefined
     if (combinationSlicer || combinationSlicer === null) {
       this.combinationSlicer$.next(combinationSlicer)
@@ -351,13 +373,15 @@ export class NxSmartFilterBarComponent
         }
 
         this.selectedField.set(name)
-        return this.settingsService
+        return (
+          this.settingsService
             ?.openDesigner(
               ComponentSettingsType.FilterBarField,
               this.options.filters?.[name] ?? {},
               `${this.key}/${name}`
             )
             .pipe(tap((options: any) => this.updateFieldOptions({ key: name, options }))) ?? EMPTY
+        )
       })
     )
   })
@@ -369,20 +393,18 @@ export class NxSmartFilterBarComponent
     }
   )
 
-  readonly saveAsDefaultMembers = this.updater(
-    (state) => {
-      state.options ??= {}
-      state.options.filters ??= {}
-      Object.keys(this.form.value ?? {}).forEach((key) => {
-        const value = this.form.value[key]
-        if (value?.members) {
-          state.options.filters[key] = state.options.filters[key] ?? {} as FilterBarFieldOptions
-          state.options.filters[key].options = state.options.filters[key].options ?? {}
-          state.options.filters[key].options.defaultMembers = value.members
-        }
-      })
-    }
-  )
+  readonly saveAsDefaultMembers = this.updater((state) => {
+    state.options ??= {}
+    state.options.filters ??= {}
+    Object.keys(this.form.value ?? {}).forEach((key) => {
+      const value = this.form.value[key]
+      if (value?.members) {
+        state.options.filters[key] = state.options.filters[key] ?? ({} as FilterBarFieldOptions)
+        state.options.filters[key].options = state.options.filters[key].options ?? {}
+        state.options.filters[key].options.defaultMembers = value.members
+      }
+    })
+  })
 
   onLoadingChanging(loading: boolean, name: string) {
     this._controlsLoading.set(name, loading)
@@ -392,7 +414,7 @@ export class NxSmartFilterBarComponent
   private handleClick(event) {
     this.selectedField.set(null)
   }
-  
+
   ngOnDestroy(): void {
     this.destroySubject$.next()
     this.destroySubject$.complete()

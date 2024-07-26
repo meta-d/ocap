@@ -63,7 +63,7 @@ export class StoryFilterBarSchemaService<T extends SchemaState = SchemaState> ex
                         sortable: true,
                         dataSettings: this.dataSettings$,
                         entityType: this.entityType$,
-                        capacities: [PropertyCapacity.Dimension]
+                        capacities: [PropertyCapacity.Dimension, PropertyCapacity.Parameter]
                       }
                     }
                   }

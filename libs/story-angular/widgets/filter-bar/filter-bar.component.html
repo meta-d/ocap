@@ -15,62 +15,72 @@
       <div class="ngm-smart-filter-bar_filter col"
         [ngClass]="{actived: control.name === selectedField()}"
         (click)="onSelectField({name: control.name, event: $event, type: control.controlType})">
-
-        <ng-container [ngSwitch]="control.controlType">
-          <!--  -->
-          <ngm-member-datepicker *ngSwitchCase="FilterControlType.Datepicker" class="w-full h-full"
-            [label]="control.options.label"
-            [placeholder]="control.options.placeholder"
-            [appearance]="styling?.appearance?.appearance"
-            [displayDensity]="styling?.appearance?.displayDensity"
-            [dataSettings]="control.dataSettings"
-            [dimension]="control.dimension"
-            [required]="control.required"
-            [defaultValue]="control.options.defaultValue"
-            [formControlName]="control.name"
-            [ngStyle]="control.styling"
-            [selectionType]="control.options?.selectionType"
-            [displayDensity]="styling?.appearance?.displayDensity"
-            [granularity]="control.options?.granularity"
-          >
-          </ngm-member-datepicker>
-
-          <ngm-smart-select *ngSwitchCase="ControlType.dropDownList" class="w-full h-full"
-            [formControlName]="control.name"
-            [dataSettings]="control.dataSettings"
-            [dimension]="control.dimension"
-            [options]="control.options"
-            [appearance]="styling?.appearance"
-            [ngStyle]="control.styling"
-            (loadingChanging)="onLoadingChanging($event, control.name)"
+        
+        @switch (control.controlType) {
+          @case (FilterControlType.Datepicker) {
+            <ngm-member-datepicker class="w-full h-full"
+              [label]="control.options.label"
+              [placeholder]="control.options.placeholder"
+              [appearance]="styling?.appearance?.appearance"
+              [displayDensity]="styling?.appearance?.displayDensity"
+              [dataSettings]="control.dataSettings"
+              [dimension]="control.dimension"
+              [required]="control.required"
+              [defaultValue]="control.options.defaultValue"
+              [formControlName]="control.name"
+              [ngStyle]="control.styling"
+              [selectionType]="control.options?.selectionType"
+              [displayDensity]="styling?.appearance?.displayDensity"
+              [granularity]="control.options?.granularity"
             >
-          </ngm-smart-select>
-
-          <ngm-member-tree-select *ngSwitchCase="FilterControlType.TreeSelect" class="w-full h-full"
-            [formControlName]="control.name"
-            [dataSettings]="control.dataSettings"
-            [dimension]="control.dimension"
-            [required]="control.required"
-            [appearance]="styling?.appearance"
-            [options]="control.options"
-            [ngStyle]="control.styling"
-            (loadingChanging)="onLoadingChanging($event, control.name)"
-          >
-          </ngm-member-tree-select>
-
-          <ngm-smart-filter *ngSwitchDefault class="w-full h-full"
-            [formControlName]="control.name"
-            [dataSettings]="control.dataSettings"
-            [dimension]="control.dimension"
-            [options]="control.options"
-            [appearance]="styling?.appearance"
-            [required]="control.required"
-            [ngStyle]="control.styling"
-            (loadingChanging)="onLoadingChanging($event, control.name)"
-          ></ngm-smart-filter>
-
-        </ng-container>
-      <!-- <mat-error *ngIf="form.get(control.name).errors?.required">*必输</mat-error> -->
+            </ngm-member-datepicker>
+          }
+          @case (FilterControlType.DropDownList) {
+            <ngm-smart-select class="w-full h-full"
+              [formControlName]="control.name"
+              [dataSettings]="control.dataSettings"
+              [dimension]="control.dimension"
+              [options]="control.options"
+              [appearance]="styling?.appearance"
+              [ngStyle]="control.styling"
+              (loadingChanging)="onLoadingChanging($event, control.name)"
+              >
+            </ngm-smart-select>
+          }
+          @case (FilterControlType.TreeSelect) {
+            <ngm-member-tree-select class="w-full h-full"
+              [formControlName]="control.name"
+              [dataSettings]="control.dataSettings"
+              [dimension]="control.dimension"
+              [required]="control.required"
+              [appearance]="styling?.appearance"
+              [options]="control.options"
+              [ngStyle]="control.styling"
+              (loadingChanging)="onLoadingChanging($event, control.name)"
+            >
+            </ngm-member-tree-select>
+          }
+          @case (FilterControlType.Variable) {
+            <ngm-variable class="w-full justify-self-start"
+              [formControlName]="control.name"
+              [label]="control.label"
+              [dataSettings]="control.dataSettings"
+              [variable]="control.property"
+            />
+          }
+          @default {
+            <ngm-smart-filter class="w-full h-full"
+              [formControlName]="control.name"
+              [dataSettings]="control.dataSettings"
+              [dimension]="control.dimension"
+              [options]="control.options"
+              [appearance]="styling?.appearance"
+              [required]="control.required"
+              [ngStyle]="control.styling"
+              (loadingChanging)="onLoadingChanging($event, control.name)"
+            ></ngm-smart-filter>
+          }
+        }
       </div>
     }
 
@@ -89,7 +99,6 @@
       <button type="submit" mat-raised-button color="primary"
         [displayDensity]="styling?.appearance?.displayDensity"
         [disabled]="!form.valid || loading"
-        (click)="onGo()"
       >
         {{ 'Story.Widgets.FilterBar.Query' | translate: {Default: 'Query'} }}
       </button>
