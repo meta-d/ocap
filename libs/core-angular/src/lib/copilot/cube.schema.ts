@@ -114,23 +114,27 @@ export function tryFixDimension(dimension: Dimension | Measure, entityType: Enti
   switch (property?.role) {
     case AggregationRole.dimension:
       return {
-        dimension: property.name
-      }
+        dimension: property.name,
+        zeroSuppression: true
+      } as Dimension
     case AggregationRole.hierarchy:
       return {
         dimension: property.dimension,
-        hierarchy: property.name
+        hierarchy: property.name,
+        zeroSuppression: true
       }
     case AggregationRole.level:
       return {
         dimension: property.dimension,
         hierarchy: property.hierarchy,
-        level: property.name
+        level: property.name,
+        zeroSuppression: true
       }
     case AggregationRole.measure:
       return {
         dimension: C_MEASURES,
-        measure: property.name
+        measure: property.name,
+        zeroSuppression: true
       }
     default:
       throw new Error(`Can't find dimension for '${dimension.dimension}'`)

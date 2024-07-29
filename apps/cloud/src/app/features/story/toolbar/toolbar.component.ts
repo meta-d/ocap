@@ -8,13 +8,11 @@ import {
   EventEmitter,
   HostBinding,
   HostListener,
-  Input,
   OnInit,
   Output,
   ViewContainerRef,
   booleanAttribute,
   computed,
-  effect,
   inject,
   input,
   signal
@@ -22,20 +20,16 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
+import { ActivatedRoute, Router } from '@angular/router'
+import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
+import { ConfirmCodeEditorComponent } from '@metad/components/editor'
 import { CopilotChatMessage } from '@metad/copilot'
+import { CommandDialogComponent } from '@metad/copilot-angular'
+import { CHARTS, DeepPartial, IsNilPipe } from '@metad/core'
 import { NgmConfirmUniqueComponent, NgmInputComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { cloneDeep, omit } from '@metad/ocap-core'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
-import { ConfirmCodeEditorComponent } from '@metad/components/editor'
-import { CHARTS, DeepPartial, IsNilPipe } from '@metad/core'
-import {
-  ParametersComponent,
-  PreferencesComponent,
-  QuerySettingComponent,
-  ThemeBuilderComponent
-} from '@metad/story'
+import { PreferencesComponent, QuerySettingComponent, ThemeBuilderComponent } from '@metad/story'
 import {
   EmulatedDevice,
   NxStoryService,
@@ -47,6 +41,7 @@ import {
   WidgetComponentType
 } from '@metad/story/core'
 import { StorySharesComponent } from '@metad/story/story'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { firstValueFrom } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ToastrService, tryHttp } from '../../../@core'
@@ -57,8 +52,6 @@ import { StoryDetailsComponent } from '../story-details/story-details.component'
 import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadStory } from '../types'
 import { StoryToolbarService } from './toolbar.service'
 import { COMPONENTS, PAGES } from './types'
-import { ActivatedRoute, Router } from '@angular/router'
-
 
 @Component({
   standalone: true,
@@ -154,7 +147,10 @@ export class StoryToolbarComponent implements OnInit {
   @HostBinding('class.pac-toolbar__on-right')
   onRight = false
   @HostBinding('class.pac-toolbar__expand-less')
-  expandLess = true
+  get _expandLess() {
+    return this.expandLess()
+  }
+  readonly expandLess = signal(true)
 
   charts = CHARTS.map((item) => cloneDeep(item) as any)
   widgets = [...COMPONENTS]
@@ -175,14 +171,13 @@ export class StoryToolbarComponent implements OnInit {
   readonly saving = this.storyService.saving
 
   readonly disableSave = computed(() => !this.storyService.dirty() || this.storyService.saving())
-  
+
   public readonly pointList = this.storyService.points
 
   public readonly isMobile$ = this.storyService.isMobile$
 
   readonly currentPage = this.storyService.currentPageState
   readonly scale = computed(() => this.currentPage()?.scale ?? 100)
-
 
   public readonly creatingWidget$ = this.toolbarService.creatingWidget$
   readonly isPanMode = this.storyService.isPanMode
@@ -195,14 +190,17 @@ export class StoryToolbarComponent implements OnInit {
   */
   readonly isCopyWidgetSelected$ = toSignal(this.storyService.copySelectedWidget$)
   readonly story = toSignal(this.storyService.story$)
-  
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
   private _devicesSub = this.storyService.storyOptions$
-    .pipe(map((options) => options?.emulatedDevice), takeUntilDestroyed())
+    .pipe(
+      map((options) => options?.emulatedDevice),
+      takeUntilDestroyed()
+    )
     .subscribe((emulatedDevice) => {
       this.emulatedDeviceName = emulatedDevice?.name
       this.emulatedDevice = EmulatedDevices.find((item) => item.name === this.emulatedDeviceName) ?? {
@@ -226,24 +224,24 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   togglePreferences() {
-    this.showDetails.update((state) => state === 'preferences' ? null : 'preferences')
+    this.showDetails.update((state) => (state === 'preferences' ? null : 'preferences'))
   }
 
   toggleStoryDesigner() {
-    this.showDetails.update((state) => state === 'storyDesigner' ? null : 'storyDesigner')
+    this.showDetails.update((state) => (state === 'storyDesigner' ? null : 'storyDesigner'))
   }
   toggleDevices() {
-    this.showDetails.update((state) => state === 'devices' ? null : 'devices')
+    this.showDetails.update((state) => (state === 'devices' ? null : 'devices'))
   }
   toggleWidgets() {
-    this.showDetails.update((state) => state === 'widgets' ? null : 'widgets')
+    this.showDetails.update((state) => (state === 'widgets' ? null : 'widgets'))
   }
 
   toggleExpand() {
-    if (this.expandLess) {
+    if (this.expandLess()) {
       this.showDetails.set(null)
     }
-    this.expandLess = !this.expandLess
+    this.expandLess.update((v) => !v)
   }
 
   createWidget(widget: DeepPartial<StoryWidget>) {
@@ -417,15 +415,6 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   openCalculations() {
-    // const result = await firstValueFrom(
-    //   this._dialog
-    //     .open(ParametersComponent, {
-    //       viewContainerRef: this._viewContainerRef,
-    //       panelClass: 'medium',
-    //     })
-    //     .afterClosed()
-    // )
-
     this.router.navigate(['calculations'], { relativeTo: this.route })
   }
 
@@ -495,7 +484,8 @@ export class StoryToolbarComponent implements OnInit {
           projectId: story.projectId
         }
       })
-      .afterClosed().subscribe((result) => {})
+      .afterClosed()
+      .subscribe((result) => {})
   }
 
   /**
@@ -524,25 +514,30 @@ export class StoryToolbarComponent implements OnInit {
     const story = this.story()
     const isAuthenticated = this.storyService.isAuthenticated()
     this._dialog
-        .open(StorySharesComponent, {
-          viewContainerRef: this._viewContainerRef,
-          data: {
-            id: story.id,
-            visibility: story.visibility,
-            isAuthenticated,
-            access: story.access,
-            models: story.models
-          }
-        })
-        .afterClosed()
-        .subscribe()
+      .open(StorySharesComponent, {
+        viewContainerRef: this._viewContainerRef,
+        data: {
+          id: story.id,
+          visibility: story.visibility,
+          isAuthenticated,
+          access: story.access,
+          models: story.models
+        }
+      })
+      .afterClosed()
+      .subscribe()
   }
 
   async createStoryPage(input: Partial<StoryPoint>) {
-    const name = await firstValueFrom(this._dialog.open(NgmConfirmUniqueComponent, {
-      data: {
-        title: this.#translate.instant('PAC.Story.StoryPointName', {Default: 'Story Point Name'}),
-      }}).afterClosed())
+    const name = await firstValueFrom(
+      this._dialog
+        .open(NgmConfirmUniqueComponent, {
+          data: {
+            title: this.#translate.instant('PAC.Story.StoryPointName', { Default: 'Story Point Name' })
+          }
+        })
+        .afterClosed()
+    )
     if (name) {
       this.storyService.newStoryPage({
         ...input,
@@ -651,6 +646,18 @@ export class StoryToolbarComponent implements OnInit {
     this.showDetails.set('newPages')
   }
 
+  aiChatStory() {
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['story', 'page', 'widget']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
+  }
+
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKeydown(event: KeyboardEvent) {
     this.toggleFullscreen(false)
@@ -665,47 +672,4 @@ export class StoryToolbarComponent implements OnInit {
   onSpaceKeyUp(event: KeyboardEvent) {
     this.storyService.patchState({ isPanMode: false })
   }
-
-  // @HostListener('document:keydown', ['$event'])
-  // onKeyDown(event: KeyboardEvent) {
-  //   if (event.metaKey || event.ctrlKey) {
-  //     if (event.shiftKey) {
-  //       if (event.key === 'z' || event.key === 'Z') {
-  //         this.storyService.redo()
-  //         event.preventDefault()
-  //       }
-  //     } else {
-  //       if (event.key === 's' || event.key === 'S') {
-  //         this.storyService.saveStory()
-  //         event.preventDefault()
-  //       } else if (event.key === 'z' || event.key === 'Z') {
-  //         this.storyService.undo()
-  //         event.preventDefault()
-  //       }
-  //     }
-  //   } else if (event.altKey) {
-  //     switch (event.code) {
-  //       case 'Minus':
-  //       case 'NumpadSubtract':
-  //         this.zoomOut()
-  //         break
-  //       case 'Equal':
-  //       case 'NumpadAdd':
-  //         this.zoomIn()
-  //         break
-  //       case 'Digit0':
-  //       case 'Numpad0':
-  //         this.resetZoom()
-  //         break
-  //       case 'Escape':
-  //         this.resetScalePan.emit()
-  //         break
-  //     }
-  //   }
-
-  //   // 在其他地方点 Delete 也会删除 Widget, 除非给 Widget 加上 Focus
-  //   // if (event.key === 'Delete') {
-  //   //   this.storyService.removeCurrentWidget()
-  //   // }
-  // }
 }

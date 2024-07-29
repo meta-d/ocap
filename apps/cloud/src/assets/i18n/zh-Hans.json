@@ -1173,6 +1173,7 @@
       "ChooseFontWeight": "选择字重",
       "CustomImages": "自定义图片",
       "GlobalStyles": "全局样式",
+      "ComponentsStyles": "组件样式",
       "Transform": "变换",
       "TransformOrigin": "变换原点",
       "BackgroundSize": "背景大小",

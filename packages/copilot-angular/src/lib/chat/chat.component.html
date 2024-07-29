@@ -214,7 +214,7 @@
             }
           </div>
 
-          <div class="flex flex-wrap">
+          <div class="flex flex-wrap max-h-[100px] overflow-auto">
             @for (example of examples(); track example.text) {
               <span class="inline-flex m-1 cursor-pointer hover:underline items-center rounded-md px-2 py-1 text-xs font-medium border border-neutral-100 dark:border-neutral-800"
                 (click)="pickExample(example.text)"

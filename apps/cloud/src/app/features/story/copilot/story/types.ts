@@ -1,6 +1,8 @@
 import { StateGraphArgs } from '@langchain/langgraph/web'
 import { Team } from '@metad/copilot'
 
+export const STORY_COMMAND_NAME = 'story'
+
 export interface StoryAgentState extends Team.State {
   tool_call_id: string
 }

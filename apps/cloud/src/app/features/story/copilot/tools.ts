@@ -1,6 +1,7 @@
 import { inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { DynamicStructuredTool } from '@langchain/core/tools'
+import { nanoid } from '@metad/copilot'
 import {
   DataSettingsSchema,
   DimensionMemberSchema,
@@ -16,8 +17,9 @@ import { FilterControlType, NxStoryService, WidgetComponentType } from '@metad/s
 import {
   chartAnnotationCheck,
   ChartSchema,
-  ChartWidgetSchema,
+  tryFixAnalyticsAnnotation,
   completeChartAnnotation,
+  createTableWidgetSchema,
   createWidgetSchema
 } from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
@@ -227,7 +229,7 @@ export function injectCreateChartTool() {
     }),
     func: async ({ dataSettings, widget }) => {
       logger.debug(
-        '[Story] [AI Copilot] [Command tool] [createChartWidget] inputs:',
+        '[Story] [AI Copilot] [Command tool] [createChart] inputs:',
         'dataSettings:',
         dataSettings,
         'position:',
@@ -261,4 +263,47 @@ export function injectCreateChartTool() {
   })
 
   return createChartTool
+}
+
+
+export function injectCreateTableTool() {
+  const logger = inject(NGXLogger)
+  const storyService = inject(NxStoryService)
+
+  const createTableTool = new DynamicStructuredTool({
+    name: 'createTableWidget',
+    description: 'Create a new table widget.',
+    schema: z.object({
+      dataSettings: DataSettingsSchema,
+      widget: createWidgetSchema(createTableWidgetSchema())
+    }),
+    func: async ({dataSettings, widget}) => {
+      logger.debug(
+        '[Story] [AI Copilot] [Command tool] [createTableWidget] inputs:',
+        dataSettings,
+        widget,
+      )
+
+      const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings as DataSettings))
+
+      try {
+        const key = nanoid()
+        storyService.createStoryWidget({
+          key,
+          ...widget,
+          component: WidgetComponentType.AnalyticalGrid,
+          dataSettings: {
+            ...(dataSettings ?? {}),
+            analytics: tryFixAnalyticsAnnotation(widget.analytics, entityType)
+          },
+        })
+
+        return `Story table widget '${key}' created!`
+      } catch (error: any) {
+        return `Error: ${error.message}`
+      }
+    }
+  })
+
+  return createTableTool
 }

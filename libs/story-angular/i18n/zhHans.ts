@@ -141,6 +141,7 @@ export const ZhHans = {
       TextStyles: '文本样式',
       TableStyles: '表格样式',
       ControlStyles: '控制器样式',
+      KpiStyles: 'KPI 样式',
       TabBar: '选项卡栏',
       TabBar_Fixed: '固定',
       TabBar_Point: '浮点',

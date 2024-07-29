@@ -6,8 +6,8 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { AbstractStoryWidget, StoryWidgetState, StoryWidgetStyling, WidgetMenuType, nonNullable } from '@metad/core'
 import { NgmObjectNumberComponent } from '@metad/ocap-angular/common'
-import { TrendType, isNil } from '@metad/ocap-core'
-import { ComponentStyling, componentStyling } from '@metad/story/core'
+import { TrendType, assignDeepOmitBlank, isEqual, isNil } from '@metad/ocap-core'
+import { ComponentStyling, componentStyling, NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
@@ -45,7 +45,8 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
 > {
   TrendType = TrendType
 
-  public readonly dataService = inject(KeyPerformanceIndicatorService)
+  readonly dataService = inject(KeyPerformanceIndicatorService)
+  readonly storyService = inject(NxStoryService)
   readonly #logger = inject(NGXLogger)
 
   get intent() {
@@ -92,8 +93,11 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   */
   readonly isLoading = toSignal(this.dataService.loading$)
   readonly error = signal<string | null>(null)
-  readonly titleStyles$ = computed(() => componentStyling(this.styling$()?.title))
-  readonly valueStyles = computed(() => componentStyling(this.styling$()?.value))
+  readonly kpiStyles = computed(() => this.storyService.storyOptions()?.preferences?.kpi, { equal: isEqual})
+  readonly titleStyling = computed(() => assignDeepOmitBlank(assignDeepOmitBlank({}, this.kpiStyles()?.title, 2), this.styling$()?.title, 2))
+  readonly valueStyling = computed(() => assignDeepOmitBlank(assignDeepOmitBlank({}, this.kpiStyles()?.value, 2), this.styling$()?.value, 2))
+  readonly titleStyles$ = computed(() => componentStyling(this.titleStyling()))
+  readonly valueStyles = computed(() => componentStyling(this.valueStyling()))
 
   /**
   |--------------------------------------------------------------------------

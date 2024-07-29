@@ -25,7 +25,7 @@ export class KpiStylingSchema extends BaseDesignerSchemaService<BaseSchemaState<
             },
             {
               key: 'title',
-              type: 'styling',
+              type: 'text-css',
               props: {
                 label: STORY?.Widgets?.Common?.TitleStyling ?? 'Title Styling',
                 expanded: false
@@ -33,7 +33,7 @@ export class KpiStylingSchema extends BaseDesignerSchemaService<BaseSchemaState<
             },
             {
               key: 'value',
-              type: 'styling',
+              type: 'text-css',
               props: {
                 label: STORY?.Widgets?.Common?.ValueStyling ?? 'Value Styling',
                 expanded: false

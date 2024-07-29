@@ -1,19 +1,22 @@
 import { inject } from '@angular/core'
-import { SystemMessage } from '@langchain/core/messages'
+import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { RunnableLambda } from '@langchain/core/runnables'
 import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
+import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import {
   injectCreateChartTool,
   injectCreateFilterBarTool,
   injectCreateInputControlTool,
   injectCreateKPITool,
+  injectCreateTableTool,
   injectCreateVariableTool
 } from '../tools'
 import { injectCreatePageTools } from './tools'
-import { pageAgentState } from './types'
+import { PageAgentState, pageAgentState, STORY_PAGE_COMMAND_NAME } from './types'
 
-export function injectCreatePageAgent() {
+export function injectCreatePageGraph() {
   const logger = inject(NGXLogger)
   const tools = injectCreatePageTools()
   const createFilterBar = injectCreateFilterBarTool()
@@ -21,6 +24,7 @@ export function injectCreatePageAgent() {
   const createVariable = injectCreateVariableTool()
   const createInputControl = injectCreateInputControlTool()
   const createChart = injectCreateChartTool()
+  const createTable = injectCreateTableTool()
 
   return async ({ llm, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     return createReactAgent({
@@ -28,7 +32,7 @@ export function injectCreatePageAgent() {
       llm,
       interruptBefore,
       interruptAfter,
-      tools: [...tools, createFilterBar, createKPI, createVariable, createInputControl, createChart],
+      tools: [...tools, createFilterBar, createKPI, createVariable, createInputControl, createChart, createTable],
       messageModifier: async (state) => {
         const systemTemplate = `You are a BI analysis expert.
 {{role}}
@@ -50,6 +54,29 @@ The cube context:
         }).format(state)
         return [new SystemMessage(system), ...state.messages]
       }
+    })
+  }
+}
+
+export function injectCreatePageAgent() {
+  const createPageGraph = injectCreatePageGraph()
+  const fewShotPrompt = injectAgentFewShotTemplate(STORY_PAGE_COMMAND_NAME, { k: 1, vectorStore: null })
+
+  return async ({ llm }: CreateGraphOptions) => {
+    const agent = await createPageGraph({ llm })
+
+    return RunnableLambda.from(async (state: PageAgentState) => {
+      const content = await fewShotPrompt.format({ input: state.input })
+
+      const { messages } = await agent.invoke({
+        input: state.input,
+        messages: [new HumanMessage(content)],
+        role: state.role,
+        language: state.language,
+        context: state.context
+      })
+
+      return messages
     })
   }
 }

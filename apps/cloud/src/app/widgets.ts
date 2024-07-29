@@ -97,7 +97,7 @@ export const STORY_WIDGET_COMPONENTS = [
       mapping: ['title', 'dataSettings', 'options', 'styling'],
       label: 'KPI',
       disableFab: true,
-      category: 'card',
+      category: 'kpi',
       factory: async (): Promise<Type<IStoryWidget<unknown>>> => {
         const { NxWidgetKpiComponent } = await import('@metad/story/widgets/kpi')
         return NxWidgetKpiComponent

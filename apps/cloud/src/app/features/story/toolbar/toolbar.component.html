@@ -1,5 +1,6 @@
 <div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800 text-neutral-100">
-    <div *ngIf="expandLess || !collapsible()" class="w-full px-2 flex-1 flex flex-col items-center overflow-hidden hover:overflow-y-auto" >
+  @if (expandLess() || !collapsible()) {
+    <div class="w-full px-2 flex-1 flex flex-col items-center overflow-hidden hover:overflow-y-auto" >
         <ng-content></ng-content>
 
       @if (saving()) {
@@ -121,24 +122,24 @@
             <mat-icon *ngIf="showDetails()==='widgets'&&!onRight||showDetails()!=='widgets'&&onRight">keyboard_arrow_left</mat-icon>
         </button>
 
-        <!-- <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger text-lg"
-            matTooltip="{{ 'PAC.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'} }}"
+        <button mat-icon-button displayDensity="cosy" class="ngm-copilot-command-button"
+            [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
             matTooltipPosition="after"
-            [class.active]="showDetails()==='copilot'"
-            (click)="showDetails()=showDetails()==='copilot'?null:'copilot'"
+            (click)="aiChatStory()"
             >
-            <div class="flex justify-center items-center font-notoColorEmoji text-xl">🤖</div>
-        </button> -->
+            <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
+        </button>
 
         <div class="flex-1">
 
         </div>
     </div>
+  }
 
   @if (collapsible()) {
     <button mat-icon-button (click)="toggleExpand()">
-        <mat-icon *ngIf="expandLess" fontSet="material-icons-round">expand_less</mat-icon>
-        <mat-icon *ngIf="!expandLess" fontSet="material-icons-round">expand_more</mat-icon>
+        <mat-icon *ngIf="expandLess()" fontSet="material-icons-round">expand_less</mat-icon>
+        <mat-icon *ngIf="!expandLess()" fontSet="material-icons-round">expand_more</mat-icon>
     </button>
   }
     
@@ -368,7 +369,9 @@
     </div>
 </div>
 
-<pac-story-designer *ngIf="showDetails() === 'storyDesigner'" @inOut class="pac-story-bar__detail-card w-96 h-full"></pac-story-designer>
+@if (showDetails() === 'storyDesigner') {
+  <pac-story-designer @inOut class="pac-story-bar__detail-card w-96 h-full" />
+}
 
 <div *ngIf="showDetails() === 'devices'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2">
 
@@ -447,12 +450,6 @@
         </div>
     </ng-container>
 </div>
-
-<!-- <div *ngIf="showDetails() === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
-    <ngm-copilot-chat class="w-full h-full"
-        [welcomeTitle]=" 'Story.Toolbar.WelcomeCopilot' | translate: {Default: 'Metad Copilot'} "
-    ></ngm-copilot-chat>
-</div> -->
 
 <ng-template #fileMenu>
     <div cdkMenu displayDensity="cosy">

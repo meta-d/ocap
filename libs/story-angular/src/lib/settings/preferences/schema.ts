@@ -1,4 +1,6 @@
 import { ColorPalettes } from '@metad/core'
+import { ThemesEnum } from '@metad/ocap-angular/core'
+import { PageHeaderLabelEnum } from '@metad/story/core'
 import {
   AccordionWrappers,
   Appearances,
@@ -9,9 +11,7 @@ import {
   FORMLY_W_1_2,
   FORMLY_W_FULL
 } from '@metad/story/designer'
-import { PageHeaderLabelEnum } from '@metad/story/core'
 import { gridsterOptions } from '../schemas'
-import { ThemesEnum } from '@metad/ocap-angular/core'
 
 export function PreferencesSchema(Story: any) {
   const CSS = Story?.STYLING?.CSS
@@ -44,12 +44,12 @@ export function PreferencesSchema(Story: any) {
       ]
     },
     ...AccordionWrappers([
-      {
-        key: 'story',
-        label: Story?.Common?.Story ?? 'Story',
-        toggleable: true,
-        fieldGroup: StoryPreferences(className, Story)
-      },
+      // {
+      //   key: 'story',
+      //   label: Story?.Common?.Story ?? 'Story',
+      //   toggleable: true,
+      //   fieldGroup: StoryPreferences(className, Story)
+      // },
 
       {
         key: 'defaultGridOptions',
@@ -111,6 +111,45 @@ export function PreferencesSchema(Story: any) {
             type: 'styling'
           }
         ]
+      },
+      {
+        key: 'kpi',
+        toggleable: true,
+        label: Story?.Preferences?.KpiStyles ?? 'KPI Styles',
+        fieldGroup: [
+          {
+            key: 'styling',
+            type: 'styling',
+            props: {
+              label: Story?.Widgets?.Common?.ComponentStyling ?? 'Component Styling',
+              expanded: false
+            }
+          },
+          {
+            wrappers: ['accordion'],
+            props: {
+              elevationZ: true
+            },
+            fieldGroup: [
+              {
+                key: 'title',
+                type: 'text-css',
+                props: {
+                  label: Story?.Widgets?.Common?.TitleStyling ?? 'Title Styling',
+                  expanded: false
+                }
+              },
+              {
+                key: 'value',
+                type: 'text-css',
+                props: {
+                  label: Story?.Widgets?.Common?.ValueStyling ?? 'Value Styling',
+                  expanded: false
+                }
+              }
+            ]
+          }
+        ]
       }
     ])
   ]
@@ -118,6 +157,7 @@ export function PreferencesSchema(Story: any) {
 
 function FontStyle(className: string, TRANSLATE) {
   return {
+    className: FORMLY_W_FULL,
     fieldGroupClassName: FORMLY_ROW,
     wrappers: ['panel'],
     props: { label: TRANSLATE?.TITLE ?? 'Font' },
@@ -134,32 +174,9 @@ function BoxStyle(className: string, TRANSLATE) {
   }
 }
 
-function StoryPreferences(className: string, Story) {
+export function StoryPreferencesFields(className: string, Story) {
   const CSS = Story?.STYLING?.CSS
   return [
-    // {
-    //   fieldGroupClassName: FORMLY_ROW,
-    //   fieldGroup: [
-    //     {
-    //       className,
-    //       key: 'width',
-    //       type: 'input-inline',
-    //       props: {
-    //         label: Story?.Preferences?.Width ?? 'Width',
-    //         type: 'number'
-    //       }
-    //     },
-    //     {
-    //       className,
-    //       key: 'height',
-    //       type: 'input-inline',
-    //       props: {
-    //         label: Story?.Preferences?.Height ?? 'Height',
-    //         type: 'number'
-    //       }
-    //     }
-    //   ]
-    // },
     {
       key: 'tabBar',
       type: 'button-toggle',
@@ -264,7 +281,7 @@ function StoryPreferences(className: string, Story) {
         options: [
           { value: null, label: Story?.Common?.Theme?.Default ?? 'Default' },
           { value: ThemesEnum.light, label: Story?.Common?.Theme?.Light ?? 'Light' },
-          { value: ThemesEnum.dark, label: Story?.Common?.Theme?.Dark ?? 'Dark' },
+          { value: ThemesEnum.dark, label: Story?.Common?.Theme?.Dark ?? 'Dark' }
           // { value: 'thin', label: Story?.Common?.Theme?.Thin ?? 'Thin' } 需要改造 thin theme 暂时先禁用
         ]
       }
@@ -282,8 +299,10 @@ function StoryPreferences(className: string, Story) {
         key: 'watermarkOptions',
         showKey: 'enableWatermark',
         label: Story?.Preferences?.WatermarkOptions ?? 'Watermark Options',
+        fieldGroupClassName: FORMLY_ROW,
         fieldGroup: [
           {
+            className: FORMLY_W_FULL,
             key: 'text',
             type: 'input-inline',
             props: {
@@ -292,6 +311,7 @@ function StoryPreferences(className: string, Story) {
             }
           },
           {
+            className,
             key: 'alpha',
             type: 'slider',
             props: {
@@ -305,6 +325,7 @@ function StoryPreferences(className: string, Story) {
             }
           },
           {
+            className,
             key: 'degree',
             type: 'slider',
             props: {
@@ -319,6 +340,7 @@ function StoryPreferences(className: string, Story) {
           },
 
           {
+            className,
             key: 'width',
             type: 'slider',
             props: {
@@ -330,6 +352,7 @@ function StoryPreferences(className: string, Story) {
             }
           },
           {
+            className,
             key: 'height',
             type: 'slider',
             props: {

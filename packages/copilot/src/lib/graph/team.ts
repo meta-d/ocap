@@ -206,7 +206,7 @@ export function responseToolMessage(id: string, messages: BaseMessage[]) {
     messages: [
       new ToolMessage({
         tool_call_id: id,
-        content: messages[messages.length - 1].content
+        content: messages[messages.length - 1]?.content
       })
     ]
   }

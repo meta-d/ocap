@@ -144,6 +144,20 @@ export interface StoryPreferences {
   control?: {
     styling?: ComponentStyling
   },
+  kpi?: {
+    /**
+     * Styles for the KPI component
+     */
+    styling?: ComponentStyling
+    /**
+     * Styles for the KPI title text
+     */
+    title?: ComponentStyling
+    /**
+     * Styles for the KPI value text
+     */
+    value?: ComponentStyling
+  }
   //
   options?: any
 }
