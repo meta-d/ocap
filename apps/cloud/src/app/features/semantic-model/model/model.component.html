@@ -143,7 +143,7 @@
                         (mouseleave)="actionStrip.hide()">
                         <mat-icon class="pac-model__nav-icon" displayDensity="compact" fontSet="material-icons-outlined">dataset_linked</mat-icon>
                         <ngm-display-behaviour class="flex-1"
-                            [option]="{value: entity.name, label: entity.caption}"></ngm-display-behaviour>
+                            [option]="{key: entity.name, caption: entity.caption}" />
                         <ngm-action-strip #actionStrip [hidden]="true">
                             <button mat-icon-button color="warn" displayDensity="cosy"
                                 (click)="$event.stopPropagation();$event.preventDefault();deleteEntity(entity.__id__)">

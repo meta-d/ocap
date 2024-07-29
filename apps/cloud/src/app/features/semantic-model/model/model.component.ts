@@ -373,7 +373,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
     }
   }
 
-  async aiCreateEntity() {
+  aiCreateEntity() {
     this._dialog
       .open(CommandDialogComponent, {
         backdropClass: 'bg-transparent',
