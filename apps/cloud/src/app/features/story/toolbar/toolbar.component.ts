@@ -651,7 +651,7 @@ export class StoryToolbarComponent implements OnInit {
       .open(CommandDialogComponent, {
         backdropClass: 'bg-transparent',
         data: {
-          commands: ['story', 'page', 'widget']
+          commands: ['story', 'page', 'widget', 'style']
         }
       })
       .afterClosed()

@@ -74,7 +74,16 @@ export const StoryStyleSchema = z.object({
       styling: ComponentStylingSchema.optional().describe('css styling of control widget')
     })
     .optional()
-    .describe('The control widget preferences')
+    .describe('The control widget preferences'),
+
+  kpi: z
+    .object({
+      styling: ComponentStylingSchema.optional().describe('css styling of kpi widget'),
+      title: ComponentStylingSchema.optional().describe('css styling of title of kpi widget'),
+      value: ComponentStylingSchema.optional().describe('css styling of value text of kpi widget'),
+    })
+    .optional()
+    .describe('The kpi widget preferences')
 })
 
 export const CalculationMeasureSchema = z.object({

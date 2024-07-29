@@ -10,14 +10,14 @@
           <table class="table-auto">
             <tbody>
               <tr>
-                <td class="font-bold whitespace-nowrap">
+                <td class="font-bold whitespace-nowrap text-left">
                   {{'Copilot.Invoke' | translate: {Default: 'Invoke'} }}
                 </td>
-                <td>{{messageData().data.next}}</td>
+                <td class="whitespace-nowrap">{{messageData().data.next}}</td>
               </tr>
       
               <tr>
-                <td class="font-bold whitespace-nowrap">
+                <td class="font-bold whitespace-nowrap text-left">
                   {{'Copilot.Instructions' | translate: {Default: 'Instructions'} }}
                 </td>
                 <td>
@@ -32,7 +32,7 @@
               </tr>
       
               <tr>
-                <td class="font-bold whitespace-nowrap">
+                <td class="font-bold whitespace-nowrap text-left">
                   {{'Copilot.Reasoning' | translate: {Default: 'Reasoning'} }}
                 </td>
                 <td>{{messageData().data.reasoning}}</td>
@@ -47,17 +47,17 @@
           <table class="table-auto">
             <thead>
               <tr>
-                <th class="font-bold whitespace-nowrap">{{'Copilot.Name' | translate: {Default: 'Name'} }}</th>
+                <th class="font-bold whitespace-nowrap text-left">{{'Copilot.Name' | translate: {Default: 'Name'} }}</th>
                 <th class="whitespace-nowrap">{{'Copilot.Args' | translate: {Default: 'Args'} }}</th>
               </tr>
             </thead>
             <tbody>
               @for (row of messageData().data; track $index) {
                 <tr>
-                  <td class="font-bold whitespace-nowrap">
+                  <td class="font-bold whitespace-nowrap text-left">
                     {{row.name}}
                   </td>
-                  <td>{{row.args}}</td>
+                  <td class="whitespace-nowrap">{{row.args}}</td>
                 </tr>
               }
             </tbody>

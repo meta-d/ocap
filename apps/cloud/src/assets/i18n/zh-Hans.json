@@ -1188,7 +1188,8 @@
       "CreateCalculationMeasure": "创建计算度量",
       "CreateParameter": "创建参数",
       "CommandCalculationDesc": "描述计算度量的业务逻辑",
-      "CommandStoryDesc": "描述你想要的故事仪表板"
+      "CommandStoryDesc": "描述你想要的故事仪表板",
+      "CommandStoryStyleDesc": "描述你想要的故事样式"
     },
     "Project": {
       "Project": "项目",
