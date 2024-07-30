@@ -12,6 +12,7 @@ import {
   getErrorMessage,
   Intent,
   isNotEmpty,
+  markdownModelCube,
   nonNullable,
   NxCoreService,
   write
@@ -75,6 +76,7 @@ import {
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
 import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
+import { derivedAsync } from 'ngxtension/derived-async'
 
 @Injectable()
 export class NxStoryService {
@@ -178,6 +180,18 @@ export class NxStoryService {
     map((options) => options?.filters),
     distinctUntilChanged()
   )
+  // Default data settings
+  readonly defaultDataSettings = computed(() => this.storyOptions()?.defaultDataSettings)
+  readonly defaultModelCubePrompt = derivedAsync(() => {
+    const dataSettings = this.defaultDataSettings()
+    if (dataSettings) {
+      return this.selectEntityType({ dataSource: dataSettings.dataSource, entitySet: dataSettings.entities[0] }).pipe(
+        map((cube) => markdownModelCube({ modelId: dataSettings.modelId, dataSource: dataSettings.dataSource, cube }))
+      )
+    }
+    return null
+  })
+
 
   readonly storyModel$ = this.select((state) => state.story.model)
   readonly storyModels$ = combineLatest([this.storyModel$, this.select((state) => state.story.models)]).pipe(
@@ -1470,6 +1484,9 @@ export class NxStoryService {
     }
   })
 
+  /**
+   * Pick a default cube
+   */
   async openDefultDataSettings(): Promise<EntitySelectResultType> {
     const dataSources = this.dataSources()
 
@@ -1484,7 +1501,10 @@ export class NxStoryService {
         .afterClosed()
     )
     if (result) {
-      this.patchState({
+      // this.patchState({
+      //   defaultDataSettings: result
+      // })
+      this.updateStoryOptions({
         defaultDataSettings: result
       })
     }

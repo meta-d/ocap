@@ -19,3 +19,9 @@ export enum PropertyCapacity {
   MeasureStyleChartOptions = 'MeasureStyleChartOptions',
   DimensionChart = 'DimensionChart'
 }
+
+export type EntitySelectResultType = {
+  modelId: string
+  dataSource: string
+  entities: string[]
+}

@@ -205,6 +205,8 @@ export interface StoryOptions {
   scale?: number
 
   echartsTheme?: any
+
+  defaultDataSettings?: DefaultDataSettings
 }
 
 export enum CascadingEffect {

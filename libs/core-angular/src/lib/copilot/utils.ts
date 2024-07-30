@@ -1,4 +1,4 @@
-import { Cube, EntityType, getDimensionHierarchies, getEntityDimensions, getEntityMeasures, getEntityVariables, getHierarchyLevels } from '@metad/ocap-core'
+import { Cube, EntityType, getDimensionHierarchies, getEntityDimensions, getEntityMeasures, getEntityVariables, getHierarchyLevels, RuntimeLevelType } from '@metad/ocap-core'
 import { nonBlank } from '../helpers'
 
 /**
@@ -54,7 +54,7 @@ item.description ?
 `        description: >
 ${prepend('          ', item.description)}` : null,
 `        levels:
-${getHierarchyLevels(item).map((item) =>
+${getHierarchyLevels(item).filter((level) => level.levelType !== RuntimeLevelType.ALL).map((item) =>
 [
 `          - name: "${item.name}"`,
 `            caption: "${item.caption || ''}"`,

@@ -1,16 +1,18 @@
-import { computed, inject, signal } from '@angular/core'
-import { SystemMessage } from '@langchain/core/messages'
+import { inject } from '@angular/core'
+import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { RunnableLambda } from '@langchain/core/runnables'
 import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
 import { injectDimensionMemberTool, makeCubeRulesPrompt, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
-import { widgetAgentState } from './types'
 import { injectCreateChartTool, injectCreateTableTool } from '../tools'
+import { WidgetAgentState, widgetAgentState } from './types'
 
 export function injectCreateWidgetGraph() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
+  const defaultModelCubePrompt = storyService.defaultModelCubePrompt
 
   const memberRetrieverTool = injectDimensionMemberTool()
 
@@ -36,11 +38,32 @@ A dimension can only be used once, and a hierarchy cannot appear on multiple ind
 The cube context:
 {{context}}
 `
+        console.log(state.context)
         const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
           templateFormat: 'mustache'
-        }).format(state)
+        }).format({...state, context: state.context || defaultModelCubePrompt() })
         return [new SystemMessage(system), ...state.messages]
       }
+    })
+  }
+}
+
+export function injectCreateWidgetAgent() {
+  const logger = inject(NGXLogger)
+  const createAgent = injectCreateWidgetGraph()
+
+  return async ({ llm }: CreateGraphOptions) => {
+    const agent = await createAgent({ llm })
+    return RunnableLambda.from(async (state: WidgetAgentState) => {
+      const { messages } = await agent.invoke({
+        input: state.input,
+        messages: [new HumanMessage(state.input)],
+        role: state.role,
+        language: state.language,
+        context: state.context
+      })
+
+      return messages
     })
   }
 }

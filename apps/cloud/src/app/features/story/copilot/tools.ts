@@ -6,6 +6,7 @@ import {
   DataSettingsSchema,
   DimensionMemberSchema,
   markdownEntityType,
+  markdownModelCube,
   MeasureSchema,
   SlicerSchema,
   tryFixSlicer,
@@ -26,10 +27,11 @@ import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import z from 'zod'
 
+/**
+ * Select default cube
+ */
 export function injectPickCubeTool() {
   const logger = inject(NGXLogger)
-  const dsCoreService = inject(NgmDSCoreService)
-  const _dialog = inject(MatDialog)
   const storyService = inject(NxStoryService)
 
   const pickCubeTool = new DynamicStructuredTool({
@@ -38,18 +40,20 @@ export function injectPickCubeTool() {
     schema: z.object({}),
     func: async () => {
       logger.debug(`Execute copilot action 'pickCube'`)
-
-      const result = await storyService.openDefultDataSettings()
-
-      const cube = result?.entities[0]
-      if (result?.dataSource && cube) {
-        const entityType = await firstValueFrom(
-          storyService.selectEntityType({ dataSource: result.dataSource, entitySet: cube })
-        )
-        return `Use model id: '${result.modelId}' and cube: '${cube}'\n` + markdownEntityType(entityType)
+      try {
+        const result = await storyService.openDefultDataSettings()
+        const cube = result?.entities[0]
+        if (result?.dataSource && cube) {
+          const entityType = await firstValueFrom(
+            storyService.selectEntityType({ dataSource: result.dataSource, entitySet: cube })
+          )
+          return markdownModelCube({ modelId: result.modelId, dataSource: result.dataSource, cube: entityType })
+        }
+        return ''
+      } catch(err: any) {
+        console.error(err)
+        return `Error: ${err.message}`
       }
-
-      return ''
     }
   })
 

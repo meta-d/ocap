@@ -17,12 +17,8 @@ import { DSCoreService, nonNullable } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { catchError, combineLatestWith, distinctUntilChanged, filter, map, of, startWith, switchMap, tap } from 'rxjs'
+import { EntitySelectResultType } from '../types'
 
-export type EntitySelectResultType = {
-  modelId: string
-  dataSource: string
-  entities: string[]
-}
 export type EntitySelectDataType = {
   dataSources: ISelectOption<string>[]
   dsCoreService: DSCoreService
@@ -134,4 +130,3 @@ export class NgmEntityDialogComponent implements OnInit {
     return item.key
   }
 }
-  

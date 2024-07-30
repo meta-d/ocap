@@ -2,15 +2,18 @@ import { inject, signal } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { HumanMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
+import { ToolNode } from '@langchain/langgraph/prebuilt'
 import { START, StateGraph } from '@langchain/langgraph/web'
 import { CreateGraphOptions, Team } from '@metad/copilot'
 import { DataSettings } from '@metad/ocap-core'
-import { injectCreateWidgetAgent } from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
 import { injectCreateCalculationGraph } from '../calculation'
 import { injectCreatePageAgent } from '../page'
-import { StoryAgentState, storyAgentState } from './types'
+import { injectPickCubeTool } from '../tools'
+import { injectCreateWidgetAgent } from '../widget'
 import { injectCreateStyleGraph } from './style'
+import { StoryAgentState, storyAgentState } from './types'
+import { NxStoryService } from '@metad/story/core'
 
 export function injectCreateStoryGraph() {
   // Default
@@ -18,6 +21,10 @@ export function injectCreateStoryGraph() {
   const router = inject(Router)
   const route = inject(ActivatedRoute)
   const logger = inject(NGXLogger)
+  const storyService = inject(NxStoryService)
+  const defaultModelCubePrompt = storyService.defaultModelCubePrompt
+
+  const pickCubeTool = injectPickCubeTool()
 
   const createCalculationGraph = injectCreateCalculationGraph(
     defaultDataSettings,
@@ -38,6 +45,7 @@ export function injectCreateStoryGraph() {
     const pageAgent = await createPageAgent({ llm })
     const styleAgent = await createStyleAgent({ llm })
 
+    const tools = [pickCubeTool]
     const superAgent = await Team.createSupervisorAgent(
       llm,
       [
@@ -58,7 +66,7 @@ export function injectCreateStoryGraph() {
           description: 'modify styles of the story dashboard'
         }
       ],
-      [],
+      tools,
       `你是一名数据分析师。
 {role}
 {language}
@@ -71,8 +79,9 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
 按需创建不同分析主题的 page.
 按需要在当前页面中创建 widgets.
 最后可能需要统一调整 styles of the story dashboard。
-`,
-      `If you need to execute a task, you need to get confirmation before calling the route function.`
+
+如果目前没有默认的cube，请调用 pickCube tool to pick a cube.
+`
     )
 
     const widgetAgent = await createWidgetGraph({ llm })
@@ -81,8 +90,11 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
       // Add steps nodes
       .addNode(
         Team.SUPERVISOR_NAME,
-        new RunnableLambda({ func: superAgent }).withConfig({ runName: Team.SUPERVISOR_NAME })
+        RunnableLambda.from(async (state: StoryAgentState) => {
+          return await superAgent({...state, context: state.context || defaultModelCubePrompt()})
+        }).withConfig({ runName: Team.SUPERVISOR_NAME })
       )
+      .addNode(Team.TOOLS_NAME, new ToolNode<StoryAgentState>(tools))
       .addNode(
         'calculation',
         RunnableLambda.from(async (state: StoryAgentState) => {
@@ -113,7 +125,7 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
       .addNode(
         'widget',
         RunnableLambda.from(async (state: StoryAgentState) => {
-          const { messages } = await widgetAgent.invoke({
+          const messages = await widgetAgent.invoke({
             input: state.input,
             messages: [new HumanMessage(state.instructions)],
             role: state.role,
@@ -127,7 +139,7 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
       .addNode(
         'style',
         RunnableLambda.from(async (state: StoryAgentState) => {
-          const { messages } = await widgetAgent.invoke({
+          const { messages } = await styleAgent.invoke({
             input: state.input,
             messages: [new HumanMessage(state.instructions)],
             role: state.role,
@@ -142,6 +154,7 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
       .addEdge('page', Team.SUPERVISOR_NAME)
       .addEdge('widget', Team.SUPERVISOR_NAME)
       .addEdge('style', Team.SUPERVISOR_NAME)
+      .addEdge(Team.TOOLS_NAME, Team.SUPERVISOR_NAME)
       .addConditionalEdges(Team.SUPERVISOR_NAME, Team.supervisorRouter)
       .addEdge(START, Team.SUPERVISOR_NAME)
 
