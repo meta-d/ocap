@@ -23,8 +23,8 @@ function createExampleFewShotPrompt(
   fields?: ExampleVectorStoreRetrieverInput
 ) {
   const examplePrompt = PromptTemplate.fromTemplate(
-    `Question: {{input}}
-    Answer: {{output}}`,
+`Question: {{input}}
+Answer: {{output}}`,
     {
       templateFormat: 'mustache'
     }

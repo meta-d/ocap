@@ -166,10 +166,23 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     ]
   },
   [AiProvider.Ollama]: {
+    isTools: true,
     models: [
       {
         id: 'llama3',
         name: 'LLama 3'
+      },
+      {
+        id: 'llama3.1:8b',
+        name: 'LLama 3.1 8b'
+      },
+      {
+        id: 'llama3.1:70b',
+        name: 'LLama 3.1 70b'
+      },
+      {
+        id: 'llama3.1:405b',
+        name: 'LLama 3.1 405b'
       },
       {
         id: 'qwen2',

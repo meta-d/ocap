@@ -9,6 +9,7 @@
         <mat-select formControlName="provider">
           <mat-option [value]="AiProvider.OpenAI">OpenAI</mat-option>
           <mat-option [value]="AiProvider.Azure">Azure</mat-option>
+          <mat-option [value]="AiProvider.Ollama">Ollama</mat-option>
         </mat-select>
     </mat-form-field>
 
@@ -116,7 +117,7 @@
               }
             </mat-select>
           </mat-form-field>
-
+          <span>Or</span>
           <mat-form-field appearance="fill" class="flex-1">
             <mat-label>
                 {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
