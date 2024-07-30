@@ -1,0 +1,14 @@
+:host {
+  flex: 1;
+}
+
+:host::ng-deep {
+  .title {
+    .ngm-select {
+      display: inline-block;
+      .mat-mdc-form-field-error {
+        display: none;
+      }
+    }
+  }
+}

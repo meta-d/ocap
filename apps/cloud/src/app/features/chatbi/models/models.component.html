@@ -1,0 +1,30 @@
+<div class="w-full px-3 py-1 border-b border-gray-100 flex items-center justify-between">
+  <h3 class="font-semibold">Cubes</h3>
+  <ngm-search [(ngModel)]="search" class="rounded-xl overflow-hidden" />
+</div>
+
+<div class="w-full flex-1 overflow-auto">
+  <cdk-virtual-scroll-viewport class="flex-1 w-full h-full overflow-hidden hover:overflow-y-auto"
+    itemSize="30" minBufferPx="360" maxBufferPx="1000"
+  >
+    <div *cdkVirtualFor="let option of cubeSelectOptions(); trackBy: trackByKey"
+      class="shrink-0 group relative gap-3 rounded-2xl overflow-hidden cursor-pointer mx-2 mb-2
+        bg-gray-50 transition duration-500 hover:bg-sky-50 border border-gray-100 hover:border-sky-200 px-3 py-3.5"
+        [ngClass]="{
+            'border-sky-200': cube() === option.key,
+            'bg-sky-50': cube() === option.key
+        }"
+        (click)="onCubeChange(option.key)"
+      >
+      <div class="w-full flex items-center justify-start gap-2">
+        <div class="w-full flex flex-col items-start">
+          <ngm-display-behaviour class="w-full line-clamp-1 text-zinc-900 transition group-hover:text-sky-600 text-base font-semibold" 
+            [option]="option" [highlight]="searchText()" />
+          <p class="mt-0.5 text-zinc-500 text-xs line-clamp-1">
+            {{option.value.description}}
+          </p>
+        </div>
+      </div>
+    </div>
+  </cdk-virtual-scroll-viewport>
+</div>

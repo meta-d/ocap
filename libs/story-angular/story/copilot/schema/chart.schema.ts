@@ -41,10 +41,8 @@ export const ChartSchema = z.object({
     type: z.enum(ChartTypes as unknown as z.EnumValues).describe('The chart type'),
     chartOptions: EChartsOptions.optional()
   }),
-  dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),
-  measures: z.array(MeasureSchema).optional().describe('The measures used by the chart'),
-
-  slicers: z.any().optional().describe('The slicers used by the chart data')
+  dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),
+  measures: z.array(MeasureSchema).describe('The measures used by the chart'),
 })
 
 export const ChartWidgetSchema = z.object({

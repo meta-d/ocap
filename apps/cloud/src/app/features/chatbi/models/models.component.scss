@@ -1,0 +1,12 @@
+:host {
+  @apply flex flex-col overflow-hidden;
+}
+
+:host::ng-deep {
+  .cdk-virtual-scroll-viewport.cdk-virtual-scrollable.cdk-virtual-scroll-orientation-vertical {
+    overflow-x: hidden;
+    .cdk-virtual-scroll-content-wrapper {
+      max-width: 100%;
+    }
+  }
+}

@@ -133,7 +133,7 @@ export type RequestOptions = {
   body?: object
 }
 
-type JSONValue =
+export type JSONValue =
   | null
   | string
   | number

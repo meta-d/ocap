@@ -1,0 +1,115 @@
+<div class="relative flex-1 flex flex-col cursor-default overflow-hidden">
+    <div class="w-full h-full pt-8 flex flex-col relative overflow-y-auto">
+      <div class="w-full h-full md:max-w-3xl mx-auto">
+        @for (message of conversation().messages; track message.id) {
+          @switch (message.role) {
+            @case ('assistant') {
+              <div class="w-full p-4 md:p-6 flex rounded-xl bg-gray-50 dark:bg-neutral-900">
+                <div class="w-full flex flex-row items-start gap-2 md:gap-4">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-base aspect-square place-items-center">
+                    <div class="w-full h-full rounded-full relative">
+                      <img
+                        alt=""
+                        loading="lazy"
+                        width="24"
+                        height="24"
+                        decoding="async"
+                        data-nimg="1"
+                        class="w-full h-full object-cover rounded-full"
+                        style="color: transparent"
+                        src="https://r2.erweima.ai/i/2B3Xr9OqTkGRjOab1NCGng.png"
+                      />
+                    </div>
+                  </div>
+                  <div class="flex-1 inline-flex flex-col items-start gap-y-3">
+                    <div class="w-full flex flex-col items-start">
+                      <div class="w-full mb-1 font-semibold">
+                        Copilot<span class="text-xs text-violet-500 bg-violet-500/10 px-1.5 py-1 rounded-full m-2">ChatBI</span>
+                      </div>
+                      <pac-chatbi-answer class="w-full break-words flex flex-col items-stretch" [message]="message" />
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="text-stone-400 text-xs">{{ message.createdAt | date }}</span>
+                      <button
+                        class="px-2 py-1 rounded-md text-xs text-stone-500 flex flex-row gap-1 items-center transition-all duration-300 group hover:text-sky-600 hover:bg-gray-100"
+                      >
+                        <span
+                          ><svg
+                            aria-hidden="true"
+                            viewBox="0 0 1024 1024"
+                            class="w-4 fill-stone-500 transition-all duration-300 group-hover:fill-sky-600"
+                            preserveAspectRatio="none"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              clip-rule="evenodd"
+                              d="M864 128l-64 0 0 64 32 0 0 512L576 704l0 256L192 960 192 192l32 0L224 128 160 128c-17.6 0-32 14.4-32 32l0 832c0 17.6 14.4 32 32 32l504 0 232-232L896 160C896 142.4 881.6 128 864 128zM640 960l0-192 192 0L640 960zM768 128l-128 0L640 64c0-35.2-28.8-64-64-64l-128 0c-35.2 0-64 28.8-64 64l0 64-128 0 0 128 512 0L768 128zM576 128l-128 0L448 64.128c0.032-0.032 0.064-0.064 0.128-0.128l127.776 0c0.032 0.032 0.096 0.064 0.128 0.128L576 128z"
+                            ></path></svg></span
+                        >Copy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+            @case ('user') {
+              <div class="w-full p-4 md:p-6 flex rounded-xl">
+                <div class="w-full flex flex-row items-start gap-2 md:gap-4">
+                  <div class="w-8 h-8 p-1.5 rounded-full flex items-center justify-center font-bold text-white text-base bg-gray-700 aspect-square place-items-center overflow-hidden">
+                    <span>
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 1024 1024"
+                        class="w-full h-full object-cover fill-white"
+                        preserveAspectRatio="none"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M512 704c-176 0-320-144-320-320S336 64 512 64s320 144 320 320-144 320-320 320z m0-576c-140.8 0-256 115.2-256 256s115.2 256 256 256 256-115.2 256-256S652.8 128 512 128zM883.2 960c-8 0-17.6-3.2-24-9.6C768 852.8 644.8 800 512 800s-256 52.8-348.8 150.4c-12.8 12.8-32 12.8-44.8 1.6-12.8-12.8-12.8-32-1.6-44.8C220.8 796.8 361.6 736 512 736s291.2 60.8 395.2 169.6c12.8 12.8 11.2 33.6-1.6 44.8-6.4 6.4-14.4 9.6-22.4 9.6z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </div>
+                  <div class="w-[90%] md:w-auto md:max-w-[90%] inline-flex flex-col items-start gap-y-3">
+                    <div class="w-full flex flex-col items-start">
+                      <div class="w-full mb-1 font-semibold">You</div>
+                      <div class="w-full"></div>
+                      <p class="w-full whitespace-pre-wrap text-base break-words">
+                        {{ message.content }}
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="text-stone-400 text-xs">{{ message.createdAt | date }}</span>
+                      <button
+                        class="p-1 rounded-md text-xs text-stone-500 flex flex-row gap-1 items-center group transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        (click)="editQuestion(message)"
+                      >
+                        <span
+                          ><svg
+                            aria-hidden="true"
+                            viewBox="0 0 1024 1024"
+                            class="w-4 fill-stone-500 transition-all duration-300 group-hover:fill-sky-600"
+                            preserveAspectRatio="none"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              clip-rule="evenodd"
+                              d="M928 896a32 32 0 1 1 0 64h-832a32 32 0 1 1 0-64h832zM784.256 83.2L876.8 175.744c25.6 25.6 25.6 67.008 0 92.544l-498.176 498.24c-7.232 7.168-16 12.608-25.6 15.808l-138.88 46.336a65.472 65.472 0 0 1-82.816-82.816l46.336-138.88c3.2-9.6 8.64-18.368 15.808-25.6L691.712 83.2c25.536-25.6 67.008-25.6 92.544 0z m-118.208 116.096L238.72 626.624a1.472 1.472 0 0 0-0.384 0.64l-46.272 138.816a1.472 1.472 0 0 0 1.856 1.856l138.88-46.272a1.472 1.472 0 0 0 0.576-0.384l427.328-427.328-94.656-94.656z m70.912-70.848l-25.664 25.6 94.656 94.656 25.6-25.6a1.472 1.472 0 0 0 0-2.112l-92.544-92.544a1.472 1.472 0 0 0-2.048 0z"
+                            ></path></svg
+                        ></span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        }
+      </div>
+    </div>
+
+    <pac-chatbi-input class="w-full px-2 py-2 md:pb-4 flex flex-col sticky bottom-0 left-0"
+      [(prompt)]="prompt"
+    />
+</div>

@@ -210,7 +210,6 @@ export class FeaturesComponent implements OnInit {
       .subscribe(([permissions]) => {
         this.menus.set(this.getMenuItems())
         this.loadItems(this.selectorService.showSelectors(this.router.url).showOrganizationShortcuts)
-        // this._cdr.detectChanges()
       })
   }
 
@@ -439,7 +438,16 @@ export class FeaturesComponent implements OnInit {
           }
         ]
       },
-
+      {
+        title: 'Chat BI',
+        matIcon: 'try',
+        link: '/chatbi',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'Chat BI',
+          featureKey: FeatureEnum.FEATURE_COPILOT,
+        }
+      },
       {
         title: 'Semantic Model',
         matIcon: 'view_in_ar',
