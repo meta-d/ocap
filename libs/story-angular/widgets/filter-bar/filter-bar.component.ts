@@ -14,7 +14,7 @@ import {
   signal,
   ViewContainerRef
 } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { FormBuilder, FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { AbstractStoryWidget, ControlType } from '@metad/core'
@@ -32,7 +32,6 @@ import {
   ISlicer,
   isVariableProperty,
   MemberSource,
-  Property,
   Syntax,
   TimeGranularity,
   VariableProperty
@@ -42,7 +41,7 @@ import { NxSettingsPanelService } from '@metad/story/designer'
 import { assign, compact, isEqual, merge, omit, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, combineLatest, EMPTY, firstValueFrom, Observable } from 'rxjs'
-import { distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
 import { CascadingEffect, FilterBarFieldOptions, ISmartFilterBarOptions } from './types'
 
 export interface NxFilterControl {
@@ -51,7 +50,7 @@ export interface NxFilterControl {
   placeholder?: string
   dataSettings?: DataSettings
   dimension: Dimension
-  property?: Property
+  property?: VariableProperty
   name: string
   controlType?: ControlType | FilterControlType
   options: Partial<
@@ -95,21 +94,15 @@ export class NxSmartFilterBarComponent
   // filters
   form = new FormBuilder().group({})
   today = new FormControl()
-  // selected: string
 
-  get selectionFieldsAnnotation() {
-    return this.dataSettings?.selectionFieldsAnnotation
-  }
+  readonly selectionFieldsAnnotation = computed(() => this.dataSettingsSignal()?.selectionFieldsAnnotation)
+  readonly syntax = computed(() => this.entityType()?.syntax)
+  readonly controls = computed(
+    () => {
+      const entityType = this.entityType()
+      const dataSettings = this.dataSettingsSignal()
+      const selectionFields = this.selectionFieldsAnnotation()
 
-  public readonly placeholder$ = this.dataSettings$.pipe(
-    map((dataSettings) => !(dataSettings?.dataSource && dataSettings?.entitySet))
-  )
-  private readonly entityType$ = this.dataService.selectEntityType()
-  public readonly syntax$ = this.entityType$.pipe(map(({ syntax }) => syntax))
-
-  private readonly _controls$ = combineLatest([this.dataSettings$, this.entityType$]).pipe(
-    map(([dataSettings, entityType]) => {
-      const selectionFields = dataSettings.selectionFieldsAnnotation
       if (!selectionFields?.propertyPaths) {
         return []
       }
@@ -138,15 +131,17 @@ export class NxSmartFilterBarComponent
             property
           } as NxFilterControl
         })
-    }),
-    distinctUntilChanged(isEqual),
-    takeUntilDestroyed(),
-    shareReplay(1)
+    },
+    { equal: isEqual }
+  )
+
+  public readonly placeholder$ = this.dataSettings$.pipe(
+    map((dataSettings) => !(dataSettings?.dataSource && dataSettings?.entitySet))
   )
 
   // 合并字段 Options
   public readonly controls$ = combineLatest([
-    this._controls$,
+    toObservable(this.controls),
     this.options$.pipe(distinctUntilChanged(isEqual), startWith(null)),
     this.form.valueChanges.pipe(
       filter(() => this.options?.cascadingEffect),
@@ -238,13 +233,18 @@ export class NxSmartFilterBarComponent
   |--------------------------------------------------------------------------
   */
   private _settingsSub = this.dataSettings$.subscribe((dataSettings) => (this.dataService.dataSettings = dataSettings))
+  private entityTypeSub = this.dataService
+    .selectEntityType()
+    .pipe(takeUntilDestroyed())
+    .subscribe((entityType) => this.entityType.set(entityType))
   // Controls
-  private controlsSub = this._controls$.subscribe((controls) => {
-    const options = this.options
-    this.form.reset()
-    const defaultSlicers = []
-    controls.forEach((filter: NxFilterControl) => {
-      if (!this.form.contains(filter.name)) {
+  private controlsEffect = effect(
+    () => {
+      const controls = this.controls()
+      const options = this.optionsSignal()
+      this.form.reset()
+      const defaultSlicers = []
+      controls.forEach((filter: NxFilterControl) => {
         let value = null
         let dimension = null
         if (filter.controlType === FilterControlType.Variable) {
@@ -271,17 +271,20 @@ export class NxSmartFilterBarComponent
         if (value) {
           defaultSlicers.push(value)
         }
-        const formCtrl = new FormControl(value)
+        if (!this.form.contains(filter.name)) {
+          const formCtrl = new FormControl(value)
+          this.form.setControl(filter.name, formCtrl)
+        }
+      })
 
-        this.form.setControl(filter.name, formCtrl)
-      }
-    })
-
-    this.defaultSlicers.set(defaultSlicers)
-  })
+      this.defaultSlicers.set(defaultSlicers)
+    },
+    { allowSignalWrites: true }
+  )
 
   private defaultSlicersEffect = effect(
     () => {
+      console.log(`defaultSlicers`, this.defaultSlicers())
       this.smartFilterBarService.change(this.defaultSlicers())
       this.onGo()
     },
@@ -326,15 +329,15 @@ export class NxSmartFilterBarComponent
   }
 
   async openCombinationSlicer() {
-    const entityType = await firstValueFrom(this.entityType$)
+    const entityType = this.entityType()
     const combinationSlicer = await firstValueFrom(
       this._dialog
         .open(NgmAdvancedFilterComponent, {
           viewContainerRef: this._viewContainerRef,
           data: {
-            dataSettings: pick(this.dataSettings, 'dataSource', 'entitySet'),
+            dataSettings: pick(this.dataSettingsSignal(), 'dataSource', 'entitySet'),
             entityType,
-            syntax: entityType.syntax,
+            syntax: this.syntax(),
             advancedFilter: this.combinationSlicer$.value
           }
         })
