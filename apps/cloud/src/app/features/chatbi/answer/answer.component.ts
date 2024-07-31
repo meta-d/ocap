@@ -3,30 +3,29 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
+import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { Router, RouterModule } from '@angular/router'
 import { CopilotChatMessage, JSONValue, nanoid } from '@metad/copilot'
-import { NgmCopilotEngineService } from '@metad/copilot-angular'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
+import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
+import { DataSettings } from '@metad/ocap-core'
+import { WidgetComponentType } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
-import { ChatbiService } from '../chatbi.service'
-import { QuestionAnswer } from '../types'
-import { ChatbiHomeComponent } from '../home.component'
-import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
-import { DataSettings } from '@metad/ocap-core'
-import { MatDialog } from '@angular/material/dialog'
 import { firstValueFrom } from 'rxjs'
-import { StorySelectorComponent } from '../../../@shared'
-import { WidgetComponentType } from '@metad/story/core'
 import { ToastrService } from '../../../@core'
+import { StorySelectorComponent } from '../../../@shared'
+import { ChatbiService } from '../chatbi.service'
+import { ChatbiHomeComponent } from '../home.component'
+import { QuestionAnswer } from '../types'
 
 @Component({
   standalone: true,
@@ -58,18 +57,17 @@ import { ToastrService } from '../../../@core'
 export class ChatbiAnswerComponent {
   SlicersCapacity = SlicersCapacity
   DisplayDensity = DisplayDensity
-  
+
   readonly chatbiService = inject(ChatbiService)
-  readonly #copilotEngine = inject(NgmCopilotEngineService)
   readonly #logger = inject(NGXLogger)
   readonly homeComponent = inject(ChatbiHomeComponent)
   readonly #translate = inject(TranslateService)
   readonly _dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
   readonly router = inject(Router)
-  
+
   readonly message = input<CopilotChatMessage>(null)
-  readonly model = this.chatbiService.model
+  readonly model = this.chatbiService._model
 
   toArray(data: JSONValue) {
     return Array.isArray(data) ? data : []
@@ -105,7 +103,9 @@ export class ChatbiAnswerComponent {
   }
 
   async addToStory(answer: QuestionAnswer) {
-    const addToStoryTitle = this.#translate.instant('PAC.Home.Insight.AddWidgetToStoryTitle', { Default: 'Add widget to story' })
+    const addToStoryTitle = this.#translate.instant('PAC.Home.Insight.AddWidgetToStoryTitle', {
+      Default: 'Add widget to story'
+    })
     const result = await firstValueFrom(
       this._dialog
         .open(StorySelectorComponent, {

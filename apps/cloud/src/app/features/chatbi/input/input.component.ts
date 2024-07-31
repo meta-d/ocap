@@ -78,7 +78,7 @@ export class ChatbiInputComponent {
   readonly conversations = computed(() => {
     const items = this.chatbiService.conversations()
     const conversation = this.chatbiService.conversation()
-    return items?.map((item) => ({ id: item.id, name: item.name }))
+    return items?.map((item) => ({ key: item.key, name: item.name }))
   })
 
   newChat() {
@@ -100,7 +100,7 @@ export class ChatbiInputComponent {
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
       if (!this.conversation().command) {
-        this.chatbiService.updateConversation(this.conversation().id, (state) => ({
+        this.chatbiService.updateConversation(this.conversation().key, (state) => ({
           ...state,
           command: CHATBI_COMMAND_NAME
         }))

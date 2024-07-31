@@ -1,4 +1,5 @@
-import { computed, inject, Injectable, signal } from '@angular/core'
+import { computed, effect, inject, Injectable, signal } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
@@ -7,48 +8,50 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { EntityType, isEntityType, isString } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
-import { BehaviorSubject, filter, firstValueFrom, Observable, switchMap, tap } from 'rxjs'
-import { registerModel } from '../../@core'
-import { ChatbiConverstion, QuestionAnswer } from './types'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { BehaviorSubject, debounceTime, filter, firstValueFrom, map, Observable, pairwise, switchMap, tap } from 'rxjs'
+import { ChatBIConversationService, ChatbiConverstion, registerModel } from '../../@core'
+import { QuestionAnswer } from './types'
 
 @Injectable()
 export class ChatbiService {
   readonly #modelsService = inject(ModelsService)
   readonly #dsCoreService = inject(NgmDSCoreService)
   readonly #wasmAgent = inject(WasmAgentService)
+  readonly conversationService = inject(ChatBIConversationService)
 
   readonly models$ = this.#modelsService.getMy()
 
-  readonly model = signal<NgmSemanticModel>(null)
+  readonly detailModels = signal<Record<string, NgmSemanticModel>>({})
+  // readonly model = signal<NgmSemanticModel>(null)
 
   readonly error = signal<string>(null)
   readonly cube = signal<string>(null)
 
   readonly _suggestedPrompts = signal<Record<string, string[]>>({})
-  readonly dataSourceName = computed(() => getSemanticModelKey(this.model()))
-  readonly modelId = computed(() => this.model()?.id)
+  readonly _modelId = computed(() => this.conversation()?.modelId)
+  readonly _model = computed(() => this.detailModels()[this._modelId()])
+  readonly dataSourceName = computed(() => getSemanticModelKey(this._model()))
+  // readonly modelId = computed(() => this.model()?.id)
   readonly #loadingCubes$ = new BehaviorSubject(false)
   readonly loadingCubes = toSignal(this.#loadingCubes$)
 
   readonly cubes = derivedAsync(() => {
     const dataSourceName = this.dataSourceName()
     if (dataSourceName) {
-      return this.#dsCoreService
-        .getDataSource(dataSourceName)
-        .pipe(
-          tap(() => this.#loadingCubes$.next(true)),
-          switchMap((dataSource) => dataSource.discoverMDCubes()),
-          tap(() => this.#loadingCubes$.next(false))
-        )
+      return this.#dsCoreService.getDataSource(dataSourceName).pipe(
+        tap(() => this.#loadingCubes$.next(true)),
+        switchMap((dataSource) => dataSource.discoverMDCubes()),
+        tap(() => this.#loadingCubes$.next(false))
+      )
     }
     return null
   })
 
   readonly conversations = signal<ChatbiConverstion[]>([])
   readonly conversationId = signal<string | null>(null)
+  readonly conversationKey = signal<string | null>(null)
   readonly conversation = computed(() => {
-    return this.conversations()?.find((conv) => conv.id === this.conversationId())
+    return this.conversations()?.find((conv) => conv.key === this.conversationKey())
   })
 
   readonly entityType = derivedAsync<EntityType>(() => {
@@ -66,7 +69,7 @@ export class ChatbiService {
 
   readonly context = computed(() =>
     this.entityType()
-      ? markdownModelCube({ modelId: this.modelId(), dataSource: this.dataSourceName(), cube: this.entityType() })
+      ? markdownModelCube({ modelId: this._modelId(), dataSource: this.dataSourceName(), cube: this.entityType() })
       : ''
   )
 
@@ -76,17 +79,63 @@ export class ChatbiService {
     if (dataSource && entitySet) {
       return {
         dataSource,
-        entitySet,
+        entitySet
       }
     }
     return null
   })
 
+  readonly pristineConversation = signal<ChatbiConverstion | null>(null)
+
+  private allSub = this.conversationService
+    .getMy()
+    .pipe(takeUntilDestroyed())
+    .subscribe((items) => {
+      if (items.length) {
+        this.conversations.update((state) => [...state, ...items.filter((item) => !state.some((conv) => conv.key === item.key))])
+        if (!this.conversationId()) {
+          this.setConversation(items[0].key)
+        }
+      } else {
+        this.newConversation()
+      }
+    })
+
+  private saveSub = toObservable(this.conversation)
+    .pipe(
+      pairwise(),
+      map(([prev, curr]) => {
+        // Set pristine conversation when changed to new one.
+        if (prev?.key !== curr?.key) {
+          this.pristineConversation.set(curr)
+        }
+        return curr
+      }),
+      debounceTime(1000 * 10),
+      filter((conversation) => conversation !== this.pristineConversation()),
+      switchMap((conversation) => this.conversationService.upsert(conversation)),
+      takeUntilDestroyed()
+    )
+    .subscribe((conversation) => {
+      this.pristineConversation.set(conversation)
+      this.updateConversation(conversation.key, (state) => {
+        return conversation
+      })
+    })
+
   constructor() {
-    this.newConversation()
-    // this.conversation.update((state) => ({
-    //   ...state,
-    // }))
+    effect(async () => {
+      if (this._modelId() && !this._model()) {
+        const model = convertNewSemanticModelResult(
+          await firstValueFrom(
+            this.#modelsService.getById(this._modelId(), ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
+          )
+        )
+        this.detailModels.update((state) => ({...state, [model.id]: model}))
+        this.registerModel(model)
+        this.setCube(model.cube)
+      }
+    }, { allowSignalWrites: true })
   }
 
   setCube(cube: string) {
@@ -95,17 +144,7 @@ export class ChatbiService {
   }
 
   async setModel(model: NgmSemanticModel) {
-    model = convertNewSemanticModelResult(
-      await firstValueFrom(
-        this.#modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
-      )
-    )
-    this.model.set(model)
-    this.setCube(model.cube)
-
-    if (!this._suggestedPrompts()[this.dataSourceName()]) {
-      this.registerModel(model)
-    }
+    this.updateConversation(this.conversationKey(), (state) => ({...state, modelId: model.id}))
   }
 
   private registerModel(model: NgmSemanticModel) {
@@ -113,22 +152,39 @@ export class ChatbiService {
   }
 
   newConversation() {
-    const conversation = {id: nanoid()} as ChatbiConverstion
+    const conversation = { key: nanoid() } as ChatbiConverstion
     this.conversations.update((state) => [...state, conversation])
-    this.setConversation(conversation.id)
+    this.setConversation(conversation.key)
   }
 
-  setConversation(id: string) {
-    this.conversationId.set(id)
+  setConversation(key: string) {
+    this.conversationKey.set(key)
   }
 
-  deleteConversation(id: string) {
-    this.conversations.update((state) => state.filter((conversation) => conversation.id!== id))
+  addConversation(conversation: ChatbiConverstion) {
+    if (!this.conversations().some((item) => item.key === conversation.key)) {
+      this.conversations.update((state) => [...state, conversation])
+    }
+    this.conversationKey.set(conversation.key)
   }
 
-  updateConversation(id: string, fn: (state: ChatbiConverstion) => ChatbiConverstion) {
+  deleteConversation(key: string) {
+    const conversation = this.conversations().find((item) => item.key === key)
+    this.conversations.update((state) => state.filter((conversation) => conversation.key !== key))
+    if (key === this.conversationKey()) {
+      this.conversationKey.set(this.conversations()[this.conversations().length - 1]?.key)
+    }
+    if (conversation.id) {
+      this.conversationService.delete(conversation.id).subscribe({
+        error: (err) => {
+        }
+      })
+    }
+  }
+
+  updateConversation(key: string, fn: (state: ChatbiConverstion) => ChatbiConverstion) {
     this.conversations.update((state) => {
-      const index = state.findIndex((c) => c.id === id)
+      const index = state.findIndex((c) => c.key === key)
       if (index > -1) {
         state[index] = fn(state[index])
       }
@@ -137,7 +193,7 @@ export class ChatbiService {
   }
 
   addHumanMessage(message: string) {
-    this.updateConversation(this.conversationId(), (state) => {
+    this.updateConversation(this.conversationKey(), (state) => {
       return {
         ...state,
         name: state.name || message,
@@ -155,7 +211,7 @@ export class ChatbiService {
   }
 
   addAiMessage(data: any[]) {
-    this.updateConversation(this.conversationId(), (state) => {
+    this.updateConversation(this.conversationKey(), (state) => {
       return {
         ...state,
         messages: [
@@ -172,24 +228,28 @@ export class ChatbiService {
     })
   }
 
-  updateQuestionAnswer(id: string, answer: QuestionAnswer) {
-    this.updateConversation(this.conversationId(), (state) => {
-      const index = state.messages.findIndex((message) => message.id === id)
+  updateQuestionAnswer(key: string, answer: QuestionAnswer) {
+    this.updateConversation(this.conversationKey(), (state) => {
+      const index = state.messages.findIndex((message) => message.id === key)
       if (index > -1) {
         state.messages[index] = {
           ...state.messages[index],
-          data: (<Array<any>>state.messages[index].data).map((item) => isString(item)? item : {
-            ...item,
-            ...answer,
-            dataSettings: {
-              ...answer.dataSettings,
-              selectionVariant: null
-            },
-            slicers: answer.dataSettings.selectionVariant?.selectOptions ?? []
-          })
+          data: (<Array<any>>state.messages[index].data).map((item) =>
+            isString(item)
+              ? item
+              : {
+                  ...item,
+                  ...answer,
+                  dataSettings: {
+                    ...answer.dataSettings,
+                    selectionVariant: null
+                  },
+                  slicers: answer.dataSettings.selectionVariant?.selectOptions ?? []
+                }
+          )
         }
       }
-      return {...state, messages: [...state.messages]}
+      return { ...state, messages: [...state.messages] }
     })
   }
 }

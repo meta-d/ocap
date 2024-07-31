@@ -74,19 +74,19 @@
 
 <ng-template #menu>
   <div class="example-menu" cdkMenu>
-    @for (item of conversations(); track item.id) {
+    @for (item of conversations(); track item.key) {
       <button
         cdkMenuItemCheckbox
         class="example-menu-item w-full"
-        [cdkMenuItemChecked]="item.id === conversation().id"
-        (click)="setConversation(item.id)"
+        [cdkMenuItemChecked]="item.key === conversation()?.key"
+        (click)="setConversation(item.key)"
         >
         <div class="flex justify-between items-center min-w-[100px]">
           <span>{{item.name || ('PAC.ChatBI.Empty' | translate: {Default: 'Empty'}) }}</span>
 
           @if (conversations().length > 1) {
             <mat-icon class="cursor-pointer rounded-full hover:bg-neutral-300" ngmAppearance="danger" displayDensity="compact"
-              (click)="deleteConversation(item.id)">close</mat-icon>
+              (click)="deleteConversation(item.key)">close</mat-icon>
           }
         </div>
       </button>
