@@ -12,11 +12,19 @@
       </h1>
       <p class="text-zinc-500 text-xs md:text-sm">Transform data into insights with AI.</p>
     </div>
-    <div class="w-full flex-1 flex flex-col lg:flex-row justify-between items-stretch overflow-hidden">
-      <pac-chatbi-chat class="m-4 w-full lg:flex-1 rounded-xl border shadow-lg shadow-sky-800/10 overflow-hidden grid grid-cols-1
-        border-zinc-200 bg-white dark:border-zinc-800 dark:bg-neutral-950"/>
-      <pac-chatbi-models class="my-4 w-full lg:w-72 rounded-lg border 
+    <div class="w-full flex-1 flex flex-col lg:flex-row-reverse justify-between items-stretch overflow-hidden">
+      <pac-chatbi-models class="my-4 w-full min-h-[120px] lg:w-80 rounded-lg border 
         border-gray-200 bg-white dark:border-zinc-800 dark:bg-neutral-950" />
+      <pac-chatbi-chat class="flex-1 lg:m-4 lg:flex-1 rounded-xl border shadow-lg shadow-sky-800/10 overflow-hidden grid grid-cols-1
+        border-zinc-200 bg-white dark:border-zinc-800 dark:bg-neutral-950"/>
     </div>
   </div>
 </section>
+
+@if (showExplorer()) {
+  <ngm-story-explorer class="absolute top-0 left-0 w-full h-full z-20"
+    cdkDropListGroup
+    [data]="explore()"
+    (closed)="closeExplorer($event)"
+  />
+}

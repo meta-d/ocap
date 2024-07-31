@@ -19,6 +19,7 @@ import { NGXLogger } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
 import { ChatbiService } from '../chatbi.service'
 import { QuestionAnswer } from '../types'
+import { ChatbiHomeComponent } from '../home.component'
 
 @Component({
   standalone: true,
@@ -52,6 +53,7 @@ export class ChatbiAnswerComponent {
   readonly chatbiService = inject(ChatbiService)
   readonly #copilotEngine = inject(NgmCopilotEngineService)
   readonly #logger = inject(NGXLogger)
+  readonly homeComponent = inject(ChatbiHomeComponent)
 
   readonly message = input<CopilotChatMessage>(null)
 
@@ -72,5 +74,9 @@ export class ChatbiAnswerComponent {
 
   isAnswer(value: JSONValue): QuestionAnswer {
     return value as unknown as QuestionAnswer
+  }
+
+  openExplore(item: JSONValue) {
+    this.homeComponent.openExplore(this.message(), item as unknown as QuestionAnswer)
   }
 }

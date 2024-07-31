@@ -10,6 +10,6 @@ export const ChatAnswerSchema = z.object({
   preface: z.string().describe('preface of the answer'),
   dataSettings: DataSettingsSchema.optional().describe('The data settings of the widget'),
   chart: ChartSchema.describe('Chart configuration'),
-  slicers: z.array(SlicerSchema).optional().describe('The slicers used by the chart data'),
+  slicers: z.array(SlicerSchema).describe('The slicers used by the chart data'),
   conclusion: z.string().optional().describe('conclusion of the answer')
 })

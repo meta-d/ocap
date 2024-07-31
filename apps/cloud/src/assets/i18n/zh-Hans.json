@@ -1340,6 +1340,13 @@
         "SureDeleteRole": "确定删除此角色吗？"
       }
     },
+    "ChatBI": {
+      "InputPlaceholder": "针对数据集询问问题，按 Enter 发送",
+      "NewConversation": "新建对话",
+      "Cubes": "多维数据集",
+      "Slicers": "过滤器",
+      "Empty": "空白"
+    },
     "Home": {
       "Insight": {
         "Title": "💡智慧洞察",

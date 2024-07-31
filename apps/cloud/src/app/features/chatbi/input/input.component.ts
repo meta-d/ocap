@@ -1,20 +1,28 @@
+import {
+  CdkMenu,
+  CdkMenuGroup,
+  CdkMenuItem,
+  CdkMenuItemCheckbox,
+  CdkMenuItemRadio,
+  CdkMenuTrigger
+} from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, computed, inject, model, signal } from '@angular/core'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MatIconModule } from '@angular/material/icon'
-import { RouterModule } from '@angular/router'
-import { NgmDisplayBehaviourComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
-import { DensityDirective } from '@metad/ocap-angular/core'
-import { TranslateModule } from '@ngx-translate/core'
-import { ChatbiService } from '../chatbi.service'
-import { MatTooltipModule } from '@angular/material/tooltip'
-import { MatButtonModule } from '@angular/material/button'
-import { MatAutocomplete, MatAutocompleteModule } from '@angular/material/autocomplete'
-import { MatInputModule } from '@angular/material/input'
-import { BehaviorSubject, delay } from 'rxjs'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatAutocomplete, MatAutocompleteModule } from '@angular/material/autocomplete'
+import { MatButtonModule } from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { RouterModule } from '@angular/router'
 import { NgmCopilotEngineService } from '@metad/copilot-angular'
+import { NgmDisplayBehaviourComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
+import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
+import { BehaviorSubject, delay } from 'rxjs'
+import { ChatbiService } from '../chatbi.service'
 import { CHATBI_COMMAND_NAME } from '../copilot/'
 
 @Component({
@@ -31,9 +39,18 @@ import { CHATBI_COMMAND_NAME } from '../copilot/'
     MatButtonModule,
     MatAutocompleteModule,
     MatInputModule,
+
+    CdkMenuTrigger,
+    CdkMenu,
+    CdkMenuItemCheckbox,
+    CdkMenuGroup,
+    CdkMenuItemRadio,
+    CdkMenuItem,
+
     DensityDirective,
     NgmSearchComponent,
-    NgmDisplayBehaviourComponent
+    NgmDisplayBehaviourComponent,
+    AppearanceDirective
   ],
   selector: 'pac-chatbi-input',
   templateUrl: 'input.component.html',
@@ -58,8 +75,22 @@ export class ChatbiInputComponent {
   readonly suggestionsOpened$ = new BehaviorSubject(false)
   readonly #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
 
+  readonly conversations = computed(() => {
+    const items = this.chatbiService.conversations()
+    const conversation = this.chatbiService.conversation()
+    return items?.map((item) => ({ id: item.id, name: item.name }))
+  })
+
   newChat() {
     this.chatbiService.newConversation()
+  }
+
+  setConversation(id: string) {
+    this.chatbiService.setConversation(id)
+  }
+
+  deleteConversation(id: string) {
+    this.chatbiService.deleteConversation(id)
   }
 
   async ask() {
@@ -69,7 +100,10 @@ export class ChatbiInputComponent {
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
       if (!this.conversation().command) {
-        this.conversation.update((state) => ({...state, command: CHATBI_COMMAND_NAME}))
+        this.chatbiService.updateConversation(this.conversation().id, (state) => ({
+          ...state,
+          command: CHATBI_COMMAND_NAME
+        }))
         await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {})
       } else {
         await this.#copilotEngine.chat(prompt, {})

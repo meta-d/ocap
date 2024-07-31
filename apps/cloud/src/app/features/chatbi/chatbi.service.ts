@@ -4,12 +4,12 @@ import { nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { EntityType, isEntityType } from '@metad/ocap-core'
+import { EntityType, isEntityType, isString } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, filter, firstValueFrom, Observable, switchMap, tap } from 'rxjs'
 import { registerModel } from '../../@core'
-import { ChatbiConverstion } from './types'
+import { ChatbiConverstion, QuestionAnswer } from './types'
 import { toSignal } from '@angular/core/rxjs-interop'
 
 @Injectable()
@@ -26,6 +26,7 @@ export class ChatbiService {
 
   readonly _suggestedPrompts = signal<Record<string, string[]>>({})
   readonly dataSourceName = computed(() => getSemanticModelKey(this.#model()))
+  readonly modelId = computed(() => this.#model()?.id)
   readonly #loadingCubes$ = new BehaviorSubject(false)
   readonly loadingCubes = toSignal(this.#loadingCubes$)
 
@@ -44,7 +45,10 @@ export class ChatbiService {
   })
 
   readonly conversations = signal<ChatbiConverstion[]>([])
-  readonly conversation = signal<ChatbiConverstion>(null)
+  readonly conversationId = signal<string | null>(null)
+  readonly conversation = computed(() => {
+    return this.conversations()?.find((conv) => conv.id === this.conversationId())
+  })
 
   readonly entityType = derivedAsync<EntityType>(() => {
     const dataSourceName = this.dataSourceName()
@@ -61,7 +65,7 @@ export class ChatbiService {
 
   readonly context = computed(() =>
     this.entityType()
-      ? markdownModelCube({ modelId: '', dataSource: this.dataSourceName(), cube: this.entityType() })
+      ? markdownModelCube({ modelId: this.modelId(), dataSource: this.dataSourceName(), cube: this.entityType() })
       : ''
   )
 
@@ -79,66 +83,9 @@ export class ChatbiService {
 
   constructor() {
     this.newConversation()
-    this.conversation.update((state) => ({
-      ...state,
-      messages: [
-        {
-            "id": "mp5UV7ktZNSHKkqdA1sWf",
-            "role": "user",
-            "content": "2023年每个销售国家的销售额",
-            "createdAt": new Date()
-        },
-        {
-            "id": "-yYQI8GrHenbQuPjdSkFL",
-            "role": "assistant",
-            "content": "",
-            "data": [
-                "以下是2023年每个销售国家的销售额：",
-                {
-                    "dataSettings": {
-                        "dataSource": "SalesDataSource",
-                        "entitySet": "SalesCube",
-                        "chartAnnotation": {
-                            "chartType": {
-                                "type": "Bar",
-                                "orient": "horizontal",
-                                "variant": "none"
-                            },
-                            "dimensions": [
-                                {
-                                    "dimension": "[销售国家]",
-                                    "zeroSuppression": true,
-                                    "chartOptions": {
-                                        "dataZoom": {
-                                            "type": "inside"
-                                        }
-                                    }
-                                }
-                            ],
-                            "measures": [
-                                {
-                                    "dimension": "Measures",
-                                    "measure": "销售额",
-                                    "chartOptions": {},
-                                    "formatting": {
-                                        "shortNumber": true
-                                    },
-                                    "palette": {
-                                        "name": "Viridis"
-                                    }
-                                }
-                            ]
-                        },
-                        "presentationVariant": {
-                            "groupBy": []
-                        }
-                    }
-                }
-            ],
-            "createdAt": new Date()
-        }
-    ]
-    }))
+    // this.conversation.update((state) => ({
+    //   ...state,
+    // }))
   }
 
   setCube(cube: string) {
@@ -165,17 +112,34 @@ export class ChatbiService {
   }
 
   newConversation() {
-    const conversation = {
-      
-    } as ChatbiConverstion
+    const conversation = {id: nanoid()} as ChatbiConverstion
     this.conversations.update((state) => [...state, conversation])
-    this.conversation.set(conversation)
+    this.setConversation(conversation.id)
+  }
+
+  setConversation(id: string) {
+    this.conversationId.set(id)
+  }
+
+  deleteConversation(id: string) {
+    this.conversations.update((state) => state.filter((conversation) => conversation.id!== id))
+  }
+
+  updateConversation(id: string, fn: (state: ChatbiConverstion) => ChatbiConverstion) {
+    this.conversations.update((state) => {
+      const index = state.findIndex((c) => c.id === id)
+      if (index > -1) {
+        state[index] = fn(state[index])
+      }
+      return [...state]
+    })
   }
 
   addHumanMessage(message: string) {
-    this.conversation.update((state) => {
+    this.updateConversation(this.conversationId(), (state) => {
       return {
         ...state,
+        name: state.name || message,
         messages: [
           ...(state.messages ?? []),
           {
@@ -190,7 +154,7 @@ export class ChatbiService {
   }
 
   addAiMessage(data: any[]) {
-    this.conversation.update((state) => {
+    this.updateConversation(this.conversationId(), (state) => {
       return {
         ...state,
         messages: [
@@ -205,7 +169,26 @@ export class ChatbiService {
         ]
       }
     })
+  }
 
-    console.log(this.conversation())
+  updateQuestionAnswer(id: string, answer: QuestionAnswer) {
+    this.updateConversation(this.conversationId(), (state) => {
+      const index = state.messages.findIndex((message) => message.id === id)
+      if (index > -1) {
+        state.messages[index] = {
+          ...state.messages[index],
+          data: (<Array<any>>state.messages[index].data).map((item) => isString(item)? item : {
+            ...item,
+            ...answer,
+            dataSettings: {
+              ...answer.dataSettings,
+              selectionVariant: null
+            },
+            slicers: answer.dataSettings.selectionVariant?.selectOptions ?? []
+          })
+        }
+      }
+      return {...state, messages: [...state.messages]}
+    })
   }
 }

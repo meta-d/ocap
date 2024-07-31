@@ -1,8 +1,8 @@
 import { CopilotChatMessage } from '@metad/copilot'
-import { DataSettings, ISlicer } from '@metad/ocap-core'
+import { ChartSettings, DataSettings, ISlicer } from '@metad/ocap-core'
 
 export interface ChatbiConverstion {
-  id: number
+  id: string
   name: string
   modelId: string
   dataSource: string
@@ -16,7 +16,7 @@ export interface QuestionAnswer {
   answering: boolean
   chartOptions: any
   dataSettings: DataSettings
-  chartSettings: any
+  chartSettings: ChartSettings
   options?: any
   expanded: boolean
   isCube: boolean

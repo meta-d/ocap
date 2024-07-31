@@ -1,5 +1,5 @@
 <div class="relative flex-1 flex flex-col cursor-default overflow-hidden">
-    <div class="w-full h-full pt-8 flex flex-col relative overflow-y-auto">
+    <div #chartContent class="w-full h-full pt-8 flex flex-col relative overflow-x-hidden overflow-y-auto">
       <div class="w-full h-full md:max-w-3xl mx-auto">
         <div class="w-full p-4 md:p-6 flex rounded-xl bg-gray-50 dark:bg-neutral-900">
           <div class="w-full flex flex-row items-start gap-2 md:gap-4">
@@ -14,7 +14,7 @@
                   data-nimg="1"
                   class="w-full h-full object-cover rounded-full"
                   style="color: transparent"
-                  src="https://r2.erweima.ai/i/2B3Xr9OqTkGRjOab1NCGng.png"
+                  src="/assets/images/chatbi.jpeg"
                 />
               </div>
             </div>
@@ -57,7 +57,7 @@
                         data-nimg="1"
                         class="w-full h-full object-cover rounded-full"
                         style="color: transparent"
-                        src="https://r2.erweima.ai/i/2B3Xr9OqTkGRjOab1NCGng.png"
+                        src="/assets/images/chatbi.jpeg"
                       />
                     </div>
                   </div>
@@ -69,24 +69,7 @@
                       <pac-chatbi-answer class="w-full break-words flex flex-col items-stretch" [message]="message" />
                     </div>
                     <div class="flex items-center gap-3">
-                      <span class="text-stone-400 text-xs">{{ message.createdAt | date }}</span>
-                      <button
-                        class="px-2 py-1 rounded-md text-xs text-stone-500 flex flex-row gap-1 items-center transition-all duration-300 group hover:text-sky-600 hover:bg-gray-100"
-                      >
-                        <span
-                          ><svg
-                            aria-hidden="true"
-                            viewBox="0 0 1024 1024"
-                            class="w-4 fill-stone-500 transition-all duration-300 group-hover:fill-sky-600"
-                            preserveAspectRatio="none"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              clip-rule="evenodd"
-                              d="M864 128l-64 0 0 64 32 0 0 512L576 704l0 256L192 960 192 192l32 0L224 128 160 128c-17.6 0-32 14.4-32 32l0 832c0 17.6 14.4 32 32 32l504 0 232-232L896 160C896 142.4 881.6 128 864 128zM640 960l0-192 192 0L640 960zM768 128l-128 0L640 64c0-35.2-28.8-64-64-64l-128 0c-35.2 0-64 28.8-64 64l0 64-128 0 0 128 512 0L768 128zM576 128l-128 0L448 64.128c0.032-0.032 0.064-0.064 0.128-0.128l127.776 0c0.032 0.032 0.096 0.064 0.128 0.128L576 128z"
-                            ></path></svg></span
-                        >Copy
-                      </button>
+                      <span class="text-stone-400 text-xs">{{ message.createdAt | date: 'short' }}</span>
                     </div>
                   </div>
                 </div>
@@ -120,7 +103,7 @@
                       </p>
                     </div>
                     <div class="flex items-center gap-3">
-                      <span class="text-stone-400 text-xs">{{ message.createdAt | date }}</span>
+                      <span class="text-stone-400 text-xs">{{ message.createdAt | date: 'short' }}</span>
                       <button
                         class="p-1 rounded-md text-xs text-stone-500 flex flex-row gap-1 items-center group transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                         (click)="editQuestion(message)"
