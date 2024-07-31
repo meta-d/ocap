@@ -1,7 +1,7 @@
 @for (item of toArray(message().data); track $index) {
     @switch (typeof(item)) {
       @case ('string') {
-        <markdown clipboard class="w-full"
+        <markdown clipboard class="w-full text-zinc-700 dark:text-zinc-300"
           [clipboardButtonTemplate]="buttonTemplate"
           lineNumbers
           [start]="5"
@@ -10,6 +10,23 @@
       }
       @case ('object') {
         @if (isAnswer(item); as answer) {
+          @if (answer.visualType === 'table') {
+            <ngm-analytical-grid class="w-full h-[600px] group overflow-auto"
+              [dataSettings]="toGrid(answer.dataSettings)"
+              [options]="{showToolbar: true}"
+              [appearance]="{
+                displayDensity: DisplayDensity.compact
+              }"
+            >
+              <div class="flex-1 flex justify-start">
+                <button mat-icon-button displayDensity="cosy" class="shrink-0" [matTooltip]=" 'PAC.ChatBI.ShowChart' | translate: {Default: 'Show Chart'} "
+                  (click)="answer.visualType = 'chart'"
+                >
+                  <mat-icon fontSet="material-icons-outlined">pie_chart</mat-icon>
+                </button>
+              </div>
+            </ngm-analytical-grid>
+          } @else {
             <ngm-analytical-card class="h-[300px] group" 
               [dataSettings]="answer.dataSettings"
               [chartOptions]="answer.chartOptions"
@@ -17,6 +34,19 @@
               [options]="answer.options"
               [slicers]="answer.slicers"
             >
+              <div class="flex-1 flex justify-start">
+                <button mat-icon-button displayDensity="cosy" class="shrink-0" [matTooltip]=" 'PAC.ChatBI.ShowTable' | translate: {Default: 'Show Table'} "
+                  (click)="answer.visualType = 'table'"
+                >
+                  <mat-icon fontSet="material-icons-outlined">table_view</mat-icon>
+                </button>
+              </div>
+              <button mat-icon-button ngmAction displayDensity="compact" class="shrink-0"
+                (click)="$event.stopPropagation();$event.preventDefault();addToStory(answer)">
+                <mat-icon fontSet="material-icons-outlined"
+                  [matTooltip]="''"
+                >addchart</mat-icon>
+              </button>
               <button mat-icon-button ngmAction displayDensity="compact" class="shrink-0"
                 [matTooltip]=" 'Story.Widget.Explore' | translate: {Default: 'Explore'} "
                 (click)="$event.stopPropagation();$event.preventDefault();openExplore(item)">
@@ -46,6 +76,7 @@
                   (click)="$event.stopPropagation()"
                 ></ngm-slicers>
             </mat-menu>
+          }
         }
       }
     }

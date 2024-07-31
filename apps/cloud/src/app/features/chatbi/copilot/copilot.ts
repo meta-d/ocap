@@ -4,10 +4,7 @@ import {
   ChartAnnotation,
   ChartDimension,
   ChartMeasure,
-  DataSettings,
   EntityType,
-  ISlicer,
-  OrderDirection,
   assignDeepOmitBlank,
   omit
 } from '@metad/ocap-core'
@@ -88,7 +85,6 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
   return {
     chartAnnotation,
     slicers: answer.slicers ?? answer.filters, // 因为过滤器会被翻译成 filters
-    limit: answer.limit,
     chartOptions: answer.chartOptions ?? answer.chartType?.chartOptions
   }
 }

@@ -1,6 +1,6 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { NxChartType, tryFixSlicer } from '@metad/core'
+import { NxChartType, SlicerSchema, tryFixSlicer } from '@metad/core'
 import { ChartOrient, DataSettings, getEntityDimensions, PieVariant } from '@metad/ocap-core'
 import { NGXLogger } from 'ngx-logger'
 import { ChatbiService } from '../chatbi.service'
@@ -12,16 +12,16 @@ export function injectCreateChartTool() {
   const logger = inject(NGXLogger)
   const chatbiService = inject(ChatbiService)
 
-  const createFormulaTool = new DynamicStructuredTool({
+  const answerTool = new DynamicStructuredTool({
     name: 'answerQuestion',
     description: 'Create chart answer for the question',
     schema: ChatAnswerSchema,
     func: async (answer) => {
-      logger.debug(`Execute copilot action 'createChart':`, answer)
+      logger.debug(`Execute copilot action 'answerQuestion':`, answer)
 
       const entityType = chatbiService.entityType()
 
-      const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer.chart, entityType)
+      const { chartAnnotation, slicers, chartOptions } = transformCopilotChart(answer.chart, entityType)
       const _slicers = (answer.slicers || slicers)?.map((slicer) => tryFixSlicer(slicer, entityType))
       const chartTypes = [
         {
@@ -31,6 +31,9 @@ export function injectCreateChartTool() {
           chartOptions: {
             legend: {
               show: true
+            },
+            tooltip: {
+              appendToBody: true
             }
           }
         },
@@ -41,6 +44,9 @@ export function injectCreateChartTool() {
           chartOptions: {
             legend: {
               show: true
+            },
+            tooltip: {
+              appendToBody: true
             }
           }
         },
@@ -51,6 +57,9 @@ export function injectCreateChartTool() {
           chartOptions: {
             legend: {
               show: true
+            },
+            tooltip: {
+              appendToBody: true
             }
           }
         },
@@ -73,6 +82,9 @@ export function injectCreateChartTool() {
               orient: 'vertical',
               right: 0,
               align: 'right'
+            },
+            tooltip: {
+              appendToBody: true
             }
           }
         }
@@ -92,7 +104,7 @@ export function injectCreateChartTool() {
               ...(answer.dataSettings ?? {}),
               chartAnnotation,
               presentationVariant: {
-                maxItems: limit,
+                maxItems: answer.top,
                 groupBy: getEntityDimensions(entityType).map((property) => ({
                   dimension: property.name,
                   hierarchy: property.defaultHierarchy,
@@ -115,5 +127,24 @@ export function injectCreateChartTool() {
     }
   })
 
-  return createFormulaTool
+  return answerTool
 }
+
+// export function injectAddSlicersTool() {
+//   const logger = inject(NGXLogger)
+//   const chatbiService = inject(ChatbiService)
+
+//   const createSlicersTool = new DynamicStructuredTool({
+//     name: 'createSlicers',
+//     description: 'Create slicers for the question',
+//     schema: z.object({
+//       slicers: z.array(SlicerSchema).describe('The slicers used by the chart data'),
+//     }),
+//     func: async ({ slicers }) => {
+//       logger.debug(`Execute copilot action 'createSlicers':`, slicers)
+
+//       return `Added slicers`
+//     }
+//   })
+//   return createSlicersTool
+// }

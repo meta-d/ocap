@@ -16,6 +16,7 @@ import { ChatbiService } from './chatbi.service'
 import { injectInsightCommand } from './copilot'
 import { ChatbiModelsComponent } from './models/models.component'
 import { QuestionAnswer } from './types'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   standalone: true,
@@ -26,6 +27,7 @@ import { QuestionAnswer } from './types'
     RouterModule,
     DragDropModule,
     RouterModule,
+    TranslateModule,
     NgmSelectComponent,
     ChatbiModelsComponent,
     ChatbiChatComponent,

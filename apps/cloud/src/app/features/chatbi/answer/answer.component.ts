@@ -7,19 +7,26 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { RouterModule } from '@angular/router'
-import { CopilotChatMessage, JSONValue } from '@metad/copilot'
+import { Router, RouterModule } from '@angular/router'
+import { CopilotChatMessage, JSONValue, nanoid } from '@metad/copilot'
 import { NgmCopilotEngineService } from '@metad/copilot-angular'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
-import { DensityDirective } from '@metad/ocap-angular/core'
+import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
 import { ChatbiService } from '../chatbi.service'
 import { QuestionAnswer } from '../types'
 import { ChatbiHomeComponent } from '../home.component'
+import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
+import { DataSettings } from '@metad/ocap-core'
+import { MatDialog } from '@angular/material/dialog'
+import { firstValueFrom } from 'rxjs'
+import { StorySelectorComponent } from '../../../@shared'
+import { WidgetComponentType } from '@metad/story/core'
+import { ToastrService } from '../../../@core'
 
 @Component({
   standalone: true,
@@ -40,6 +47,7 @@ import { ChatbiHomeComponent } from '../home.component'
     NgmDisplayBehaviourComponent,
 
     AnalyticalCardModule,
+    AnalyticalGridModule,
     NgmSelectionModule
   ],
   selector: 'pac-chatbi-answer',
@@ -49,13 +57,19 @@ import { ChatbiHomeComponent } from '../home.component'
 })
 export class ChatbiAnswerComponent {
   SlicersCapacity = SlicersCapacity
+  DisplayDensity = DisplayDensity
   
   readonly chatbiService = inject(ChatbiService)
   readonly #copilotEngine = inject(NgmCopilotEngineService)
   readonly #logger = inject(NGXLogger)
   readonly homeComponent = inject(ChatbiHomeComponent)
-
+  readonly #translate = inject(TranslateService)
+  readonly _dialog = inject(MatDialog)
+  readonly #toastr = inject(ToastrService)
+  readonly router = inject(Router)
+  
   readonly message = input<CopilotChatMessage>(null)
+  readonly model = this.chatbiService.model
 
   toArray(data: JSONValue) {
     return Array.isArray(data) ? data : []
@@ -78,5 +92,74 @@ export class ChatbiAnswerComponent {
 
   openExplore(item: JSONValue) {
     this.homeComponent.openExplore(this.message(), item as unknown as QuestionAnswer)
+  }
+
+  toGrid(dataSettings: DataSettings) {
+    return {
+      ...dataSettings,
+      analytics: {
+        rows: dataSettings.chartAnnotation.dimensions,
+        columns: dataSettings.chartAnnotation.measures
+      }
+    } as DataSettings
+  }
+
+  async addToStory(answer: QuestionAnswer) {
+    const addToStoryTitle = this.#translate.instant('PAC.Home.Insight.AddWidgetToStoryTitle', { Default: 'Add widget to story' })
+    const result = await firstValueFrom(
+      this._dialog
+        .open(StorySelectorComponent, {
+          data: {
+            title: addToStoryTitle,
+            model: this.model(),
+            widget: {
+              key: nanoid(),
+              name: answer.title,
+              title: answer.title,
+              component: WidgetComponentType.AnalyticalCard,
+              dataSettings: {
+                ...(answer.dataSettings ?? {}),
+                selectionVariant: {
+                  selectOptions: answer.slicers
+                }
+              } as DataSettings,
+              chartOptions: answer.chartOptions,
+              slicers: answer.slicers,
+              __showslicers__: true,
+              position: {
+                cols: 5,
+                rows: 5
+              }
+            }
+          }
+        })
+        .afterClosed()
+    )
+
+    if (result) {
+      this.#toastr
+        .info(
+          {
+            code: 'PAC.MESSAGE.CreateStoryWidgetSuccess',
+            default: 'Create story widget success'
+          },
+          {
+            code: 'PAC.ACTIONS.Open',
+            default: 'Open'
+          },
+          {
+            duration: 5000
+          }
+        )
+        .onAction()
+        .subscribe(() => {
+          this.router.navigate([`/story/${result.storyId}/edit`], {
+            queryParams: {
+              pageKey: result.pageKey,
+              widgetKey: result.key
+            }
+          })
+        })
+    }
   }
 }

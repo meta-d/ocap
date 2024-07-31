@@ -1341,11 +1341,14 @@
       }
     },
     "ChatBI": {
+      "Title": "ChatBI-数据分析与洞察",
       "InputPlaceholder": "针对数据集询问问题，按 Enter 发送",
       "NewConversation": "新建对话",
       "Cubes": "多维数据集",
       "Slicers": "过滤器",
-      "Empty": "空白"
+      "Empty": "空白",
+      "ShowChart": "显示图形",
+      "ShowTable": "显示表格"
     },
     "Home": {
       "Insight": {

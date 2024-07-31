@@ -20,13 +20,14 @@ export class ChatbiService {
 
   readonly models$ = this.#modelsService.getMy()
 
-  readonly #model = signal<NgmSemanticModel>(null)
+  readonly model = signal<NgmSemanticModel>(null)
+
   readonly error = signal<string>(null)
   readonly cube = signal<string>(null)
 
   readonly _suggestedPrompts = signal<Record<string, string[]>>({})
-  readonly dataSourceName = computed(() => getSemanticModelKey(this.#model()))
-  readonly modelId = computed(() => this.#model()?.id)
+  readonly dataSourceName = computed(() => getSemanticModelKey(this.model()))
+  readonly modelId = computed(() => this.model()?.id)
   readonly #loadingCubes$ = new BehaviorSubject(false)
   readonly loadingCubes = toSignal(this.#loadingCubes$)
 
@@ -99,7 +100,7 @@ export class ChatbiService {
         this.#modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
       )
     )
-    this.#model.set(model)
+    this.model.set(model)
     this.setCube(model.cube)
 
     if (!this._suggestedPrompts()[this.dataSourceName()]) {

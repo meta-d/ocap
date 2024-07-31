@@ -13,14 +13,13 @@ export interface ChatbiConverstion {
 
 export interface QuestionAnswer {
   key: string
-  answering: boolean
   chartOptions: any
   dataSettings: DataSettings
   chartSettings: ChartSettings
   options?: any
   expanded: boolean
-  isCube: boolean
   message: string
   slicers: ISlicer[]
   title: string
+  visualType?: 'table' | 'chart'
 }
