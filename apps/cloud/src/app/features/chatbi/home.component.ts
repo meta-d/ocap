@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core'
+import { ChangeDetectionStrategy, Component, effect, inject, model } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { provideOcapCore } from '@metad/ocap-angular/core'
@@ -36,7 +36,7 @@ import { injectInsightCommand } from './copilot'
 export class ChatbiHomeComponent {
   readonly chatbiService = inject(ChatbiService)
 
-  readonly model = model()
+  readonly modelKey = model('rshEYUmoSJ')
 
   readonly models = toSignal(
     this.chatbiService.models$.pipe(
@@ -57,8 +57,12 @@ export class ChatbiHomeComponent {
   */
   readonly #insightCommand = injectInsightCommand()
 
-  async onModelChange(key: string) {
-    const model = this.models().find((item) => item.key === key)?.value
-    await this.chatbiService.setModel(model)
+  constructor() {
+    effect(() => {
+      const model = this.models().find((item) => item.key === this.modelKey())?.value
+      if (model) {
+        this.chatbiService.setModel(model)
+      }
+    }, { allowSignalWrites: true })
   }
 }

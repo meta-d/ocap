@@ -67,7 +67,7 @@
     }
   } @else if (message().content) {
     <div class="ngm-copilot-chat__message-content w-full" [ngClass]="{'thinking': message().status === 'thinking'}">
-        <markdown clipboard
+        <markdown clipboard class="ngm-copilot-markdown"
             [clipboardButtonTemplate]="buttonTemplate"
             lineNumbers
             [start]="5"

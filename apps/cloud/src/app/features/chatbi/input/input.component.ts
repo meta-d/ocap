@@ -15,6 +15,7 @@ import { BehaviorSubject, delay } from 'rxjs'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { NgmCopilotEngineService } from '@metad/copilot-angular'
 import { NGXLogger } from 'ngx-logger'
+import { CHATBI_COMMAND_NAME } from '../copilot/'
 
 @Component({
   standalone: true,
@@ -68,8 +69,8 @@ export class ChatbiInputComponent {
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
       if (!this.conversation().command) {
-        this.conversation.update((state) => ({...state, command: 'insight'}))
-        await this.#copilotEngine.chat(`/insight ${prompt}`, {})
+        this.conversation.update((state) => ({...state, command: CHATBI_COMMAND_NAME}))
+        await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {})
       } else {
         await this.#copilotEngine.chat(prompt, {})
       }

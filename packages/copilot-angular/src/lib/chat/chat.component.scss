@@ -109,14 +109,42 @@
       bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800;
   }
 
-  markdown {
+  // popper
+  .ngxp__container.ngxp__animation {
+    @apply p-0 shadow-none border-0;
+  }
+}
+
+::ng-deep {
+  .ngm-copilot-chat__autocomplete-panel.ngm-density__compact {
+    .mdc-list-item {
+      @apply pl-2;
+    }
+  }
+
+  .ngm-menu__copilot-context-popper {
+    position: relative;
+    width: 300px;
+    max-width: 300px;
+    min-height: 200px;
+    .cdk-virtual-scroll-viewport {
+      overflow-x: hidden;
+    }
+    .cdk-virtual-scroll-content-wrapper {
+      max-width: 100%;
+    }
+  }
+
+  .ngm-copilot-chat__roles.mdc-evolution-chip-set {
+    .mdc-evolution-chip-set__chips {
+      @apply justify-center;
+    }
+  }
+
+  markdown.ngm-copilot-markdown {
     > * {
       @apply whitespace-pre-line;
     }
-
-    // p:first-child {
-    //   @apply indent-4;
-    // }
 
     ol {
       list-style-type: decimal;
@@ -242,38 +270,6 @@
           @apply p-1 pl-2;
         }
       }
-    }
-  }
-
-  // popper
-  .ngxp__container.ngxp__animation {
-    @apply p-0 shadow-none border-0;
-  }
-}
-
-::ng-deep {
-  .ngm-copilot-chat__autocomplete-panel.ngm-density__compact {
-    .mdc-list-item {
-      @apply pl-2;
-    }
-  }
-
-  .ngm-menu__copilot-context-popper {
-    position: relative;
-    width: 300px;
-    max-width: 300px;
-    min-height: 200px;
-    .cdk-virtual-scroll-viewport {
-      overflow-x: hidden;
-    }
-    .cdk-virtual-scroll-content-wrapper {
-      max-width: 100%;
-    }
-  }
-
-  .ngm-copilot-chat__roles.mdc-evolution-chip-set {
-    .mdc-evolution-chip-set__chips {
-      @apply justify-center;
     }
   }
 }

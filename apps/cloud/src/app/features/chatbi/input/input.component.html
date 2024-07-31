@@ -15,15 +15,16 @@
           <div class="flex items-center flex-grow overflow-x-hidden">
 
             <input #userInput matInput class="ngm-colpilot__input w-full px-1.5 z-10 resize-none overflow-visible outline-none"
-                id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
-                [placeholder]="('Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'}) + '\nEnter ' + ('Copilot.SendPrompt' | translate: {Default: 'send prompt'})"
-                [(ngModel)]="prompt"
-                [disabled]="answering() || !cube()"
-                (keydown)="triggerFun($event, autoPrompts)"
+              [ngClass]="{disabled: answering() ||!cube()}"
+              id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
+              [placeholder]="('Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'}) + '\nEnter ' + ('Copilot.SendPrompt' | translate: {Default: 'send prompt'})"
+              [(ngModel)]="prompt"
+              [disabled]="answering() || !cube()"
+              (keydown)="triggerFun($event, autoPrompts)"
 
-                [matAutocomplete]="autoPrompts"
-                matAutocompletePosition="above"
-                >
+              [matAutocomplete]="autoPrompts"
+              matAutocompletePosition="above"
+            >
 
             <mat-autocomplete #autoPrompts="matAutocomplete" class="ngm-copilot-chat__autocomplete-panel ngm-autocomplete-panel ngm-density__cosy"
                 autoActiveFirstOption

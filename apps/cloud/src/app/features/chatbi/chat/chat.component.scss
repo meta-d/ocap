@@ -1,0 +1,34 @@
+.ngm-chatbi__cond {
+  position: relative;
+  text-decoration: underline dotted gray;
+  margin: 0 3px;
+
+  &::after {
+    position: absolute;
+    width: 100%;
+    bottom: -1.5em; /* Adjusts the distance from the main text */
+    left: 0;
+    text-align: center;
+    font-size: 0.8em;
+    color: gray;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+}
+
+.ngm-chatbi__time::after {
+  content: '时间';
+}
+
+.ngm-chatbi__slicer::after {
+  content: '条件';
+}
+
+.ngm-chatbi__dimension::after {
+  content: '维度';
+}
+
+.ngm-chatbi__measure::after {
+  content: '指标';
+}

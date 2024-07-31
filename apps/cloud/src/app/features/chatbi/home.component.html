@@ -1,13 +1,12 @@
 <section id="chatTools" class="h-full pt-4 pb-2 md:pb-4">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full flex flex-col">
-    <div class="title container relative mx-auto mb-6 text-center">
+    <div class="title container relative mx-auto text-center">
       <h1 class="font-bold text-2xl md:text-3xl pb-2">ChatBI-Data Analysis &amp; Insights with
         <ngm-select class="inline-block" placeholder="Semantic Models" displayDensity="cosy"
             [selectOptions]="models()"
             [panelWidth]="400"
             valueKey="key"
-            [ngModel]="model"
-            (ngModelChange)="onModelChange($event)"
+            [(ngModel)]="modelKey"
         />
       </h1>
       <p class="text-zinc-500 text-xs md:text-sm">Transform data into insights with AI.</p>
