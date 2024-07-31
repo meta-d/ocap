@@ -7,9 +7,10 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { EntityType, isEntityType } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
-import { filter, firstValueFrom, Observable, switchMap } from 'rxjs'
+import { BehaviorSubject, filter, firstValueFrom, Observable, switchMap, tap } from 'rxjs'
 import { registerModel } from '../../@core'
 import { ChatbiConverstion } from './types'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @Injectable()
 export class ChatbiService {
@@ -21,17 +22,23 @@ export class ChatbiService {
 
   readonly #model = signal<NgmSemanticModel>(null)
   readonly error = signal<string>(null)
-  readonly cube = signal<string>('Sales')
+  readonly cube = signal<string>(null)
 
   readonly _suggestedPrompts = signal<Record<string, string[]>>({})
   readonly dataSourceName = computed(() => getSemanticModelKey(this.#model()))
+  readonly #loadingCubes$ = new BehaviorSubject(false)
+  readonly loadingCubes = toSignal(this.#loadingCubes$)
 
   readonly cubes = derivedAsync(() => {
     const dataSourceName = this.dataSourceName()
     if (dataSourceName) {
       return this.#dsCoreService
         .getDataSource(dataSourceName)
-        .pipe(switchMap((dataSource) => dataSource.discoverMDCubes()))
+        .pipe(
+          tap(() => this.#loadingCubes$.next(true)),
+          switchMap((dataSource) => dataSource.discoverMDCubes()),
+          tap(() => this.#loadingCubes$.next(false))
+        )
     }
     return null
   })
@@ -57,6 +64,18 @@ export class ChatbiService {
       ? markdownModelCube({ modelId: '', dataSource: this.dataSourceName(), cube: this.entityType() })
       : ''
   )
+
+  readonly dataSettings = computed(() => {
+    const dataSource = this.dataSourceName()
+    const entitySet = this.cube()
+    if (dataSource && entitySet) {
+      return {
+        dataSource,
+        entitySet,
+      }
+    }
+    return null
+  })
 
   constructor() {
     this.newConversation()
@@ -128,13 +147,13 @@ export class ChatbiService {
   }
 
   async setModel(model: NgmSemanticModel) {
-    this.setCube(null)
     model = convertNewSemanticModelResult(
       await firstValueFrom(
         this.#modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
       )
     )
     this.#model.set(model)
+    this.setCube(model.cube)
 
     if (!this._suggestedPrompts()[this.dataSourceName()]) {
       this.registerModel(model)

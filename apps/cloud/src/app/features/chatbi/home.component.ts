@@ -12,6 +12,7 @@ import { map } from 'rxjs'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { ChatbiChatComponent } from './chat/chat.component'
 import { injectInsightCommand } from './copilot'
+import { DisplayBehaviour } from '@metad/ocap-core'
 
 @Component({
   standalone: true,
@@ -34,6 +35,8 @@ import { injectInsightCommand } from './copilot'
   providers: [provideOcapCore(), ChatbiService]
 })
 export class ChatbiHomeComponent {
+  DisplayBehaviour = DisplayBehaviour
+  
   readonly chatbiService = inject(ChatbiService)
 
   readonly modelKey = model('rshEYUmoSJ')
