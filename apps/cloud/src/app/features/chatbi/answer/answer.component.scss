@@ -1,0 +1,7 @@
+:host::ng-deep {
+  .ngm-analytical-card {
+    .ngm-card-header {
+      @apply flex-wrap;
+    }
+  }
+}

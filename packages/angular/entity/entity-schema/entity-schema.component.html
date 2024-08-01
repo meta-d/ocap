@@ -1,5 +1,6 @@
 <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding matTreeNodePaddingIndent="20"
+    [cdkDragDisabled]="dragDisabled()"
     cdkDrag
     [cdkDragData]="node.item"
     [class.selected]="selectedHierarchy && (
@@ -23,6 +24,7 @@
     <div class="ngm-entity-schema__drag-placeholder" *cdkDragPlaceholder></div>
   </mat-tree-node>
   <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding matTreeNodePaddingIndent="20" class="group"
+    [cdkDragDisabled]="dragDisabled()"
     cdkDrag
     [cdkDragData]="node.item"
     [class.selected]="selectedHierarchy && (

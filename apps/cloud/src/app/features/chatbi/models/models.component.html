@@ -35,7 +35,7 @@
         </div>
 
         @if (option.expanded) {
-          <ngm-entity-schema
+          <ngm-entity-schema dragDisabled
             [dataSettings]="{dataSource: dataSourceName(), entitySet: option.key}"
             [capacities]="[
               EntityCapacity.Dimension,

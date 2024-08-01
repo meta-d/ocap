@@ -67,7 +67,7 @@ export class ChatbiAnswerComponent {
   readonly router = inject(Router)
 
   readonly message = input<CopilotChatMessage>(null)
-  readonly model = this.chatbiService._model
+  readonly model = this.chatbiService.model
 
   toArray(data: JSONValue) {
     return Array.isArray(data) ? data : []

@@ -444,7 +444,7 @@ export class FeaturesComponent implements OnInit {
         link: '/chatbi',
         pathMatch: 'prefix',
         data: {
-          translationKey: 'Chat BI',
+          translationKey: 'ChatBI',
           featureKey: FeatureEnum.FEATURE_COPILOT,
         }
       },

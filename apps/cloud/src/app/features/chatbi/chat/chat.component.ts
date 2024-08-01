@@ -55,7 +55,7 @@ export class ChatbiChatComponent {
     '2023年各渠道的用户数分别是多少'
   ]
 
-  readonly cube = this.chatbiService.cube
+  readonly cube = this.chatbiService.entity
   readonly entityType = this.chatbiService.entityType
 
   readonly prompt = model<string>(null)

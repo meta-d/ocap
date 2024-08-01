@@ -177,7 +177,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     if (typeof story === 'string') {
       this.error = story
     } else if (story) {
-      if (isMobile() && (<Story>story).model.agentType === AgentType.Wasm) {
+      if (isMobile() && (<Story>story).models?.some((model) => model.agentType === AgentType.Wasm)) {
         this.toastr.warning(
           'PAC.MESSAGE.StoryRunWithWasmModelOnMobileWarn',
           { Default: 'Story with WASM models on mobile may have performance limitations. Use caution!' },

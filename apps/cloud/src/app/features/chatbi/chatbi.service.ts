@@ -5,7 +5,7 @@ import { nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { EntityType, isEntityType, isString } from '@metad/ocap-core'
+import { EntityType, isEntityType, isEqual, isString } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, debounceTime, filter, firstValueFrom, map, Observable, pairwise, switchMap, tap } from 'rxjs'
@@ -20,18 +20,13 @@ export class ChatbiService {
   readonly conversationService = inject(ChatBIConversationService)
 
   readonly models$ = this.#modelsService.getMy()
-
   readonly detailModels = signal<Record<string, NgmSemanticModel>>({})
-  // readonly model = signal<NgmSemanticModel>(null)
 
   readonly error = signal<string>(null)
-  readonly cube = signal<string>(null)
-
-  readonly _suggestedPrompts = signal<Record<string, string[]>>({})
-  readonly _modelId = computed(() => this.conversation()?.modelId)
-  readonly _model = computed(() => this.detailModels()[this._modelId()])
-  readonly dataSourceName = computed(() => getSemanticModelKey(this._model()))
-  // readonly modelId = computed(() => this.model()?.id)
+  readonly modelId = computed(() => this.conversation()?.modelId)
+  readonly model = computed(() => this.detailModels()[this.modelId()])
+  readonly dataSourceName = computed(() => getSemanticModelKey(this.model()))
+  readonly entity = computed(() => this.conversation()?.entity)
   readonly #loadingCubes$ = new BehaviorSubject(false)
   readonly loadingCubes = toSignal(this.#loadingCubes$)
 
@@ -56,7 +51,7 @@ export class ChatbiService {
 
   readonly entityType = derivedAsync<EntityType>(() => {
     const dataSourceName = this.dataSourceName()
-    const cube = this.cube()
+    const cube = this.entity()
     if (dataSourceName && cube) {
       return this.#dsCoreService.getDataSource(dataSourceName).pipe(
         switchMap((dataSource) => dataSource.selectEntityType(cube)),
@@ -69,13 +64,13 @@ export class ChatbiService {
 
   readonly context = computed(() =>
     this.entityType()
-      ? markdownModelCube({ modelId: this._modelId(), dataSource: this.dataSourceName(), cube: this.entityType() })
+      ? markdownModelCube({ modelId: this.modelId(), dataSource: this.dataSourceName(), cube: this.entityType() })
       : ''
   )
 
   readonly dataSettings = computed(() => {
     const dataSource = this.dataSourceName()
-    const entitySet = this.cube()
+    const entitySet = this.entity()
     if (dataSource && entitySet) {
       return {
         dataSource,
@@ -92,7 +87,10 @@ export class ChatbiService {
     .pipe(takeUntilDestroyed())
     .subscribe((items) => {
       if (items.length) {
-        this.conversations.update((state) => [...state, ...items.filter((item) => !state.some((conv) => conv.key === item.key))])
+        this.conversations.update((state) => [
+          ...state,
+          ...items.filter((item) => !state.some((conv) => conv.key === item.key))
+        ])
         if (!this.conversationId()) {
           this.setConversation(items[0].key)
         }
@@ -112,39 +110,48 @@ export class ChatbiService {
         return curr
       }),
       debounceTime(1000 * 10),
-      filter((conversation) => conversation !== this.pristineConversation()),
+      filter((conversation) => !isEqual(conversation, this.pristineConversation())),
       switchMap((conversation) => this.conversationService.upsert(conversation)),
       takeUntilDestroyed()
     )
     .subscribe((conversation) => {
       this.pristineConversation.set(conversation)
-      this.updateConversation(conversation.key, (state) => {
-        return conversation
-      })
+      this._updateConversation(conversation.key, (state) => conversation)
     })
 
   constructor() {
-    effect(async () => {
-      if (this._modelId() && !this._model()) {
-        const model = convertNewSemanticModelResult(
-          await firstValueFrom(
-            this.#modelsService.getById(this._modelId(), ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
+    effect(
+      async () => {
+        if (this.modelId() && !this.model()) {
+          const model = convertNewSemanticModelResult(
+            await firstValueFrom(
+              this.#modelsService.getById(this.modelId(), [
+                'indicators',
+                'createdBy',
+                'updatedBy',
+                'dataSource',
+                'dataSource.type'
+              ])
+            )
           )
-        )
-        this.detailModels.update((state) => ({...state, [model.id]: model}))
-        this.registerModel(model)
-        this.setCube(model.cube)
-      }
-    }, { allowSignalWrites: true })
+          this.detailModels.update((state) => ({ ...state, [model.id]: model }))
+          this.registerModel(model)
+          this.setCube(model.cube)
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
-  setCube(cube: string) {
+
+
+  setCube(entity: string) {
     this.error.set(null)
-    this.cube.set(cube)
+    this.updateConversation((state) => ({...state, entity}))
   }
 
-  async setModel(model: NgmSemanticModel) {
-    this.updateConversation(this.conversationKey(), (state) => ({...state, modelId: model.id}))
+  setModelId(id: string) {
+    this._updateConversation(this.conversationKey(), (state) => ({ ...state, modelId: id }))
   }
 
   private registerModel(model: NgmSemanticModel) {
@@ -176,13 +183,16 @@ export class ChatbiService {
     }
     if (conversation.id) {
       this.conversationService.delete(conversation.id).subscribe({
-        error: (err) => {
-        }
+        error: (err) => {}
       })
     }
   }
 
-  updateConversation(key: string, fn: (state: ChatbiConverstion) => ChatbiConverstion) {
+  updateConversation(fn: (state: ChatbiConverstion) => ChatbiConverstion) {
+    this._updateConversation(this.conversationKey(), fn)
+  }
+
+  _updateConversation(key: string, fn: (state: ChatbiConverstion) => ChatbiConverstion) {
     this.conversations.update((state) => {
       const index = state.findIndex((c) => c.key === key)
       if (index > -1) {
@@ -193,7 +203,7 @@ export class ChatbiService {
   }
 
   addHumanMessage(message: string) {
-    this.updateConversation(this.conversationKey(), (state) => {
+    this._updateConversation(this.conversationKey(), (state) => {
       return {
         ...state,
         name: state.name || message,
@@ -211,7 +221,7 @@ export class ChatbiService {
   }
 
   addAiMessage(data: any[]) {
-    this.updateConversation(this.conversationKey(), (state) => {
+    this._updateConversation(this.conversationKey(), (state) => {
       return {
         ...state,
         messages: [
@@ -229,7 +239,7 @@ export class ChatbiService {
   }
 
   updateQuestionAnswer(key: string, answer: QuestionAnswer) {
-    this.updateConversation(this.conversationKey(), (state) => {
+    this._updateConversation(this.conversationKey(), (state) => {
       const index = state.messages.findIndex((message) => message.id === key)
       if (index > -1) {
         state.messages[index] = {

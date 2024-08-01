@@ -15,8 +15,8 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { RouterModule } from '@angular/router'
-import { NgmCopilotEngineService } from '@metad/copilot-angular'
+import { Router, RouterModule } from '@angular/router'
+import { NgmCopilotEngineService, NgmCopilotService } from '@metad/copilot-angular'
 import { NgmDisplayBehaviourComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -24,6 +24,7 @@ import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, delay } from 'rxjs'
 import { ChatbiService } from '../chatbi.service'
 import { CHATBI_COMMAND_NAME } from '../copilot/'
+import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,
@@ -60,9 +61,11 @@ import { CHATBI_COMMAND_NAME } from '../copilot/'
 export class ChatbiInputComponent {
   readonly chatbiService = inject(ChatbiService)
   readonly #copilotEngine = inject(NgmCopilotEngineService)
+  readonly copilotService = inject(NgmCopilotService)
   readonly #logger = inject(NGXLogger)
+  readonly router = inject(Router)
 
-  readonly cube = this.chatbiService.cube
+  readonly cube = this.chatbiService.entity
 
   readonly prompts = signal([])
   readonly prompt = model<string>('')
@@ -80,6 +83,8 @@ export class ChatbiInputComponent {
     const conversation = this.chatbiService.conversation()
     return items?.map((item) => ({ key: item.key, name: item.name }))
   })
+
+  readonly copilotEnabled = toSignal(this.copilotService.enabled$)
 
   newChat() {
     this.chatbiService.newConversation()
@@ -100,7 +105,7 @@ export class ChatbiInputComponent {
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
       if (!this.conversation().command) {
-        this.chatbiService.updateConversation(this.conversation().key, (state) => ({
+        this.chatbiService._updateConversation(this.conversation().key, (state) => ({
           ...state,
           command: CHATBI_COMMAND_NAME
         }))
@@ -135,5 +140,9 @@ export class ChatbiInputComponent {
     if (event.key === 'Tab') {
       event.preventDefault()
     }
+  }
+
+  navigateToConfig() {
+    this.router.navigate(['settings', 'copilot'])
   }
 }

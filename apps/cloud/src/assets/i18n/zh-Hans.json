@@ -1342,13 +1342,15 @@
     },
     "ChatBI": {
       "Title": "ChatBI-数据分析与洞察",
+      "TransformData": "利用人工智能将数据转化为洞察力。",
       "InputPlaceholder": "针对数据集询问问题，按 Enter 发送",
       "NewConversation": "新建对话",
       "Cubes": "多维数据集",
       "Slicers": "过滤器",
       "Empty": "空白",
       "ShowChart": "显示图形",
-      "ShowTable": "显示表格"
+      "ShowTable": "显示表格",
+      "AddtoStory": "添加到故事"
     },
     "Home": {
       "Insight": {

@@ -56,7 +56,7 @@ export class ChatbiModelsComponent {
     return cubes
   })
 
-  readonly cube = this.chatbiService.cube
+  readonly cube = this.chatbiService.entity
 
   readonly dataSourceName = this.chatbiService.dataSourceName
 

@@ -40,14 +40,12 @@ export class ChatBIConversationService {
   }
 
   upsert(entity: Partial<ChatbiConverstion>) {
-    return (
-      entity.id
-        ? this.httpClient.put<ChatbiConverstion>(
+    return entity.id ? this.httpClient.put<ChatbiConverstion>(
             `${API_CHATBI_CONVERSATION}/${entity.id}`,
             convertChatBIConversation(entity)
-          )
+          ).pipe(map(() => entity as ChatbiConverstion))
         : this.httpClient.post<ChatbiConverstion>(API_CHATBI_CONVERSATION, convertChatBIConversation(entity))
-    ).pipe(map((result) => convertChatBIConversationResult(result)))
+        .pipe(map((result) => convertChatBIConversationResult(result)))
   }
 
   delete(id: string) {

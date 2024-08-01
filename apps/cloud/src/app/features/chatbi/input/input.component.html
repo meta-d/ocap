@@ -1,5 +1,5 @@
 <div data-ignore-for-autoscroll="true" class="max-w-3xl w-full mx-auto">
-    <div class="relative px-2 md:px-1">
+  <div class="relative px-2 md:px-1">
       <fieldset
         class="relative bg-white flex flex-col gap-2 px-4 py-2 border border-gray-300 rounded-2xl shadow shadow-slate-200
           dark:bg-neutral-900 dark:border-neutral-700"
@@ -69,8 +69,20 @@
           </div>
         </div>
       </fieldset>
-    </div>
+
+    @if (!copilotEnabled()) {
+      <div class="absolute top-0 left-0 w-full h-full z-10 flex justify-center items-center rounded-2xl shadow
+        bg-white shadow-slate-200 dark:bg-neutral-900 dark:border-neutral-700">
+        <button mat-stroked-button (click)="navigateToConfig()">
+          <div class="flex items-center">
+              {{ 'Copilot.EnableCopilot' | translate: {Default: 'Enable Copilot'} }}
+              <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">arrow_forward</mat-icon>
+          </div>
+        </button>
+      </div>
+    }
   </div>
+</div>
 
 <ng-template #menu>
   <div class="example-menu" cdkMenu>
@@ -81,19 +93,19 @@
         [cdkMenuItemChecked]="item.key === conversation()?.key"
         (click)="setConversation(item.key)"
         >
-        <div class="flex justify-between items-center min-w-[100px]">
-          <span>{{item.name || ('PAC.ChatBI.Empty' | translate: {Default: 'Empty'}) }}</span>
-
+        <div class="flex justify-start items-center text-left min-w-[100px]">
           @if (conversations().length > 1) {
             <mat-icon class="cursor-pointer rounded-full hover:bg-neutral-300" ngmAppearance="danger" displayDensity="compact"
               (click)="deleteConversation(item.key)">close</mat-icon>
           }
+          <span class="flex-1 text-ellipsis overflow-hidden">{{item.name || ('PAC.ChatBI.Empty' | translate: {Default: 'Empty'}) }}</span>
         </div>
       </button>
     }
     <hr />
 
     <button cdkMenuItem color="primary" (click)="newChat()">
+      <mat-icon>add_comment</mat-icon>
       {{ 'PAC.ChatBI.NewConversation' | translate: {Default: 'New Conversaton'} }}
      </button>
   </div>

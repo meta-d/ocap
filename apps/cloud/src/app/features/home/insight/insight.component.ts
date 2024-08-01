@@ -50,9 +50,10 @@ import { firstValueFrom } from 'rxjs'
 import { ToastrService, listAnimation } from '../../../@core'
 import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
-import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
+import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot/copilot'
 import { InsightService } from './insight.service'
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
+import { injectInsightCommand } from './copilot/insight'
 
 @Component({
   standalone: true,
@@ -176,6 +177,7 @@ export class InsightComponent {
   | Copilot
   |--------------------------------------------------------------------------
   */
+  readonly #insightCommand = injectInsightCommand()
   readonly #chartCommand = injectCopilotCommand({
     name: 'chart',
     description: this.#translate.instant('PAC.Home.Insight.ChartCommandDescription', {

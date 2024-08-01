@@ -51,13 +51,13 @@ export class ChatbiHomeComponent {
   readonly route = inject(ActivatedRoute)
   readonly conversationId = injectQueryParams('id')
 
-  readonly modelKey = model('rshEYUmoSJ')
+  readonly modelId = model<string>(null)
 
   readonly models = toSignal(
     this.chatbiService.models$.pipe(
       map((models) =>
         models?.map((model) => ({
-          key: model.key,
+          key: model.id,
           value: model,
           caption: model.name
         }))
@@ -65,14 +65,6 @@ export class ChatbiHomeComponent {
     )
   )
   readonly _conversationId = computed(() => this.chatbiService.conversation()?.id)
-
-  // readonly conversation = derivedAsync(() => {
-  //   const id = this.conversationId()
-  //   if (id) {
-  //     return this.conversationService.getById(id)
-  //   }
-  //   return null
-  // })
 
   // Story explorer
   readonly showExplorer = signal(false)
@@ -85,18 +77,28 @@ export class ChatbiHomeComponent {
   */
   readonly #insightCommand = injectInsightCommand()
 
-  private conversationSub = toObservable(this.conversationId).pipe(
-    filter(nonBlank),
-    switchMap((id) => this.conversationService.getById(id)),
-    takeUntilDestroyed()
-  ).subscribe((conversation) => this.chatbiService.addConversation(conversation))
+  private conversationSub = toObservable(this.conversationId)
+    .pipe(
+      filter(nonBlank),
+      switchMap((id) => this.conversationService.getById(id)),
+      takeUntilDestroyed()
+    )
+    .subscribe((conversation) => this.chatbiService.addConversation(conversation))
 
   constructor() {
     effect(
       () => {
-        const model = this.models()?.find((item) => item.key === this.modelKey())?.value
-        if (model) {
-          this.chatbiService.setModel(model)
+        if (this.modelId()) {
+          this.chatbiService.setModelId(this.modelId())
+        }
+      },
+      { allowSignalWrites: true }
+    )
+
+    effect(
+      () => {
+        if (this.chatbiService.modelId()) {
+          this.modelId.set(this.chatbiService.modelId())
         }
       },
       { allowSignalWrites: true }
@@ -111,14 +113,17 @@ export class ChatbiHomeComponent {
       { allowSignalWrites: true }
     )
 
-    effect(() => {
-      this.router.navigate(['.'], {
-        relativeTo: this.route,
-        queryParams: {
-          id: this._conversationId() || null
-        },
-      })
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        this.router.navigate(['.'], {
+          relativeTo: this.route,
+          queryParams: {
+            id: this._conversationId() || null
+          }
+        })
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   async openExplore(message: CopilotChatMessage, answer: QuestionAnswer) {

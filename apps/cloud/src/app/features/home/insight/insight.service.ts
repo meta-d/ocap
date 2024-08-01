@@ -128,8 +128,7 @@ export class InsightService {
   async askCopilot(prompt: string, options?: { abortController: AbortController; conversationId: string }) {
     try {
       this.suggesting.set(true)
-      await this.#copilotEngine.chat(`/chart ${prompt}`, {
-        newConversation: true,
+      await this.#copilotEngine.chat(`/insight ${prompt}`, {
         conversationId: options.conversationId
       })
     } catch (err) {
