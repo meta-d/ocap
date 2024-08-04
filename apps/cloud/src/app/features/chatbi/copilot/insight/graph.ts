@@ -2,19 +2,20 @@ import { inject } from '@angular/core'
 import { SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
-import { injectDimensionMemberTool, makeCubeRulesPrompt, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/core'
+import { createAgentStepsInstructions, injectDimensionMemberTool, makeCubeRulesPrompt, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/core'
 import { ChatbiService } from '../../chatbi.service'
-import { injectCreateChartTool } from '../tools'
+import { injectCreateChartTool, injectCreateFormulaTool } from '../tools'
 import { insightAgentState } from './types'
 
 export function injectCreateInsightGraph() {
   const chatbiService = inject(ChatbiService)
   const memberRetrieverTool = injectDimensionMemberTool()
   const createChartTool = injectCreateChartTool()
+  const createFormulaTool = injectCreateFormulaTool()
 
   const context = chatbiService.context
 
-  const tools = [memberRetrieverTool, createChartTool]
+  const tools = [memberRetrieverTool, createFormulaTool, createChartTool]
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     return createReactAgent({
       state: insightAgentState,
@@ -32,9 +33,16 @@ export function injectCreateInsightGraph() {
 ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
 
-If there are variables in the cube, please add the variables (Use variable name as dimension, defaultValueKey and defaultValueCaption as the default member) to the slicers in tool.
+年累计计算公式为：
+  Aggregate(PeriodsToDate([Time_Dimension].[Year_Level], [Time_Dimension].CurrentMember), [Measures].[measureName])
 
-please call tool to answer question.
+${createAgentStepsInstructions(
+  `拆分问题中提及的 ‘维度’ ‘度量’ ‘时间’ ‘限制条件’ 等信息`,
+  `判断 measure 是否在 Cube 信息存在，如果存在则直接进行下一步，如果未找到则调用 'createFormula' tool 创建一个计算度量`,
+  PROMPT_RETRIEVE_DIMENSION_MEMBER,
+  `If there are variables in the cube, please add the variables (Use variable name as dimension, defaultValueKey and defaultValueCaption as the default member) to the slicers in tool.`,
+  `Call 'answerQuestion' to answer question`
+)}
 `
         const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
           templateFormat: 'mustache'

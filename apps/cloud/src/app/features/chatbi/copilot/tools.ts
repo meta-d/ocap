@@ -3,10 +3,12 @@ import { DynamicStructuredTool } from '@langchain/core/tools'
 import { NxChartType, SlicerSchema, tryFixSlicer } from '@metad/core'
 import { ChartOrient, DataSettings, getEntityDimensions, PieVariant } from '@metad/ocap-core'
 import { NGXLogger } from 'ngx-logger'
+import { z } from 'zod'
 import { ChatbiService } from '../chatbi.service'
 import { QuestionAnswer } from '../types'
 import { transformCopilotChart } from './copilot'
 import { ChatAnswerSchema } from './schema'
+import { nanoid } from '@metad/copilot'
 
 export function injectCreateChartTool() {
   const logger = inject(NGXLogger)
@@ -128,6 +130,30 @@ export function injectCreateChartTool() {
   })
 
   return answerTool
+}
+
+export function injectCreateFormulaTool() {
+  const logger = inject(NGXLogger)
+  const chatbiService = inject(ChatbiService)
+
+  const createFormulaTool = new DynamicStructuredTool({
+    name: 'createFormula',
+    description: 'Create formula for new measure',
+    schema: z.object({
+      cube: z.string().describe('The cube name'),
+      name: z.string().describe('The name of calculated measure'),
+      formula: z.string().describe('The MDX formula for calculated measure'),
+      unit: z.string().optional().describe('The unit of measure')
+    }),
+    func: async ({ cube, name, formula, unit }) => {
+      logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
+
+      chatbiService.addIndicator({id: nanoid(), name, entity: cube, code: name, formula, unit})
+
+      return `The new calculated measure has been created!`
+    }
+  })
+  return createFormulaTool
 }
 
 // export function injectAddSlicersTool() {

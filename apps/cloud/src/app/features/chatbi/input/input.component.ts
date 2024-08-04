@@ -105,7 +105,7 @@ export class ChatbiInputComponent {
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
       if (!this.conversation().command) {
-        this.chatbiService._updateConversation(this.conversation().key, (state) => ({
+        this.chatbiService.updateConversation((state) => ({
           ...state,
           command: CHATBI_COMMAND_NAME
         }))

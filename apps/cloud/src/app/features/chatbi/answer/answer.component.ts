@@ -1,6 +1,6 @@
 import { ClipboardModule } from '@angular/cdk/clipboard'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
@@ -18,10 +18,11 @@ import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selecti
 import { DataSettings } from '@metad/ocap-core'
 import { WidgetComponentType } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { NGXLogger } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
 import { firstValueFrom } from 'rxjs'
-import { ToastrService } from '../../../@core'
+import { Store, ToastrService } from '../../../@core'
 import { StorySelectorComponent } from '../../../@shared'
 import { ChatbiService } from '../chatbi.service'
 import { ChatbiHomeComponent } from '../home.component'
@@ -65,9 +66,19 @@ export class ChatbiAnswerComponent {
   readonly _dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
   readonly router = inject(Router)
+  readonly #store = inject(Store)
 
   readonly message = input<CopilotChatMessage>(null)
+  readonly primaryTheme = toSignal(this.#store.primaryTheme$)
   readonly model = this.chatbiService.model
+
+  readonly charts = computed(() => this.toArray(this.message().data).map((item) => {
+    if (this.typeof(item) === 'object' && this.isAnswer(item)) {
+      return {
+        chartSettings: this.toChartSettings(item as unknown as QuestionAnswer)
+      }
+    }
+  }))
 
   toArray(data: JSONValue) {
     return Array.isArray(data) ? data : []
@@ -100,6 +111,13 @@ export class ChatbiAnswerComponent {
         columns: dataSettings.chartAnnotation.measures
       }
     } as DataSettings
+  }
+
+  toChartSettings(item: QuestionAnswer) {
+    return {
+      ...(item.chartSettings ?? {}),
+      theme: this.primaryTheme()
+    }
   }
 
   async addToStory(answer: QuestionAnswer) {

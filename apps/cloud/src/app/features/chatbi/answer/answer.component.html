@@ -32,7 +32,7 @@
             <ngm-analytical-card class="h-[300px] group" 
               [dataSettings]="answer.dataSettings"
               [chartOptions]="answer.chartOptions"
-              [chartSettings]="answer.chartSettings"
+              [chartSettings]="charts()[$index].chartSettings"
               [options]="answer.options"
               [slicers]="answer.slicers"
             >
@@ -65,18 +65,18 @@
             </ngm-analytical-card>
 
             <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
-                <div class="text-base font-semibold">{{ 'PAC.ChatBI.Slicers' | translate: {Default: "Slicers"} }}</div>
-                <ngm-slicers class="overflow-hidden" inline editable [slicers]="answer.slicers"
-                  [dataSettings]="answer.dataSettings"
-                  [limit]="5"
-                  [capacities]="[
-                    SlicersCapacity.Variable,
-                    SlicersCapacity.CombinationSlicer,
-                    SlicersCapacity.AdvancedSlicer
-                  ]"
-                  (valueChange)="answer.slicers = $event"
-                  (click)="$event.stopPropagation()"
-                ></ngm-slicers>
+              <div class="text-base font-semibold">{{ 'PAC.ChatBI.Slicers' | translate: {Default: "Slicers"} }}</div>
+              <ngm-slicers class="overflow-hidden" inline editable [slicers]="answer.slicers"
+                [dataSettings]="answer.dataSettings"
+                [limit]="5"
+                [capacities]="[
+                  SlicersCapacity.Variable,
+                  SlicersCapacity.CombinationSlicer,
+                  SlicersCapacity.AdvancedSlicer
+                ]"
+                (valueChange)="answer.slicers = $event"
+                (click)="$event.stopPropagation()"
+              />
             </mat-menu>
           }
         }

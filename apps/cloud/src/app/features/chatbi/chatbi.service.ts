@@ -5,10 +5,21 @@ import { nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { EntityType, isEntityType, isEqual, isString } from '@metad/ocap-core'
+import { EntityType, Indicator, isEntityType, isEqual, isString, Schema } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
-import { BehaviorSubject, debounceTime, filter, firstValueFrom, map, Observable, pairwise, switchMap, tap } from 'rxjs'
+import {
+  BehaviorSubject,
+  debounceTime,
+  filter,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  pairwise,
+  switchMap,
+  tap
+} from 'rxjs'
 import { ChatBIConversationService, ChatbiConverstion, registerModel } from '../../@core'
 import { QuestionAnswer } from './types'
 
@@ -30,14 +41,21 @@ export class ChatbiService {
   readonly #loadingCubes$ = new BehaviorSubject(false)
   readonly loadingCubes = toSignal(this.#loadingCubes$)
 
-  readonly cubes = derivedAsync(() => {
+  readonly dataSource = derivedAsync(() => {
     const dataSourceName = this.dataSourceName()
     if (dataSourceName) {
-      return this.#dsCoreService.getDataSource(dataSourceName).pipe(
+      return of(true).pipe(
         tap(() => this.#loadingCubes$.next(true)),
-        switchMap((dataSource) => dataSource.discoverMDCubes()),
-        tap(() => this.#loadingCubes$.next(false))
+        switchMap(() => this.#dsCoreService.getDataSource(dataSourceName))
       )
+    }
+    return null
+  })
+
+  readonly cubes = derivedAsync(() => {
+    const dataSource = this.dataSource()
+    if (dataSource) {
+      return dataSource.discoverMDCubes().pipe(tap(() => this.#loadingCubes$.next(false)))
     }
     return null
   })
@@ -81,6 +99,7 @@ export class ChatbiService {
   })
 
   readonly pristineConversation = signal<ChatbiConverstion | null>(null)
+  readonly indicators = computed(() => this.conversation()?.indicators)
 
   private allSub = this.conversationService
     .getMy()
@@ -141,13 +160,20 @@ export class ChatbiService {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      const indicators = this.indicators()
+      if (indicators) {
+        indicators.forEach((indicator) => {
+          this.dataSource().upsertIndicator(indicator)
+        })
+      }
+    }, { allowSignalWrites: true })
   }
-
-
 
   setCube(entity: string) {
     this.error.set(null)
-    this.updateConversation((state) => ({...state, entity}))
+    this.updateConversation((state) => ({ ...state, entity }))
   }
 
   setModelId(id: string) {
@@ -192,7 +218,7 @@ export class ChatbiService {
     this._updateConversation(this.conversationKey(), fn)
   }
 
-  _updateConversation(key: string, fn: (state: ChatbiConverstion) => ChatbiConverstion) {
+  private _updateConversation(key: string, fn: (state: ChatbiConverstion) => ChatbiConverstion) {
     this.conversations.update((state) => {
       const index = state.findIndex((c) => c.key === key)
       if (index > -1) {
@@ -261,5 +287,12 @@ export class ChatbiService {
       }
       return { ...state, messages: [...state.messages] }
     })
+  }
+
+  addIndicator(indicator: Indicator) {
+    this.updateConversation((state) => ({
+      ...state,
+      indicators: [...(state.indicators ?? []), {...indicator, visible: true}]
+    }))
   }
 }

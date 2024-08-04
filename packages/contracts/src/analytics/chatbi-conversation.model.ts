@@ -1,4 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { IIndicator } from './indicator'
 
 export interface IChatBIConversation extends IBasePerTenantAndOrganizationEntityModel {
   key: string
@@ -8,5 +9,6 @@ export interface IChatBIConversation extends IBasePerTenantAndOrganizationEntity
   command?: string
   options?: {
     messages: any[]
+    indicators?: IIndicator
   }
 }

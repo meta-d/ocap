@@ -180,6 +180,10 @@ export interface DataSource {
    * @param cube
    */
   updateCube(cube: Cube): void
+  /**
+   * Insert or update a indicator by code
+   */
+  upsertIndicator(indicator: Indicator): void
 
   /**
    * 订阅 Entity 的类型定义变化， 合并运行时和用户增强后的
@@ -306,6 +310,22 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
         cubes
       }
     })
+  }
+
+  upsertIndicator(indicator: Indicator) {
+    const indicators = this.options.schema?.indicators ? [...this.options.schema.indicators] : []
+    const index = indicators.findIndex((item) => item.code === indicator.code)
+    if (index > -1) {
+      indicators[index] = {
+        ...indicators[index],
+        ...indicator
+      }
+    } else {
+      indicators.push({...indicator})
+    }
+    const schema = this.options.schema ? {...this.options.schema} : {} as Schema
+    schema.indicators = indicators
+    this.setSchema(schema)
   }
 
   selectSchema(): Observable<Schema> {

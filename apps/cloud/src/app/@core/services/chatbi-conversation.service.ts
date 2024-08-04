@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { API_PREFIX, SystemPrivacyFields } from '@metad/cloud/state'
 import { CopilotChatMessage } from '@metad/copilot'
+import { Indicator } from '@metad/ocap-core'
 import { omit } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, map } from 'rxjs'
@@ -18,6 +19,7 @@ export interface ChatbiConverstion {
   entity: string
   command: string
   messages: CopilotChatMessage[]
+  indicators: Indicator[]
 }
 
 @Injectable({ providedIn: 'root' })
@@ -40,12 +42,13 @@ export class ChatBIConversationService {
   }
 
   upsert(entity: Partial<ChatbiConverstion>) {
-    return entity.id ? this.httpClient.put<ChatbiConverstion>(
-            `${API_CHATBI_CONVERSATION}/${entity.id}`,
-            convertChatBIConversation(entity)
-          ).pipe(map(() => entity as ChatbiConverstion))
-        : this.httpClient.post<ChatbiConverstion>(API_CHATBI_CONVERSATION, convertChatBIConversation(entity))
-        .pipe(map((result) => convertChatBIConversationResult(result)))
+    return entity.id
+      ? this.httpClient
+          .put<ChatbiConverstion>(`${API_CHATBI_CONVERSATION}/${entity.id}`, convertChatBIConversation(entity))
+          .pipe(map(() => entity as ChatbiConverstion))
+      : this.httpClient
+          .post<ChatbiConverstion>(API_CHATBI_CONVERSATION, convertChatBIConversation(entity))
+          .pipe(map((result) => convertChatBIConversationResult(result)))
   }
 
   delete(id: string) {
@@ -59,9 +62,10 @@ export class ChatBIConversationService {
 
 export function convertChatBIConversation(input: Partial<ChatbiConverstion>) {
   return {
-    ...omit(input, 'options', 'messages'),
+    ...omit(input, 'messages', 'indicators'),
     options: {
-      messages: input.messages
+      messages: input.messages,
+      indicators: input.indicators,
     }
   } as IChatBIConversation
 }
@@ -69,6 +73,7 @@ export function convertChatBIConversation(input: Partial<ChatbiConverstion>) {
 export function convertChatBIConversationResult(result: IChatBIConversation) {
   return {
     ...omit(result, 'options', ...SystemPrivacyFields),
-    messages: result.options?.messages || []
+    messages: result.options?.messages || [],
+    indicators: result.options?.indicators
   } as ChatbiConverstion
 }
