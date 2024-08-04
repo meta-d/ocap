@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, ElementRef, HostBinding, HostListener, ViewChild, computed, effect, inject, signal } from '@angular/core'
+import { Component, ElementRef, HostBinding, HostListener, ViewChild, computed, effect, inject, signal, viewChild } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { PropertyMeasure, QueryReturn, formatting, getEntityProperty, indicatorFormatter } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -31,14 +31,8 @@ export class NxWidgetTextComponent extends AbstractStoryWidget<TextWidgetOptions
   get intentNavigation() {
     return !!this.intent?.semanticObject
   }
-
-  @ViewChild('textSpan') get textSpan(): ElementRef<HTMLSpanElement> {
-    return this._textSpan()
-  }
-  set textSpan(value: ElementRef<HTMLSpanElement>) {
-    this._textSpan.set(value)
-  }
-  private readonly _textSpan = signal<ElementRef<HTMLSpanElement>>(null)
+ 
+  readonly textSpan = viewChild('textSpan', { read: ElementRef<HTMLSpanElement> })
 
   public readonly preview = signal(false)
   public readonly contentSignal = computed(() => this.optionsSignal()?.text)
@@ -79,7 +73,7 @@ export class NxWidgetTextComponent extends AbstractStoryWidget<TextWidgetOptions
     let content = this.contentSignal()
     const results = this.results()
     // 替换指标 ID => 实际值
-    if (this.preview() || !this.editable) {
+    if (this.preview() || !this.editableSignal()) {
       content = replaceParameters(content, this.entityType())
       Object.keys(results).forEach((name) => {
         content = content.replace(indicatorFormatter(name), results[name])
@@ -128,11 +122,11 @@ export class NxWidgetTextComponent extends AbstractStoryWidget<TextWidgetOptions
       if (this.preview() || !this.editable) {
         this.dataService.setMeasures(this.measures())
       }
-    })
+    }, { allowSignalWrites: true })
 
     effect(() => {
-      if (this.textSpan) {
-        this.textSpan.nativeElement.innerText = this.content() ?? (this.editable ? this.getTranslation('Story.Widgets.Common.InsertText', 'Insert text...') : '')
+      if (this.textSpan()) {
+        this.textSpan().nativeElement.innerText = this.content() ?? (this.editableSignal() ? this.getTranslation('Story.Widgets.Common.InsertText', 'Insert text...') : '')
       }
     })
   }

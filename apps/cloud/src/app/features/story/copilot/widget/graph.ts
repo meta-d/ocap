@@ -3,11 +3,13 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
-import { injectDimensionMemberTool, makeCubeRulesPrompt, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/core'
+import { injectDimensionMemberTool, makeCubeRulesPrompt, markdownEntityType, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
-import { injectCreateChartTool, injectCreateTableTool } from '../tools'
+import { injectCreateChartTool, injectCreateKPITool, injectCreateTableTool, injectPickCubeTool } from '../tools'
 import { WidgetAgentState, widgetAgentState } from './types'
+import { DataSettings, pick } from '@metad/ocap-core'
+import { firstValueFrom } from 'rxjs'
 
 export function injectCreateWidgetGraph() {
   const logger = inject(NGXLogger)
@@ -18,18 +20,34 @@ export function injectCreateWidgetGraph() {
 
   const createTableTool = injectCreateTableTool()
   const createChartTool = injectCreateChartTool()
+  const pickCubeTool = injectPickCubeTool()
+  const createKPITool = injectCreateKPITool()
 
   return async ({ llm, interruptBefore, interruptAfter }: CreateGraphOptions) => {
+    const widget = storyService.currentWidget
     return createReactAgent({
       state: widgetAgentState,
       llm,
       interruptBefore,
       interruptAfter,
-      tools: [memberRetrieverTool, createTableTool, createChartTool],
+      tools: [pickCubeTool, memberRetrieverTool, createTableTool, createChartTool, createKPITool],
       messageModifier: async (state) => {
-        const systemTemplate = `You are a BI analysis expert. Please use MDX technology to edit or create chart widget configurations based on Cube information.
+        let context = null
+        if (widget()?.dataSettings?.entitySet) {
+          const entityType = await firstValueFrom(storyService.selectEntityType(pick<DataSettings>(widget().dataSettings, 'dataSource', 'entitySet')))
+          if (entityType) {
+            //@todo 还需要 modelId 信息
+            context = markdownEntityType(entityType)
+          }
+        }
+        const systemTemplate = `You are a BI analysis expert. Please use MDX technology to edit or create chart or table widget configurations based on Cube information.
 {{role}}
 {{language}}
+References documents:
+{{references}}
+
+If no cube context is provided, please first call the 'pickCube' tool to choose a cube.
+
 ${makeCubeRulesPrompt()}
 
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
@@ -37,11 +55,13 @@ A dimension can only be used once, and a hierarchy cannot appear on multiple ind
 
 The cube context:
 {{context}}
+
+Current widget:
+${widget() ? JSON.stringify(pick(widget(), 'key', 'title', 'component', 'dataSettings', 'options')) : 'No widget.'}
 `
-        console.log(state.context)
         const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
           templateFormat: 'mustache'
-        }).format({...state, context: state.context || defaultModelCubePrompt() })
+        }).format({...state, context: state.context || context || defaultModelCubePrompt() })
         return [new SystemMessage(system), ...state.messages]
       }
     })

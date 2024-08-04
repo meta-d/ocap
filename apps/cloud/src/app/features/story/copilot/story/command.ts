@@ -1,5 +1,5 @@
 import { inject } from '@angular/core'
-import { CopilotAgentType } from '@metad/copilot'
+import { CopilotAgentType, referencesCommandName } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
@@ -13,6 +13,7 @@ export function injectStoryCommand() {
 
   const createGraph = injectCreateStoryGraph()
 
+  const referencesRetriever = injectExampleRetriever(referencesCommandName(STORY_COMMAND_NAME), { k: 3, vectorStore: null })
   const examplesRetriever = injectExampleRetriever(STORY_COMMAND_NAME, { k: 5, vectorStore: null })
   return injectCopilotCommand(STORY_COMMAND_NAME, {
     alias: 's',
@@ -22,7 +23,8 @@ export function injectStoryCommand() {
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true,
-      interruptBefore: ['calculation', 'page', 'widget', 'style']
+      interruptBefore: ['calculation', 'page', 'widget', 'style'],
+      referencesRetriever
     },
     examplesRetriever,
     createGraph

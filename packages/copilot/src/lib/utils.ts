@@ -48,3 +48,7 @@ export function getCommandPrompt(prompt: string) {
     prompt: command ? prompt.replace(`/${command}`, '').trim() : prompt
   }
 }
+
+export function referencesCommandName(commandName: string) {
+  return `${commandName}/references`
+}

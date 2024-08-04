@@ -20,10 +20,21 @@ export const ComponentStylingSchema = z.object({
 
   fontFamily: z.string().optional().describe('The font family'),
   fontSize: z.number().optional().describe('The font size'),
+  lineHeight: z.number().optional().describe('The line height of text'),
+  textAlign: z.enum(['left', 'center', 'right']).optional().describe('Align text'),
 
   filter: z.string().optional().describe('The filter'),
   opacity: z.number().optional().describe('The opacity')
 })
+
+export const KPIStylingSchema = z
+  .object({
+    component: ComponentStylingSchema.optional().describe('css styling of kpi widget'),
+    title: ComponentStylingSchema.optional().describe('css styling of title of kpi widget'),
+    value: ComponentStylingSchema.optional().describe('css styling of value text of kpi widget'),
+  })
+  .optional()
+  .describe('The styles of kpi widget')
 
 export const StoryStyleSchema = z.object({
   story: z
@@ -77,13 +88,13 @@ export const StoryStyleSchema = z.object({
     .describe('The control widget preferences'),
 
   kpi: z
-    .object({
-      styling: ComponentStylingSchema.optional().describe('css styling of kpi widget'),
-      title: ComponentStylingSchema.optional().describe('css styling of title of kpi widget'),
-      value: ComponentStylingSchema.optional().describe('css styling of value text of kpi widget'),
-    })
-    .optional()
-    .describe('The kpi widget preferences')
+  .object({
+    styling: ComponentStylingSchema.optional().describe('css styling of kpi widget'),
+    title: ComponentStylingSchema.optional().describe('css styling of title of kpi widget'),
+    value: ComponentStylingSchema.optional().describe('css styling of value text of kpi widget'),
+  })
+  .optional()
+  .describe('The styles of kpi widget')
 })
 
 export const CalculationMeasureSchema = z.object({
@@ -92,3 +103,10 @@ export const CalculationMeasureSchema = z.object({
   formula: z.string().optional().describe(`The mdx formula when calculationType is 'Calculated'`),
   caption: z.string().optional().describe('The caption of calculation measure')
 })
+
+export const WidgetStyleSchema = z
+  .object({
+    component: ComponentStylingSchema.optional().describe('css styling of the widget')
+  })
+  .optional()
+  .describe('The widget styles')

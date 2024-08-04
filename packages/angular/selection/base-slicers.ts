@@ -1,6 +1,8 @@
-import { Directive, Input, ViewContainerRef, booleanAttribute, inject, input } from '@angular/core'
+import { booleanAttribute, Directive, inject, Input, input, signal, ViewContainerRef } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { NgmValueHelpComponent } from '@metad/ocap-angular/controls'
+import { DateVariableEnum, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import {
   AdvancedSlicer,
   AggregationRole,
@@ -18,22 +20,21 @@ import {
   Semantics,
   TimeRange,
   VariableProperty,
-  VariableSelectionType,
+  VariableSelectionType
 } from '@metad/ocap-core'
-import { DateVariableEnum, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import { pick } from 'lodash-es'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
-import { NgmAdvancedSlicerComponent } from './advanced-slicer/advanced-slicer.component'
-import { SlicersCapacity } from './types'
 import { NgmAdvancedFilterComponent } from './advanced-filter'
+import { NgmAdvancedSlicerComponent } from './advanced-slicer/advanced-slicer.component'
 import { NgmTimeFilterEditorComponent } from './timer/'
+import { SlicersCapacity } from './types'
 
 @Directive({})
 export class BaseSlicersComponent {
   isSemanticCalendar = isSemanticCalendar
 
   public coreService = inject(NgmOcapCoreService)
-  public _dialog =inject(MatDialog)
+  public _dialog = inject(MatDialog)
   public viewContainerRef? = inject(ViewContainerRef)
 
   @Input() get dataSettings(): DataSettings {
@@ -45,19 +46,19 @@ export class BaseSlicersComponent {
   public dataSettings$ = new BehaviorSubject<DataSettings>(null)
 
   @Input() get entityType() {
-    return this.entityType$.value
+    return this.entityTypeSignal()
   }
   set entityType(value) {
-    this.entityType$.next(value)
+    this.entityTypeSignal.set(value)
   }
-  protected entityType$ = new BehaviorSubject<EntityType>(null)
+  readonly entityTypeSignal = signal<EntityType>(null)
+  readonly entityType$ = toObservable(this.entityTypeSignal)
 
   readonly editable = input<boolean, string | boolean>(false, {
     transform: booleanAttribute
   })
 
   public readonly dateVariables = this.coreService.getDateVariables().filter((variable) => !!variable.dateRange)
- 
 
   async openSlicerCreator(property: Property | VariableProperty | SlicersCapacity) {
     const entityType = this.entityType
@@ -89,7 +90,7 @@ export class BaseSlicersComponent {
             data: {
               dataSettings: {
                 ...this.dataSettings
-              },
+              }
             }
           })
           .afterClosed()
@@ -128,9 +129,7 @@ export class BaseSlicersComponent {
                 dimension: property.name
               },
               currentDate: DateVariableEnum.TODAY,
-              ranges: variable ? [
-                variable
-              ] : []
+              ranges: variable ? [variable] : []
             }
           }
         })
@@ -152,19 +151,21 @@ export class BaseSlicersComponent {
    * @param property dimension property
    */
   async openValueHelp(property: Property | VariableProperty) {
-    const dimension = property.role === AggregationRole.variable ?
-      {
-        dimension: (property as VariableProperty).referenceDimension,
-        parameter: property.name
-      } :
-      {
-        dimension: property.name
-      }
-    const selectionType = property.role === AggregationRole.variable ?
-    ((property as VariableProperty).variableSelectionType === VariableSelectionType.Value ?
-      FilterSelectionType.Single : 
-      FilterSelectionType.Multiple)
-      : FilterSelectionType.Multiple
+    const dimension =
+      property.role === AggregationRole.variable
+        ? {
+            dimension: (property as VariableProperty).referenceDimension,
+            parameter: property.name
+          }
+        : {
+            dimension: property.name
+          }
+    const selectionType =
+      property.role === AggregationRole.variable
+        ? (property as VariableProperty).variableSelectionType === VariableSelectionType.Value
+          ? FilterSelectionType.Single
+          : FilterSelectionType.Multiple
+        : FilterSelectionType.Multiple
     const slicer = await firstValueFrom(
       this._dialog
         .open(NgmValueHelpComponent, {

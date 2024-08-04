@@ -13,7 +13,7 @@ import {
   model,
   signal
 } from '@angular/core'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
@@ -23,20 +23,17 @@ import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/copilot
 import { NgmCommonModule, NgmConfirmDeleteComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { DisplayBehaviour, FlatTreeNode, MDCube, TreeNodeInterface, hierarchize, isEntitySet } from '@metad/ocap-core'
+import { DisplayBehaviour, FlatTreeNode, TreeNodeInterface, hierarchize } from '@metad/ocap-core'
 import { Story } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { uniq } from 'lodash-es'
 import {
   BehaviorSubject,
-  EMPTY,
-  catchError,
   combineLatest,
   distinctUntilChanged,
   firstValueFrom,
   map,
   shareReplay,
-  startWith,
   switchMap,
   tap,
   withLatestFrom
@@ -48,14 +45,12 @@ import {
   DefaultProject,
   ICertification,
   IFavorite,
-  IIndicator,
   IProject,
   ISemanticModel,
   ProjectsService,
   Store,
   StoryStatusEnum,
   ToastrService,
-  registerModel,
   routeAnimations,
   tryHttp
 } from '../../../@core'

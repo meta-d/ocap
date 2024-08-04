@@ -219,15 +219,16 @@ export function DimensionModeling(
               ]
             }
           },
-          {
-            className,
-            key: 'defaultHierarchy',
-            type: 'select',
-            props: {
-              label: DIMENSION?.DefaultHierarchy ?? 'Default Hierarchy',
-              options: hierarchies$
-            }
-          }
+          // Default Hierarchy 在 shared dimension 一对多 cubes 的情况下无法区分，所以暂时先停用此功能
+          // {
+          //   className,
+          //   key: 'defaultHierarchy',
+          //   type: 'select',
+          //   props: {
+          //     label: DIMENSION?.DefaultHierarchy ?? 'Default Hierarchy',
+          //     options: hierarchies$
+          //   }
+          // }
         ]
       },
       // Dimension 应该没有 KeyExpression

@@ -32,8 +32,7 @@ import { DropAction, NgmCopilotChatMessage } from '../types'
 import { injectCreateChatAgent } from './agent-free'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
-import { JsonOutputFunctionsParser } from 'langchain/output_parsers'
-
+import { formatDocumentsAsString } from 'langchain/util/document'
 
 export const AgentRecursionLimit = 20
 
@@ -282,41 +281,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
       const lastConversation = this.lastConversation()
 
       await this.triggerGraphAgent(prompt, lastConversation, freeCommand, { context: this.copilotContext })
-
-      // // Allow empty prompt
-      // if (prompt) {
-      //   newMessages.push({
-      //     id: nanoid(),
-      //     role: CopilotChatMessageRoleEnum.User,
-      //     content: prompt
-      //   })
-      // }
-
-      // // Append new messages to conversation
-      // if (newMessages.length > 0) {
-      //   this.upsertMessage(...newMessages)
-      // }
-
-      // const functions = this.copilotContext.getGlobalFunctionDescriptions()
-      // const body = {
-      //   ...this.aiOptions
-      // }
-      // if (functions.length) {
-      //   body.functions = functions
-      // }
-
-      // await this.triggerRequest(
-      //   [...lastConversation.messages, ...newMessages],
-      //   {
-      //     options: {
-      //       body
-      //     }
-      //   },
-      //   {
-      //     assistantMessageId,
-      //     conversationId
-      //   }
-      // )
     }
   }
 
@@ -339,64 +303,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         interactive
       })
     }
-
-    // /**
-    //  * @deprecated the ortherwise use agent command instead
-    //  */
-    // // Last user messages before add new messages
-    // const lastUserMessages = this.lastUserMessages()
-    // const newMessages = []
-    // try {
-    //   if (_command.systemPrompt) {
-    //     newMessages.push({
-    //       id: nanoid(),
-    //       role: CopilotChatMessageRoleEnum.System,
-    //       content: await _command.systemPrompt()
-    //     })
-    //   }
-    //   newMessages.push({
-    //     id: nanoid(),
-    //     role: CopilotChatMessageRoleEnum.User,
-    //     content: prompt,
-    //     command: _command.name
-    //   })
-    // } catch (err: any) {
-    //   newMessages.push({
-    //     id: nanoid(),
-    //     role: CopilotChatMessageRoleEnum.User,
-    //     content: prompt,
-    //     command: _command.name,
-    //     error: err.message
-    //   })
-    //   return
-    // } finally {
-    //   // Append new messages to conversation
-    //   this.upsertMessage(...newMessages)
-    // }
-
-    // const functions = _command.actions
-    //   ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.copilotContext.getEntryPoint(id)))
-    //   : this.copilotContext.getChatCompletionFunctionDescriptions()
-
-    // const body = {
-    //   ...this.aiOptions
-    // }
-    // if (functions.length) {
-    //   body.functions = functions
-    //   body.stream = false
-    // }
-
-    // await this.triggerRequest(
-    //   [...lastUserMessages, ...newMessages],
-    //   {
-    //     options: {
-    //       body
-    //     }
-    //   },
-    //   {
-    //     conversationId: conversationId ?? this.#conversationId()
-    //   }
-    // )
   }
 
   /**
@@ -626,6 +532,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     // --------------------------
 
     // Compile state graph
+    let references = null
     let graph = conversation.graph
     if (!graph) {
       try {
@@ -640,6 +547,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
         if (command.fewShotPrompt) {
           content = await command.fewShotPrompt.format({ input: content, context: '' })
           this.#logger?.debug(`[Command] [${command.name}] few shot input: ${content}`)
+        }
+
+        if (command.agent.referencesRetriever) {
+          references = await command.agent.referencesRetriever.pipe(formatDocumentsAsString).invoke(content)
         }
       } catch (err: any) {
         console.error(err)
@@ -665,7 +576,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         inputState = {
           input: content,
           messages,
-          context: contextContent ? contextContent : null
+          context: contextContent ? contextContent : null,
+          references
         }
       }
       const streamResults = await graph.stream(

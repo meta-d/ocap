@@ -523,12 +523,16 @@ export class NxStoryPointComponent {
    * @param widget widget data
    * @param widgetComponent widget component
    */
-  onWidgetItemClick(event, widget: StoryWidget, widgetComponent) {
+  onWidgetItemClick(event: MouseEvent, widget: StoryWidget, widgetComponent: NxStoryWidgetComponent) {
     // event.preventDefault() // 这个会阻止最原始的点击事件如 InputControl 里的 Checkbox 选择
     // event.stopPropagation() // 当初使用这个时为了避免继续触发 storypoint 页面的点击事件, 但现在看来它不仅阻止了 StoryPoint 的事件, 也阻止了很多其他事件
     // 所以还得换其他方式: 还是得从区分点击了具体什么组件来考虑
     // 来自 StoryWidget 上的事件加上标记, 后续 StoryPoint 组件可判断点击的目标
-    event.__fromStoryWidget__ = true
+    (<MouseEvent & {__fromStoryWidget__: boolean}>event).__fromStoryWidget__ = true
+    this.selectWidget(widget, widgetComponent.disableFab)
+  }
+
+  onWidgetSelected(widget: StoryWidget, widgetComponent: NxStoryWidgetComponent) {
     this.selectWidget(widget, widgetComponent.disableFab)
   }
 

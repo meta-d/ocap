@@ -1,7 +1,7 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { NxStoryService, StoryPointType } from '@metad/story/core'
-import { StoryPageSchema } from '@metad/story/story'
+import { NxStoryService, StoryPointType, WidgetComponentType } from '@metad/story/core'
+import { createWidgetSchema, StoryPageSchema, WidgetStyleSchema } from '@metad/story/story'
 import { GridsterConfig } from 'angular-gridster2'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
@@ -31,39 +31,28 @@ export function injectCreatePageTools() {
         })
         return `The new page be created!`
       }
-    })
-    // new DynamicStructuredTool({
-    //   name: 'createWidget',
-    //   description: 'Create a widget in story dashboard page.',
-    //   schema: z.object({
-    //     dataSettings: DataSettingsSchema,
-    //     widget: createWidgetSchema({
-    //       component: z
-    //         .enum([
-    //           WidgetComponentType.AnalyticalCard,
-    //           WidgetComponentType.AnalyticalGrid,
-    //           WidgetComponentType.InputControl,
-    //           WidgetComponentType.KpiCard,
-    //           WidgetComponentType.FilterBar
-    //         ])
-    //         .describe('The component type of widget')
-    //     })
-    //   }),
-    //   func: async ({ dataSettings, widget }) => {
-    //     logger.debug(
-    //       `Execute copilot action 'createWidget': '${widget.component}' using dataSettings:`,
-    //       dataSettings,
-    //       `widget:`,
-    //       widget
-    //     )
-    //     storyService.createStoryWidget({
-    //       ...widget,
-    //       dataSettings,
-    //       component: widget.component || WidgetComponentType.AnalyticalCard
-    //     })
+    }),
+    new DynamicStructuredTool({
+      name: 'createTitle',
+      description: 'Create a title widget in story dashboard page.',
+      schema: z.object({
+        widget: createWidgetSchema({}),
+        styling: WidgetStyleSchema,
+        options: z.object({
+          text: z.string().describe('The text content of widget')
+        }).describe('The options of text widget')
+      }),
+      func: async ({ widget, styling, options }) => {
+        logger.debug(`Execute copilot action 'createTitle':`, `widget:`, widget)
+        storyService.createStoryWidget({
+          ...widget,
+          component: WidgetComponentType.Text,
+          options,
+          styling
+        })
 
-    //     return `The new widget be created!`
-    //   }
-    // })
+        return `The new title widget be created!`
+      }
+    })
   ]
 }

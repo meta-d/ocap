@@ -22,6 +22,7 @@ import {
   Input,
   OnInit,
   Optional,
+  output,
   Output,
   Renderer2,
   signal,
@@ -94,6 +95,7 @@ import { StoryCommentsComponent } from '../story-comments/story-comments.compone
 import { NxStoryPointService } from '../story-point.service'
 import { NxStoryPointComponent } from '../story-point/story-point.component'
 import { NxStoryWidgetService } from './story-widget.service'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 
 @Component({
   standalone: true,
@@ -185,6 +187,7 @@ export class NxStoryWidgetComponent implements OnInit, AfterViewInit {
   @Output() optionsChange = new EventEmitter()
   @Output() fullscreenChange = new EventEmitter<boolean>()
   @Output() focusChange = new EventEmitter<boolean>()
+  readonly selectedChange = output<boolean>()
 
   @ViewChild('anchor', { read: ViewContainerRef }) anchor: ViewContainerRef
 
@@ -524,17 +527,6 @@ export class NxStoryWidgetComponent implements OnInit, AfterViewInit {
             })
         }
       })
-  }
-
-  @HostListener('click', ['$event'])
-  onSelected(event) {
-    // selected 时不一定就是在编辑当前组件
-    if (!this.laneKey) {
-      this.openDesigner()
-      // if (this.storyCopilotEngine) {
-      //   this.storyCopilotEngine.currentWidgetCopilot = this.stateService
-      // }
-    }
   }
 
   onMenuClick(action) {
@@ -901,6 +893,27 @@ export class NxStoryWidgetComponent implements OnInit, AfterViewInit {
       queryParams: queryParams,
       queryParamsHandling: 'merge' // remove to replace all query params by provided
     })
+  }
+
+  generateWithAI() {
+    this.selectedChange.emit(true)
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['widget']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
+  }
+
+  @HostListener('click', ['$event'])
+  onSelected(event) {
+    // selected 时不一定就是在编辑当前组件
+    if (!this.laneKey) {
+      this.openDesigner()
+    }
   }
 
   @HostListener('document:keydown.escape', ['$event'])

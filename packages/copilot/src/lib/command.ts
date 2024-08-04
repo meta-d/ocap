@@ -67,6 +67,7 @@ export interface CopilotCommand<T = any> {
     conversation?: boolean
     interruptBefore?: string[]
     interruptAfter?: string[]
+    referencesRetriever?: BaseRetriever
   }
 
   createGraph?: (

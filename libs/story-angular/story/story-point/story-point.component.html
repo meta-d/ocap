@@ -42,8 +42,9 @@
                     [editable]="editable()"
                     [key]="widget.key"
                     (fullscreenChange)="onFullscreenChange($event, widget);"
-                    (focusChange)="onFocus(widget.key)">
-                </ngm-story-widget>
+                    (focusChange)="onFocus(widget.key)"
+                    (selectedChange)="onWidgetSelected(widget, widgetComponent)"
+                />
                 <!-- <div *ngIf="editable" class="ngm-drag-handler"></div> -->
                 <div *ngIf="editable() && (resizingWidgetKey === widget.key || !resizingWidgetKey)" class="ngm-story__layout-widget-size absolute -top-6 right-0 text-xs font-semibold py-1 px-2 rounded text-gray-600 bg-orange-200 last:mr-0 mr-1 hidden group-hover:inline-block"
                     [class.ngm-story__layout-widget-size-show]="resizingWidgetKey === widget.key"

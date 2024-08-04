@@ -359,7 +359,6 @@ export class NxStoryPointService {
    * Create new widget
    */
   readonly createWidget = this.updater2((state, input: Partial<StoryWidget>) => {
-    // const untitledTitle = this.getTranslation('Story.Common.Untitled', 'Untitled')
     const states = this.stateStore.getValue()
     const key = input.key ?? uuid()
     const widget = {
@@ -367,7 +366,6 @@ export class NxStoryPointService {
       key,
       storyId: state.storyId,
       pointId: state.id,
-      // title: input.title || untitledTitle
     } as StoryWidget
 
     if (state.type === StoryPointType.Responsive) {

@@ -11,9 +11,11 @@
       @case ('object') {
         @if (isAnswer(item); as answer) {
           @if (answer.visualType === 'table') {
-            <ngm-analytical-grid class="w-full h-[600px] group overflow-auto"
+            <ngm-analytical-grid class="w-full h-[400px] group overflow-auto"
+              displayDensity="compact"
               [dataSettings]="toGrid(answer.dataSettings)"
-              [options]="{showToolbar: true}"
+              [slicers]="answer.slicers"
+              [options]="{showToolbar: true, paging: true, strip: true, sortable: true}"
               [appearance]="{
                 displayDensity: DisplayDensity.compact
               }"

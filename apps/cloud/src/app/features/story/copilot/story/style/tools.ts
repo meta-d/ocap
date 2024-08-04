@@ -1,7 +1,7 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { NxStoryService, StoryPreferences } from '@metad/story/core'
-import { StoryStyleSchema } from '@metad/story/story'
+import { StoryStyleSchema, WidgetsLayoutSchema } from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
 
 export function injectModifyStyleTool() {
@@ -23,4 +23,25 @@ export function injectModifyStyleTool() {
   })
 
   return modifyStyleTool
+}
+
+export function injectLayoutTool() {
+  const logger = inject(NGXLogger)
+  const storyService = inject(NxStoryService)
+
+  const layoutTool = new DynamicStructuredTool({
+    name: 'layout',
+    description: 'Modify layout of current story page',
+    schema: WidgetsLayoutSchema,
+    func: async ({ widgets }) => {
+      logger.debug('[Story] [AI Copilot] [Command tool] [layout] inputs:', widgets)
+      widgets.forEach((widget) => {
+        storyService.updateWidget({ widgetKey: widget.key, widget: { position: widget.position } })
+      })
+
+      return `Story page layout have been modified!`
+    }
+  })
+
+  return layoutTool
 }

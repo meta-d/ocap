@@ -32,7 +32,7 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
     secondary: new FormGroup({
       id: new FormControl(null),
       enabled: new FormControl(null),
-      provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
+      provider: new FormControl(AiProvider.OpenAI),
       apiKey: new FormControl(null),
       apiHost: new FormControl(null),
       defaultModel: new FormControl<string>(null)

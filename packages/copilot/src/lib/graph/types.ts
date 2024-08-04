@@ -5,6 +5,7 @@ export interface AgentState {
   input: string
   role: string
   context: string
+  references?: string
   messages: BaseMessage[]
   language?: string
 }
@@ -20,6 +21,10 @@ export function createCopilotAgentState(): StateGraphArgs<AgentState>['channels'
       default: () => ''
     },
     context: {
+      value: (x: any, y: any) => y ?? x,
+      default: () => ''
+    },
+    references: {
       value: (x: any, y: any) => y ?? x,
       default: () => ''
     },

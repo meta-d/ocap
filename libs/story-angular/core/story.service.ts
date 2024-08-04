@@ -271,14 +271,11 @@ export class NxStoryService {
   readonly displayPoints$ = toObservable(this.displayPoints)
 
   public readonly isEmpty$ = this.pageStates$.pipe(map((points) => isEmpty(points)))
-  readonly currentPageState = computed(() => this.pageStates()?.find((item) => item.key === this.currentPageKey()))
+  
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
-  readonly currentStoryPoint = computed(() => this.storyPoints()?.find((point) => point.key === this.currentPageKey()))
-  readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
-
-  readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
+  
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
   /**
@@ -350,9 +347,13 @@ export class NxStoryService {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly currentPageIndex = computed(() => {
-    return this.displayPoints()?.findIndex((item) => item.key === this.currentPageKey())
-  })
+  readonly currentPageIndex = computed(() =>
+    this.displayPoints()?.findIndex((item) => item.key === this.currentPageKey())
+  )
+  readonly currentPageState = computed(() => this.pageStates()?.find((item) => item.key === this.currentPageKey()))
+  readonly currentStoryPoint = computed(() => this.storyPoints()?.find((point) => point.key === this.currentPageKey()))
+  readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
+  readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
 
   /**
   |--------------------------------------------------------------------------
@@ -804,10 +805,10 @@ export class NxStoryService {
     const currentPage = state.story.points.find((item) => item.key === pointKey)
     const index = currentPage.widgets.findIndex((item) => item.key === widgetKey)
     if (index > -1) {
-      this.logger.debug(`[StoryService] update widget before:`, cloneDeep(currentPage.widgets[index]))
-      this.logger.debug(`[StoryService] update widget value:`, cloneDeep(widget))
+      // this.logger.debug(`[StoryService] update widget before:`, cloneDeep(currentPage.widgets[index]))
+      // this.logger.debug(`[StoryService] update widget value:`, cloneDeep(widget))
       currentPage.widgets[index] = assignDeepOmitBlank(currentPage.widgets[index], widget, 10)
-      this.logger.debug(`[StoryService] update widget after:`, cloneDeep(currentPage.widgets[index]))
+      // this.logger.debug(`[StoryService] update widget after:`, cloneDeep(currentPage.widgets[index]))
     } else {
       throw new Error(this.getTranslation('Story.Story.WidgetNotExistInPage', `Widget '${widgetKey}' does not exist in page '${pointKey}'`))
     }

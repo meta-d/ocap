@@ -641,9 +641,11 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   /**
    * When dimension changed
    */
-  private keySub = this.keyControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed())
-    .subscribe((dimension) => {
-      const property = getEntityProperty2<PropertyDimension | PropertyMeasure>(this.entityType(), dimension)
+  private keySub = combineLatest([
+    this.entityType$,
+    this.keyControl.valueChanges.pipe(distinctUntilChanged())
+    ]).pipe(takeUntilDestroyed()).subscribe(([entityType, dimension]) => {
+      const property = getEntityProperty2<PropertyDimension | PropertyMeasure>(entityType, dimension)
       if (isPropertyMeasure(property)) {
         this.formGroup.setValue({
           ...this._formValue,
@@ -654,7 +656,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
         let level = null
         if(isPropertyDimension(property)) {
           const hierarchyName = property.defaultHierarchy || dimension
-          let hierarchyProperty = getEntityHierarchy(this.entityType(), { dimension, hierarchy: hierarchyName})
+          let hierarchyProperty = getEntityHierarchy(entityType, { dimension, hierarchy: hierarchyName})
           if (!hierarchyProperty) {
             hierarchyProperty = property.hierarchies[0]
           }

@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http'
 import { effect, inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { Router } from '@angular/router'
 import { API_PREFIX, AuthService } from '@metad/cloud/state'
-import { AiProviderRole, BusinessRoleType, ICopilot, RequestOptions } from '@metad/copilot'
+import { AiProviderRole, BusinessRoleType, ICopilot } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/copilot-angular'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
@@ -21,6 +22,7 @@ export class PACCopilotService extends NgmCopilotService {
   readonly httpClient = inject(HttpClient)
   readonly authService = inject(AuthService)
   readonly roleService = inject(CopilotRoleService)
+  readonly router = inject(Router)
 
   readonly copilots = signal<ICopilot[]>(null)
 
@@ -37,16 +39,6 @@ export class PACCopilotService extends NgmCopilotService {
     )
     .subscribe((result) => {
       this.copilots.set(result.items)
-      
-      // if (result.total > 0) {
-      //   this.copilotConfig.set(result.items[0])
-
-      // } else {
-      //   this.copilotConfig.set(null)
-      //   this.copilot = {
-      //     enabled: false
-      //   }
-      // }
     })
 
   private roleSub = this.roleService
@@ -90,30 +82,33 @@ export class PACCopilotService extends NgmCopilotService {
   constructor() {
     super()
 
-    effect(() => {
-      const items = this.copilots()
-      if (items?.length > 0) {
-        items.forEach((item) => {
-          if (item.role === AiProviderRole.Primary) {
-            this.copilot = {
-              ...item,
-              chatUrl: API_CHAT,
-              apiHost: API_AI_HOST + `/${AiProviderRole.Primary}`,
-              apiKey: this.#store.token
+    effect(
+      () => {
+        const items = this.copilots()
+        if (items?.length > 0) {
+          items.forEach((item) => {
+            if (item.role === AiProviderRole.Primary) {
+              this.copilot = {
+                ...item,
+                chatUrl: API_CHAT,
+                apiHost: API_AI_HOST + `/${AiProviderRole.Primary}`,
+                apiKey: this.#store.token
+              }
+            } else if (item.role === AiProviderRole.Secondary) {
+              this.secondary = {
+                ...item,
+                apiHost: API_AI_HOST + `/${AiProviderRole.Secondary}`
+              }
             }
-          } else if (item.role === AiProviderRole.Secondary) {
-            this.secondary = {
-              ...item,
-              apiHost: API_AI_HOST + `/${AiProviderRole.Secondary}`
-            }
+          })
+        } else {
+          this.copilot = {
+            enabled: false
           }
-        })
-      } else {
-        this.copilot = {
-          enabled: false
         }
-      }
-    }, { allowSignalWrites: true })
+      },
+      { allowSignalWrites: true }
+    )
 
     effect(
       () => {
@@ -132,25 +127,22 @@ export class PACCopilotService extends NgmCopilotService {
     )
   }
 
-  // override requestOptions(): RequestOptions {
-  //   return {
-  //     headers: {
-  //       'Organization-Id': `${this.#store.selectedOrganization?.id}`,
-  //       Authorization: this.getAuthorizationToken()
-  //     }
-  //   }
-  // }
-
   private getAuthorizationToken() {
     return `Bearer ${this.#store.token}`
   }
 
   async upsertItems(items: Partial<IServerCopilot[]>) {
-    items = await Promise.all(items.map((item) => firstValueFrom(
-      this.httpClient.post<ICopilot>(API_PREFIX + '/copilot', item.id ? item : omit(item, 'id'))
-    )))
+    items = await Promise.all(
+      items.map((item) =>
+        firstValueFrom(this.httpClient.post<ICopilot>(API_PREFIX + '/copilot', item.id ? item : omit(item, 'id')))
+      )
+    )
 
     this.copilots.set(items as ICopilot[])
+  }
+
+  enableCopilot(): void {
+    this.router.navigate(['settings', 'copilot'])
   }
 }
 

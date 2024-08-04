@@ -20,7 +20,8 @@ import { BehaviorSubject, delay, tap } from 'rxjs'
 import { NgmSearchComponent } from '../common/search/search.component'
 import { NgmHighlightDirective } from '../core/directives'
 import { getCtrlCharacter, getOperatingSystem } from '../core/index'
-import { NgmCopilotEngineService } from '../services'
+import { NgmCopilotEngineService, NgmCopilotService } from '../services'
+import { MatIconModule } from '@angular/material/icon'
 
 @Component({
   standalone: true,
@@ -40,6 +41,7 @@ import { NgmCopilotEngineService } from '../services'
     MatAutocompleteModule,
     MatTooltipModule,
     MatMenuModule,
+    MatIconModule,
     ScrollingModule,
 
     NgmHighlightDirective,
@@ -51,7 +53,9 @@ export class CommandDialogComponent {
 
   readonly data = inject<{ commands: string[] }>(MAT_DIALOG_DATA)
   readonly dialogRef = inject(MatDialogRef)
+  readonly copilotService = inject(NgmCopilotService)
 
+  readonly copilotEnabled = toSignal(this.copilotService.enabled$)
   readonly ctrlKey = getCtrlCharacter(getOperatingSystem())
 
   readonly commandName = model<string>(this.data.commands[0])
@@ -148,6 +152,10 @@ export class CommandDialogComponent {
   })
 
   async execute() {
+    if (!this.copilotEnabled()) {
+      this.copilotService.enableCopilot()
+      this.dialogRef.close()
+    }
     if (this.creating()) return
 
     const prompt = this.prompt()

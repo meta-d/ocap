@@ -96,8 +96,9 @@ export const HierarchySchema = z.object({
 })
 
 const BaseDimensionSchema = {
-  name: z.string().describe('The name of the dimension'),
-  caption: z.string().describe('The caption of the dimension'),
+  name: z.string().describe('The name of dimension'),
+  caption: z.string().describe('The caption of dimension'),
+  description: z.string().optional().describe('The description of dimension'),
   type: z
     .enum([DimensionType.StandardDimension, DimensionType.TimeDimension])
     .optional()

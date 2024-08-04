@@ -1189,7 +1189,8 @@
       "CreateParameter": "创建参数",
       "CommandCalculationDesc": "描述计算度量的业务逻辑",
       "CommandStoryDesc": "描述你想要的故事仪表板",
-      "CommandStoryStyleDesc": "描述你想要的故事样式"
+      "CommandStoryStyleDesc": "描述你想要的故事样式",
+      "CommandWidgetDesc": "描述你想要的微件"
     },
     "Project": {
       "Project": "项目",

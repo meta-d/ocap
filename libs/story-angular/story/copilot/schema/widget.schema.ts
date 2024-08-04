@@ -36,7 +36,7 @@ export function createWidgetSchema<T>(component: T) {
       y: z.number().describe(`Position y of the widget in the page layout`),
       cols: z.number().describe('Width of the widget in page layout'),
       rows: z.number().describe('Height of the widget in page layout')
-    }),
+    }).optional(),
 
     ...component
   })

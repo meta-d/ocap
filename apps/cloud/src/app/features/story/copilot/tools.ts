@@ -1,18 +1,15 @@
 import { inject } from '@angular/core'
-import { MatDialog } from '@angular/material/dialog'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
 import {
   DataSettingsSchema,
   DimensionMemberSchema,
-  markdownEntityType,
   markdownModelCube,
   MeasureSchema,
   SlicerSchema,
   tryFixSlicer,
   VariableSchema
 } from '@metad/core'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { DataSettings, omit } from '@metad/ocap-core'
 import { FilterControlType, NxStoryService, WidgetComponentType } from '@metad/story/core'
 import {
@@ -21,7 +18,8 @@ import {
   tryFixAnalyticsAnnotation,
   completeChartAnnotation,
   createTableWidgetSchema,
-  createWidgetSchema
+  createWidgetSchema,
+  KPIStylingSchema
 } from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
@@ -60,6 +58,9 @@ export function injectPickCubeTool() {
   return pickCubeTool
 }
 
+/**
+ * Create filter bar widget
+ */
 export function injectCreateFilterBarTool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
@@ -95,6 +96,9 @@ export function injectCreateFilterBarTool() {
   })
 }
 
+/**
+ * Create KPI widget
+ */
 export function injectCreateKPITool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
@@ -107,10 +111,15 @@ export function injectCreateKPITool() {
       widget: createWidgetSchema({
         kpiValue: MeasureSchema,
         kpiTarget: MeasureSchema.optional()
-      })
+      }),
+      styling: KPIStylingSchema,
+      options: z.object({
+        shortNumber: z.boolean().optional().describe('Format the kpi value as short number'),
+        digitsInfo: z.string().default('0.1-1').optional().describe('The digits format of kpi value')
+      }).optional()
     }),
-    func: async ({ dataSettings, widget }) => {
-      logger.debug(`Execute copilot action 'createKPI' using dataSettings:`, dataSettings, `widget:`, widget)
+    func: async ({ dataSettings, widget, styling, options }) => {
+      logger.debug(`Execute copilot action 'createKPI' using dataSettings:`, dataSettings, `widget:`, widget, `options`, options, `styling`, styling)
       try {
         storyService.createStoryWidget({
           ...omit(widget, 'kpiValue', 'kpiTarget'),
@@ -123,6 +132,8 @@ export function injectCreateKPITool() {
               }
             }
           },
+          options,
+          styling,
           component: WidgetComponentType.KpiCard
         })
       } catch (error: any) {
@@ -134,6 +145,9 @@ export function injectCreateKPITool() {
   })
 }
 
+/**
+ * Create variable input control widget
+ */
 export function injectCreateVariableTool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
@@ -178,6 +192,9 @@ export function injectCreateVariableTool() {
   })
 }
 
+/**
+ * Create input control widget
+ */
 export function injectCreateInputControlTool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
@@ -213,14 +230,18 @@ export function injectCreateInputControlTool() {
   })
 }
 
+/**
+ * Create chart widget
+ */
 export function injectCreateChartTool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
 
   const createChartTool = new DynamicStructuredTool({
     name: 'createChartWidget',
-    description: 'Create a new widget in story page.',
+    description: 'Create a new or edit widget in story page.',
     schema: z.object({
+      key: z.string().optional().describe('Current widget key'),
       dataSettings: DataSettingsSchema,
       widget: createWidgetSchema({
         chart: ChartSchema.describe('Chart configuration'),
@@ -231,9 +252,9 @@ export function injectCreateChartTool() {
         .describe('The slicers used by the chart data')
       }),
     }),
-    func: async ({ dataSettings, widget }) => {
+    func: async ({ key, dataSettings, widget }) => {
       logger.debug(
-        '[Story] [AI Copilot] [Command tool] [createChart] inputs:',
+        '[Story] [AI Copilot] [Command tool] [createChart] inputs:', key,
         'dataSettings:',
         dataSettings,
         'position:',
@@ -244,46 +265,69 @@ export function injectCreateChartTool() {
       const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings as DataSettings))
 
       try {
-        storyService.createStoryWidget({
-          component: WidgetComponentType.AnalyticalCard,
-          position: widget.position ?? { x: 0, y: 0, rows: 5, cols: 5 },
-          title: widget.title,
-          dataSettings: {
-            ...(dataSettings ?? {}),
-            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(widget.chart, entityType)),
-            selectionVariant: {
-              selectOptions: (widget.slicers ?? ((<any>widget.chart).slicers as any[]))?.map((slicer) =>
-                tryFixSlicer(slicer, entityType)
-              )
+        if (key) {
+          storyService.updateWidget({
+            widgetKey: key,
+            widget: {
+              ...widget,
+              dataSettings: {
+                ...(dataSettings ?? {}),
+                chartAnnotation: completeChartAnnotation(chartAnnotationCheck(widget.chart, entityType)),
+                selectionVariant: {
+                  selectOptions: (widget.slicers ?? ((<any>widget.chart).slicers as any[]))?.map((slicer) =>
+                    tryFixSlicer(slicer, entityType)
+                  )
+                }
+              }
             }
-          }
-        })
+          })
+          return `The new chart widget has been created!`
+        } else {
+          storyService.createStoryWidget({
+            component: WidgetComponentType.AnalyticalCard,
+            position: widget.position ?? { x: 0, y: 0, rows: 5, cols: 5 },
+            title: widget.title,
+            dataSettings: {
+              ...(dataSettings ?? {}),
+              chartAnnotation: completeChartAnnotation(chartAnnotationCheck(widget.chart, entityType)),
+              selectionVariant: {
+                selectOptions: (widget.slicers ?? ((<any>widget.chart).slicers as any[]))?.map((slicer) =>
+                  tryFixSlicer(slicer, entityType)
+                )
+              }
+            }
+          })
+          return `The new chart widget has been created!`
+        }
       } catch (error) {
         return `Error: ${error}`
       }
-
-      return `The new chart widget has been created!`
     }
   })
 
   return createChartTool
 }
 
-
+/**
+ * Create table widget
+ * 
+ */
 export function injectCreateTableTool() {
   const logger = inject(NGXLogger)
   const storyService = inject(NxStoryService)
 
   const createTableTool = new DynamicStructuredTool({
     name: 'createTableWidget',
-    description: 'Create a new table widget.',
+    description: 'Create a new or edit table widget.',
     schema: z.object({
+      key: z.string().optional().describe('Current widget key'),
       dataSettings: DataSettingsSchema,
       widget: createWidgetSchema(createTableWidgetSchema())
     }),
-    func: async ({dataSettings, widget}) => {
+    func: async ({key, dataSettings, widget}) => {
       logger.debug(
         '[Story] [AI Copilot] [Command tool] [createTableWidget] inputs:',
+        key,
         dataSettings,
         widget,
       )
@@ -291,18 +335,33 @@ export function injectCreateTableTool() {
       const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings as DataSettings))
 
       try {
-        const key = nanoid()
-        storyService.createStoryWidget({
-          key,
-          ...widget,
-          component: WidgetComponentType.AnalyticalGrid,
-          dataSettings: {
-            ...(dataSettings ?? {}),
-            analytics: tryFixAnalyticsAnnotation(widget.analytics, entityType)
-          },
-        })
+        if (key) {
+          storyService.updateWidget({
+            widgetKey: key,
+            widget: {
+              ...widget,
+              component: WidgetComponentType.AnalyticalGrid,
+              dataSettings: {
+                ...(dataSettings ?? {}),
+                analytics: tryFixAnalyticsAnnotation(widget.analytics, entityType)
+              },
+            }
+          })
 
+          return `Current widget ${key} has been modified!`
+        } else {
+          const key = nanoid()
+          storyService.createStoryWidget({
+            key,
+            ...widget,
+            component: WidgetComponentType.AnalyticalGrid,
+            dataSettings: {
+              ...(dataSettings ?? {}),
+              analytics: tryFixAnalyticsAnnotation(widget.analytics, entityType)
+            },
+          })
         return `Story table widget '${key}' created!`
+      }
       } catch (error: any) {
         return `Error: ${error.message}`
       }
