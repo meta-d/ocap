@@ -1352,7 +1352,27 @@
       "Empty": "空白",
       "ShowChart": "显示图形",
       "ShowTable": "显示表格",
-      "AddtoStory": "添加到故事"
+      "AddtoStory": "添加到故事",
+      "SystemMessage_1": "您好，我是元数分析云 BI 智能助手，当前数据为《{value}》，可点击顶部切换。",
+      "SystemMessage_2": "你也可以尝试点击样例",
+      "SystemMessage_3": "我能准确识别含时间、条件、维度和指标的问题哦。",
+      "SystemMessage_Samples": [
+        "2023年加拿大客户每月的销售额走势",
+        "2024年所有用户中消费金额前 10 的用户",
+        "2023年各个月的消费金额分别是多少",
+        "2023年各渠道用户的消费金额分布",
+        "2023年各渠道的用户数分别是多少"
+      ],
+      "SystemMessage_eg": "如",
+      "SystemMessage_Year": "2023年",
+      "SystemMessage_Cloud": "元数分析云 BI",
+      "SystemMessage_Month": "每个月",
+      "SystemMessage_Revenue": "收入",
+      "SystemMessage_HowMuch": "是多少",
+      "Chart_Line": "线图",
+      "Chart_Column": "柱形图",
+      "Chart_Bar": "条形图",
+      "Chart_Pie": "饼图"
     },
     "Home": {
       "Insight": {

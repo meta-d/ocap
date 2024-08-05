@@ -24,18 +24,18 @@
                   Copilot<span class="text-xs text-violet-500 bg-violet-500/10 px-1.5 py-1 rounded-full m-2">ChatBI</span>
                 </div>
                 <div class="text-zinc-700 dark:text-zinc-300">
-                  <p class="mb-1">您好，我是元数分析云 BI 智能助手，当前数据为《{{entityType()?.caption || cube()}}》，可点击顶部切换。</p>
-                  <p class="mb-1">你也可以尝试点击样例:</p>
+                  <p class="mb-1">{{'PAC.ChatBI.SystemMessage_1' | translate: {value: entityType()?.caption || cube() || '', Default: 'Hello, I am the BI copilot of Metad Analytics Cloud. The current dataset is "'+(entityType()?.caption || cube() || 'Empty')+'". You can click the top to switch.'} }}</p>
+                  <p class="mb-1">{{'PAC.ChatBI.SystemMessage_2' | translate: {Default: 'You can also try clicking on the samples'} }}:</p>
                   <ul class="list-decimal">
-                    @for (example of examples; track example) {
+                    @for (example of examples(); track example) {
                       <li class="cursor-pointer my-2" (click)="setExample(example)">
                         <a>{{example}}</a>
                       </li>
                     }
                   </ul>
                   <div class="w-full my-4 border-b border-b-neutral-300 dark:border-b-neutral-800"></div>
-                  <p>我能准确识别含时间、条件、维度和指标的问题哦</p>
-                  <p>如 <span class="ngm-chatbi__cond ngm-chatbi__time">2023年</span> <span class="ngm-chatbi__cond ngm-chatbi__slicer">元数分析云 BI</span> <span class="ngm-chatbi__cond ngm-chatbi__dimension">每个月</span> <span class="ngm-chatbi__cond ngm-chatbi__measure">收入</span> 是多少?</p>
+                  <p>{{'PAC.ChatBI.SystemMessage_3' | translate: {Default: 'I can accurately identify problems involving time, conditions, dimensions, and indicators.'} }}</p>
+                  <p>{{'PAC.ChatBI.SystemMessage_eg' | translate: {Default: 'e.g.'} }} <span class="ngm-chatbi__cond ngm-chatbi__time">{{'PAC.ChatBI.SystemMessage_Year' | translate: {Default: '2023 year'} }}</span> <span class="ngm-chatbi__cond ngm-chatbi__slicer">{{'PAC.ChatBI.SystemMessage_Cloud' | translate: {Default: 'metad analytics cloud BI'} }}</span> <span class="ngm-chatbi__cond ngm-chatbi__dimension">{{'PAC.ChatBI.SystemMessage_Month' | translate: {Default: 'every month'} }}</span> <span class="ngm-chatbi__cond ngm-chatbi__measure">{{'PAC.ChatBI.SystemMessage_Revenue' | translate: {Default: 'revenue'} }}</span> {{'PAC.ChatBI.SystemMessage_HowMuch' | translate: {Default: 'how much'} }}?</p>
                 </div>
               </div>
             </div>
@@ -99,9 +99,7 @@
                     <div class="w-full flex flex-col items-start">
                       <div class="w-full mb-1 font-semibold">You</div>
                       <div class="w-full"></div>
-                      <p class="w-full whitespace-pre-wrap text-base break-words text-zinc-700 dark:text-zinc-300">
-                        {{ message.content }}
-                      </p>
+                      <p class="w-full whitespace-pre-wrap text-base break-words text-zinc-700 dark:text-zinc-300">{{ message.content }}</p>
                     </div>
                     <div class="flex items-center gap-3">
                       <span class="text-stone-400 text-xs">{{ message.createdAt | date: 'short' }}</span>

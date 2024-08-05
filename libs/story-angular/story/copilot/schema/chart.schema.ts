@@ -1,8 +1,8 @@
 import {
+  ChartMeasureSchema,
   DataSettingsSchema,
   DeepPartial,
   DimensionSchema,
-  MeasureSchema,
   SlicerSchema,
   getChartType,
   makeChartEnum,
@@ -42,7 +42,8 @@ export const ChartSchema = z.object({
     chartOptions: EChartsOptions.optional()
   }),
   dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),
-  measures: z.array(MeasureSchema).describe('The measures used by the chart'),
+  measures: z.array(ChartMeasureSchema).describe('The measures used by the chart'),
+  slicers: z.array(SlicerSchema).optional().describe('The slicers used by the chart data'),
 })
 
 export const ChartWidgetSchema = z.object({

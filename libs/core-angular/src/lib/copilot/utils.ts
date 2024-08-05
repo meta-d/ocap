@@ -75,7 +75,9 @@ ${getEntityMeasures(entityType).map((item) =>
     `    caption: ${item.caption || ''}`,
     item.description ? 
     `    description: >
-${prepend('      ', item.description)}` : null
+${prepend('      ', item.description)}` : null,
+    item.formatting?.unit ?
+    `    unit: ${item.formatting.unit}` : null
   ].filter(nonBlank).join(`\n`)
 ).join('\n')}
 ` + (variables.length ? 

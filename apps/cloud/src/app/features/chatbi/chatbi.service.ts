@@ -162,11 +162,13 @@ export class ChatbiService {
     )
 
     effect(() => {
+      const dataSource = this.dataSource()
       const indicators = this.indicators()
-      if (indicators) {
-        indicators.forEach((indicator) => {
-          this.dataSource().upsertIndicator(indicator)
-        })
+      if (dataSource) {
+        dataSource.setSchema({
+          ...(dataSource.options.schema ?? {}),
+          indicators
+        } as Schema)
       }
     }, { allowSignalWrites: true })
   }

@@ -1,18 +1,20 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { NxChartType, SlicerSchema, tryFixSlicer } from '@metad/core'
+import { nanoid } from '@metad/copilot'
+import { NxChartType, tryFixSlicer } from '@metad/core'
 import { ChartOrient, DataSettings, getEntityDimensions, PieVariant } from '@metad/ocap-core'
+import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
 import { ChatbiService } from '../chatbi.service'
 import { QuestionAnswer } from '../types'
 import { transformCopilotChart } from './copilot'
 import { ChatAnswerSchema } from './schema'
-import { nanoid } from '@metad/copilot'
 
 export function injectCreateChartTool() {
   const logger = inject(NGXLogger)
   const chatbiService = inject(ChatbiService)
+  const translate = inject(TranslateService)
 
   const answerTool = new DynamicStructuredTool({
     name: 'answerQuestion',
@@ -27,7 +29,7 @@ export function injectCreateChartTool() {
       const _slicers = (answer.slicers || slicers)?.map((slicer) => tryFixSlicer(slicer, entityType))
       const chartTypes = [
         {
-          name: '线图',
+          name: translate.instant('PAC.ChatBI.Chart_Line', { Default: 'Line' }),
           type: NxChartType.Line,
           orient: ChartOrient.vertical,
           chartOptions: {
@@ -40,7 +42,7 @@ export function injectCreateChartTool() {
           }
         },
         {
-          name: '柱形图',
+          name: translate.instant('PAC.ChatBI.Chart_Column', { Default: 'Column' }),
           type: NxChartType.Bar,
           orient: ChartOrient.vertical,
           chartOptions: {
@@ -53,7 +55,7 @@ export function injectCreateChartTool() {
           }
         },
         {
-          name: '条形图',
+          name: translate.instant('PAC.ChatBI.Chart_Bar', { Default: 'Bar' }),
           type: NxChartType.Bar,
           orient: ChartOrient.horizontal,
           chartOptions: {
@@ -66,7 +68,7 @@ export function injectCreateChartTool() {
           }
         },
         {
-          name: '饼图',
+          name: translate.instant('PAC.ChatBI.Chart_Pie', { Default: 'Pie' }),
           type: NxChartType.Pie,
           variant: PieVariant.None,
           chartOptions: {
@@ -148,29 +150,10 @@ export function injectCreateFormulaTool() {
     func: async ({ cube, name, formula, unit }) => {
       logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
 
-      chatbiService.addIndicator({id: nanoid(), name, entity: cube, code: name, formula, unit})
+      chatbiService.addIndicator({ id: nanoid(), name, entity: cube, code: name, formula, unit })
 
       return `The new calculated measure has been created!`
     }
   })
   return createFormulaTool
 }
-
-// export function injectAddSlicersTool() {
-//   const logger = inject(NGXLogger)
-//   const chatbiService = inject(ChatbiService)
-
-//   const createSlicersTool = new DynamicStructuredTool({
-//     name: 'createSlicers',
-//     description: 'Create slicers for the question',
-//     schema: z.object({
-//       slicers: z.array(SlicerSchema).describe('The slicers used by the chart data'),
-//     }),
-//     func: async ({ slicers }) => {
-//       logger.debug(`Execute copilot action 'createSlicers':`, slicers)
-
-//       return `Added slicers`
-//     }
-//   })
-//   return createSlicersTool
-// }

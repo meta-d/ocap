@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ElementRef, inject, model, viewChild } from '@angular/core'
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDividerModule } from '@angular/material/divider'
@@ -10,13 +10,13 @@ import { RouterModule } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
 import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
-import { TranslateModule } from '@ngx-translate/core'
+import { nonNullable } from '@metad/ocap-core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
-import { debounceTime, filter } from 'rxjs'
+import { debounceTime, filter, map } from 'rxjs'
 import { ChatbiAnswerComponent } from '../answer/answer.component'
 import { ChatbiService } from '../chatbi.service'
 import { ChatbiInputComponent } from '../input/input.component'
-import { nonNullable } from '@metad/ocap-core'
 
 @Component({
   standalone: true,
@@ -43,17 +43,24 @@ import { nonNullable } from '@metad/ocap-core'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatbiChatComponent {
+  readonly translate = inject(TranslateService)
   readonly chatbiService = inject(ChatbiService)
 
   readonly chatContent = viewChild('chartContent', { read: ElementRef<HTMLDivElement> })
 
-  readonly examples = [
-    '2023年加拿大客户每月的销售额走势',
-    '2024年所有用户中消费金额前 10 的用户',
-    '2023年各个月的消费金额分别是多少',
-    '2023年各渠道用户的消费金额分布',
-    '2023年各渠道的用户数分别是多少'
-  ]
+  readonly examples = toSignal(
+    this.translate
+      .stream('PAC.ChatBI.SystemMessage_Samples', {
+        Default: [
+          'Monthly sales trends of Canadian customers in 2023',
+          'Top 10 users in terms of spending in 2024',
+          'What is the spending amount in each month of 2023',
+          'Spending amount distribution of users in each channel in 2023',
+          'How many users are there in each channel in 2023'
+        ]
+      })
+      .pipe(map((examples) => examples))
+  )
 
   readonly cube = this.chatbiService.entity
   readonly entityType = this.chatbiService.entityType

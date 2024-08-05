@@ -25,7 +25,7 @@ export function injectCreateInsightGraph() {
       interruptAfter,
       tools: [...tools],
       messageModifier: async (state) => {
-        const systemTemplate = `你是一名专业的 BI 数据分析师。
+        const systemTemplate = `You are a professional BI data analyst.
 {{role}}
 {{language}}
 {{context}}
@@ -35,12 +35,14 @@ Reference Documentations:
 ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
 
+If you add two or more measures to the chart, and the measures have different units, set the role of the measures with different units to different axes.
+
 ${createAgentStepsInstructions(
-  `拆分问题中提及的 ‘维度’ ‘度量’ ‘时间’ ‘限制条件’ 等信息`,
-  `判断 measure 是否在 Cube 信息存在，如果存在则直接进行下一步，如果未找到则调用 'createFormula' tool 创建一个计算度量`,
+  `Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
+  `Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a calculated measure.`,
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
   `If there are variables in the cube, please add the variables (Use variable name as dimension, defaultValueKey and defaultValueCaption as the default member) to the slicers in tool.`,
-  `Call 'answerQuestion' to answer question`
+  `Call 'answerQuestion' tool to answer question`
 )}
 `
         const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {

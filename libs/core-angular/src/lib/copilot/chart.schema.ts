@@ -11,7 +11,7 @@ import {
 import { z } from 'zod'
 import { DeepPartial } from '../helpers'
 import { NxChartType } from '../smart-chart'
-import { DimensionSchema, MeasureSchema } from './cube.schema'
+import { BaseMeasureSchema, DimensionSchema, MeasureSchema } from './cube.schema'
 
 export function makeChartRulesPrompt() {
   return ``
@@ -774,3 +774,8 @@ export function getChartType(chartType: ChartType | string) {
 
   throw new Error(`Chart Type ${chartType?.type}/${chartType?.orient}/${chartType?.variant} not found`)
 }
+
+export const ChartMeasureSchema = z.object({
+  ...BaseMeasureSchema,
+  role: z.enum([null, 'Axis1', 'Axis2']).optional().describe('Role of value axis')
+})
