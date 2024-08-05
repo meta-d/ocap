@@ -1,3 +1,4 @@
+import { DisplayDensity } from '@metad/ocap-angular/core'
 import { CalculationType } from '@metad/ocap-core'
 import { z } from 'zod'
 
@@ -39,7 +40,8 @@ export const KPIStylingSchema = z
 export const StoryStyleSchema = z.object({
   story: z
     .object({
-      themeName: z.enum(['system', 'light', 'dark', 'thin']).describe('The theme name of story'),
+      themeName: z.enum(['system', 'light', 'dark', 'thin']).optional().describe('The theme name of story'),
+      displayDensity: z.enum([DisplayDensity.compact, DisplayDensity.cosy, null]).optional().describe('The display density of story'),
       enableWatermark: z.boolean().optional().default(false).describe('Enable watermark of story'),
       watermarkOptions: z
         .object({
@@ -49,9 +51,9 @@ export const StoryStyleSchema = z.object({
       colors: z.array(z.string()).optional().describe('The series colors of story'),
       tabBar: z.enum(['fixed', 'point', 'hidden']).optional().describe('The page header bar style of story'),
       pageHeaderPosition: z.enum(['above', 'below']).optional().describe('The page header position of story'),
-      pageHeaderStretchTabs: z.boolean().optional().describe('The page header is stretch tabs'),
+      pageHeaderStretchTabs: z.boolean().default(false).optional().describe('The page header is stretch tabs'),
       pageHeaderAlignTabs: z.enum(['start', 'center', 'end']).optional().describe('The page header align tabs'),
-      pageHeaderShowLabel: z.enum(['auto', 'always', 'never']).optional().describe('The page header show label'),
+      pageHeaderShowLabel: z.enum(['auto', 'always', 'never']).default('auto').optional().describe('The page header show label'),
       pageHeaderFitInkBarToContent: z.boolean().optional().describe('The page header fit ink bar to content')
     })
     .optional()
@@ -110,3 +112,9 @@ export const WidgetStyleSchema = z
   })
   .optional()
   .describe('The widget styles')
+
+export const EmulatedDeviceSchema = z.object({
+  name: z.string().describe('Name of the emulated device'),
+  width: z.number().describe('Width (px) of the device'),
+  height: z.number().describe('Height (px) of the device'),
+})

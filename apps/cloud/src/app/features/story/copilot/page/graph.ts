@@ -48,6 +48,7 @@ Widget 类型分为 Text, FilterBar, InputControl, Table, Chart, and KPI。
 
 - 页面 layout 布局默认是 40 * 40.
 - When creating a FilterBar widget, if there are variables in the cube, please add the variables (Use variable name as dimension) to the Filterbar dimensions first.
+- When creating a table widget, try to use the top level of the dimension to avoid excessive data size.
 
 The cube context:
 {{context}}

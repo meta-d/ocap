@@ -138,11 +138,13 @@
 
   @if (collapsible()) {
     <button mat-icon-button (click)="toggleExpand()">
-        <mat-icon *ngIf="expandLess()" fontSet="material-icons-round">expand_less</mat-icon>
-        <mat-icon *ngIf="!expandLess()" fontSet="material-icons-round">expand_more</mat-icon>
+      @if (expandLess()) {
+        <mat-icon fontSet="material-icons-round">expand_less</mat-icon>
+      } @else {
+        <mat-icon fontSet="material-icons-round">expand_more</mat-icon>
+      }
     </button>
   }
-    
 </div>
 
 <div *ngIf="showDetails() === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800 text-neutral-100"

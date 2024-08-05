@@ -1,8 +1,8 @@
 import { inject } from '@angular/core'
-import { CopilotAgentType } from '@metad/copilot'
+import { CopilotAgentType, referencesCommandName } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
-import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
+import { injectAgentFewShotTemplate, injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
 import { injectCreateInsightGraph } from './graph'
 import { CHATBI_COMMAND_NAME } from './types'
 
@@ -10,6 +10,7 @@ export function injectInsightCommand() {
   const translate = inject(TranslateService)
   const createGraph = injectCreateInsightGraph()
 
+  const referencesRetriever = injectExampleRetriever(referencesCommandName('calculated'), { k: 3, vectorStore: null })
   const fewShotPrompt = injectAgentFewShotTemplate(CHATBI_COMMAND_NAME, { k: 1, vectorStore: null })
   return injectCopilotCommand(CHATBI_COMMAND_NAME, {
     alias: 'ci',
@@ -20,7 +21,8 @@ export function injectInsightCommand() {
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true,
-      interruptBefore: ['tools']
+      interruptBefore: ['tools'],
+      referencesRetriever
     },
     fewShotPrompt,
     createGraph

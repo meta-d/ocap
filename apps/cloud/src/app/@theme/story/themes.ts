@@ -55,7 +55,7 @@ export function effectStoryTheme(elementRef: Signal<ElementRef<unknown>> | Eleme
 
     if (current === ThemesEnum.system || current === ThemesEnum.default || !current) {
       const { primary } = appService.theme$()
-      current = primary
+      current = primary as ThemesEnum
     }
     if (echartsTheme?.[current]) {
       coreService.changeTheme(`${current}-${key}`)

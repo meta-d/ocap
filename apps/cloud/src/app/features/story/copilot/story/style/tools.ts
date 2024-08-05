@@ -1,8 +1,30 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { NxStoryService, StoryPreferences } from '@metad/story/core'
-import { StoryStyleSchema, WidgetsLayoutSchema } from '@metad/story/story'
+import { EmulatedDevice, NxStoryService, StoryPreferences } from '@metad/story/core'
+import { EmulatedDeviceSchema, StoryStyleSchema, WidgetsLayoutSchema } from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
+import { z } from 'zod'
+
+export function injectUpdateStoryOptionsTool() {
+  const logger = inject(NGXLogger)
+  const storyService = inject(NxStoryService)
+
+  const updateStoryOptionsTool = new DynamicStructuredTool({
+    name: 'updateStoryOptions',
+    description: 'Modify optios of the story',
+    schema: z.object({
+      emulatedDevice: EmulatedDeviceSchema
+    }),
+    func: async ({emulatedDevice}) => {
+      logger.debug('[Story] [AI Copilot] [Command tool] [updateStoryOptions] inputs:', emulatedDevice)
+      storyService.updateStoryOptions({emulatedDevice: emulatedDevice as EmulatedDevice})
+
+      return `Story styles have been modified!`
+    }
+  })
+
+  return updateStoryOptionsTool
+}
 
 export function injectModifyStyleTool() {
   const logger = inject(NGXLogger)

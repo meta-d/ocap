@@ -29,12 +29,11 @@ export function injectCreateInsightGraph() {
 {{role}}
 {{language}}
 {{context}}
+Reference Documentations:
+{{references}}
 
 ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
-
-年累计计算公式为：
-  Aggregate(PeriodsToDate([Time_Dimension].[Year_Level], [Time_Dimension].CurrentMember), [Measures].[measureName])
 
 ${createAgentStepsInstructions(
   `拆分问题中提及的 ‘维度’ ‘度量’ ‘时间’ ‘限制条件’ 等信息`,

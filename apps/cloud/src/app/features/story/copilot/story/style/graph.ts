@@ -5,7 +5,7 @@ import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
 import { pick } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
-import { injectLayoutTool, injectModifyStyleTool } from './tools'
+import { injectLayoutTool, injectModifyStyleTool, injectUpdateStoryOptionsTool } from './tools'
 import { storyStyleAgentState } from './types'
 
 /**
@@ -19,8 +19,9 @@ export function injectCreateStyleGraph() {
   const storyService = inject(NxStoryService)
   const modifyStyleTool = injectModifyStyleTool()
   const layoutTool = injectLayoutTool()
+  const updateStoryOptionsTool = injectUpdateStoryOptionsTool()
 
-  const tools = [modifyStyleTool, layoutTool]
+  const tools = [modifyStyleTool, updateStoryOptionsTool, layoutTool]
 
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     return createReactAgent({
@@ -33,7 +34,7 @@ export function injectCreateStyleGraph() {
       messageModifier: async (state) => {
         const gridOptions = storyService.currentStoryPoint()?.gridOptions
         const widgets = storyService.currentStoryPoint()?.widgets
-        const systemTemplate = `You are a BI analysis expert.
+        const systemTemplate = `You are a BI analysis expert and are configuring the dashboard globally.
 {{role}}
 {{language}}
 {{context}}
@@ -42,10 +43,10 @@ References documents:
 
 当前页面使用的是 angular-gridster2 框架构建，其配置为：
 ${JSON.stringify(gridOptions)}
-当前页面内的 widgets 有以下：
-${JSON.stringify(widgets.map((widget) => pick(widget, 'key', 'title', 'component', 'position')))}
+${widgets ? `当前页面内的 widgets 有以下：
+${JSON.stringify(widgets.map((widget) => pick(widget, 'key', 'title', 'component', 'position')))}` : `当前故事为空`}
 
-其中 widget's position 是其在 grid 中的位置和大小。
+- 其中 widget's position 是其在 grid 中的位置和大小。
 
 修改故事仪表板样式 或者 对页面内 widgets 重新布局（调整大小和位置）。
 `

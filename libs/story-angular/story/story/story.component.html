@@ -166,10 +166,12 @@
                 [matTooltip]="point.name"
                 >
             </div>
-            <div *ngIf="pageHeaderShowLabel() === PageHeaderLabelEnum.auto && point.key === currentPageKey()
-                || pageHeaderShowLabel() === PageHeaderLabelEnum.always || pageHeaderShowLabel() === true" class="inline-block dark:text-white">
-                {{point.name}}
+          @if ((!pageHeaderShowLabel() || pageHeaderShowLabel() === PageHeaderLabelEnum.auto) && point.key === currentPageKey()
+            || pageHeaderShowLabel() === PageHeaderLabelEnum.always || pageHeaderShowLabel() === true) {
+            <div class="inline-block dark:text-white">
+              {{point.name}}
             </div>
+          }
         </div>
     </div>
 </div>

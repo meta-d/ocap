@@ -66,14 +66,14 @@ import { NgmOptionContent } from '../../input/option-content'
 })
 export class NgmSelectComponent implements ControlValueAccessor
 {
-  @Input() displayBehaviour: DisplayBehaviour | string
-  @Input() displayDensity: DisplayDensity | string
+  readonly displayBehaviour = input<DisplayBehaviour | string>()
+  readonly displayDensity = input<DisplayDensity | string>()
   /**
    * The name of key field of option 
-   */
-  readonly valueKey = input<'value' | 'key' | string>('value')
-  @Input() label: string
-  @Input() placeholder: string
+  */
+ readonly valueKey = input<'value' | 'key' | string>('value')
+ readonly label = input<string>()
+ readonly placeholder = input<string>()
 
   readonly searchable = input<boolean, string | boolean>(false, {
     transform: booleanAttribute

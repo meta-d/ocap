@@ -147,7 +147,7 @@ export class NxStoryService {
   readonly id$ = this.select((state) => state.story?.id)
 
   // Story options merge template
-  public readonly storyOptions$ = this.story$.pipe(
+  public readonly storyOptions$: Observable<StoryOptions> = this.story$.pipe(
     filter((story) => Boolean(story?.id)),
     map((story) => story?.options),
     distinctUntilChanged(isEqual),
@@ -173,7 +173,8 @@ export class NxStoryService {
     map((options) => options?.echartsTheme),
     distinctUntilChanged()
   )
-  readonly appearance$ = this.preferences$.pipe(map((preferences) => preferences?.story?.appearance))
+  // readonly appearance$ = this.preferences$.pipe(map((preferences) => preferences?.story?.appearance))
+  readonly displayDensity$ = this.preferences$.pipe(map((preferences) => preferences?.story?.displayDensity))
 
   // 全局固定过滤条件
   public readonly filters$ = this.storyOptions$.pipe(
@@ -287,21 +288,21 @@ export class NxStoryService {
   readonly isPanMode = toSignal(this.select((state) => state.isPanMode))
 
   // FilterBar merge with global appearance
-  public readonly filterBar$ = combineLatest([this.appearance$, this.select((state) => state.story?.filterBar)]).pipe(
-    map(([appearance, filterBar]) => {
-      return filterBar
-        ? merge(
-            {
-              styling: {
-                appearance
-              }
-            },
-            filterBar
-          )
-        : null
-    }),
-    shareReplay(1)
-  )
+  // public readonly filterBar$ = combineLatest([this.appearance$, this.select((state) => state.story?.filterBar)]).pipe(
+  //   map(([appearance, filterBar]) => {
+  //     return filterBar
+  //       ? merge(
+  //           {
+  //             styling: {
+  //               appearance
+  //             }
+  //           },
+  //           filterBar
+  //         )
+  //       : null
+  //   }),
+  //   shareReplay(1)
+  // )
 
   // toolbar events
   private _storyEvent$ = new Subject<StoryEvent>()

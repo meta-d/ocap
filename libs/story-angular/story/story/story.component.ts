@@ -176,10 +176,10 @@ export class NxStoryComponent implements AfterViewInit {
 
   // State Query
   readonly currentStory$ = this.storyService.story$
-  readonly filterBar$ = this.storyService.filterBar$
-  readonly filterBar = toSignal(this.storyService.filterBar$)
+  // readonly filterBar$ = this.storyService.filterBar$
+  // readonly filterBar = toSignal(this.storyService.filterBar$)
   // readonly filterBarOptions$ = this.storyService.filterBar$.pipe(map((filterBar) => filterBar?.options))
-  readonly filterBarStyling$ = this.storyService.filterBar$.pipe(map((filterBar) => filterBar?.styling))
+  // readonly filterBarStyling$ = this.storyService.filterBar$.pipe(map((filterBar) => filterBar?.styling))
 
   readonly preferences$ = this.storyService.preferences$
 
@@ -486,41 +486,41 @@ export class NxStoryComponent implements AfterViewInit {
     // this.filterBarOpenedChange.emit(opened)
   }
 
-  /**
-   * Open designer for filter bar
-   */
-  readonly openStoryFilterBar = effectAction((origin$: Observable<void>) => {
-    return origin$.pipe(
-      withLatestFrom(this.storyService.id$),
-      switchMap(
-        ([, id]) =>
-          this.settingsService?.openTabsDesigner(id, [
-            {
-              componentType: ComponentSettingsType.StoryFilterBar,
-              label: 'STORY_DESIGNER.BUILDER_TITLE',
-              icon: 'handyman',
-              model: this.filterBar$.pipe(map((filterBar) => filterBar ?? {}))
-            },
-            {
-              componentType: ComponentSettingsType.StoryFilterBar + '/Style',
-              label: 'STORY_DESIGNER.STYLING_TITLE',
-              icon: 'format_paint',
-              model: this.filterBarStyling$.pipe(map((filterBar) => filterBar ?? {}))
-            }
-          ]) ?? EMPTY
-      ),
-      tap((result: [StoryFilterBar, StoryFilterBar['styling']]) => {
-        const [filterBar, styling] = result
-        if (filterBar || styling) {
-          const options = { ...(filterBar ?? {}) }
-          if (styling) {
-            options.styling = styling
-          }
-          this.storyService.updateStoryFilterBar(options)
-        }
-      })
-    )
-  })
+  // /**
+  //  * Open designer for filter bar
+  //  */
+  // readonly openStoryFilterBar = effectAction((origin$: Observable<void>) => {
+  //   return origin$.pipe(
+  //     withLatestFrom(this.storyService.id$),
+  //     switchMap(
+  //       ([, id]) =>
+  //         this.settingsService?.openTabsDesigner(id, [
+  //           {
+  //             componentType: ComponentSettingsType.StoryFilterBar,
+  //             label: 'STORY_DESIGNER.BUILDER_TITLE',
+  //             icon: 'handyman',
+  //             model: this.filterBar$.pipe(map((filterBar) => filterBar ?? {}))
+  //           },
+  //           {
+  //             componentType: ComponentSettingsType.StoryFilterBar + '/Style',
+  //             label: 'STORY_DESIGNER.STYLING_TITLE',
+  //             icon: 'format_paint',
+  //             model: this.filterBarStyling$.pipe(map((filterBar) => filterBar ?? {}))
+  //           }
+  //         ]) ?? EMPTY
+  //     ),
+  //     tap((result: [StoryFilterBar, StoryFilterBar['styling']]) => {
+  //       const [filterBar, styling] = result
+  //       if (filterBar || styling) {
+  //         const options = { ...(filterBar ?? {}) }
+  //         if (styling) {
+  //           options.styling = styling
+  //         }
+  //         this.storyService.updateStoryFilterBar(options)
+  //       }
+  //     })
+  //   )
+  // })
 
   async openShare(point: StoryPoint) {
     const story = await firstValueFrom(this.currentStory$)

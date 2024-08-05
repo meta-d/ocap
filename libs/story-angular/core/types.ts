@@ -11,7 +11,7 @@ import {
   IStory,
   ISubscription
 } from '@metad/contracts'
-import { NgmAppearance, ThemesEnum } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance, ThemesEnum } from '@metad/ocap-angular/core'
 import {
   DataSettings,
   DataSourceOptions,
@@ -105,10 +105,11 @@ export interface StoryPreferences {
     enableWatermark?: boolean
     watermarkOptions?: NxWatermarkOptions
     /**
+     * @deprecated use displayDensity
      * Global appearance for all widgets in this story
      */
     appearance?: NgmAppearance
-
+    displayDensity?: DisplayDensity
     /**
      * @deprecated use storyStyling
      */

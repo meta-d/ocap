@@ -3,9 +3,9 @@ import { ThemesEnum } from '@metad/ocap-angular/core'
 import { PageHeaderLabelEnum } from '@metad/story/core'
 import {
   AccordionWrappers,
-  Appearances,
   Borders,
   BoxShadow,
+  displayDensity,
   FontCss,
   FORMLY_ROW,
   FORMLY_W_1_2,
@@ -264,14 +264,15 @@ export function StoryPreferencesFields(className: string, Story) {
         hide: `!model || model.tabBar !== 'point'`
       }
     },
-    {
-      key: 'appearance',
-      wrappers: ['panel'],
-      props: {
-        label: Story?.Widgets?.Common?.Appearance ?? 'Appearance'
-      },
-      fieldGroup: Appearances(FORMLY_W_FULL, Story?.Widgets?.Common)
-    },
+    // {
+    //   key: 'appearance',
+    //   wrappers: ['panel'],
+    //   props: {
+    //     label: Story?.Widgets?.Common?.Appearance ?? 'Appearance'
+    //   },
+    //   fieldGroup: Appearances(FORMLY_W_FULL, Story?.Widgets?.Common)
+    // },
+    displayDensity(Story?.Widgets?.Common),
     {
       key: 'themeName',
       type: 'button-toggle',

@@ -14,7 +14,7 @@ import { injectCreateWidgetAgent } from '../widget'
 import { injectCreateStyleGraph } from './style'
 import { StoryAgentState, storyAgentState } from './types'
 import { NxStoryService } from '@metad/story/core'
-import { injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
+import { injectAgentFewShotTemplate, injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
 import { STORY_STYLE_COMMAND_NAME } from './style/types'
 import { reference } from '@popperjs/core'
 import { formatDocumentsAsString } from 'langchain/util/document'
@@ -41,11 +41,12 @@ export function injectCreateStoryGraph() {
   )
 
   const createPageAgent = injectCreatePageAgent()
-  const createWidgetGraph = injectCreateWidgetAgent()
+  // const createWidgetGraph = injectCreateWidgetAgent()
   const createStyleAgent = injectCreateStyleGraph()
 
   const styleReferencesRetriever = injectExampleRetriever(referencesCommandName(STORY_STYLE_COMMAND_NAME), { k: 3, vectorStore: null })
-  
+  const styleFewShotPrompt = injectAgentFewShotTemplate(STORY_STYLE_COMMAND_NAME, { k: 1, vectorStore: null })
+
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     const calculationAgent = (await createCalculationGraph({ llm })).compile()
     const pageAgent = await createPageAgent({ llm })
@@ -67,13 +68,13 @@ export function injectCreateStoryGraph() {
           name: 'page',
           description: 'Create a dashboard page for the analysis topic'
         },
-        {
-          name: 'widget',
-          description: 'create a widget in story dashboard'
-        },
+        // {
+        //   name: 'widget',
+        //   description: 'create a widget in story dashboard'
+        // },
       ],
       tools,
-      `你是一名数据分析师。
+      `You are a data analyst who wants to create a story dashboard.
 {role}
 {language}
 {context}
@@ -142,10 +143,11 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
       .addNode(
         'style',
         RunnableLambda.from(async (state: StoryAgentState) => {
-          const references = await styleReferencesRetriever.pipe(formatDocumentsAsString).invoke(state.instructions)
+          const content = await styleFewShotPrompt.format({input: state.instructions, context: ''})
+          const references = await styleReferencesRetriever.pipe(formatDocumentsAsString).invoke(content)
           const { messages } = await styleAgent.invoke({
             input: state.instructions,
-            messages: [new HumanMessage(state.instructions)],
+            messages: [new HumanMessage(content)],
             role: state.role,
             context: state.context,
             language: state.language,

@@ -290,13 +290,13 @@ export class NxStoryWidgetComponent implements OnInit, AfterViewInit {
   )
 
   public readonly styling$ = combineLatest([
-    this.storyService.appearance$,
+    this.storyService.displayDensity$,
     this.widget$.pipe(map((widget) => widget?.styling))
   ]).pipe(
-    map(([appearance, styling]) => {
+    map(([displayDensity, styling]) => {
       return assignDeepOmitBlank(
         {
-          appearance
+          appearance: { displayDensity }
         },
         styling,
         5

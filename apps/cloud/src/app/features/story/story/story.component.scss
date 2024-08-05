@@ -167,6 +167,7 @@ $prefix: (ngm, story-designer);
 
 .ngm-story__quick-start-widget {
   @apply w-80 text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
+    transition-opacity
     active:shadow-lg;
   @apply sm:p-16;
   background-color: var(--ngm-color-surface-container-low);

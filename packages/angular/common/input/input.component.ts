@@ -15,14 +15,15 @@ import { toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatInputModule } from '@angular/material/input'
-import { ISelectOption } from '@metad/ocap-angular/core'
+import { DisplayDensity, ISelectOption } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { map, startWith, switchMap } from 'rxjs'
 import { NgmOptionContent } from './option-content'
+import { NgmHighlightDirective } from '../directives'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MatInputModule, MatAutocompleteModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MatInputModule, MatAutocompleteModule, NgmHighlightDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-input',
   templateUrl: './input.component.html',
@@ -36,11 +37,12 @@ import { NgmOptionContent } from './option-content'
   ]
 })
 export class NgmInputComponent implements ControlValueAccessor {
-  @Input() label: string
-  @Input() placeholder: string
+  readonly label = input<string>()
+  readonly placeholder = input<string>()
   readonly type = input<string>(null)
   @Input() defaultValue = null
   @Input() valueKey = 'value'
+  readonly displayDensity = input<DisplayDensity | string>()
 
   readonly options = input<ISelectOption[]>()
 
@@ -64,7 +66,11 @@ export class NgmInputComponent implements ControlValueAccessor {
   }
   private readonly _value = signal(null)
 
-  searchControl = new FormControl()
+  readonly searchControl = new FormControl()
+  get highlight() {
+    return this.searchControl.value
+  }
+
   private _onChange: (value) => void
   private _onTouched: (value) => void
 

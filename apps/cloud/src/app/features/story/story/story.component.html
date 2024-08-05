@@ -50,8 +50,7 @@
       <ngm-settings-panel class="ngm-story__settings-container overflow-hidden"
         liveMode
         [(opened)]="designerOpened" 
-      >
-      </ngm-settings-panel>
+      />
 
       <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
         cdkDrag
@@ -100,41 +99,43 @@
                 >
 
                 <ngm-story class="w-full h-full" tabindex="0"
-                    [id]="storyId"
-                    [story]="story()"
-                    [pageKey]="pageKey()"
-                    [widgetKey]="widgetKey()"
-                    [options]="storyOptions"
-                    [editable]="editable"
-                    [watermark]="watermark$ | async"
+                  [id]="storyId"
+                  [story]="story()"
+                  [pageKey]="pageKey()"
+                  [widgetKey]="widgetKey()"
+                  [options]="storyOptions"
+                  [editable]="editable"
+                  [watermark]="watermark$ | async"
                 >
                 </ngm-story>
 
-                <div *ngIf="storyService.isEmpty$ | async" class="ngm-story__quick-start flex flex-col justify-center items-center z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <span class="text-6xl font-notoColorEmoji">🛒</span>
-                    <div class="text-lg my-2">
-                        {{ 'Story.Designer.LookingEmpty' | translate: {Default: 'This story is looking empty'} }}.
-                    </div>
-                    <div class="text-sm opacity-50">
-                        {{ 'Story.Designer.LookingEmptyAddStoryPoint' | translate: {Default: 'Add a story point to start'} }}!
+              @if (storyService.isEmpty$ | async) {
+                <div class="ngm-story__quick-start w-full max-w-full flex flex-col justify-center items-center z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <span class="text-6xl font-notoColorEmoji">🛒</span>
+                  <div class="text-xl my-2">
+                    {{ 'Story.Designer.LookingEmpty' | translate: {Default: 'This story is looking empty'} }}.
+                  </div>
+                  <div class="text-sm opacity-50">
+                    {{ 'Story.Designer.LookingEmptyAddStoryPoint' | translate: {Default: 'Add a story point to start'} }}!
+                  </div>
+
+                  <div class="flex flex-wrap justify-center items-center gap-4 mt-4">
+                    <div class="ngm-story__quick-start-widget"
+                      (click)="openNewPage()">
+                      <div>
+                        {{ 'Story.Toolbar.New_Canvas_Page' | translate: {Default: "New Canvas Page"} }}
+                      </div>
                     </div>
 
-                    <div class="flex flex-wrap justify-center items-center gap-4 mt-4">
-                        <div class="ngm-story__quick-start-widget"
-                            (click)="openNewPage()">
-                            <div>
-                                {{ 'Story.Toolbar.New_Canvas_Page' | translate: {Default: "New Canvas Page"} }}
-                            </div>
-                        </div>
-
-                        <div class="ngm-story__quick-start-widget"
-                            (click)="toolbarService.openTemplates()">
-                            <div>
-                                {{ 'Story.Toolbar.AddTemplate' | translate: {Default: "Add Template"} }}
-                            </div>
-                        </div>
+                    <div class="ngm-story__quick-start-widget"
+                      (click)="toolbarService.openTemplates()">
+                      <div>
+                        {{ 'Story.Toolbar.AddTemplate' | translate: {Default: "Add Template"} }}
+                      </div>
                     </div>
+                  </div>
                 </div>
+              }
             
                 <div ngmResizerBar resizerBarPosition="right" style="z-index: 1;"
                     cdkDrag
@@ -162,7 +163,7 @@
       cdkDropListGroup
       [data]="explore()"
       (closed)="closeExplorer($event)"
-    ></ngm-story-explorer>
+    />
   }
 
   <router-outlet #o="outlet"></router-outlet>
