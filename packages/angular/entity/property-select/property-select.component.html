@@ -14,7 +14,7 @@
     <div class="flex items-center">
       <ng-content select="[ngmPrefix]"></ng-content>
     </div>
-    <mat-select #propertySelect formControlName="dimension" class="overflow-hidden flex-1"
+    <mat-select #propertySelect [formControl]="keyControl" class="overflow-hidden flex-1"
       panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" 
       [required]="required()">
       <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden pl-2">
@@ -56,17 +56,29 @@
 
       <ngm-search class="w-full px-1" displayDensity="cosy" [formControl]="searchControl"
         (keydown)="onSearchKeydown($event)"
-        (click)="$event.stopPropagation()"></ngm-search>
+        (click)="$event.stopPropagation()"/>
 
-      <mat-optgroup *ngIf="showDimension" [label]=" 'Ngm.Property.DIMENSIONS' | translate: {Default: 'Dimensions'} ">
-        <mat-option [value]="property.name" *ngFor="let property of dimensions$ | async; trackBy: trackByName">
-          <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [displayDensity]="DisplayDensity.cosy" [highlight]="search"></ngm-entity-property>
-        </mat-option>
+    @if (showDimension()) {
+      <mat-optgroup [label]=" 'Ngm.Property.DIMENSIONS' | translate: {Default: 'Dimensions'} ">
+        <ng-container *ngFor="let property of dimensions$ | async; trackBy trackByName">
+          <mat-option class="" [value]="property.name"
+            [ngClass]="{
+              'ngm-option__dimension': property.role === AggregationRole.dimension,
+              'ngm-option__hierarchy': property.role === AggregationRole.hierarchy,
+              'ngm-option__level': property.role === AggregationRole.level,
+              'ngm-option__hidden': property.visible === false
+            }"
+          >
+            <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [displayDensity]="DisplayDensity.cosy" [highlight]="search" ></ngm-entity-property>
+          </mat-option>
+        </ng-container>
       </mat-optgroup>
+    }
 
-      <mat-optgroup *ngIf="showMeasure" [label]=" 'Ngm.Property.CALCULATIONS' | translate: {Default: 'Calculations'} ">
+    @if (showMeasure()) {
+      <mat-optgroup [label]=" 'Ngm.Property.CALCULATIONS' | translate: {Default: 'Calculations'} ">
         @for (property of calculations(); track property.name) {
-          <mat-option [value]="property.name">
+          <mat-option class="ngm-option__measure" [value]="property.name">
             <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
           </mat-option>
         }
@@ -81,8 +93,9 @@
           </button>
         </mat-option>
       </mat-optgroup>
-
-      <mat-optgroup *ngIf="showMeasureControl" [label]=" 'Ngm.Property.MEASURE_CONTROLS' | translate: {Default: 'Measure Controls'} ">
+    }
+    @if (showMeasureControl()) {
+      <mat-optgroup [label]=" 'Ngm.Property.MEASURE_CONTROLS' | translate: {Default: 'Measure Controls'} ">
         @for (property of measureControls(); track property.name) {
           <mat-option [value]="property.name">
             <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
@@ -96,24 +109,30 @@
           </button>
         </mat-option>
       </mat-optgroup>
-
-      <mat-optgroup *ngIf="showMeasure" [label]=" 'Ngm.Property.MEASURES' | translate: {Default: 'Measures'} ">
-        <mat-option *ngFor="let property of notCalculations$ | async" [value]="property.name">
+    }
+    
+    @if (showMeasure()) {
+      <mat-optgroup [label]=" 'Ngm.Property.MEASURES' | translate: {Default: 'Measures'} ">
+        <mat-option *ngFor="let property of notCalculations$ | async" class="ngm-option__measure" [value]="property.name">
           <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
         </mat-option>
       </mat-optgroup>
-
-      <mat-optgroup *ngIf="showParameter" [label]=" 'Ngm.Property.PARAMETERS' | translate: {Default: 'Parameters'} ">
+    }
+    @if (showParameter()) {
+      <mat-optgroup [label]=" 'Ngm.Property.PARAMETERS' | translate: {Default: 'Parameters'} ">
         <mat-option *ngFor="let property of parameters$ | async" [value]="property.name">
           <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
         </mat-option>
       </mat-optgroup>
-
-      <mat-optgroup *ngIf="showMeasure" [label]=" 'Ngm.Property.INDICATORS' | translate: {Default: 'Indicators'} ">
-        <mat-option *ngFor="let property of indicators$ | async" [value]="property.name">
+    }
+    
+    @if (showMeasure()) {
+      <mat-optgroup [label]=" 'Ngm.Property.INDICATORS' | translate: {Default: 'Indicators'} ">
+        <mat-option *ngFor="let property of indicators$ | async" class="ngm-option__measure" [value]="property.name">
           <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
         </mat-option>
       </mat-optgroup>
+    }
     </mat-select>
     
     <div class="absolute left-0 top-0 h-full max-w-full flex items-center overflow-hidden pointer-events-none">
@@ -156,27 +175,31 @@
     ></ngm-input>
   </button>
 
-  <ng-container *ngIf="isMeasure$ | async">
-    <button mat-menu-item *ngIf="showMeasureAttributes" (click)="openFormatting($event)">
-      <mat-icon class="shrink-0">monetization_on</mat-icon>
-      <span>{{ 'Ngm.Property.Formatter' | translate: {Default: "Formatter"} }}</span>
-    </button>
+  @if (isMeasure$ | async) {
+    @if (showMeasureAttributes()) {
+      <button mat-menu-item (click)="openFormatting($event)">
+        <mat-icon class="shrink-0">monetization_on</mat-icon>
+        <span>{{ 'Ngm.Property.Formatter' | translate: {Default: "Formatter"} }}</span>
+      </button>
+    }
   
-    <button mat-menu-item *ngIf="calculationProperty() as calculationProperty"
-      (click)="$event.preventDefault();openEditCalculation(calculationProperty)">
-        <mat-icon class="shrink-0">functions</mat-icon>
-        <span fontSet="material-icons-outlined">
-          {{ 'Ngm.Property.EditFormula' | translate: {Default: "Edit Formula"} }}
-        </span>
-    </button>
-  </ng-container>
+    @if (calculationProperty(); as calculationProperty) {
+      <button mat-menu-item
+        (click)="$event.preventDefault();openEditCalculation(calculationProperty)">
+          <mat-icon class="shrink-0">functions</mat-icon>
+          <span fontSet="material-icons-outlined">
+            {{ 'Ngm.Property.EditFormula' | translate: {Default: "Edit Formula"} }}
+          </span>
+      </button>
+    }
+  }
 
-  <ng-container *ngIf="isParameter()">
+  @if (isParameter()) {
     <button mat-menu-item (click)="openEditParameter()">
       <mat-icon class="shrink-0" fontSet="material-icons-outlined">edit</mat-icon>
       <span>{{ 'Ngm.Property.PARAMETER' | translate: {Default: "Parameter"} }}</span>
     </button>
-  </ng-container>
+  }
 
   <button mat-menu-item *ngIf="isDimension()" disableRipple (click)="$event.stopPropagation();">
     <mat-checkbox [(ngModel)]="unbookedData">
@@ -184,16 +207,18 @@
     </mat-checkbox>
   </button>
 
-  <button mat-menu-item *ngIf="isDimension() || showMeasureAttributes" disableRipple (click)="$event.stopPropagation();">
+  <button mat-menu-item *ngIf="isDimension() || showMeasureAttributes()" disableRipple (click)="$event.stopPropagation();">
     <mat-checkbox [(ngModel)]="zeroSuppression">
       {{ 'Ngm.Property.ZeroSuppression' | translate: {Default: "Zero Suppression"} }}
     </mat-checkbox>
   </button>
 
-  <button mat-menu-item *ngIf="showOrder" disableRipple [matMenuTriggerFor]="orderMenu">
-    <mat-icon class="shrink-0" fontSet="material-icons-round">sort_by_alpha</mat-icon>
-    <span>{{ 'Ngm.Property.Order' | translate: {Default: "Order"} }}</span>
-  </button>
+  @if (showOrder()) {
+    <button mat-menu-item disableRipple [matMenuTriggerFor]="orderMenu">
+      <mat-icon class="shrink-0" fontSet="material-icons-round">sort_by_alpha</mat-icon>
+      <span>{{ 'Ngm.Property.Order' | translate: {Default: "Order"} }}</span>
+    </button>
+  }
   
 </mat-menu>
 

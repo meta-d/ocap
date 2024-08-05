@@ -22,6 +22,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard'
 import { sortBy } from 'lodash-es'
 import { NgmInputComponent, NgmSliderInputComponent } from '@metad/ocap-angular/common'
 import { BackdropFilterEnum, FilterEnum } from '@metad/core'
+import { DesignerTextComponent } from '../text/text.component'
 
 
 @Component({
@@ -42,7 +43,8 @@ import { BackdropFilterEnum, FilterEnum } from '@metad/core'
     NgmSliderInputComponent,
     ColorInputComponent,
     ImageUploadComponent,
-    NgmInputComponent
+    NgmInputComponent,
+    DesignerTextComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-designer-widget',
@@ -342,43 +344,6 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
     label: key
   }))
 
-  fontFamilies = [
-    "Lato, 'Noto Serif SC', monospace",
-    "Arial, Helvetica, sans-serif",
-    "'Times New Roman', Times, serif",
-    "Verdana, Geneva, sans-serif",
-    "Georgia, serif",
-    "'Courier New', Courier, monospace",
-    "Tahoma, Geneva, sans-serif",
-    "'Trebuchet MS', sans-serif",
-    "Palatino, serif",
-    "Impact, Charcoal, sans-serif",
-    "'Lucida Sans Unicode', 'Lucida Grande', sans-serif"
-  ]
-  fontFamilyOptions = [
-    {
-      value: null,
-      label: '--'
-    },
-    ...this.fontFamilies.map((value) => ({value}))
-  ]
-
-  fontWeights = [
-    'normal',
-    'bold',
-    'bolder',
-    'lighter',
-    '100',
-    '200',
-    '300',
-    '400',
-    '500',
-    '600',
-    '700',
-    '800',
-    '900'
-  ]
-
   formGroup = this.formBuilder.group<ComponentStyling>({
     padding: null,
     borderRadius: null,
@@ -411,6 +376,9 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
     filter: null,
     opacity: null,
   })
+
+  readonly textFormControl = new FormControl({})
+
   get padding() {
     return this.formGroup.get('padding').value
   }
@@ -511,31 +479,31 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
     return this.borderColor.value
   }
 
-  get color() {
-    return this.formGroup.get('color') as FormControl
-  }
-  get fontSize() {
-    return this.formGroup.get('fontSize') as FormControl
-  }
-  get lineHeight() {
-    return this.formGroup.get('lineHeight') as FormControl
-  }
-  get fontWeight() {
-    return this.formGroup.get('fontWeight') as FormControl
-  }
-  get fontFamily() {
-    return this.formGroup.get('fontFamily') as FormControl
-  }
-  get textAlign() {
-    return this.formGroup.get('textAlign').value
-  }
-  set textAlign(value) {
-    this.formGroup.get('textAlign').setValue(value)
-  }
+  // get color() {
+  //   return this.formGroup.get('color') as FormControl
+  // }
+  // get fontSize() {
+  //   return this.formGroup.get('fontSize') as FormControl
+  // }
+  // get lineHeight() {
+  //   return this.formGroup.get('lineHeight') as FormControl
+  // }
+  // get fontWeight() {
+  //   return this.formGroup.get('fontWeight') as FormControl
+  // }
+  // get fontFamily() {
+  //   return this.formGroup.get('fontFamily') as FormControl
+  // }
+  // get textAlign() {
+  //   return this.formGroup.get('textAlign').value
+  // }
+  // set textAlign(value) {
+  //   this.formGroup.get('textAlign').setValue(value)
+  // }
 
-  get textShadow() {
-    return this.formGroup.get('textShadow') as FormControl
-  }
+  // get textShadow() {
+  //   return this.formGroup.get('textShadow') as FormControl
+  // }
   get transform() {
     return this.formGroup.get('transform') as FormControl
   }
@@ -562,9 +530,14 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
     this._onChange(value)
   })
 
+  private textSub = this.textFormControl.valueChanges.subscribe((text) => {
+    this.formGroup.patchValue(text)
+  })
+
   writeValue(obj: any): void {
     if (obj) {
       this.formGroup.patchValue(obj)
+      this.textFormControl.patchValue(obj)
     }
   }
   registerOnChange(fn: any): void {

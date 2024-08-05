@@ -184,6 +184,8 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   protected locale$ = new BehaviorSubject<string>(null)
 
   /**
+   * @deprecated use editableSignal
+   * 
    * Editable
    */
   @HostBinding('class.editable')

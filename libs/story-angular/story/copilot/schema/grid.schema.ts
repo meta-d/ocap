@@ -30,7 +30,7 @@ export function createTableWidgetSchema() {
      */
     options: z
       .object({
-        showToolbar: z.boolean().default(true).optional().describe('Show toolbar'),
+        showToolbar: z.boolean().default(true).describe('Show toolbar'),
         strip: z.boolean().optional().describe('Is strip'),
         grid: z.boolean().optional().describe('Is grid'),
         paging: z.boolean().default(true).optional().describe('Is paging'),

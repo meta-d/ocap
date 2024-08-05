@@ -1,11 +1,11 @@
-import { Injectable, OnDestroy } from '@angular/core'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { Injectable, OnDestroy, Optional } from '@angular/core'
+import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { SmartFilterService } from '@metad/ocap-core'
 
 @Injectable()
 export class NgmSmartFilterService extends SmartFilterService implements OnDestroy {
-  constructor(dsCoreService: NgmDSCoreService) {
-    super(dsCoreService)
+  constructor(dsCoreService: NgmDSCoreService, @Optional() ngmFilterBarService?: NgmSmartFilterBarService) {
+    super(dsCoreService, ngmFilterBarService)
   }
 
   ngOnDestroy(): void {

@@ -1,8 +1,27 @@
-import { booleanAttribute, Component, EventEmitter, forwardRef, inject, input, Input, OnInit, Output } from '@angular/core'
+import {
+  booleanAttribute,
+  Component,
+  computed,
+  EventEmitter,
+  forwardRef,
+  inject,
+  input,
+  Input,
+  OnInit,
+  Output
+} from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { DisplayBehaviour, getEntityDimensions, getEntityParameters, getEntityVariables, getPropertyName, ISlicer, nonNullable, Syntax } from '@metad/ocap-core'
+import {
+  DisplayBehaviour,
+  getEntityDimensions,
+  getEntityVariables,
+  getPropertyName,
+  ISlicer,
+  nonNullable,
+  Syntax
+} from '@metad/ocap-core'
 import { pick } from 'lodash-es'
 import {
   BehaviorSubject,
@@ -19,7 +38,6 @@ import {
 import { BaseSlicersComponent } from '../base-slicers'
 import { SlicerBarComponent } from '../slicer-bar/slicer-bar.component'
 import { SlicersCapacity } from '../types'
-
 
 @Component({
   selector: 'ngm-slicers',
@@ -52,8 +70,10 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
     transform: booleanAttribute
   })
 
-  @Input() limit: number
-  @Input() capacities: SlicersCapacity[]
+  // @Input() limit: number
+  // @Input() capacities: SlicersCapacity[]
+  readonly limit = input<number>()
+  readonly capacities = input<SlicersCapacity[]>()
 
   @Output() valueChange = new EventEmitter<ISlicer[]>()
 
@@ -62,17 +82,11 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
     return this.searchControl.value
   }
 
-  get showCombinationSlicer() {
-    return this.entityType?.syntax === Syntax.SQL && this.capacities?.includes(SlicersCapacity.CombinationSlicer)
-  }
-  get showAdvancedSlicer() {
-    return this.entityType?.syntax === Syntax.MDX && this.capacities?.includes(SlicersCapacity.AdvancedSlicer)
-  }
-  get showVariable() {
-    return this.entityType?.syntax === Syntax.MDX && this.capacities?.includes(SlicersCapacity.Variable)
-  }
+  readonly showCombinationSlicer = computed(() => this.entityTypeSignal()?.syntax === Syntax.SQL && this.capacities()?.includes(SlicersCapacity.CombinationSlicer))
+  readonly showAdvancedSlicer = computed(() => this.entityTypeSignal()?.syntax === Syntax.MDX && this.capacities()?.includes(SlicersCapacity.AdvancedSlicer))
+  readonly showVariable = computed(() => this.entityTypeSignal()?.syntax === Syntax.MDX && this.capacities()?.includes(SlicersCapacity.Variable))
 
-  public readonly dimensions$ = this.entityType$.pipe(
+  readonly dimensions$ = this.entityType$.pipe(
     filter((val) => !!val),
     combineLatestWith(this.searchControl.valueChanges.pipe(startWith(''))),
     map(([entityType, search]) => {

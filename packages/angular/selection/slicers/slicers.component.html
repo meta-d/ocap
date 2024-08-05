@@ -1,34 +1,37 @@
-<ng-container *ngFor="let slicer of slicers$ | async; index as i">
+@for (slicer of slicers$ | async; track slicer; let i = $index) {
   <ngm-slicer [slicer]="slicer"
     [dataSettings]="dataSettings"
     [entityType]="entityType"
     [editable]="editable()"
     [disabled]="isDisabled"
-    [limit]="limit"
+    [limit]="limit()"
     (slicerChange)="update($event, i)"
-    (removed)="remove(i)">
-  </ngm-slicer>
+    (removed)="remove(i)"
+  />
   <mat-divider></mat-divider>
-</ng-container>
+}
 
-<button *ngIf="editable() && !inline()" mat-button [disabled]="isDisabled" color="primary" displayDensity="cosy" ngmAppearance="dashed"
-  (click)="openSlicerBar($event)">
-  <mat-icon>edit</mat-icon>{{ 'Ngm.Common.Add' | translate: {Default: "Add"} }}
-</button>
+@if (editable() && !inline()) {
+  <button mat-button [disabled]="isDisabled" color="primary" displayDensity="cosy" ngmAppearance="dashed"
+    (click)="openSlicerBar($event)">
+    <mat-icon>edit</mat-icon>{{ 'Ngm.Common.Add' | translate: {Default: "Add"} }}
+  </button>
+}
 
-<button *ngIf="editable() && inline()" mat-stroked-button [disabled]="isDisabled" displayDensity="cosy" ngmAppearance="dashed"
-  [matMenuTriggerFor]="menu">
-  <div class="flex items-center justify-center">
-    <mat-icon>add</mat-icon>
-    {{ 'Ngm.Common.Add' | translate: {Default: "Add"} }}
-  </div>
-</button>
-
+@if (editable() && inline()) {
+  <button mat-stroked-button [disabled]="isDisabled" displayDensity="cosy" ngmAppearance="dashed"
+    [matMenuTriggerFor]="menu">
+    <div class="flex items-center justify-center">
+      <mat-icon>add</mat-icon>
+      {{ 'Ngm.Common.Add' | translate: {Default: "Add"} }}
+    </div>
+  </button>
+}
 
 <mat-menu #menu="matMenu" class="ngm-density__cosy">
+  <ngm-search class="px-1" [formControl]="searchControl" (click)="$event.stopPropagation()" />
 
-  <ngm-search class="px-1" [formControl]="searchControl" (click)="$event.stopPropagation()"></ngm-search>
-  @if (showVariable) {
+  @if (showVariable()) {
     @for (property of variables$ | async; track property.name) {
       <button mat-menu-item (click)="openSlicerCreator(property)">
         <ngm-entity-property [property]="property" [displayBehaviour]="DisplayBehaviour.auto"
@@ -54,15 +57,18 @@
     }
   }
 
-  <button mat-menu-item *ngIf="showCombinationSlicer" (click)="$event.preventDefault();openSlicerCreator(SlicersCapacity.CombinationSlicer)">
-    <mat-icon>tune</mat-icon>
-    {{ 'Ngm.Selection.CombinationSlicer' | translate: {Default: "Combination Slicer"} }}
-  </button>
-
-  <button mat-menu-item *ngIf="showAdvancedSlicer" (click)="$event.preventDefault();openSlicerCreator(SlicersCapacity.AdvancedSlicer)">
-    <mat-icon>data_array</mat-icon>
-    {{ 'Ngm.Selection.AdvancedSlicer' | translate: {Default: 'Advanced Slicer'} }}
-  </button>
+  @if (showCombinationSlicer()) {
+    <button mat-menu-item (click)="$event.preventDefault();openSlicerCreator(SlicersCapacity.CombinationSlicer)">
+      <mat-icon>tune</mat-icon>
+      {{ 'Ngm.Selection.CombinationSlicer' | translate: {Default: "Combination Slicer"} }}
+    </button>
+  }
+  @if (showAdvancedSlicer()) {
+    <button mat-menu-item (click)="$event.preventDefault();openSlicerCreator(SlicersCapacity.AdvancedSlicer)">
+      <mat-icon>data_array</mat-icon>
+      {{ 'Ngm.Selection.AdvancedSlicer' | translate: {Default: 'Advanced Slicer'} }}
+    </button>
+  }
 </mat-menu>
 
 <mat-menu #calendarMenu="matMenu" class="ngm-density__compact">
@@ -71,10 +77,11 @@
       <mat-icon fontSet="material-icons-outlined">people_outline</mat-icon>
       {{ 'Ngm.Selection.DimensionMembers' | translate: {Default: 'Dimension Members'} }}
     </button>
-
-    <button mat-menu-item *ngFor="let variable of dateVariables" (click)="openDynamicDateHelp(property, variable.dateRange)">
-      {{ 'DateVariable.' + variable.id | translate: {Default: variable.id} }}
-    </button>
     
+    @for (variable of dateVariables; track variable.id) {
+      <button mat-menu-item (click)="openDynamicDateHelp(property, variable.dateRange)">
+        {{ 'DateVariable.' + variable.id | translate: {Default: variable.id} }}
+      </button>
+    }
   </ng-template>
 </mat-menu>

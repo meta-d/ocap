@@ -12,6 +12,7 @@ import {
   getErrorMessage,
   Intent,
   isNotEmpty,
+  markdownModelCube,
   nonNullable,
   NxCoreService,
   write
@@ -75,6 +76,7 @@ import {
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
 import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
+import { derivedAsync } from 'ngxtension/derived-async'
 
 @Injectable()
 export class NxStoryService {
@@ -145,7 +147,7 @@ export class NxStoryService {
   readonly id$ = this.select((state) => state.story?.id)
 
   // Story options merge template
-  public readonly storyOptions$ = this.story$.pipe(
+  public readonly storyOptions$: Observable<StoryOptions> = this.story$.pipe(
     filter((story) => Boolean(story?.id)),
     map((story) => story?.options),
     distinctUntilChanged(isEqual),
@@ -171,13 +173,26 @@ export class NxStoryService {
     map((options) => options?.echartsTheme),
     distinctUntilChanged()
   )
-  readonly appearance$ = this.preferences$.pipe(map((preferences) => preferences?.story?.appearance))
+  // readonly appearance$ = this.preferences$.pipe(map((preferences) => preferences?.story?.appearance))
+  readonly displayDensity$ = this.preferences$.pipe(map((preferences) => preferences?.story?.displayDensity))
 
   // 全局固定过滤条件
   public readonly filters$ = this.storyOptions$.pipe(
     map((options) => options?.filters),
     distinctUntilChanged()
   )
+  // Default data settings
+  readonly defaultDataSettings = computed(() => this.storyOptions()?.defaultDataSettings)
+  readonly defaultModelCubePrompt = derivedAsync(() => {
+    const dataSettings = this.defaultDataSettings()
+    if (dataSettings) {
+      return this.selectEntityType({ dataSource: dataSettings.dataSource, entitySet: dataSettings.entities[0] }).pipe(
+        map((cube) => markdownModelCube({ modelId: dataSettings.modelId, dataSource: dataSettings.dataSource, cube }))
+      )
+    }
+    return null
+  })
+
 
   readonly storyModel$ = this.select((state) => state.story.model)
   readonly storyModels$ = combineLatest([this.storyModel$, this.select((state) => state.story.models)]).pipe(
@@ -257,14 +272,11 @@ export class NxStoryService {
   readonly displayPoints$ = toObservable(this.displayPoints)
 
   public readonly isEmpty$ = this.pageStates$.pipe(map((points) => isEmpty(points)))
-  readonly currentPageState = computed(() => this.pageStates()?.find((item) => item.key === this.currentPageKey()))
+  
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
-  readonly currentStoryPoint = computed(() => this.storyPoints()?.find((point) => point.key === this.currentPageKey()))
-  readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
-
-  readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
+  
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
   /**
@@ -276,21 +288,21 @@ export class NxStoryService {
   readonly isPanMode = toSignal(this.select((state) => state.isPanMode))
 
   // FilterBar merge with global appearance
-  public readonly filterBar$ = combineLatest([this.appearance$, this.select((state) => state.story?.filterBar)]).pipe(
-    map(([appearance, filterBar]) => {
-      return filterBar
-        ? merge(
-            {
-              styling: {
-                appearance
-              }
-            },
-            filterBar
-          )
-        : null
-    }),
-    shareReplay(1)
-  )
+  // public readonly filterBar$ = combineLatest([this.appearance$, this.select((state) => state.story?.filterBar)]).pipe(
+  //   map(([appearance, filterBar]) => {
+  //     return filterBar
+  //       ? merge(
+  //           {
+  //             styling: {
+  //               appearance
+  //             }
+  //           },
+  //           filterBar
+  //         )
+  //       : null
+  //   }),
+  //   shareReplay(1)
+  // )
 
   // toolbar events
   private _storyEvent$ = new Subject<StoryEvent>()
@@ -336,9 +348,13 @@ export class NxStoryService {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly currentPageIndex = computed(() => {
-    return this.displayPoints()?.findIndex((item) => item.key === this.currentPageKey())
-  })
+  readonly currentPageIndex = computed(() =>
+    this.displayPoints()?.findIndex((item) => item.key === this.currentPageKey())
+  )
+  readonly currentPageState = computed(() => this.pageStates()?.find((item) => item.key === this.currentPageKey()))
+  readonly currentStoryPoint = computed(() => this.storyPoints()?.find((point) => point.key === this.currentPageKey()))
+  readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
+  readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
 
   /**
   |--------------------------------------------------------------------------
@@ -790,10 +806,10 @@ export class NxStoryService {
     const currentPage = state.story.points.find((item) => item.key === pointKey)
     const index = currentPage.widgets.findIndex((item) => item.key === widgetKey)
     if (index > -1) {
-      this.logger.debug(`[StoryService] update widget before:`, cloneDeep(currentPage.widgets[index]))
-      this.logger.debug(`[StoryService] update widget value:`, cloneDeep(widget))
+      // this.logger.debug(`[StoryService] update widget before:`, cloneDeep(currentPage.widgets[index]))
+      // this.logger.debug(`[StoryService] update widget value:`, cloneDeep(widget))
       currentPage.widgets[index] = assignDeepOmitBlank(currentPage.widgets[index], widget, 10)
-      this.logger.debug(`[StoryService] update widget after:`, cloneDeep(currentPage.widgets[index]))
+      // this.logger.debug(`[StoryService] update widget after:`, cloneDeep(currentPage.widgets[index]))
     } else {
       throw new Error(this.getTranslation('Story.Story.WidgetNotExistInPage', `Widget '${widgetKey}' does not exist in page '${pointKey}'`))
     }
@@ -1470,6 +1486,9 @@ export class NxStoryService {
     }
   })
 
+  /**
+   * Pick a default cube
+   */
   async openDefultDataSettings(): Promise<EntitySelectResultType> {
     const dataSources = this.dataSources()
 
@@ -1484,7 +1503,10 @@ export class NxStoryService {
         .afterClosed()
     )
     if (result) {
-      this.patchState({
+      // this.patchState({
+      //   defaultDataSettings: result
+      // })
+      this.updateStoryOptions({
         defaultDataSettings: result
       })
     }

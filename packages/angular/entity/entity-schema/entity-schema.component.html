@@ -1,5 +1,6 @@
 <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding matTreeNodePaddingIndent="20"
+    [cdkDragDisabled]="dragDisabled()"
     cdkDrag
     [cdkDragData]="node.item"
     [class.selected]="selectedHierarchy && (
@@ -16,13 +17,14 @@
       </mat-icon>
     }
 
-    <div class="ngm-entity-schema__type">{{node.item.type?.[0]}}</div>
+    <div class="ngm-entity-schema__type" [title]="node.item.dataType || node.item.type">{{node.item.dataType || node.item.type?.[0]}}</div>
     <ngm-display-behaviour [option]="{value: node.item.name, caption: node.item.caption ?? node.item.label}"
       [highlight]="searchControl.value">
     </ngm-display-behaviour>
     <div class="ngm-entity-schema__drag-placeholder" *cdkDragPlaceholder></div>
   </mat-tree-node>
   <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding matTreeNodePaddingIndent="20" class="group"
+    [cdkDragDisabled]="dragDisabled()"
     cdkDrag
     [cdkDragData]="node.item"
     [class.selected]="selectedHierarchy && (
@@ -37,7 +39,7 @@
     </button>
     <mat-spinner *ngIf="node.isLoading" class="m-2" strokeWidth="1" diameter="15"></mat-spinner>
 
-    <div class="ngm-entity-schema__type">{{node.item.type?.[0]}}</div>
+    <div class="ngm-entity-schema__type" [title]="node.item.dataType || node.item.type">{{node.item.dataType || node.item.type?.[0]}}</div>
 
     <ngm-display-behaviour class="flex-1" [option]="{value: node.item.name, caption: node.item.caption ?? node.item.label}"
       [highlight]="searchControl.value">

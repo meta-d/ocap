@@ -11,7 +11,7 @@ import { NgmDialogComponent } from '@metad/components/dialog'
 import { MDX } from '@metad/contracts'
 import { calcEntityTypePrompt, nonBlank } from '@metad/core'
 import { NgmCommonModule, ResizerModule } from '@metad/ocap-angular/common'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
+import { injectCopilotCommand } from '@metad/copilot-angular'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmCalculatedMeasureComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { AggregationRole, C_MEASURES, Syntax } from '@metad/ocap-core'
@@ -153,31 +153,31 @@ ${calcEntityTypePrompt(this.entityType())}
       return prompt
     },
     actions: [
-      injectMakeCopilotActionable({
-        name: 'new_or_edit_calculated_member',
-        description: 'Create a new formula for the calculated measure',
-        argumentAnnotations: [
-          {
-            name: 'formula',
-            type: 'string',
-            description: 'provide the new formula',
-            required: true
-          },
-          {
-            name: 'unit',
-            type: 'string',
-            description: 'unit of the formula',
-            required: true
-          }
-        ],
-        implementation: async (formula: string, unit: string) => {
-          this.#logger.debug(`Copilot command 'formula' params: formula is`, formula, `unit is`, unit)
-          this.calcMemberFormGroup.patchValue({ formula, unit })
-          this.showCalculatedMember.set(true)
+      // injectMakeCopilotActionable({
+      //   name: 'new_or_edit_calculated_member',
+      //   description: 'Create a new formula for the calculated measure',
+      //   argumentAnnotations: [
+      //     {
+      //       name: 'formula',
+      //       type: 'string',
+      //       description: 'provide the new formula',
+      //       required: true
+      //     },
+      //     {
+      //       name: 'unit',
+      //       type: 'string',
+      //       description: 'unit of the formula',
+      //       required: true
+      //     }
+      //   ],
+      //   implementation: async (formula: string, unit: string) => {
+      //     this.#logger.debug(`Copilot command 'formula' params: formula is`, formula, `unit is`, unit)
+      //     this.calcMemberFormGroup.patchValue({ formula, unit })
+      //     this.showCalculatedMember.set(true)
 
-          return `✅`
-        }
-      })
+      //     return `✅`
+      //   }
+      // })
     ]
   })
 

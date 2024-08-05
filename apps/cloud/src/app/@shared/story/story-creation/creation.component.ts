@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common'
-import { Component, Inject, OnInit, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { Component, Inject, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
+import { BusinessAreasService, ModelsService, StoriesService } from '@metad/cloud/state'
 import { NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, SemanticModel, TreeNodeInterface } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BusinessAreasService, ModelsService, StoriesService } from '@metad/cloud/state'
-import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators'
+import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs/operators'
 import { ICollection, ISemanticModel } from '../../../@core'
 import { InlineSearchComponent } from '../../form-fields'
 import { MaterialModule } from '../../material.module'
@@ -56,17 +56,22 @@ export class StoryCreationComponent {
   }
   collections: TreeNodeInterface<ICollection>[]
   private _models: ISemanticModel[]
-  models: ISemanticModel[]
+  // models: ISemanticModel[]
 
   searchControl = new FormControl(null)
 
   public readonly businessArea$ = this.businessAreaService.getMyAreasTree(true).pipe(startWith([]))
 
-  private searchSub = this.searchControl.valueChanges
-    .pipe(startWith(''), distinctUntilChanged(), debounceTime(300))
-    .subscribe((search) => {
-      this.models = this._models.filter((model) => model.name.toLowerCase().includes(search.toLowerCase()))
-    })
+  readonly models = toSignal(
+    this.searchControl.valueChanges.pipe(
+      startWith(''),
+      distinctUntilChanged(),
+      debounceTime(300),
+      map((search) =>
+        this._models.filter((model) => model.name.toLowerCase().includes(search.toLowerCase()))
+      )
+    )
+  )
 
   constructor(
     private businessAreaService: BusinessAreasService,
@@ -74,7 +79,7 @@ export class StoryCreationComponent {
     @Inject(MAT_DIALOG_DATA)
     public data: {
       story: {
-        id?: string;
+        id?: string
         collectionId: string
         name?: string
         description?: string
@@ -98,11 +103,14 @@ export class StoryCreationComponent {
         })
     }
     if (this.data.story?.id) {
-      this.storiesService.getOne(this.data.story.id, ['models']).pipe(takeUntilDestroyed()).subscribe((story) => {
-        this.form.patchValue({...story})
-      })
+      this.storiesService
+        .getOne(this.data.story.id, ['models'])
+        .pipe(takeUntilDestroyed())
+        .subscribe((story) => {
+          this.form.patchValue({ ...story })
+        })
     } else if (this.data.story) {
-      this.form.patchValue({...this.data.story})
+      this.form.patchValue({ ...this.data.story })
     }
   }
 
@@ -111,9 +119,11 @@ export class StoryCreationComponent {
   }
 
   onApply() {
-    this.dialogRef.close({
-      ...this.form.value,
-      models: this.form.value.models.map((model) => ({id: model.id}))
-    })
+    if (this.form.valid) {
+      this.dialogRef.close({
+        ...this.form.value,
+        models: this.form.value.models.map((model) => ({ id: model.id }))
+      })
+    }
   }
 }

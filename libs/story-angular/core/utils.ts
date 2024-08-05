@@ -154,7 +154,7 @@ export function componentStyling(styling: ComponentStyling) {
   
   componentStyles.fontFamily = styling.fontFamily ?? 'inherit'
   componentStyles.fontSize = (styling.fontSize && `${styling.fontSize}px`) || 'inherit'
-  componentStyles.lineHeight = (styling.lineHeight && `${styling.lineHeight}px`) || 'inherit'
+  componentStyles.lineHeight = styling.lineHeight || null
   componentStyles.fontWeight = styling.fontWeight ?? 'inherit'
   if (styling.textAlign) {
     componentStyles.textAlign = styling.textAlign

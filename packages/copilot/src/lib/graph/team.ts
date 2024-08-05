@@ -1,13 +1,14 @@
-import { BaseMessage, HumanMessage, isAIMessage } from '@langchain/core/messages'
+import { BaseMessage, HumanMessage, isAIMessage, ToolMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
+import { DynamicStructuredTool } from '@langchain/core/tools'
+import { END } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { AgentState, createCopilotAgentState } from './types'
-import { END } from '@langchain/langgraph/web'
-import { DynamicStructuredTool } from '@langchain/core/tools'
 
 export const SUPERVISOR_NAME = 'Supervisor'
+export const TOOLS_NAME = 'tools'
 
 export interface State extends AgentState {
   next: string
@@ -38,7 +39,6 @@ export function createState() {
   }
 }
 
-
 export const getInstructions = RunnableLambda.from((state: State) => {
   return {
     input: state.instructions,
@@ -61,12 +61,13 @@ export const joinGraph = RunnableLambda.from((response: AgentState) => {
   }
 })
 
-export const SupervisorSystemPrompt = 'You are a supervisor tasked with managing a conversation between the' +
-    ' following workers:  {team_members}. Given the following user request,' +
-    ' respond with the worker to act next. Each worker will perform a' +
-    ' task and respond with their results and status. When finished,' +
-    ' respond with FINISH.\n\n' +
-    ' Select strategically to minimize the number of steps taken.'
+export const SupervisorSystemPrompt =
+  'You are a supervisor tasked with managing a conversation between the' +
+  ' following workers:  {team_members}. Given the following user request,' +
+  ' respond with the worker to act next. Each worker will perform a' +
+  ' task and respond with their results and status. When finished,' +
+  ' respond with FINISH.\n\n' +
+  ' Select strategically to minimize the number of steps taken.'
 
 export const RouteFunctionName = 'route'
 export function createRouteFunctionDef(members: string[]) {
@@ -96,8 +97,12 @@ export function createRouteFunctionDef(members: string[]) {
   }
 }
 
-export async function createSupervisor(llm: ChatOpenAI, members: string[], systemPrompt?: string): Promise<Runnable> {
-  const options = ['FINISH', ...members]
+export async function createSupervisor(
+  llm: ChatOpenAI,
+  members: { name: string; description: string }[],
+  systemPrompt?: string
+): Promise<Runnable> {
+  const options = ['FINISH', ...members.map(({ name }) => name)]
   const functionDef = createRouteFunctionDef(options)
   const toolDef = {
     type: 'function' as const,
@@ -110,7 +115,7 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
   ])
   prompt = await prompt.partial({
     options: options.join(', '),
-    team_members: members.join(', ')
+    team_members: members.map(({ name, description }) => `**${name}**: ${description}`).join('\n')
   })
 
   const supervisor = prompt
@@ -127,9 +132,14 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
   return supervisor
 }
 
-
- export async function createSupervisorAgent(llm: ChatOpenAI, members: {name: string; description: string;}[], tools: DynamicStructuredTool[], system: string) {
-  const functionDef = createRouteFunctionDef(members.map((({name}) => name)))
+export async function createSupervisorAgent(
+  llm: ChatOpenAI,
+  members: { name: string; description: string }[],
+  tools: DynamicStructuredTool[],
+  system: string,
+  suffix = ''
+) {
+  const functionDef = createRouteFunctionDef(members.map(({ name }) => name))
   const toolDef = {
     type: 'function' as const,
     function: functionDef
@@ -139,12 +149,15 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
   let prompt = ChatPromptTemplate.fromMessages([
     ['system', system],
     ['placeholder', '{messages}'],
-    ['system', `Given the conversation above, please give priority to answering questions with language only. If you need to execute a task, you need to get confirmation before calling the route function.
+    [
+      'system',
+      `Given the conversation above, please give priority to answering questions with language only. ${suffix}
 To perform a task, you can select one of the following:
-{members}`] // 
+{members}`
+    ]
   ])
   prompt = await prompt.partial({
-    members: members.map(({name, description}) => `- ${name}: ${description}`).join('\n')
+    members: members.map(({ name, description }) => `- ${name}: ${description}`).join('\n')
   })
   const modelRunnable = prompt.pipe(modelWithTools)
 
@@ -187,4 +200,14 @@ export const supervisorRouter = (state: AgentState) => {
   }
 }
 
-export const TOOLS_NAME = 'tools'
+export function responseToolMessage(id: string, messages: BaseMessage[]) {
+  return {
+    tool_call_id: null,
+    messages: [
+      new ToolMessage({
+        tool_call_id: id,
+        content: messages[messages.length - 1]?.content
+      })
+    ]
+  }
+}

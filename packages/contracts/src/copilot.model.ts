@@ -2,6 +2,7 @@ import { AiProvider } from "./ai.model"
 import { IBasePerTenantAndOrganizationEntityModel } from "./base-entity.model"
 
 export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
+  role: AiProviderRole
   enabled?: boolean
   provider?: AiProvider
   apiKey?: string
@@ -14,4 +15,9 @@ export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
    * Details config for openai api
    */
   options?: any
+}
+
+export enum AiProviderRole {
+  Primary = 'primary',
+  Secondary ='secondary'
 }

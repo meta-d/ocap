@@ -4,7 +4,6 @@ import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
 import { SemanticModelService } from '../../model.service'
-import { ModelComponent } from '../../model.component'
 
 export function injectCreateTableTool() {
   const logger = inject(NGXLogger)
@@ -12,7 +11,7 @@ export function injectCreateTableTool() {
 
   const createTableTool = new DynamicStructuredTool({
     name: 'createTable',
-    description: 'Create or edit a table',
+    description: 'Create or edit a table, one table at a time',
     schema: z.object({
       statement: z.string().describe('The statement of creating or modifing a table')
     }),

@@ -1,5 +1,7 @@
 import { inject, Injectable } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { ColorPalettes } from '@metad/core'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 import {
   ChartAnnotation,
   ChartOptions,
@@ -39,8 +41,6 @@ import {
   TooltipCapacity,
   VisualMapCapacity
 } from './schemas'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { PropertyCapacity } from '@metad/ocap-angular/entity'
 
 export interface AnalyticalCardSchemaState extends SchemaState {
   model: {
@@ -103,7 +103,9 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
   getBuilderSchema(chartType: ChartType, i18nStory?) {
     const BUILDER = i18nStory?.Widgets?.Common
 
-    const dataSettings = this.makeDataSettingsContent(BUILDER, {
+    const dataSettings = this.makeDataSettingsContent(
+      BUILDER,
+      {
         key: 'chartAnnotation',
         props: {
           label: 'Chart Annotation',
@@ -127,7 +129,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
             key: 'title',
             type: 'input',
             props: {
-              label: BUILDER?.Title ?? 'Title',
+              label: BUILDER?.Title ?? 'Title'
               // required: true
             }
           }
@@ -199,9 +201,9 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
           toggleable: false,
           fieldGroup: chartSettingsFieldGroup(i18nStory?.Widgets)
         }
-      ]),
+      ])
 
-      getChartOptionsSchema(chartType, i18nStory?.STYLING?.ECHARTS)
+      // getChartOptionsSchema(chartType, i18nStory?.STYLING?.ECHARTS)
     ]
   }
 
@@ -298,7 +300,7 @@ export class MeasureChartOptionsSchemaService implements DesignerSchema<ChartOpt
   }
 
   getSchema() {
-    return combineLatest([this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)), this.chartType$]).pipe(
+    return combineLatest([this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)), this.chartType$.pipe(distinctUntilChanged(isEqual))]).pipe(
       map(([ECHARTS, chartType]) => this.getChartOptions(chartType, ECHARTS).fieldGroup)
     )
   }
@@ -406,7 +408,7 @@ export class ChartOptionsSchemaService implements DesignerSchema<ChartOptions> {
 
   readonly title$ = of(`Chart options`)
   readonly title = toSignal(this.title$)
-  
+
   get chartType() {
     return this.chartType$.value
   }
@@ -422,11 +424,13 @@ export class ChartOptionsSchemaService implements DesignerSchema<ChartOptions> {
   }
 
   getSchema() {
-    return combineLatest([this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)),
-      this.chartType$.pipe(map((chartType) => omit(chartType, 'chartOptions')), distinctUntilChanged(isEqual))
-    ]).pipe(
-      map(([ECHARTS, chartType]) => getChartOptionsSchema(chartType, ECHARTS).fieldGroup)
-    )
+    return combineLatest([
+      this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)),
+      this.chartType$.pipe(
+        map((chartType) => omit(chartType, 'chartOptions')),
+        distinctUntilChanged(isEqual)
+      )
+    ]).pipe(map(([ECHARTS, chartType]) => getChartOptionsSchema(chartType, ECHARTS).fieldGroup))
   }
 }
 

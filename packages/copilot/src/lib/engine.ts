@@ -1,4 +1,6 @@
+import { tool } from '@langchain/core/tools'
 import { CompiledStateGraph } from '@langchain/langgraph/web'
+import { z } from 'zod'
 import { CopilotCommand, CopilotContext } from './command'
 import { CopilotService } from './copilot'
 import { AIOptions, CopilotChatMessage } from './types'
@@ -82,15 +84,15 @@ export interface CopilotEngine {
 
   /**
    * Chat with copilot by prompt
-   * 
-   * @param prompt 
-   * @param options 
+   *
+   * @param prompt
+   * @param options
    */
   chat(prompt: string, options?: CopilotChatOptions): Promise<CopilotChatMessage | string | void>
   /**
    * Continue the conversation
-   * 
-   * @param conversation 
+   *
+   * @param conversation
    */
   continue(conversation: CopilotChatConversation): Promise<void>
   /**
@@ -113,8 +115,8 @@ export interface CopilotEngine {
   commands?: () => CopilotCommand[]
   /**
    * Get command and it's context by command name
-   * 
-   * @param name 
+   *
+   * @param name
    */
   getCommandWithContext(name: string): { command: CopilotCommand; context: CopilotContext } | null
 
@@ -162,9 +164,26 @@ export interface CopilotEngine {
 
   /**
    * Execute command suggestion completion request
-   * 
-   * @param input 
-   * @param options 
+   *
+   * @param input
+   * @param options
    */
-  executeCommandSuggestion(input: string, options: {command: CopilotCommand; context: CopilotContext}): Promise<string>
+  executeCommandSuggestion(
+    input: string,
+    options: { command: CopilotCommand; context: CopilotContext }
+  ): Promise<SuggestionOutput>
+}
+
+export const SuggestionOutputTool = tool((_) => '补全用户提示语', {
+  name: 'output_formatter',
+  description: 'Should always be used to properly format output',
+  schema: z.object({
+    input: z.string().describe('Prompt after completion'),
+    suggestions: z.array(z.string().describe('One suggestion input')).describe('An array of suggestions')
+  })
+})
+
+export type SuggestionOutput = string | {
+  input?: string;
+  suggestions?: Array<string>
 }

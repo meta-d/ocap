@@ -4,7 +4,8 @@
 export enum AiProvider {
     OpenAI = 'openai',
     Azure = 'azure',
-    DashScope = 'dashscope'
+    DashScope = 'dashscope',
+    Ollama = 'ollama'
 }
 
 /**
@@ -15,4 +16,5 @@ export enum AiBusinessRole {
     SupplyChainExpert = 'supply_chain_expert',
 }
 
-export const AIEmbeddings = [AiProvider.OpenAI, AiProvider.Azure]
+export const OpenAIEmbeddingsProviders = [AiProvider.OpenAI, AiProvider.Azure]
+export const OllamaEmbeddingsProviders = [AiProvider.Ollama]

@@ -37,6 +37,7 @@ import { SubscriptionModule } from './subscription/subscription.module'
 import { VisitModule } from './visit/visit.module'
 import { SemanticModelEntityModule } from './model-entity'
 import { SemanticModelMemberModule } from './model-member'
+import { ChatBIConversationModule } from './chatbi-conversation/conversation.module'
 
 @Module({
 	imports: [
@@ -94,7 +95,8 @@ import { SemanticModelMemberModule } from './model-member'
 		CommentModule,
 		ScreenshotModule,
 		CertificationModule,
-		RedisModule
+		RedisModule,
+		ChatBIConversationModule
 	],
 	controllers: [AppController],
 	providers: [AnalyticsService, ...EventHandlers, ...CommandHandlers]

@@ -1,6 +1,6 @@
 import { inject } from '@angular/core'
 import { zodToProperties } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
+import { injectCopilotCommand } from '@metad/copilot-angular'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
 import { CalculationMeasureSchema } from './schema/story.schema'
@@ -22,32 +22,32 @@ export function injectCalclatedMeasureCommand(
       return `Create a calculatation measure`
     },
     actions: [
-      injectMakeCopilotActionable({
-        name: 'create_calculation_measure',
-        description: '',
-        argumentAnnotations: [
-          {
-            name: 'calculatedMeasure',
-            type: 'object',
-            description: 'The calculated measure',
-            properties: zodToProperties(CalculationMeasureSchema),
-            required: true
-          }
-        ],
-        implementation: async (calculation) => {
-          logger.debug(`Function calling 'create_calculation_measure', params is:`, calculation)
+      // injectMakeCopilotActionable({
+      //   name: 'create_calculation_measure',
+      //   description: '',
+      //   argumentAnnotations: [
+      //     {
+      //       name: 'calculatedMeasure',
+      //       type: 'object',
+      //       description: 'The calculated measure',
+      //       properties: zodToProperties(CalculationMeasureSchema),
+      //       required: true
+      //     }
+      //   ],
+      //   implementation: async (calculation) => {
+      //     logger.debug(`Function calling 'create_calculation_measure', params is:`, calculation)
 
-          storyService.addCalculationMeasure({ dataSettings, calculation })
+      //     storyService.addCalculationMeasure({ dataSettings, calculation })
 
-          if (callback) {
-            await callback(calculation)
-          }
+      //     if (callback) {
+      //       await callback(calculation)
+      //     }
 
-          return `✅ ${storyService.translate('Story.Copilot.InstructionExecutionComplete', {
-            Default: 'Instruction Execution Complete'
-          })}`
-        }
-      })
+      //     return `✅ ${storyService.translate('Story.Copilot.InstructionExecutionComplete', {
+      //       Default: 'Instruction Execution Complete'
+      //     })}`
+      //   }
+      // })
     ]
   })
 }

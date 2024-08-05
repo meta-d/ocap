@@ -1,9 +1,13 @@
 import { inject, Provider } from '@angular/core'
 import { SemanticSimilarityExampleSelector } from '@langchain/core/example_selectors'
 import { FewShotPromptTemplate, PromptTemplate } from '@langchain/core/prompts'
-import { ExampleVectorStoreRetrieverInput, NgmCommandFewShotPromptToken, NgmCopilotService } from '@metad/copilot-angular'
+import {
+  ExampleVectorStoreRetrieverInput,
+  NgmCommandFewShotPromptToken,
+  NgmCopilotService
+} from '@metad/copilot-angular'
 import { CopilotExampleService } from '../services/copilot-example.service'
-import { VectorStoreRetriever } from './example-vector-retriever'
+import { ExampleVectorStoreRetriever } from './example-vector-retriever'
 
 export function injectAgentFewShotTemplate(command: string, fields?: ExampleVectorStoreRetrieverInput) {
   const copilotService = inject(NgmCopilotService)
@@ -19,15 +23,15 @@ function createExampleFewShotPrompt(
   fields?: ExampleVectorStoreRetrieverInput
 ) {
   const examplePrompt = PromptTemplate.fromTemplate(
-    `Question: {{input}}
-    Answer: {{output}}`,
+`Question: {{input}}
+Answer: {{output}}`,
     {
       templateFormat: 'mustache'
     }
   )
   return new FewShotPromptTemplate({
     exampleSelector: new SemanticSimilarityExampleSelector({
-      vectorStoreRetriever: new VectorStoreRetriever(
+      vectorStoreRetriever: new ExampleVectorStoreRetriever(
         {
           ...(fields ?? { vectorStore: null }),
           vectorStore: null,

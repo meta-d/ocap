@@ -1,11 +1,17 @@
 <div class="filter-bar shrink-0 p-2 flex items-center gap-4 overflow-hidden max-w-full">
-    <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.BusinessRole' | translate: {Default: 'Business Role'}" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+    <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.BusinessRole' | translate: {Default: 'Business Role'}"
+        valueKey="key"
+        searchable
+        [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="roles()"
         [(ngModel)]="roleFilter"
         [disabled]="loading()"
     />
 
-    <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.Command' | translate: {Default: 'Command'} " valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+    <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.Command' | translate: {Default: 'Command'} "
+        valueKey="key"
+        searchable
+        [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="commands()"
         [(ngModel)]="commandFilter"
         [disabled]="loading()"

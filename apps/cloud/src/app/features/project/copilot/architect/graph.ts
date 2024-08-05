@@ -100,7 +100,8 @@ Methods for indicator design:
 
 2. ${promptIndicatorCode(`{indicatorCodes}`)}
 3. Please plan the indicator system first, and then decide to call route to create it one by one.
-`
+`, 
+    `If you need to execute a task, you need to get confirmation before calling the route function.`
   )
 
   return RunnableLambda.from(async (state: IndicatorArchitectState) => {

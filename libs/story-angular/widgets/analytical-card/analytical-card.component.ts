@@ -10,20 +10,19 @@ import {
   FilteringLogic,
   ISlicer,
   OrderDirection,
-  assignDeepOmitBlank,
   getEntityProperty,
   isAdvancedFilter,
   isBaseProperty,
-  isDimension,
   isEqual,
   isMeasure
 } from '@metad/ocap-core'
+import { SlicersCapacity } from '@metad/ocap-angular/selection'
 import { AbstractStoryWidget, StoryWidgetState, WidgetMenu, WidgetMenuType } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
-import { compact, isArray, isEmpty, isNil, negate } from 'lodash-es'
-import { Observable, combineLatest, combineLatestWith, distinctUntilChanged, filter, map, shareReplay } from 'rxjs'
+import { isArray, isEmpty, isNil, negate } from 'lodash-es'
+import { Observable, combineLatest, combineLatestWith, distinctUntilChanged, filter, map, shareReplay, startWith } from 'rxjs'
 import { WidgetOrderMenu } from './types'
-import { SlicersCapacity } from '@metad/ocap-angular/selection'
+
 
 export interface WidgetAnalyticalCardOptions extends AnalyticalCardOptions {
   showDownloadButton?: boolean
@@ -68,26 +67,25 @@ export class WidgetAnalyticalCardComponent extends AbstractStoryWidget<
   private readonly storyService = inject(NxStoryService)
 
   // chart settings
-  @Input() get chartOptions(): ChartOptions {
-    return this.get((state) => state.chartOptions)
-  }
-  set chartOptions(value: ChartOptions) {
-    this.patchState({ chartOptions: value })
-  }
-  public readonly chartOptions$ = this.select((state) => state.chartOptions).pipe(
-    combineLatestWith(
-      this.options$.pipe(
-        map((options) => coerceBooleanProperty(options?.enableLinkedAnalysis ?? '')),
-        distinctUntilChanged()
-      ),
-
-      this.storyService.storyOptions$.pipe(
-        map((options) => options?.preferences?.story?.colors),
-        distinctUntilChanged(isEqual)
-      )
+  // @Input() get chartOptions(): ChartOptions {
+  //   return this.get((state) => state.chartOptions)
+  // }
+  // set chartOptions(value: ChartOptions) {
+  //   this.patchState({ chartOptions: value })
+  // }
+  readonly chartOptions$ = combineLatest([
+    this.options$.pipe(
+      map((options) => coerceBooleanProperty(options?.enableLinkedAnalysis ?? '')),
+      startWith(null),
+      distinctUntilChanged()
     ),
-    map(([chartOptions, enableLinkedAnalysis, colors]) => {
-      chartOptions = assignDeepOmitBlank({ color: colors }, chartOptions)
+    this.storyService.storyOptions$.pipe(
+      map((options) => options?.preferences?.story?.colors),
+      distinctUntilChanged(isEqual)
+    )
+  ]).pipe(
+    map(([enableLinkedAnalysis, colors]) => {
+      const chartOptions = { color: colors } as ChartOptions
       if (enableLinkedAnalysis) {
         const echartOptions = { ...chartOptions }
         echartOptions.seriesStyle = { ...(echartOptions.seriesStyle ?? {}) }

@@ -191,7 +191,8 @@
       "Basic": "基础",
       "Delete": "删除",
       "MemberRetriever": "成员检索器",
-      "Variables": "参数变量"
+      "Variables": "参数变量",
+      "Knowledges": "知识库"
     },
     "MENU": {
       "Certification": "认证",
@@ -662,7 +663,7 @@
       "SyncMembersJobRunning": "同步成员任务正在运行",
 
       "QUERY": {
-        "TITLE": "查询",
+        "TITLE": "查询实验室",
         "SaveAsModel": "另存为模型",
         "SaveAsDBInit": "另存为数据库初始化脚本",
         "TableSchema": "表结构",
@@ -1013,6 +1014,7 @@
         "CommandTableDesc": "描述表的结构或业务逻辑",
         "CommandCalculatedDesc": "描述计算度量的业务逻辑",
         "CommandFormulaDesc": "描述计算度量的公式逻辑",
+        "CommandDBADesc": "描述数据库管理的需求",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
@@ -1172,6 +1174,7 @@
       "ChooseFontWeight": "选择字重",
       "CustomImages": "自定义图片",
       "GlobalStyles": "全局样式",
+      "ComponentsStyles": "组件样式",
       "Transform": "变换",
       "TransformOrigin": "变换原点",
       "BackgroundSize": "背景大小",
@@ -1186,7 +1189,9 @@
       "CreateCalculationMeasure": "创建计算度量",
       "CreateParameter": "创建参数",
       "CommandCalculationDesc": "描述计算度量的业务逻辑",
-      "CommandStoryDesc": "描述你想要的故事仪表板"
+      "CommandStoryDesc": "描述你想要的故事仪表板",
+      "CommandStoryStyleDesc": "描述你想要的故事样式",
+      "CommandWidgetDesc": "描述你想要的微件"
     },
     "Project": {
       "Project": "项目",
@@ -1292,6 +1297,7 @@
       "APIKey": "API 密钥",
       "APIHost": "API 主机",
       "AskAICopilot": "向 AI 副驾驶询问问题",
+      "EnableSecondaryProvider": "启用副提供商",
       "Prompt": "提示",
       "SendPrompt": "发送提示",
       "CommandChartDesc": "描述图形的业务逻辑",
@@ -1335,6 +1341,38 @@
         "AddRole": "添加新角色",
         "SureDeleteRole": "确定删除此角色吗？"
       }
+    },
+    "ChatBI": {
+      "Title": "ChatBI-数据分析与洞察",
+      "TransformData": "利用人工智能将数据转化为洞察力。",
+      "InputPlaceholder": "针对数据集询问问题，按 Enter 发送",
+      "NewConversation": "新建对话",
+      "Cubes": "多维数据集",
+      "Slicers": "过滤器",
+      "Empty": "空白",
+      "ShowChart": "显示图形",
+      "ShowTable": "显示表格",
+      "AddtoStory": "添加到故事",
+      "SystemMessage_1": "您好，我是元数分析云 BI 智能助手，当前数据为《{value}》，可点击顶部切换。",
+      "SystemMessage_2": "你也可以尝试点击样例",
+      "SystemMessage_3": "我能准确识别含时间、条件、维度和指标的问题哦。",
+      "SystemMessage_Samples": [
+        "2023年加拿大客户每月的销售额走势",
+        "2024年所有用户中消费金额前 10 的用户",
+        "2023年各个月的消费金额分别是多少",
+        "2023年各渠道用户的消费金额分布",
+        "2023年各渠道的用户数分别是多少"
+      ],
+      "SystemMessage_eg": "如",
+      "SystemMessage_Year": "2023年",
+      "SystemMessage_Cloud": "元数分析云 BI",
+      "SystemMessage_Month": "每个月",
+      "SystemMessage_Revenue": "收入",
+      "SystemMessage_HowMuch": "是多少",
+      "Chart_Line": "线图",
+      "Chart_Column": "柱形图",
+      "Chart_Bar": "条形图",
+      "Chart_Pie": "饼图"
     },
     "Home": {
       "Insight": {
@@ -1716,7 +1754,6 @@
       }
     },
     "WIDGETS": {
-
       "FilterBar": {
         "Query": "查询"
       },

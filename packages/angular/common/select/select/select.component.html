@@ -1,14 +1,14 @@
-@if (label) {
-  <label class="ngm-select-label shrink-0" [title]="label">
-    {{label}}
+@if (label()) {
+  <label class="ngm-select-label shrink-0" [title]="label()">
+    {{label()}}
   </label>
 }
 
 @if (!searchable()) {
   <div class="relative">
-    <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
+    <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity() === 'compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity() === 'cosy' ? 'ngm-density__cosy' : '')"
       [formControl]="formControl"
-      [placeholder]="placeholder"
+      [placeholder]="placeholder()"
       [panelWidth]="panelWidth() || 'auto'"
       [multiple]="multiple()"
     >
@@ -32,7 +32,7 @@
   <div class="relative">
     <input class="ngm-input-element w-full relative"
       type="text"
-      [placeholder]="placeholder"
+      [placeholder]="placeholder()"
       matInput
       [ngModel]="autoInput()"
       (ngModelChange)="onAutoInput($event)"
@@ -46,7 +46,8 @@
   </div>
 }
 
-<mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-density__compact ngm-select__autocomplete-panel ngm-autocomplete-panel"
+<mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-select__autocomplete-panel ngm-autocomplete-panel"
+  [class]="(displayDensity() === 'compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity() === 'cosy' ? 'ngm-density__cosy' : '')"
   [panelWidth]="panelWidth() || null"
   [displayWith]="displayWith"
   (optionSelected)="onOptionSelected($event)"
@@ -83,10 +84,10 @@
     @if (option.icon) {
       <mat-icon [fontSet]="option.fontSet">{{option.icon}}</mat-icon>
     }
-    <ngm-display-behaviour class="flex-1 overflow-hidden" [displayBehaviour]="displayBehaviour"
+    <ngm-display-behaviour class="flex-1 overflow-hidden" [displayBehaviour]="displayBehaviour()"
       [option]="option"
-      [highlight]="highlight()">
-    </ngm-display-behaviour>
+      [highlight]="highlight()"
+    />
   </ng-template>
 </ng-template>
 

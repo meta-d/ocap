@@ -88,7 +88,7 @@ import { AppService } from '../../app.service'
       >
         {{ 'PAC.MENU.HOME.Trending' | translate: { Default: 'Trending' } }}
       </span>
-      <span
+      <!-- <span
         *ngIf="copilotEnabled() && hasFeatureEnabled(AnalyticsFeatures.FEATURE_HOME_INSIGHT)"
         mat-tab-link
         routerLink="./insight"
@@ -98,7 +98,7 @@ import { AppService } from '../../app.service'
         [active]="rla4.isActive"
       >
         {{ 'PAC.MENU.HOME.Insight' | translate: { Default: 'Insight' } }}
-      </span>
+      </span> -->
     </nav>
     <mat-tab-nav-panel
       #tabPanel

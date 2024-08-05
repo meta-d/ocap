@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import { Cube } from '@metad/ocap-core'
-import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
+import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { filter, map, switchMap } from 'rxjs'
 import { EntitySchemaService } from './entity-schema.service'
 import { CubeSchemaState } from './types'
@@ -42,7 +42,10 @@ export class CubeAttributesSchema<T = Cube> extends EntitySchemaService<CubeSche
         return [
           {
             type: 'tabs',
-            fieldGroup: [this.builder, this.dataDistribution]
+            fieldGroup: [
+              this.builder,
+              // this.dataDistribution
+            ]
           }
         ]
       })
@@ -91,7 +94,23 @@ export class CubeAttributesSchema<T = Cube> extends EntitySchemaService<CubeSche
               props: {
                 label: COMMON?.Caption ?? 'Caption'
               }
-            }
+            },
+            {
+              key: 'description',
+              type: 'textarea',
+              className: FORMLY_W_FULL,
+              props: {
+                label: COMMON?.Description ?? 'Description',
+              }
+            },
+            {
+              className: FORMLY_W_1_2,
+              key: 'visible',
+              type:'checkbox',
+              props: {
+                label: COMMON?.Visible ?? 'Visible',
+              }
+            },
           ]
         }
       ]

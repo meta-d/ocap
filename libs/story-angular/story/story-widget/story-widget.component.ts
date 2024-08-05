@@ -1,5 +1,7 @@
 import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CdkDragMove } from '@angular/cdk/drag-drop'
+import { CdkMenuModule } from '@angular/cdk/menu'
+import { OverlayModule } from '@angular/cdk/overlay'
 import {
   AfterViewInit,
   booleanAttribute,
@@ -8,6 +10,7 @@ import {
   Component,
   ComponentRef,
   DestroyRef,
+  effect,
   ElementRef,
   EventEmitter,
   HostBinding,
@@ -17,37 +20,60 @@ import {
   Injector,
   input,
   Input,
-  OnChanges,
   OnInit,
   Optional,
+  output,
   Output,
   Renderer2,
   signal,
-  SimpleChanges,
   ViewChild,
   ViewContainerRef
 } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
-import { assignDeepOmitBlank, DataFieldWithIntentBasedNavigation, DataSettings, mergeOptions, omit, OrderDirection } from '@metad/ocap-core'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { Intent, IStoryWidget, nonBlank, nonNullable, NxCoreModule, saveAsYaml, WidgetMenu, WidgetMenuType, WidgetService } from '@metad/core'
+import { ActivatedRoute, Params, Router } from '@angular/router'
 import {
+  Intent,
+  IStoryWidget,
+  nonBlank,
+  nonNullable,
+  NxCoreModule,
+  saveAsYaml,
+  WidgetMenu,
+  WidgetMenuType,
+  WidgetService
+} from '@metad/core'
+import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
+import { effectAction } from '@metad/ocap-angular/core'
+import {
+  assignDeepOmitBlank,
+  DataFieldWithIntentBasedNavigation,
+  DataSettings,
+  mergeOptions,
+  omit,
+  OrderDirection
+} from '@metad/ocap-core'
+import {
+  componentStyling,
   LinkedInteractionApplyTo,
+  NX_STORY_STORE,
   NxStoryService,
   NxStoryStore,
-  NX_STORY_STORE,
+  STORY_WIDGET_COMPONENT,
   StoryComment,
   StoryPointType,
   StoryWidgetComponentProvider,
-  STORY_WIDGET_COMPONENT,
   uuid,
-  WidgetComponentType,
-  componentStyling,
+  WidgetComponentType
 } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
+import { ContentLoaderModule } from '@ngneat/content-loader'
+import { select } from '@ngneat/elf'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { cloneDeep, isEmpty, isEqual, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
+import { NgxPopperjsModule } from 'ngx-popperjs'
 import { BehaviorSubject, combineLatest, EMPTY, firstValueFrom, from, Observable, of } from 'rxjs'
 import {
   catchError,
@@ -63,21 +89,13 @@ import {
 } from 'rxjs/operators'
 import { ExplainComponent } from '../explain/explain.component'
 import { LinkedAnalysisComponent } from '../linked-analysis/linked-analysis.component'
-import { StorySharesComponent } from '../shares/shares.component'
-import { NxStoryPointService } from '../story-point.service'
-import { NxStoryWidgetService } from './story-widget.service'
-import { NxStoryPointComponent } from '../story-point/story-point.component'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NxStorySharedModule } from '../shared.module'
-import { OverlayModule } from '@angular/cdk/overlay'
-import { CdkMenuModule } from '@angular/cdk/menu'
-import { ContentLoaderModule } from '@ngneat/content-loader'
-import { NgxPopperjsModule } from 'ngx-popperjs'
+import { StorySharesComponent } from '../shares/shares.component'
 import { StoryCommentsComponent } from '../story-comments/story-comments.component'
-import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
-import { ActivatedRoute, Params, Router } from '@angular/router'
-import { select } from '@ngneat/elf'
-import { effectAction } from '@metad/ocap-angular/core'
+import { NxStoryPointService } from '../story-point.service'
+import { NxStoryPointComponent } from '../story-point/story-point.component'
+import { NxStoryWidgetService } from './story-widget.service'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 
 @Component({
   standalone: true,
@@ -102,7 +120,7 @@ import { effectAction } from '@metad/ocap-angular/core'
     StoryCommentsComponent
   ]
 })
-export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit {
+export class NxStoryWidgetComponent implements OnInit, AfterViewInit {
   ComponentType = WidgetComponentType
   WIDGET_MENU_TYPE = WidgetMenuType
   STORY_POINT_TYPE = StoryPointType
@@ -111,12 +129,13 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   readonly #logger? = inject(NGXLogger, { optional: true })
   private readonly _renderer = inject(Renderer2)
   private readonly _elementRef = inject(ElementRef)
-  private readonly pointComponent? = inject(NxStoryPointComponent, {optional: true})
+  private readonly pointComponent? = inject(NxStoryPointComponent, { optional: true })
   private readonly router = inject(Router)
   private readonly route = inject(ActivatedRoute)
   readonly destroyRef = inject(DestroyRef)
 
-  @Input() key: string
+  // @Input() key: string
+  readonly key = input<string>()
 
   readonly widget$ = this.stateService.state$
   readonly widget = toSignal(this.stateService.state$)
@@ -125,7 +144,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     map((widget) => widget.key),
     distinctUntilChanged()
   )
-  
+
   readonly selected = input<boolean, string | boolean>(false, {
     transform: booleanAttribute
   })
@@ -135,7 +154,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   get _selected() {
     return this.selected()
   }
-  
+
   readonly editable = input<boolean, string | boolean>(false, {
     transform: booleanAttribute
   })
@@ -168,11 +187,11 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   @Output() optionsChange = new EventEmitter()
   @Output() fullscreenChange = new EventEmitter<boolean>()
   @Output() focusChange = new EventEmitter<boolean>()
+  readonly selectedChange = output<boolean>()
 
   @ViewChild('anchor', { read: ViewContainerRef }) anchor: ViewContainerRef
 
   @HostBinding('class.ngm-story-widget__placeholder')
-
   disableFab = false
   isCommentOpen = false
   customSubMenus = []
@@ -181,13 +200,15 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
 
   private readonly widgets = toSignal(this.storyPointService.widgets$)
 
-  readonly component$ = this.widget$.pipe(select((widget) => {
-    if (this.editable() && widget?.isTemplate) {
-      return null
-    }
-    return widget?.component
-  }))
-  
+  readonly component$ = this.widget$.pipe(
+    select((widget) => {
+      if (this.editable() && widget?.isTemplate) {
+        return null
+      }
+      return widget?.component
+    })
+  )
+
   public readonly placeholder$ = this.component$.pipe(
     map((component) => !component),
     distinctUntilChanged()
@@ -205,15 +226,17 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     filter(Boolean),
     map((type) => this._widgetComponents.find((component) => component.type === type))
   )
-  readonly componentProvider = toSignal(this.component$.pipe(
-    filter(Boolean),
-    map((type) => this._widgetComponents.find((component) => component.type === type))
-  ))
+  readonly componentProvider = toSignal(
+    this.component$.pipe(
+      filter(Boolean),
+      map((type) => this._widgetComponents.find((component) => component.type === type))
+    )
+  )
   readonly componentCategory$ = this.componentProvider$.pipe(map((componentProvider) => componentProvider?.category))
   readonly componentClasses$ = this.componentCategory$.pipe(
     map((category) => ({
       ['ngm-story-widget__' + category]: true,
-      'ngm-story-widget__card': ['card', ].includes(category)
+      'ngm-story-widget__card': ['card'].includes(category)
     }))
   )
 
@@ -246,28 +269,43 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
       }
 
       if (componentProvider.isCard) {
-        return componentStyling(mergeOptions({}, preferences?.widget?.styling, preferences?.card?.styling, styling?.component))
+        return componentStyling(
+          mergeOptions({}, preferences?.widget?.styling, preferences?.card?.styling, styling?.component)
+        )
       }
 
       if (componentProvider.category) {
-        return componentStyling(mergeOptions({}, preferences?.widget?.styling, preferences?.[componentProvider.category]?.styling, styling?.component))
+        return componentStyling(
+          mergeOptions(
+            {},
+            preferences?.widget?.styling,
+            preferences?.[componentProvider.category]?.styling,
+            styling?.component
+          )
+        )
       }
 
-      return componentStyling(mergeOptions({}, preferences?.widget?.styling, styling?.component)) 
+      return componentStyling(mergeOptions({}, preferences?.widget?.styling, styling?.component))
     })
   )
 
   public readonly styling$ = combineLatest([
-    this.storyService.appearance$,
-    this.widget$.pipe(map((widget) => widget?.styling)),
-  ]).pipe(map(([appearance, styling]) => {
-    return assignDeepOmitBlank({
-      appearance
-    }, styling, 5)
-  }))
+    this.storyService.displayDensity$,
+    this.widget$.pipe(map((widget) => widget?.styling))
+  ]).pipe(
+    map(([displayDensity, styling]) => {
+      return assignDeepOmitBlank(
+        {
+          appearance: { displayDensity }
+        },
+        styling,
+        5
+      )
+    })
+  )
 
   public readonly linkedAnalysis$ = this.stateService.linkedAnalysis$
-  
+
   public readonly comments$ = toObservable(this.comments)
 
   readonly isAuthenticated = this.storyService.isAuthenticated
@@ -276,9 +314,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   public readonly allowMultiLayer$ = combineLatest([
     this.pointComponent?.multiLayer$.pipe(map((multiLayer) => multiLayer?.allowMultiLayer)) ?? of(false),
     this.editable$
-  ]).pipe(
-    map(([allowMultiLayer, editable]) => allowMultiLayer && editable)
-  )
+  ]).pipe(map(([allowMultiLayer, editable]) => allowMultiLayer && editable))
 
   /**
   |--------------------------------------------------------------------------
@@ -288,12 +324,12 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   private _linkedAnalysisSub = combineLatest([
     this.componentInstance$.pipe(filter(nonNullable)),
     this.widgetKey$.pipe(
-        switchMap((key) => this.storyPointService.selectLinkedAnalysis(key)),
-        distinctUntilChanged(isEqual),
-      )
+      switchMap((key) => this.storyPointService.selectLinkedAnalysis(key)),
+      distinctUntilChanged(isEqual)
+    )
   ]).subscribe(([componentInstance, slicers]) => {
-      componentInstance.slicers = slicers
-    })
+    componentInstance.slicers = slicers
+  })
   private componentProviderSub = this.componentProvider$.subscribe((componentProvider) => {
     this.disableFab = componentProvider?.disableFab
   })
@@ -311,11 +347,14 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     this.refresh(force)
   })
 
-  private menuSub = this.widgetService.onMenuClick().pipe(filter(nonNullable), takeUntilDestroyed()).subscribe((menu: WidgetMenu) => {
-    if (menu.key === 'open_designer') {
-      this.openEditAttributes()
-    }
-  })
+  private menuSub = this.widgetService
+    .onMenuClick()
+    .pipe(filter(nonNullable), takeUntilDestroyed())
+    .subscribe((menu: WidgetMenu) => {
+      if (menu.key === 'open_designer') {
+        this.openEditAttributes()
+      }
+    })
 
   constructor(
     private readonly storyService: NxStoryService,
@@ -329,7 +368,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     private readonly _dialog: MatDialog,
     private readonly _injector: Injector,
     private _viewContainerRef: ViewContainerRef,
-    
+
     @Optional()
     public settingsService?: NxSettingsPanelService,
     @Optional()
@@ -337,16 +376,18 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     private readonly _widgetComponents?: Array<StoryWidgetComponentProvider>,
     @Optional() private readonly _snackBar?: MatSnackBar
   ) {
-  }
+    effect(() => {
+      if (this.key()) {
+        this.stateService.init(this.key())
+      }
+    }, { allowSignalWrites: true })
 
-  ngOnChanges({ key, editable }: SimpleChanges): void {
-    if (key?.currentValue) {
-      this.stateService.init(key.currentValue)
-    }
-    if (editable && this.componentInstance$.value) {
-      this.componentInstance$.value.editable = editable.currentValue
-      this.componentInstance$.next(this.componentInstance$.value)
-    }
+    effect(() => {
+      if (this.componentInstance$.value) {
+        this.componentInstance$.value.editable = this.editable()
+        this.componentInstance$.next(this.componentInstance$.value)
+      }
+    }, { allowSignalWrites: true })
   }
 
   ngAfterViewInit() {
@@ -365,14 +406,21 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
       })
 
     // 当组件实例初始化后, 监听属性列表值变化, 并赋值给组件实例
-    this.componentInstance$.pipe(
+    this.componentInstance$
+      .pipe(
         filter(nonNullable),
         withLatestFrom(this.componentProvider$),
         switchMap(([componentInstance, componentProvider]) => {
-          const fields = componentProvider.mapping.filter((field) => field !== 'styling').map((field) =>
-            this.widget$.pipe(select((widget) => widget[field]), map((value) => ({ name: field, value })))
-            // this.select(this.widget$, (widget) => widget[field]).pipe(map((value) => ({ name: field, value })))
-          )
+          const fields = componentProvider.mapping
+            .filter((field) => field !== 'styling')
+            .map(
+              (field) =>
+                this.widget$.pipe(
+                  select((widget) => widget[field]),
+                  map((value) => ({ name: field, value }))
+                )
+              // this.select(this.widget$, (widget) => widget[field]).pipe(map((value) => ({ name: field, value })))
+            )
           fields.push(this.storyService.locale$.pipe(map((value) => ({ name: 'locale', value }))))
           fields.push(this.styling$.pipe(map((value) => ({ name: 'styling', value }))))
           return combineLatest(fields).pipe(
@@ -405,7 +453,10 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     if (this.widget().options?.hasComments) {
       this.storyStore
         .getWidgetComments(this.widget())
-        .pipe(map((comments) => (isEmpty(comments) ? null : comments)), takeUntilDestroyed(this.destroyRef))
+        .pipe(
+          map((comments) => (isEmpty(comments) ? null : comments)),
+          takeUntilDestroyed(this.destroyRef)
+        )
         .subscribe((comments) => {
           this.comments.set(comments)
         })
@@ -441,7 +492,8 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     /**
      * 反向更新组件配置项, 从组件本身到故事组件
      */
-    componentRef.instance.optionsChange?.pipe(withLatestFrom(this.widget$), takeUntilDestroyed(this.destroyRef))
+    componentRef.instance.optionsChange
+      ?.pipe(withLatestFrom(this.widget$), takeUntilDestroyed(this.destroyRef))
       .subscribe(([options, widget]) => {
         // 根据 id 更新 options, 忽略其他属性
         this.storyPointService.updateWidget({
@@ -477,17 +529,6 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
       })
   }
 
-  @HostListener('click', ['$event'])
-  onSelected(event) {
-    // selected 时不一定就是在编辑当前组件
-    if (!this.laneKey) {
-      this.openDesigner()
-      // if (this.storyCopilotEngine) {
-      //   this.storyCopilotEngine.currentWidgetCopilot = this.stateService
-      // }
-    }
-  }
-
   onMenuClick(action) {
     this.widgetService.clickMenu(action)
   }
@@ -496,13 +537,19 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
    * 删除 Story Widget
    */
   async removeWidget() {
-    const information = await firstValueFrom(this.translateService.get('Story.Common.ConfirmDeleteInfo', {Default: 'It is not deleted from the server until it is actually saved'}) )
-    const confirm = await firstValueFrom(this._dialog
-      .open(NgmConfirmDeleteComponent, {
-        data: { value: this.widget().name, information }
+    const information = await firstValueFrom(
+      this.translateService.get('Story.Common.ConfirmDeleteInfo', {
+        Default: 'It is not deleted from the server until it is actually saved'
       })
-      .afterClosed())
-    
+    )
+    const confirm = await firstValueFrom(
+      this._dialog
+        .open(NgmConfirmDeleteComponent, {
+          data: { value: this.widget().name, information }
+        })
+        .afterClosed()
+    )
+
     if (confirm) {
       if (this.laneKey) {
         this.storyPointService.removeFlexLayout(this.laneKey)
@@ -600,7 +647,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
               tap(([builder, styling]) => {
                 let updates
                 if (builder) {
-                  updates = {...builder}
+                  updates = { ...builder }
                 }
                 if (styling) {
                   updates = updates ?? {}
@@ -616,17 +663,24 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
       })
     )
   })
-  
+
   async openLinkedAnalysis() {
     const widget = this.widget()
     const widgets = this.widgets()
 
-    const linkedAnalysis = await firstValueFrom(this._dialog.open(LinkedAnalysisComponent, {
-      data: {
-        linkedAnalysis: cloneDeep(widget.linkedAnalysis) ?? {},
-        widgets: widgets?.filter((item) => item.key !== widget.key).map((item) => ({ key: item.key, caption: item.name || item.title }))
-      }}).afterClosed())
-    
+    const linkedAnalysis = await firstValueFrom(
+      this._dialog
+        .open(LinkedAnalysisComponent, {
+          data: {
+            linkedAnalysis: cloneDeep(widget.linkedAnalysis) ?? {},
+            widgets: widgets
+              ?.filter((item) => item.key !== widget.key)
+              .map((item) => ({ key: item.key, caption: item.name || item.title }))
+          }
+        })
+        .afterClosed()
+    )
+
     if (linkedAnalysis) {
       this.stateService.setLinkedAnalysis(linkedAnalysis)
     }
@@ -655,7 +709,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   })
 
   addComment(comment: StoryComment) {
-    this.comments.update((comments) => ([...(comments || []), comment]))
+    this.comments.update((comments) => [...(comments || []), comment])
   }
 
   onAddComment() {
@@ -686,31 +740,34 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
 
   /**
    * Copy current widget to new page
-   * 
+   *
    * @param type story point page type
    */
   async onCopyToNew(type: StoryPointType) {
     try {
       await this.storyService.copyWidgetToNewPage(type, this.widget().key)
-    }catch(err) {
-      this._snackBar.open(`Error: ${(<Error>err).message}`, `Dismiss`, {duration: 2000})
+    } catch (err) {
+      this._snackBar.open(`Error: ${(<Error>err).message}`, `Dismiss`, { duration: 2000 })
     }
   }
 
   async onMoveTo(pointKey: string) {
-    this.storyService.moveWidgetTo({ widget: {pointKey: this.storyPointService.storyPoint.key, key: this.widget().key}, pointKey })
+    this.storyService.moveWidgetTo({
+      widget: { pointKey: this.storyPointService.storyPoint.key, key: this.widget().key },
+      pointKey
+    })
   }
 
   /**
    * Move current widget to new page
-   * 
+   *
    * @param type story point page type
    */
   async onMoveToNew(type: StoryPointType) {
     try {
       await this.storyService.moveWidgetToNewPage(this.storyPointService.storyPoint.key, this.widget().key, type)
-    }catch(err) {
-      this._snackBar.open(`Error: ${(<Error>err).message}`, `Dismiss`, {duration: 2000})
+    } catch (err) {
+      this._snackBar.open(`Error: ${(<Error>err).message}`, `Dismiss`, { duration: 2000 })
     }
   }
 
@@ -742,26 +799,31 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     const story = await firstValueFrom(this.storyService.story$)
     const isAuthenticated = this.isAuthenticated()
 
-    await firstValueFrom(this._dialog
-      .open(StorySharesComponent, {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          id: story.id,
-          widget: widget,
-          visibility: story.visibility,
-          isAuthenticated,
-          access: story.access
-        }
-      })
-      .afterClosed())
+    await firstValueFrom(
+      this._dialog
+        .open(StorySharesComponent, {
+          viewContainerRef: this._viewContainerRef,
+          data: {
+            id: story.id,
+            widget: widget,
+            visibility: story.visibility,
+            isAuthenticated,
+            access: story.access
+          }
+        })
+        .afterClosed()
+    )
   }
 
   explain() {
     const explains = this.widgetService.explains()
-    this._dialog.open(ExplainComponent, {
-      panelClass: 'small',
-      data: [...(explains ?? []), {slicers: this.componentInstance$.value.slicers}]})
-      .afterClosed().subscribe(() => {})
+    this._dialog
+      .open(ExplainComponent, {
+        panelClass: 'small',
+        data: [...(explains ?? []), { slicers: this.componentInstance$.value.slicers }]
+      })
+      .afterClosed()
+      .subscribe(() => {})
   }
 
   onDragFab(event: CdkDragMove) {
@@ -770,7 +832,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     const elementRect = element.getBoundingClientRect()
     const parentRect = parent.getBoundingClientRect()
 
-    if ((elementRect.top + elementRect.height) > parentRect.bottom) {
+    if (elementRect.top + elementRect.height > parentRect.bottom) {
       event.source.element.nativeElement.style.transform = `translate3d(0px, ${parentRect.height - elementRect.height}px, 0px)`
     } else if (elementRect.top < parentRect.top) {
       event.source.element.nativeElement.style.transform = `translate3d(0px, 0px, 0px)`
@@ -815,16 +877,43 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
     const fields = this.componentProvider().mapping.filter((field) => field !== 'styling')
 
     const queryParams: Params = {
-      widgetKey: this.key,
-      explore: btoa(unescape(encodeURIComponent(JSON.stringify({
-        ...pick(this.widget(), ...fields)
-      }))))
+      widgetKey: this.key(),
+      explore: btoa(
+        unescape(
+          encodeURIComponent(
+            JSON.stringify({
+              ...pick(this.widget(), ...fields)
+            })
+          )
+        )
+      )
     }
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: queryParams,
       queryParamsHandling: 'merge' // remove to replace all query params by provided
     })
+  }
+
+  generateWithAI() {
+    this.selectedChange.emit(true)
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['widget']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
+  }
+
+  @HostListener('click', ['$event'])
+  onSelected(event) {
+    // selected 时不一定就是在编辑当前组件
+    if (!this.laneKey) {
+      this.openDesigner()
+    }
   }
 
   @HostListener('document:keydown.escape', ['$event'])

@@ -6,7 +6,7 @@ import { map, startWith } from 'rxjs'
 import { NgmLanguageEnum } from '../types'
 
 @Injectable()
-export class NgmCopilotService extends CopilotService {
+export abstract class NgmCopilotService extends CopilotService {
   readonly translate = inject(TranslateService)
 
   readonly lang = toSignal(
@@ -54,4 +54,5 @@ export class NgmCopilotService extends CopilotService {
     this.role.set(role)
   }
  
+  abstract enableCopilot(): void;
 }

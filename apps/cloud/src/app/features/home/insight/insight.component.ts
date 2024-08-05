@@ -11,7 +11,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { Title } from '@angular/platform-browser'
 import { Router, RouterModule } from '@angular/router'
 import { NgmSemanticModel } from '@metad/cloud/state'
-import { FunctionCallHandlerOptions, zodToAnnotations } from '@metad/copilot'
+import { zodToAnnotations } from '@metad/copilot'
 import {
   calcEntityTypePrompt,
   makeChartDimensionSchema,
@@ -26,7 +26,6 @@ import {
   NgmCopilotEnableComponent,
   NgmCopilotInputComponent,
   injectCopilotCommand,
-  injectMakeCopilotActionable
 } from '@metad/copilot-angular'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
@@ -51,9 +50,10 @@ import { firstValueFrom } from 'rxjs'
 import { ToastrService, listAnimation } from '../../../@core'
 import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
-import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
+import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot/copilot'
 import { InsightService } from './insight.service'
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
+import { injectInsightCommand } from './copilot/insight'
 
 @Component({
   standalone: true,
@@ -177,6 +177,7 @@ export class InsightComponent {
   | Copilot
   |--------------------------------------------------------------------------
   */
+  readonly #insightCommand = injectInsightCommand()
   readonly #chartCommand = injectCopilotCommand({
     name: 'chart',
     description: this.#translate.instant('PAC.Home.Insight.ChartCommandDescription', {
@@ -197,84 +198,84 @@ ${calcEntityTypePrompt(entityType)}
 `
     },
     actions: [
-      injectMakeCopilotActionable({
-        name: 'new_chart',
-        description: 'New a chart',
-        argumentAnnotations: [
-          {
-            name: 'chart',
-            description: 'Chart configuration',
-            type: 'object',
-            properties: zodToAnnotations(makeChartSchema()),
-            required: true
-          },
-          {
-            name: 'dimension',
-            description: 'dimension configuration for chart',
-            type: 'object',
-            properties: zodToAnnotations(makeChartDimensionSchema()),
-            required: true
-          },
-          {
-            name: 'measure',
-            description: 'measure configuration for chart',
-            type: 'object',
-            properties: zodToAnnotations(makeChartMeasureSchema()),
-            required: true
-          }
-        ],
-        implementation: async (chart: any, dimension, measure, options: FunctionCallHandlerOptions) => {
-          this.#logger.debug('New chart by copilot command with:', chart, dimension, measure, options)
-          const userMessage = options.messages.reverse().find((item) => item.role === 'user')
-          const dataSourceName = this.insightService.dataSourceName()
-          const cubes = this.insightService.allCubes()
+      // injectMakeCopilotActionable({
+      //   name: 'new_chart',
+      //   description: 'New a chart',
+      //   argumentAnnotations: [
+      //     {
+      //       name: 'chart',
+      //       description: 'Chart configuration',
+      //       type: 'object',
+      //       properties: zodToAnnotations(makeChartSchema()),
+      //       required: true
+      //     },
+      //     {
+      //       name: 'dimension',
+      //       description: 'dimension configuration for chart',
+      //       type: 'object',
+      //       properties: zodToAnnotations(makeChartDimensionSchema()),
+      //       required: true
+      //     },
+      //     {
+      //       name: 'measure',
+      //       description: 'measure configuration for chart',
+      //       type: 'object',
+      //       properties: zodToAnnotations(makeChartMeasureSchema()),
+      //       required: true
+      //     }
+      //   ],
+      //   implementation: async (chart: any, dimension, measure, options: FunctionCallHandlerOptions) => {
+      //     this.#logger.debug('New chart by copilot command with:', chart, dimension, measure, options)
+      //     const userMessage = options.messages.reverse().find((item) => item.role === 'user')
+      //     const dataSourceName = this.insightService.dataSourceName()
+      //     const cubes = this.insightService.allCubes()
 
-          try {
-            chart.cube ??= this.entityType().name
-            const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(
-              {
-                ...chart,
-                dimension,
-                measure
-              },
-              this.entityType()
-            )
-            const answerMessage: Partial<QuestionAnswer> = {
-              key: options.conversationId,
-              title: userMessage?.content,
-              message: JSON.stringify(chart, null, 2),
-              dataSettings: {
-                dataSource: dataSourceName,
-                entitySet: chart.cube,
-                chartAnnotation,
-                presentationVariant: {
-                  maxItems: limit,
-                  groupBy: getEntityDimensions(this.entityType()).map((property) => ({
-                    dimension: property.name,
-                    hierarchy: property.defaultHierarchy,
-                    level: null
-                  }))
-                }
-              } as DataSettings,
-              slicers,
-              chartOptions,
-              isCube: cubes.find((item) => item.name === chart.cube),
-              answering: false,
-              expanded: true
-            }
+      //     try {
+      //       chart.cube ??= this.entityType().name
+      //       const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(
+      //         {
+      //           ...chart,
+      //           dimension,
+      //           measure
+      //         },
+      //         this.entityType()
+      //       )
+      //       const answerMessage: Partial<QuestionAnswer> = {
+      //         key: options.conversationId,
+      //         title: userMessage?.content,
+      //         message: JSON.stringify(chart, null, 2),
+      //         dataSettings: {
+      //           dataSource: dataSourceName,
+      //           entitySet: chart.cube,
+      //           chartAnnotation,
+      //           presentationVariant: {
+      //             maxItems: limit,
+      //             groupBy: getEntityDimensions(this.entityType()).map((property) => ({
+      //               dimension: property.name,
+      //               hierarchy: property.defaultHierarchy,
+      //               level: null
+      //             }))
+      //           }
+      //         } as DataSettings,
+      //         slicers,
+      //         chartOptions,
+      //         isCube: cubes.find((item) => item.name === chart.cube),
+      //         answering: false,
+      //         expanded: true
+      //       }
 
-            this.#logger.debug('New chart by copilot command is:', answerMessage)
-            this.updateAnswer(answerMessage)
-            return `✅`
-          } catch (err: any) {
-            return {
-              id: nanoid(),
-              role: 'function',
-              content: `Error: ${err.message}`
-            }
-          }
-        }
-      })
+      //       this.#logger.debug('New chart by copilot command is:', answerMessage)
+      //       this.updateAnswer(answerMessage)
+      //       return `✅`
+      //     } catch (err: any) {
+      //       return {
+      //         id: nanoid(),
+      //         role: 'function',
+      //         content: `Error: ${err.message}`
+      //       }
+      //     }
+      //   }
+      // })
     ]
   })
 
@@ -305,26 +306,26 @@ ${calcEntityTypePrompt(entityType)}
 `
     },
     actions: [
-      injectMakeCopilotActionable({
-        name: 'suggest',
-        description: 'Suggests prompts for cube',
-        argumentAnnotations: [
-          {
-            name: 'param',
-            description: 'Prompt',
-            type: 'object',
-            required: true,
-            properties: zodToProperties(SuggestsSchema)
-          }
-        ],
-        implementation: async (param: { suggests: string[] }, options: FunctionCallHandlerOptions) => {
-          this.#logger.debug('Suggest prompts by copilot command with:', param, options)
-          if (param?.suggests) {
-            this.insightService.updateSuggests(param.suggests)
-          }
-          return `✅`
-        }
-      })
+      // injectMakeCopilotActionable({
+      //   name: 'suggest',
+      //   description: 'Suggests prompts for cube',
+      //   argumentAnnotations: [
+      //     {
+      //       name: 'param',
+      //       description: 'Prompt',
+      //       type: 'object',
+      //       required: true,
+      //       properties: zodToProperties(SuggestsSchema)
+      //     }
+      //   ],
+      //   implementation: async (param: { suggests: string[] }, options: FunctionCallHandlerOptions) => {
+      //     this.#logger.debug('Suggest prompts by copilot command with:', param, options)
+      //     if (param?.suggests) {
+      //       this.insightService.updateSuggests(param.suggests)
+      //     }
+      //     return `✅`
+      //   }
+      // })
     ]
   })
 

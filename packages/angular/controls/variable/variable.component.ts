@@ -99,7 +99,8 @@ export class NgmVariableComponent implements ControlValueAccessor {
                 ...this.slicer,
                 dimension: {
                   dimension: variable.referenceDimension,
-                  hierarchy: variable.referenceHierarchy
+                  hierarchy: variable.referenceHierarchy,
+                  parameter: variable.name,
                 },
                 members: [member]
               }

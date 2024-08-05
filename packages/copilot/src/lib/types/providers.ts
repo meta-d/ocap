@@ -1,7 +1,23 @@
+/**
+ * Providers for LLMs
+ * 
+ * - https://js.langchain.com/v0.2/docs/integrations/chat/
+ */
 export enum AiProvider {
+  /**
+   * - https://js.langchain.com/v0.2/docs/integrations/chat/openai
+   */
   OpenAI = 'openai',
+  /**
+   * - https://js.langchain.com/v0.2/docs/integrations/chat/azure
+   */
   Azure = 'azure',
-  DashScope = 'dashscope'
+  DashScope = 'dashscope',
+  /**
+   * - https://ollama.com/
+   * - https://js.langchain.com/v0.2/docs/integrations/chat/ollama
+   */
+  Ollama = 'ollama'
 }
 
 export type AiModelType = {
@@ -20,7 +36,7 @@ export type AiProviderType = {
   isTools: boolean
 }
 
-export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
+export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.OpenAI]: {
     apiHost: 'https://api.openai.com/v1',
     chatCompletionsUrl: '/chat/completions',
@@ -38,6 +54,10 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
       {
         id: 'gpt-4o',
         name: 'GPT-4 Omni'
+      },
+      {
+        id: 'gpt-4o-mini',
+        name: 'GPT-4 O mini'
       },
       {
         id: 'gpt-4-turbo',
@@ -143,6 +163,43 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
         id: 'baichuan2-7b-chat-v1',
         name: '百川2 7b v1'
       }
+    ]
+  },
+  [AiProvider.Ollama]: {
+    isTools: true,
+    models: [
+      {
+        id: 'llama3',
+        name: 'LLama 3'
+      },
+      {
+        id: 'llama3.1:8b',
+        name: 'LLama 3.1 8b'
+      },
+      {
+        id: 'llama3.1:70b',
+        name: 'LLama 3.1 70b'
+      },
+      {
+        id: 'llama3.1:405b',
+        name: 'LLama 3.1 405b'
+      },
+      {
+        id: 'qwen2',
+        name: 'Qwen 2'
+      },
+      {
+        id: 'gemma2',
+        name: 'Gemma 2'
+      },
+      {
+        id: 'phi3',
+        name: 'Phi-3'
+      },
+      {
+        id: 'llama3-groq-tool-use',
+        name: 'Llama3 Groq Tool Use'
+      },
     ]
   }
 }

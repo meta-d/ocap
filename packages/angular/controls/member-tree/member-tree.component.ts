@@ -120,6 +120,8 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
   )
   public readonly loading$ = this.smartFilterService.loading$
 
+  readonly error = signal<string>(null)
+
   readonly slicer = computed(() => {
     let nodes = this.memberKeys()
       .map((key) => this.keyNodeMap.get(key))
@@ -164,13 +166,13 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
     )
   )
   readonly autoActiveFirst = computed(() => this.options()?.autoActiveFirst)
+  readonly initial = signal(true)
 
   /**
   |--------------------------------------------------------------------------
   | Effects
   |--------------------------------------------------------------------------
   */
-  readonly initial = signal(true)
   readonly loadedTreeNodes = effect(() => this.initial.set(true), { allowSignalWrites: true })
   readonly autoActiveFirstEffect = effect(
     () => {
@@ -235,6 +237,9 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
     })
   private _loadingSub = this.smartFilterService.loading$.pipe(takeUntilDestroyed()).subscribe((loading) => {
     this.loadingChanging.emit(loading)
+  })
+  private errorSub = this.smartFilterService.selectResult().pipe(map(({ error }) => error), takeUntilDestroyed()).subscribe((err) => {
+    this.error.set(err)
   })
 
   constructor(private smartFilterService: NgmSmartFilterService) {

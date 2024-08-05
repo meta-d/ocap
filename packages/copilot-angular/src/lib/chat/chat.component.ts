@@ -1,4 +1,3 @@
-import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard'
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { TextFieldModule } from '@angular/cdk/text-field'
@@ -10,6 +9,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  TemplateRef,
   ViewChild,
   computed,
   effect,
@@ -48,11 +48,11 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotContextItem,
-  CopilotEngine
+  SuggestionOutput,
+  nanoid,
+  nonBlank,
 } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
-import { nanoid } from 'nanoid'
-import { MarkdownModule } from 'ngx-markdown'
 import {
   NgxPopperjsContentComponent,
   NgxPopperjsModule,
@@ -66,6 +66,7 @@ import {
   debounceTime,
   delay,
   filter,
+  map,
   of,
   startWith,
   switchMap,
@@ -79,10 +80,11 @@ import { provideFadeAnimation } from '../core/animations'
 import { NgmHighlightDirective } from '../core/directives'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { injectCommonCommands } from '../hooks/common'
-import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
-import { CopilotChatTokenComponent } from '../token/token.component'
+import { AgentRecursionLimit, NgmCopilotEngineService, NgmCopilotService } from '../services/'
+import { CopilotChatTokenComponent } from './token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
+import { CopilotAIMessageComponent } from './ai-message/ai-message.component'
 
 export const AUTO_SUGGESTION_DEBOUNCE_TIME = 1000
 export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
@@ -99,7 +101,6 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     ReactiveFormsModule,
     RouterModule,
     TextFieldModule,
-    ClipboardModule,
     MatInputModule,
     MatIconModule,
     MatButtonModule,
@@ -114,7 +115,6 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     MatProgressSpinnerModule,
     TranslateModule,
     NgxPopperjsModule,
-    MarkdownModule,
     ScrollingModule,
 
     NgmSearchComponent,
@@ -123,7 +123,8 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     CopilotChatTokenComponent,
     NgmCopilotEnableComponent,
     UserAvatarComponent,
-    NgmScrollBackComponent
+    NgmScrollBackComponent,
+    CopilotAIMessageComponent
   ],
   host: {
     class: 'ngm-copilot-chat'
@@ -134,14 +135,13 @@ export class NgmCopilotChatComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
   NgxPopperjsTriggers = NgxPopperjsTriggers
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
+  AgentRecursionLimit = AgentRecursionLimit
 
   readonly _snackBar = inject(MatSnackBar)
   private copilotService = inject(NgmCopilotService)
-  readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
+  readonly #copilotEngine?: NgmCopilotEngineService = inject(NgmCopilotEngineService, { optional: true })
 
-  readonly copilotEngine$ = signal<CopilotEngine>(this.#copilotEngine)
-
-  readonly #clipboard: Clipboard = inject(Clipboard)
+  readonly copilotEngine$ = signal<NgmCopilotEngineService>(this.#copilotEngine)
 
   @Input() welcomeTitle: string
   @Input() welcomeSubTitle: string
@@ -152,7 +152,7 @@ export class NgmCopilotChatComponent {
   /**
    * @deprecated use CopilotRole and Agent instead
    */
-  @Input() get copilotEngine(): CopilotEngine {
+  @Input() get copilotEngine(): NgmCopilotEngineService {
     return this.copilotEngine$()
   }
   set copilotEngine(value) {
@@ -161,13 +161,13 @@ export class NgmCopilotChatComponent {
 
   @Input() user: IUser
 
-  @Output() copied = new EventEmitter()
   @Output() conversationsChange = new EventEmitter()
   @Output() enableCopilot = new EventEmitter()
 
   @ViewChild('chatsContent') chatsContent: ElementRef<HTMLDivElement>
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
+  readonly routeTemplate = viewChild('routeTemplate', { read: TemplateRef })
 
   readonly autocompleteTrigger = viewChild('userInput', { read: MatAutocompleteTrigger })
   readonly userInput = viewChild('userInput', { read: ElementRef })
@@ -220,14 +220,14 @@ export class NgmCopilotChatComponent {
       this.openaiOptions.temperature = value
     }
   }
-  get n() {
-    return this.aiOptions.n
+  get recursionLimit() {
+    return this.aiOptions.recursionLimit
   }
-  set n(value) {
+  set recursionLimit(value) {
     if (this.copilotEngine) {
-      this.copilotEngine.aiOptions = { ...this.aiOptions, n: value }
+      this.copilotEngine.aiOptions = { ...this.aiOptions, recursionLimit: value }
     } else {
-      this.openaiOptions.n = value
+      this.openaiOptions.recursionLimit = value
     }
   }
 
@@ -277,9 +277,9 @@ export class NgmCopilotChatComponent {
    * 当前 Asking prompt
    */
   public promptControl = new FormControl<string>('')
-  readonly prompt = toSignal(this.promptControl.valueChanges, { initialValue: '' })
+  readonly prompt = toSignal(this.promptControl.valueChanges.pipe(filter((value) => typeof value === 'string')), { initialValue: '' })
 
-  readonly #promptWords = computed(() => this.prompt()?.split(' '))
+  readonly #promptWords = computed(() => this.prompt()?.split(' ') ?? [])
   readonly lastWord = computed(() => this.#promptWords()[this.#promptWords().length - 1])
   readonly #contextWord = computed(() =>
     this.#promptWords()
@@ -298,6 +298,14 @@ export class NgmCopilotChatComponent {
   readonly beforeLastWord = computed(() => {
     const words = this.prompt()?.split(' ')
     return words.splice(0, words.length - 1).join(' ')
+  })
+
+  /**
+   * The first word is a command
+   */
+  readonly commandWord = computed(() => {
+    const firstWord = this.#promptWords().filter(nonBlank)[0]
+    return firstWord?.startsWith('/') ? firstWord : null
   })
 
   readonly commandWithContext = computed(() => {
@@ -330,9 +338,10 @@ export class NgmCopilotChatComponent {
   readonly contextItems = derivedAsync(() => {
     const context = this.commandContext()
     const hasContextTrigger = this.hasContextTrigger()
-    if (hasContextTrigger && context && context.items()) {
+    const contextObservable = context?.getContextObservable()
+    if (hasContextTrigger && contextObservable) {
       this.loadingContext$.next(true)
-      return context.items().pipe(tap(() => this.loadingContext$.next(false)))
+      return contextObservable.pipe(tap(() => this.loadingContext$.next(false)))
     }
     return null
   })
@@ -394,20 +403,10 @@ export class NgmCopilotChatComponent {
         .filter((c) => !c.hidden)
         .sort((a, b) => (a.name > b.name ? 1 : a.name === b.name ? 0 : -1))
         .forEach((command) => {
-          if (command.examples?.length) {
-            command.examples.forEach((example) => {
-              commands.push({
-                ...command,
-                prompt: `/${command.name} ${example}`,
-                example
-              })
-            })
-          } else {
-            commands.push({
-              ...command,
-              prompt: `/${command.name} ${command.description}`
-            })
-          }
+          commands.push({
+            ...command,
+            prompt: `/${command.name} ${command.description}`
+          })
         })
       return commands
     }
@@ -433,6 +432,24 @@ export class NgmCopilotChatComponent {
   readonly #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
   readonly messageCopied = signal<string[]>([])
   readonly editingMessageId = signal<string>(null)
+
+  readonly input = toSignal(this.promptControl.valueChanges
+    .pipe(
+      debounceTime(AUTO_SUGGESTION_DEBOUNCE_TIME),
+      filter((text) => !AUTO_SUGGESTION_STOP.includes(text.slice(-1))),
+      map((text) => text.trim())
+    ))
+  readonly examplesRetriever = computed(() => this.command()?.examplesRetriever)
+  readonly examples = derivedAsync(() => {
+    const examplesRetriever = this.examplesRetriever()
+    const input = this.input()
+    if (!examplesRetriever) {
+      return null
+    }
+    return examplesRetriever.invoke(input).then((docs) => docs.map((doc) => ({
+      text: doc.metadata['input']
+    })))
+  })
 
   /**
   |--------------------------------------------------------------------------
@@ -464,13 +481,21 @@ export class NgmCopilotChatComponent {
         const commandWithContext = this.commandWithContext()
         return onlyCommand
           ? of(command?.description)
-          : command?.suggestionTemplate
+          : command?.suggestion
             ? this.copilotEngine.executeCommandSuggestion(prompt, { ...commandWithContext })
             : of(null)
       }),
       catchError(() => of(null))
     )
-    .subscribe((text) => this.promptCompletion.set(text))
+    .subscribe((output: SuggestionOutput) => {
+      if (typeof output === 'string') {
+        this.promptCompletion.set(output)
+      } else if (output) {
+        this.promptCompletion.set(output.input)
+      } else {
+        this.promptCompletion.set('')
+      }
+    })
 
   constructor() {
     effect(
@@ -502,6 +527,12 @@ export class NgmCopilotChatComponent {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      if (this.copilotEngine) {
+        this.copilotEngine.routeTemplate = this.routeTemplate()
+      }
+    })
   }
 
   trackByKey(index: number, item) {
@@ -665,6 +696,16 @@ export class NgmCopilotChatComponent {
   isFoucs(target: HTMLDivElement | HTMLTextAreaElement) {
     return document.activeElement === target
   }
+  
+  _autocompleteDisplayWith(option: CopilotContextItem) {
+    if (typeof option === 'string') {
+      return option
+    } else if (typeof option === 'object') {
+      return [this.beforeLastWord(), `@${option.uKey}`].filter(Boolean).join(' ') + ' '
+    }
+    return null
+  }
+  autocompleteDisplayWith = this._autocompleteDisplayWith.bind(this)
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
     if ((event.isComposing || event.shiftKey) && event.key === 'Enter') {
@@ -728,22 +769,6 @@ export class NgmCopilotChatComponent {
     this.#activatedPrompt.set(event.option?.value)
   }
 
-  copyMessage(message: CopilotChatMessage) {
-    this.copied.emit(message.content)
-    this.#clipboard.copy(message.content)
-    this.messageCopied.update((ids) => [...ids, message.id])
-    setTimeout(() => {
-      this.messageCopied.update((ids) => ids.filter((id) => id !== message.id))
-    }, 3000)
-  }
-
-  onCopy(copyButton) {
-    copyButton.copied = true
-    setTimeout(() => {
-      copyButton.copied = false
-    }, 3000)
-  }
-
   dropCopilot(event: CdkDragDrop<any[], any[], any>) {
     if (this.copilotEngine) {
       this.copilotEngine.dropCopilot(event)
@@ -802,16 +827,20 @@ export class NgmCopilotChatComponent {
     }
   }
 
-  async revert(command: CopilotCommand, message: CopilotChatMessage) {
-    await command.revert?.(message.historyCursor)
-    message.reverted = true
-  }
-
   async continue(conversation: CopilotChatConversation) {
     await this.copilotEngine.continue(conversation)
   }
 
   async finish(conversation: CopilotChatConversation) {
     await this.copilotEngine.finish(conversation)
+  }
+
+  pickExample(text: string) {
+    let prompt = this.commandWord()
+    if (this.context()) {
+      prompt += ` @${this.context().uKey}`
+    }
+    this.promptControl.setValue(`${prompt} ${text}`, {emitEvent: false})
+    this.promptCompletion.set(null)
   }
 }

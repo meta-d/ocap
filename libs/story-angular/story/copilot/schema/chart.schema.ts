@@ -1,4 +1,13 @@
-import { DeepPartial, DimensionSchema, MeasureSchema, SlicerSchema, getChartType, makeChartEnum, tryFixDimension } from '@metad/core'
+import {
+  ChartMeasureSchema,
+  DataSettingsSchema,
+  DeepPartial,
+  DimensionSchema,
+  SlicerSchema,
+  getChartType,
+  makeChartEnum,
+  tryFixDimension
+} from '@metad/core'
 import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, omit } from '@metad/ocap-core'
 import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
@@ -32,35 +41,24 @@ export const ChartSchema = z.object({
     type: z.enum(ChartTypes as unknown as z.EnumValues).describe('The chart type'),
     chartOptions: EChartsOptions.optional()
   }),
-  dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),
-  measures: z.array(MeasureSchema).optional().describe('The measures used by the chart'),
-
-  slicers: z.any().optional().describe('The slicers used by the chart data')
+  dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),
+  measures: z.array(ChartMeasureSchema).describe('The measures used by the chart'),
+  slicers: z.array(SlicerSchema).optional().describe('The slicers used by the chart data'),
 })
-
-
 
 export const ChartWidgetSchema = z.object({
   title: z.string().optional().describe(`Title of the widget`),
-  position: z.object({
-    x: z.number().describe(`Position x of the widget in the page layout`),
-    y: z.number().describe(`Position y of the widget in the page layout`),
-    cols: z.number().describe('Width of the widget in page layout'),
-    rows: z.number().describe('Height of the widget in page layout')
-  }).optional(),
-  dataSettings: z
+  position: z
     .object({
-      limit: z.number().optional().describe('The limit of the records')
+      x: z.number().describe(`Position x of the widget in the page layout`),
+      y: z.number().describe(`Position y of the widget in the page layout`),
+      cols: z.number().describe('Width of the widget in page layout'),
+      rows: z.number().describe('Height of the widget in page layout')
     })
-    .optional()
-    .describe('The data settings of the widget'),
+    .optional(),
+  dataSettings: DataSettingsSchema.optional().describe('The data settings of the widget'),
   chart: ChartSchema.describe('Chart configuration'),
-  slicers: z
-    .array(
-      SlicerSchema
-    )
-    .optional()
-    .describe('The slicers used by the chart data')
+  slicers: z.array(SlicerSchema).optional().describe('The slicers used by the chart data')
 })
 
 /**
@@ -109,12 +107,13 @@ export function completeChartAnnotation(chart: DeepPartial<ChartAnnotation>): De
     chart && {
       ...chart,
       dimensions: chart.dimensions ?? [],
-      measures: chart.measures?.map((item) => ({
-        ...item,
-        formatting: {
-          shortNumber: true
-        }
-      })) ?? []
+      measures:
+        chart.measures?.map((item) => ({
+          ...item,
+          formatting: {
+            shortNumber: true
+          }
+        })) ?? []
     }
   )
 }

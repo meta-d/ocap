@@ -172,7 +172,7 @@ export const STORY_DESIGNER_COMPONENTS = [
   {
     provide: STORY_DESIGNER_COMPONENT,
     useValue: {
-      type: WidgetComponentType.StoryFilterBar + '/Style',
+      type: WidgetComponentType.FilterBar + '/Style',
       component: NxComponentSettingsComponent,
       schema: WidgetStylingSchema
     },

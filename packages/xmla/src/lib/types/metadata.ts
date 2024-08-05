@@ -231,7 +231,6 @@ export interface MDXLevel extends PropertyLevel, MDXCube {
   levelCaption: string
   levelNumber: number
   levelCardinality: number
-  levelType: number
   customRollupSettings: number
   levelUniqueSettings: number
   levelIsVisible: boolean

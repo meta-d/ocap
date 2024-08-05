@@ -1,7 +1,4 @@
-export * from './math.command'
 export * from './measure.command'
-export * from './page.command'
 export * from './schema/'
 export * from './style.command'
 export * from './types'
-export * from './widget/index'

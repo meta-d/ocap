@@ -39,11 +39,14 @@ const baseDimensionSchema = {
 
 export const DimensionSchema = z.object(baseDimensionSchema)
 
-export const MeasureSchema = z.object({
+export const BaseMeasureSchema = {
   dimension: z.enum([C_MEASURES]),
   measure: z.string().describe('The name of the measure'),
   order: z.enum([OrderDirection.ASC, OrderDirection.DESC]).optional().describe('The order of the measure'),
   chartOptions: z.any().optional().describe('The chart options of ECharts library')
+}
+export const MeasureSchema = z.object({
+  ...BaseMeasureSchema
 })
 
 export const MemberSchema = z.object({
@@ -81,6 +84,10 @@ export const CalculationSchema = z.object({
   }).optional().describe('The formatting config of this measure')
 })
 
+export const VariableSchema = z.object({
+  variable: z.string().describe('The name of the variable'),
+})
+
 /**
  * Due to the instability of the AI's returned results, it is necessary to attempt to fix dimensions for different situations:
  * The dimensional attributes returned by AI may be level, hierarchy or dimension.
@@ -110,23 +117,27 @@ export function tryFixDimension(dimension: Dimension | Measure, entityType: Enti
   switch (property?.role) {
     case AggregationRole.dimension:
       return {
-        dimension: property.name
-      }
+        dimension: property.name,
+        zeroSuppression: true
+      } as Dimension
     case AggregationRole.hierarchy:
       return {
         dimension: property.dimension,
-        hierarchy: property.name
+        hierarchy: property.name,
+        zeroSuppression: true
       }
     case AggregationRole.level:
       return {
         dimension: property.dimension,
         hierarchy: property.hierarchy,
-        level: property.name
+        level: property.name,
+        zeroSuppression: true
       }
     case AggregationRole.measure:
       return {
         dimension: C_MEASURES,
-        measure: property.name
+        measure: property.name,
+        zeroSuppression: true
       }
     default:
       throw new Error(`Can't find dimension for '${dimension.dimension}'`)

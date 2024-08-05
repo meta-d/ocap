@@ -13,7 +13,7 @@ import {
   SimpleChanges,
   ViewContainerRef
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
@@ -33,7 +33,7 @@ import {
   ISlicer,
   TreeNodeInterface
 } from '@metad/ocap-core'
-import { firstValueFrom } from 'rxjs'
+import { BehaviorSubject, delayWhen, filter, firstValueFrom } from 'rxjs'
 import { NgmSmartFilterService } from '../smart-filter.service'
 import { TreeControlOptions } from '../types'
 import { NgmValueHelpComponent } from '../value-help/value-help.component'
@@ -141,10 +141,15 @@ export class NgmMemberTreeSelectComponent implements ControlValueAccessor {
   readonly treeData$ = this.smartFilterService.membersTree$
   public readonly loading$ = this.smartFilterService.loading$
 
+  readonly initialized$ = new BehaviorSubject(false)
+
   onChange: (input: any) => void
 
   // Subscribers
-  private _refreshSub = this.smartFilterService.onAfterServiceInit().subscribe(() => {
+  private _refreshSub = this.smartFilterService.onAfterServiceInit().pipe(
+    delayWhen(() => this.initialized$.pipe(filter((initialized) => initialized)))
+  )
+  .subscribe(() => {
     this.smartFilterService.refresh()
   })
   private _loadingSub = this.smartFilterService.loading$.subscribe((loading) => {
@@ -211,6 +216,14 @@ export class NgmMemberTreeSelectComponent implements ControlValueAccessor {
 
   trackByName(index, item) {
     return item?.name
+  }
+
+  onFocus(event: FocusEvent): void {
+    this.initialized$.next(true)
+  }
+
+  onBlur(event: FocusEvent) {
+    //
   }
 
   onModelChange(event) {

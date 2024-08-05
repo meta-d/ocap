@@ -16,7 +16,7 @@ export const COMPONENTS: {
     label: 'Filter Bar',
     icon: 'filter_alt',
     value: {
-      component: WidgetComponentType.StoryFilterBar
+      component: WidgetComponentType.FilterBar
     }
   },
   {

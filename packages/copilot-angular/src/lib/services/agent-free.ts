@@ -1,10 +1,11 @@
-import { SystemMessage } from '@langchain/core/messages'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { StateGraphArgs } from '@langchain/langgraph/web'
-import { AgentState, CreateGraphOptions, createReactAgent, Team } from '@metad/copilot'
+import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
+import { AgentState, createCopilotAgentState, CreateGraphOptions } from '@metad/copilot'
 import { z } from 'zod'
 
-const superState: StateGraphArgs<AgentState>['channels'] = Team.createState()
+const state: StateGraphArgs<AgentState>["channels"] = createCopilotAgentState()
 
 const dummyTool = new DynamicStructuredTool({
   name: 'dummy',
@@ -16,17 +17,43 @@ const dummyTool = new DynamicStructuredTool({
 })
 
 export function injectCreateChatAgent() {
-  return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
-    return createReactAgent({
-      state: superState,
-      llm,
-      tools: [dummyTool],
-      checkpointSaver: checkpointer,
+  return async ({ llm, secondaryChatModel, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
+
+    const prompt = ChatPromptTemplate.fromMessages([
+      ['system', '{role}\n{language}\n{context}'],
+      ["placeholder", "{messages}"],
+    ]);
+
+    const callModel = async (state: AgentState) => {
+      // TODO: Auto-promote streaming.
+      return { messages: [await prompt.pipe(secondaryChatModel ?? llm).invoke(state)] };
+    };
+    const workflow = new StateGraph<AgentState>({
+      channels: state
+    })
+      .addNode(
+        "agent",
+        new RunnableLambda({ func: callModel }).withConfig({ runName: "agent" })
+      )
+      .addEdge('agent', END)
+      .addEdge(START, "agent")
+  
+    return workflow.compile({
+      checkpointer,
       interruptBefore,
       interruptAfter,
-      messageModifier: async (state) => {
-        return [new SystemMessage(`${state.role}\n${state.context}`), ...state.messages]
-      }
-    })
+    });
+
+    // return createReactAgent({
+    //   state: superState,
+    //   llm,
+    //   tools: [],
+    //   checkpointSaver: checkpointer,
+    //   interruptBefore,
+    //   interruptAfter,
+    //   messageModifier: async (state) => {
+    //     return [new SystemMessage(`${state.role}\n${state.context}`), ...state.messages]
+    //   }
+    // })
   }
 }

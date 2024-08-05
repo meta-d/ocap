@@ -165,21 +165,22 @@ export class StoryExplorerComponent {
       }
 
       const dimensions = [...this._dimensions()]
-      if (value?.dataSettings?.selectionVariant?.selectOptions?.length) {
+      const slicers: ISlicer[] = [...(value.slicers ?? []), ...(value.dataSettings?.selectionVariant?.selectOptions ?? [])]
+      if (slicers.length) {
         // Set slicers from selectionVariant
         this.slicers.set(
-          (value.dataSettings.selectionVariant.selectOptions).reduce((acc, curr) => {
+          slicers.reduce((acc, curr) => {
             if (!curr.dimension) {
               return acc
             }
             acc[curr.dimension.dimension] = curr
             return acc
-          }, {})
+          }, {} as Record<string, ISlicer>)
         )
         // Udpate dimensions
-        dimensions.push(...value.dataSettings.selectionVariant.selectOptions
+        dimensions.push(...slicers
           .filter((slicer) => !!slicer.dimension)
-          .map((slicer) => pick(slicer.dimension, 'dimension', 'hierarchy'))
+          .map((slicer) => pick(slicer.dimension, 'dimension', 'hierarchy') as Dimension)
           .filter((d) => d.dimension))
       }
       this._dimensions.set(uniqBy(dimensions, 'dimension'))

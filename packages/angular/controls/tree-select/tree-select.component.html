@@ -20,6 +20,7 @@
   [disabled]="disabled"
   [ngModel]="memberKeys()"
   (ngModelChange)="onModelChange($event)"
+  (focus)="onFocus($event)"
 >
   <div matSuffix style="display: flex; align-items: center;">
     @if (loading$ | async) {

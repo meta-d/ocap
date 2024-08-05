@@ -190,7 +190,7 @@
           </div>
         </mat-chip-grid>
         <input #promptInput type="text" id="simple-search" class="border-none outline-none text-sm block w-full
-         bg-transparent dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            bg-transparent dark:focus:ring-blue-500 dark:focus:border-blue-500"
           placeholder=" {{'PAC.KEY_WORDS.Ask' | translate: { Default: 'Ask' } }}..." required
           matInput [matAutocomplete]="auto"
           [matChipInputFor]="chipGrid"
@@ -215,11 +215,13 @@
         <span class="font-bold">{{ 'PAC.KEY_WORDS.Dimensions' | translate: {Default: 'Dimensions'} }}:</span>
         <mat-chip-listbox cdkDropList
           [cdkDropListData]="[]">
-          <mat-chip-option *ngFor="let dimension of dimensions()"
-            cdkDrag
-            [cdkDragData]="dimension">
-            {{dimension.caption}}
-          </mat-chip-option>
+          @for (dimension of dimensions(); track dimension.name) {
+            <mat-chip-option
+              cdkDrag
+              [cdkDragData]="dimension">
+              {{dimension.caption}}
+            </mat-chip-option>
+          }
         </mat-chip-listbox>
       </div>
 
@@ -227,22 +229,26 @@
         <span class="font-bold">{{ 'PAC.KEY_WORDS.Measures' | translate: {Default: 'Measures'} }}:</span>
         <mat-chip-listbox cdkDropList
           [cdkDropListData]="[]">
-          <mat-chip-option *ngFor="let measure of measures()"
-            cdkDrag
-            [cdkDragData]="measure">
-            <ngm-entity-property [property]="measure" displayBehaviour="descriptionOnly"></ngm-entity-property>
-          </mat-chip-option>
+          @for (measure of measures(); track measure.name) {
+            <mat-chip-option
+              cdkDrag
+              [cdkDragData]="measure">
+              <ngm-entity-property [property]="measure" displayBehaviour="descriptionOnly"></ngm-entity-property>
+            </mat-chip-option>
+          }
         </mat-chip-listbox>
       </div>
       <div>
         <span class="font-bold">{{ 'PAC.KEY_WORDS.Indicators' | translate: {Default: 'Indicators'} }}:</span>
         <mat-chip-listbox cdkDropList
           [cdkDropListData]="[]">
-          <mat-chip-option *ngFor="let measure of indicators()"
-            cdkDrag
-            [cdkDragData]="measure">
-            {{measure.caption}}
-          </mat-chip-option>
+          @for (measure of indicators(); track measure.name) {
+            <mat-chip-option
+              cdkDrag
+              [cdkDragData]="measure">
+              {{measure.caption}}
+            </mat-chip-option>
+          }
         </mat-chip-listbox>
       </div>
     </div>
@@ -265,12 +271,13 @@
     cdkDropListGroup
     [data]="explore()"
     (closed)="closeExplorer($event)"
-  ></ngm-story-explorer>
+  />
 }
 
 @if (!copilotEnabled()) {
   <ngm-copilot-enable class="z-[101]"
     [title]="'Metad Copilot'"
     [subTitle]="'Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'}"
-    (toConfig)="toEnableCopilot()"/>
+    (toConfig)="toEnableCopilot()"
+  />
 }

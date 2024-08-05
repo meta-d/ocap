@@ -1,7 +1,7 @@
 import { inject, Signal } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
-import { tryFixSlicer } from '@metad/core'
+import { DataSettingsSchema, tryFixSlicer } from '@metad/core'
 import { DataSettings, EntityType } from '@metad/ocap-core'
 import { NxStoryService, WidgetComponentType } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
@@ -52,7 +52,7 @@ export function injectCreateChartTool(defaultDataSettings: Signal<DataSettings>,
     name: 'createChartWidget',
     description: 'Create a new widget in story page.',
     schema: ChartWidgetSchema,
-    func: async ({ title, position, dataSettings, chart, slicers }) => {
+    func: async ({dataSettings, title, position, chart, slicers}) => {
       logger.debug(
         '[Story] [AI Copilot] [Command tool] [createChartWidget] inputs:',
         'title:',
@@ -74,8 +74,8 @@ export function injectCreateChartTool(defaultDataSettings: Signal<DataSettings>,
           position: position ?? { x: 0, y: 0, rows: 5, cols: 5 },
           title: title,
           dataSettings: {
-            ...(dataSettings ?? {}),
             ...(defaultDataSettings() ?? {}),
+            ...(dataSettings ?? {}),
             chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType)),
             selectionVariant: {
               selectOptions: (slicers ?? ((<any>chart).slicers as any[]))?.map((slicer) =>

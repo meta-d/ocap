@@ -34,9 +34,6 @@ import {
 } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import {
-  injectStoryPageCommand,
-  injectStoryStyleCommand,
-  injectStoryWidgetCommand,
   NxStoryComponent,
   NxStoryModule
 } from '@metad/story/story'
@@ -55,7 +52,7 @@ import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
 import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { MatDialog } from '@angular/material/dialog'
-import { injectCalculationGraphCommand, injectStoryCommand } from '../copilot'
+import { injectCalculationGraphCommand, injectStoryCommand, injectStoryPageCommand, injectStoryStyleCommand, injectStoryWidgetCommand } from '../copilot'
 
 @Component({
   standalone: true,
@@ -172,10 +169,9 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #styleCommand = injectStoryStyleCommand(this.storyService)
-  #pageCommand = injectStoryPageCommand(this.storyService)
+  #styleCommand = injectStoryStyleCommand()
+  #pageCommand = injectStoryPageCommand()
   #widgetCommand = injectStoryWidgetCommand()
-  // #widgetStyleCommand = injectWidgetStyleCommand(this.storyService)
   #storyCommand = injectStoryCommand()
   readonly calculatioCommand = injectCalculationGraphCommand(
     this.dataSettings,

@@ -141,6 +141,7 @@ export const ZhHans = {
       TextStyles: '文本样式',
       TableStyles: '表格样式',
       ControlStyles: '控制器样式',
+      KpiStyles: 'KPI 样式',
       TabBar: '选项卡栏',
       TabBar_Fixed: '固定',
       TabBar_Point: '浮点',
@@ -862,6 +863,7 @@ export const ZhHans = {
       StoryStyleCommandDesc: '请描述想要的故事样式',
       StoryPageCommandDesc: '请描述新的故事页面',
       PleaseSelectWidget: '请先选择一个微件',
+      CommandPageDesc: '描述你想要的页面',
       PredefinedPrompts: [
         '/story 设置为暗色主题',
         '/story-style 设置科技感渐变色背景颜色',

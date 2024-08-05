@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, computed, forwardRef, inject, signal } from '@angular/core'
+import { Component, computed, forwardRef, inject, input, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -16,6 +16,7 @@ import {
 } from '@metad/components/palette'
 import { ColorPalettes, NxCoreService } from '@metad/core'
 import { AppearanceDirective, DensityDirective, NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
+import { NgmEntityModule, PropertyCapacity } from '@metad/ocap-angular/entity'
 import {
   AggregationRole,
   CalculationProperty,
@@ -31,11 +32,11 @@ import {
 } from '@metad/ocap-core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { upperFirst } from 'lodash-es'
 import { BehaviorSubject, distinctUntilChanged, from, map } from 'rxjs'
 import { NgmChartDimensionComponent } from './chart-dimension.component'
 import { NgmChartMeasureComponent } from './chart-measure.component'
 import { NgmReferenceLineComponent } from './reference-line.component'
-import { NgmEntityModule, PropertyCapacity } from '@metad/ocap-angular/entity'
 
 @Component({
   standalone: true,
@@ -79,26 +80,11 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   public settingsService? = inject(NxSettingsPanelService, { optional: true })
   public translateService = inject(TranslateService)
 
-  @Input() label: string
-  @Input() capacities: PropertyCapacity[]
-
-  @Input() get dataSettings(): DataSettings {
-    return this._dataSettings()
-  }
-  set dataSettings(value) {
-    this._dataSettings.set(value)
-  }
-  private readonly _dataSettings = signal<DataSettings>(null)
-
-  @Input() get entityType(): EntityType {
-    return this._entityType()
-  }
-  set entityType(value) {
-    this._entityType.set(value)
-  }
-  private readonly _entityType = signal<EntityType>(null)
-
-  @Input() chartType: ChartType
+  readonly label = input<string>(null)
+  readonly capacities = input<PropertyCapacity[]>(null)
+  readonly chartType = input<ChartType>(null)
+  readonly dataSettings = input<DataSettings>(null)
+  readonly entityType = input<EntityType>(null)
 
   public interpolateGroups: NgmChromaticInterpolateGroup[]
   public colorPalettes = ColorPalettes
@@ -148,35 +134,25 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
    */
   formControl = new FormControl()
 
-  get showMeasureStyle() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStyle)
-  }
-  get showColorPalette() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStylePalette)
-  }
-  get showMeasurePalettePattern() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStylePalettePattern)
-  }
-  get showChartAttributes() {
-    return this.capacities?.includes(PropertyCapacity.DimensionChart)
-  }
-  get showMeasureRole() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStyleRole)
-  }
-  get showMeasureShape() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStyleShape)
-  }
-  get showMeasureGridBar() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStyleGridBar)
-  }
-  get showMeasureReferenceLine() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStyleReferenceLine)
-  }
-  get showMeasureChartOptions() {
-    return this.capacities?.includes(PropertyCapacity.MeasureStyleChartOptions)
-  }
+  // get showMeasureStyle() {
+  //   return this.capacities()?.includes(PropertyCapacity.MeasureStyle)
+  // }
+  readonly showColorPalette = computed(() => this.capacities()?.includes(PropertyCapacity.MeasureStylePalette))
+  readonly showMeasurePalettePattern = computed(() =>
+    this.capacities()?.includes(PropertyCapacity.MeasureStylePalettePattern)
+  )
+  readonly showChartAttributes = computed(() => this.capacities()?.includes(PropertyCapacity.DimensionChart))
+  readonly showMeasureRole = computed(() => this.capacities()?.includes(PropertyCapacity.MeasureStyleRole))
+  readonly showMeasureShape = computed(() => this.capacities()?.includes(PropertyCapacity.MeasureStyleShape))
+  readonly showMeasureGridBar = computed(() => this.capacities()?.includes(PropertyCapacity.MeasureStyleGridBar))
+  readonly showMeasureReferenceLine = computed(() =>
+    this.capacities()?.includes(PropertyCapacity.MeasureStyleReferenceLine)
+  )
+  readonly showMeasureChartOptions = computed(() =>
+    this.capacities()?.includes(PropertyCapacity.MeasureStyleChartOptions)
+  )
 
-  public readonly syntax = computed(() => this.entityType?.syntax)
+  public readonly syntax = computed(() => this.entityType()?.syntax)
   public readonly restrictedDimensions$ = new BehaviorSubject<string[]>(null)
 
   get role() {
@@ -279,7 +255,7 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
     )
   )
 
-  public readonly property = computed(() => getEntityProperty(this.entityType, this.dimension()))
+  public readonly property = computed(() => getEntityProperty(this.entityType(), this.dimension()))
 
   public readonly isDimension = computed(() => {
     return this.property()?.role === AggregationRole.dimension
@@ -287,6 +263,11 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   public readonly isMeasure = computed(() => {
     return this.property()?.role === AggregationRole.measure
   })
+
+  readonly _chartType = computed(() => ({
+    ...(this.chartType() ?? {}),
+    type: upperFirst(this.model()?.shapeType ?? this.chartType()?.type)
+  }))
 
   /**
   |--------------------------------------------------------------------------
@@ -310,6 +291,7 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
       ...(value ?? {})
     })
   })
+
   onChange: (input: any) => void
   onTouched: () => void
 
@@ -340,7 +322,7 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   onCalculationChange(property: CalculationProperty) {
     this.ocapService.updateEntity({
       type: 'Calculation',
-      dataSettings: this.dataSettings,
+      dataSettings: this.dataSettings(),
       property
     })
   }

@@ -11,7 +11,7 @@ import {
   IStory,
   ISubscription
 } from '@metad/contracts'
-import { NgmAppearance, ThemesEnum } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance, ThemesEnum } from '@metad/ocap-angular/core'
 import {
   DataSettings,
   DataSourceOptions,
@@ -105,10 +105,11 @@ export interface StoryPreferences {
     enableWatermark?: boolean
     watermarkOptions?: NxWatermarkOptions
     /**
+     * @deprecated use displayDensity
      * Global appearance for all widgets in this story
      */
     appearance?: NgmAppearance
-
+    displayDensity?: DisplayDensity
     /**
      * @deprecated use storyStyling
      */
@@ -144,6 +145,20 @@ export interface StoryPreferences {
   control?: {
     styling?: ComponentStyling
   },
+  kpi?: {
+    /**
+     * Styles for the KPI component
+     */
+    styling?: ComponentStyling
+    /**
+     * Styles for the KPI title text
+     */
+    title?: ComponentStyling
+    /**
+     * Styles for the KPI value text
+     */
+    value?: ComponentStyling
+  }
   //
   options?: any
 }
@@ -191,6 +206,8 @@ export interface StoryOptions {
   scale?: number
 
   echartsTheme?: any
+
+  defaultDataSettings?: DefaultDataSettings
 }
 
 export enum CascadingEffect {
@@ -479,7 +496,8 @@ export interface StoryFeed extends Partial<AdminData> {
 export enum WidgetComponentType {
   AnalyticalCard = 'AnalyticalCard',
   AnalyticalGrid = 'AnalyticalGrid',
-  StoryFilterBar = 'StoryFilterBar',
+  // StoryFilterBar = 'StoryFilterBar',
+  FilterBar = 'FilterBar',
   KpiCard = 'KpiCard',
   InputControl = 'InputControl',
   AnalyticalGeography = 'AnalyticalGeography',
@@ -493,7 +511,7 @@ export enum WidgetComponentType {
 
 export enum ComponentSettingsType {
   Story = 'Story',
-  StoryFilterBar = 'StoryFilterBar',
+  StoryFilterBar = WidgetComponentType.FilterBar,
   FilterBarField = 'FilterBarField',
   LinkedAnalysis = 'LinkedAnalysis',
   StoryPoint = 'StoryPoint',

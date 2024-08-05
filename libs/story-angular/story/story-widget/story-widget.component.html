@@ -4,10 +4,11 @@
   <div class="ngm-story-widget__component-container">
     <ng-container #anchor></ng-container>
   </div>
-  
-  <facebook-content-loader *ngIf="placeholder$ | async" class="ngm-story-widget__placeholder dark:opacity-20"
-    [animate]="false">
-  </facebook-content-loader>
+  @if (placeholder$ | async) {
+    <facebook-content-loader class="ngm-story-widget__placeholder dark:opacity-20"
+      [animate]="false">
+    </facebook-content-loader>
+  }
 </div>
 
 <div class="ngm-story-widget__fab-menu flex flex-col justify-start items-center gap-2"
@@ -151,7 +152,10 @@
       </ng-container>
 
       <mat-divider></mat-divider>
-      
+      <button cdkMenuItem class="ngm-copilot-command-button" (click)="generateWithAI()">
+        <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
+        {{ 'Copilot.GenerateWithAI' | translate: {Default: "Generate with AI"} }}
+      </button>
       <button cdkMenuItem (click)="openEditAttributes()">
         <mat-icon fontSet="material-icons-outlined">edit_attributes</mat-icon>
         {{ 'Story.Widget.EditAttributes' | translate: {Default: "Edit Attributes"} }}

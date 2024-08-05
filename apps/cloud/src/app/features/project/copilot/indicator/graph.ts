@@ -36,7 +36,12 @@ export function injectCreateIndicatorGraph() {
   const tags = projectService.tags
 
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
-    const supervisorNode = await Team.createSupervisor(llm, [INDICATOR_AGENT_NAME])
+    const supervisorNode = await Team.createSupervisor(llm, [
+      {
+        name: INDICATOR_AGENT_NAME,
+        description: 'The agent will create indicator, only one at a time'
+      }
+    ])
 
     const createIndicator = await createIndicatorWorker(
       {

@@ -25,6 +25,7 @@ import {
   parameterFormatter,
   Property,
   QueryOptions,
+  RuntimeLevelType,
   Semantics
 } from '@metad/ocap-core'
 import { findIndex, flatten, groupBy, isEmpty, merge, negate, omit, padStart, uniq } from 'lodash'
@@ -41,7 +42,6 @@ import {
   MDXQuery,
   MDXRank,
   wrapBrackets,
-  wrapHierarchyValue
 } from './types/index'
 
 export function filterNotUnitText(dimensions: Array<Dimension>, entityType: EntityType) {
@@ -572,8 +572,9 @@ export function allocateAxesFilter(
         // 使用其他方式(dimension属性,level设置...)排除 AllMember 成员
         // }
 
-        statement = defaultMember ? wrapHierarchyValue(hierarchy, defaultMember) : Members(hierarchy)
+        // statement = defaultMember ? wrapHierarchyValue(hierarchy, defaultMember) : Members(hierarchy)
         // statement = allMember ? Except(Members(hierarchy), wrapHierarchyValue(hierarchy, allMember)) : Members(hierarchy)
+        statement = serializeHierarchyDefaultLevel(entityType, {dimension, hierarchy})
       }
     }
 
@@ -616,6 +617,16 @@ export function allocateAxesFilter(
     mdxProperty.statement = statement
     return mdxProperty
   })
+}
+
+export function serializeHierarchyDefaultLevel(entityType: EntityType, {dimension, hierarchy}: Dimension) {
+  const property = getEntityHierarchy(entityType, {dimension, hierarchy})
+  const levels = property.levels.filter((level) => level.levelType !== RuntimeLevelType.ALL)
+  const level = levels[0]
+  if (!level) {
+    throw new Error(`Can't find any levels in hierarchy ${hierarchy} of cube ${entityType.name} except all level`)
+  }
+  return Members(level.name)
 }
 
 /**

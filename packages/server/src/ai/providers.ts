@@ -16,7 +16,7 @@ export type AiProviderType = {
   isTools: boolean
 }
 
-export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
+export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.OpenAI]: {
     apiHost: 'https://api.openai.com',
     chatCompletionsUrl: '/chat/completions',
@@ -124,5 +124,7 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
         name: '百川2 7b v1'
       }
     ]
+  },
+  [AiProvider.Ollama]: {
   }
 }

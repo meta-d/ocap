@@ -30,6 +30,7 @@ import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
 import { provideCheckpointSaver, provideCommandFewShotPrompt, provideDimensionMemberRetriever } from '../@core/copilot'
 import { NgmDrawerComponent, NgmDrawerContainerComponent } from '@metad/ocap-angular/common'
+import { NgxEchartsModule } from 'ngx-echarts'
 
 registerEChartsThemes()
 
@@ -47,6 +48,10 @@ registerEChartsThemes()
     AssetsComponent,
     ProjectSelectorComponent,
     DensityDirective,
+
+    NgxEchartsModule.forRoot({
+      echarts: () => import('echarts')
+    }),
 
     // Formly
     NgmFormlyModule,

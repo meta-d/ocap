@@ -76,6 +76,10 @@ export function injectCreateFormulaTool() {
   return createFormulaTool
 }
 
+/**
+ * Select default cube
+ * 
+ */
 export function injectPickCubeTool() {
   const logger = inject(NGXLogger)
   const projectService = inject(ProjectService)

@@ -65,12 +65,13 @@ export function injectRunDimensionModeler() {
     const agent = await createDimensionModeler({ llm, checkpointer })
 
     return RunnableLambda.from(async (state: AgentState) => {
-      const content = await fewShotPrompt.format({ input: state.input, context: state.context })
+      const content = await fewShotPrompt.format({ input: state.input, context: '' })
       return {
         input: state.input,
         messages: [new HumanMessage(content)],
         role: state.role,
-        context: state.context
+        context: state.context,
+        language: state.language
       }
     })
       .pipe(agent)

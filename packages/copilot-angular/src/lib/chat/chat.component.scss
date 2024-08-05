@@ -13,16 +13,6 @@
   @apply flex flex-col relative;
 }
 
-.ngm-copilot-chat__command {
-  // background-color: rgb(217 161 255);
-  // background: linear-gradient(90deg, rgb(223 188 247) 0%, rgb(250 177 177) 50%, rgb(255 220 171) 100%);
-
-  // background: var(--red-to-orange-horizontal-gradient);
-  // background-clip: text;
-  // -webkit-background-clip: text;
-  // color: transparent;
-}
-
 .ngm-copilot-chat__command-tag {
   @apply bg-gray-200 text-neutral-800 dark:bg-gray-100/10 dark:text-neutral-300;
 }
@@ -65,7 +55,7 @@
   @apply rounded-full;
 }
 
-.mat-mdc-input-element {
+.ngm-colpilot__input.mat-mdc-input-element {
   @apply outline-none bg-transparent;
 }
 
@@ -93,10 +83,6 @@
 .assistant {
   .ngm-copilot-chat__message-content {
     @apply rounded-lg border border-dashed border-transparent;
-
-    // &.thinking {
-    //   @apply border-neutral-200 dark:border-neutral-800;
-    // }
   }
 }
 
@@ -105,10 +91,6 @@
     @apply rounded-xl rounded-tr-sm py-2 bg-gray-200/50 dark:bg-neutral-700/30;
   }
 }
-
-// .ngm-copilot__user-message {
-//   @apply rounded-xl rounded-tr-sm bg-gray-200/50 dark:bg-neutral-700/30;
-// }
 
 .ngm-copilot-chat__answering {
   background-color: var(--ngm-copilot-bg-color, white);
@@ -120,21 +102,49 @@
   width: 18px;
 }
 
-.ngm-copilot-button {
-  @apply rounded-md text-xs w-9 h-9 flex items-center justify-center transition-colors duration-100 
-    text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300
-    bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800;
+:host::ng-deep {
+  .ngm-copilot-button {
+    @apply rounded-md text-xs w-9 h-9 flex items-center justify-center transition-colors duration-100 
+      text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300
+      bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800;
+  }
+
+  // popper
+  .ngxp__container.ngxp__animation {
+    @apply p-0 shadow-none border-0;
+  }
 }
 
-:host::ng-deep {
-  markdown {
+::ng-deep {
+  .ngm-copilot-chat__autocomplete-panel.ngm-density__compact {
+    .mdc-list-item {
+      @apply pl-2;
+    }
+  }
+
+  .ngm-menu__copilot-context-popper {
+    position: relative;
+    width: 300px;
+    max-width: 300px;
+    min-height: 200px;
+    .cdk-virtual-scroll-viewport {
+      overflow-x: hidden;
+    }
+    .cdk-virtual-scroll-content-wrapper {
+      max-width: 100%;
+    }
+  }
+
+  .ngm-copilot-chat__roles.mdc-evolution-chip-set {
+    .mdc-evolution-chip-set__chips {
+      @apply justify-center;
+    }
+  }
+
+  markdown.ngm-copilot-markdown {
     > * {
       @apply whitespace-pre-line;
     }
-
-    // p:first-child {
-    //   @apply indent-4;
-    // }
 
     ol {
       list-style-type: decimal;
@@ -244,40 +254,22 @@
     ul {
       list-style-type: disc;
       padding-left: 1.625em;
-      // line-height: 1;
       white-space: normal;
     }
-  }
 
-  // popper
-  .ngxp__container.ngxp__animation {
-    @apply p-0 shadow-none border-0;
-  }
-}
-
-::ng-deep {
-  .ngm-copilot-chat__autocomplete-panel.ngm-density__compact {
-    .mdc-list-item {
-      @apply pl-2;
-    }
-  }
-
-  .ngm-menu__copilot-context-popper {
-    position: relative;
-    width: 300px;
-    max-width: 300px;
-    min-height: 200px;
-    .cdk-virtual-scroll-viewport {
-      overflow-x: hidden;
-    }
-    .cdk-virtual-scroll-content-wrapper {
-      max-width: 100%;
-    }
-  }
-
-  .ngm-copilot-chat__roles.mdc-evolution-chip-set {
-    .mdc-evolution-chip-set__chips {
-      @apply justify-center;
+    table {
+      @apply w-full my-4 border border-slate-100 dark:border-slate-700;
+      
+      thead tr th,
+      tbody tr:not(:last-child) td {
+        @apply border-b border-slate-100 dark:border-slate-700;
+      }
+    
+      tr {
+        td {
+          @apply p-1 pl-2;
+        }
+      }
     }
   }
 }

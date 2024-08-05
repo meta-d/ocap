@@ -1,4 +1,6 @@
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { BaseStringPromptTemplate, ChatPromptTemplate } from '@langchain/core/prompts'
+import { BaseRetriever } from '@langchain/core/retrievers'
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
 import { BaseCheckpointSaver, CompiledStateGraph, StateGraph } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
@@ -25,18 +27,14 @@ export interface CopilotCommand<T = any> {
    * Description of the command
    */
   description: string
+
+  examplesRetriever?: BaseRetriever
   /**
-   * Examples of the command usage
+   * Input suggestions
    */
-  examples?: string[]
-  /**
-   * The ai tools for input suggestion generation
-   */
-  suggestionTools?: Array<DynamicStructuredTool | DynamicTool>
-  /**
-   * The prompt template for input suggestion
-   */
-  suggestionTemplate?: ChatPromptTemplate
+  suggestion?: {
+    promptTemplate: ChatPromptTemplate
+  }
   /**
    * @deprecated use prompt only
    */
@@ -69,10 +67,15 @@ export interface CopilotCommand<T = any> {
     conversation?: boolean
     interruptBefore?: string[]
     interruptAfter?: string[]
+    referencesRetriever?: BaseRetriever
   }
 
-  createGraph?: (options: CreateGraphOptions) => Promise<StateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string> |
-    CompiledStateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string>>
+  createGraph?: (
+    options: CreateGraphOptions
+  ) => Promise<
+    | StateGraph<T, Partial<T>, '__start__' | 'tools' | 'agent' | string>
+    | CompiledStateGraph<T, Partial<T>, '__start__' | 'tools' | 'agent' | string>
+  >
 
   // For history management
   historyCursor?: () => number
@@ -80,7 +83,8 @@ export interface CopilotCommand<T = any> {
 }
 
 export type CreateGraphOptions = {
-  llm: ChatOpenAI;
+  llm: ChatOpenAI
+  secondaryChatModel?: BaseChatModel
   checkpointer?: BaseCheckpointSaver
   interruptBefore?: any[]
   interruptAfter?: any[]
@@ -103,9 +107,9 @@ export enum CopilotAgentType {
 }
 
 export interface CopilotContext {
-  items(): Observable<CopilotContextItem[]>
   commands(): Array<CopilotCommand>
 
+  getContextObservable(): Observable<CopilotContextItem[]>
   getCommand(name: string): CopilotCommand | null
   getCommandWithContext(name: string): { command: CopilotCommand; context: CopilotContext } | null
   getContextItem(key: string): Promise<CopilotContextItem | null>

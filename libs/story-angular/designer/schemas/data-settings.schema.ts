@@ -11,8 +11,10 @@ import {
   DataSource,
   EntityType,
   Indicator,
+  MDCube,
   getEntityDimensions,
-  getEntityMeasures
+  getEntityMeasures,
+  isVisible
 } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
@@ -283,23 +285,20 @@ export abstract class DataSettingsSchemaService<
                     field.props.error.set(null)
                   }),
                   switchMap((dataSource: DataSource) =>
-                    combineLatest([
                       dataSource.discoverMDCubes().pipe(
                         catchError((err) => {
                           field.props.error.set(err.message)
                           return of([])
                         })
-                      ),
-                      dataSource.selectSchema()
-                    ])
+                      )
                   ),
-                  map(([cubes, schema]) => {
-                    return cubes.map((cube: any) => ({
+                  map((cubes) => {
+                    return cubes.filter(isVisible).map((cube: MDCube) => ({
                       value: cube,
                       key: cube.name,
                       caption: cube.caption,
                       // @todo
-                      icon: schema?.cubes?.find((item) => item.name === cube.name)
+                      icon: cube.annotated
                         ? 'star_outline'
                         : cube.cubeType === 'VIRTUAL CUBE'
                           ? 'dataset_linked'
@@ -307,10 +306,6 @@ export abstract class DataSettingsSchemaService<
                       fontSet: 'material-icons-outlined'
                     }))
                   }),
-                  // catchError((err) => {
-                  //   field.className = field.className.split('formly-loader').join('')
-                  //   return throwError(() => err)
-                  // }),
                   tap(() => (field.className = field.className.split('formly-loader').join('')))
                 )
               }

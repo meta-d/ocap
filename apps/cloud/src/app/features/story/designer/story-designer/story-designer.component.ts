@@ -1,16 +1,17 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { assign, cloneDeep } from '@metad/ocap-core'
+import { PreferencesSchema, StoryPreferencesFields } from '@metad/story'
+import { NxStoryService, StoryPreferences } from '@metad/story/core'
+import { FORMLY_W_1_2 } from '@metad/story/designer'
 import { FormlyFieldConfig, FormlyFormOptions, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { PreferencesSchema } from '@metad/story'
-import { NxStoryService } from '@metad/story/core'
-import { debounceTime } from 'rxjs'
+import { combineLatest, debounceTime, map, startWith } from 'rxjs'
 import { InlineSearchComponent, MaterialModule } from '../../../../@shared'
 import { DesignerWidgetComponent } from '../widget/widget.component'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -46,21 +47,47 @@ export class StoryDesignerComponent {
   options: FormlyFormOptions
   model = {}
 
-  private formGroupSub = this.formGroup.valueChanges.pipe(debounceTime(300), takeUntilDestroyed()).subscribe((value) => {
-    this.storyService.updateStoryPreferences(value)
-  })
+  // For story
+  readonly storyFields = toSignal(
+    this.translateService.get('Story').pipe(
+      map((i18n) => {
+        return StoryPreferencesFields(FORMLY_W_1_2, i18n)
+      })
+    )
+  )
+  storyFormGroup = new FormGroup({})
+  storyOptions: FormlyFormOptions
+  storyModel = {}
 
-  private preferencesSub = this.translateService.get('Story').pipe(takeUntilDestroyed()).subscribe((CSS) => {
-    this.fields = PreferencesSchema(CSS)
-  })
+  private valueSub = combineLatest([
+    this.formGroup.valueChanges.pipe(startWith(null)),
+    this.storyFormGroup.valueChanges.pipe(startWith(null))
+  ])
+    .pipe(debounceTime(300), takeUntilDestroyed())
+    .subscribe(([preferences, story]) => {
+      const value = { ...(preferences ?? {}) } as StoryPreferences
+      if (story) {
+        value.story = story
+      }
+      this.storyService.updateStoryPreferences(value)
+    })
+
+  private preferencesSub = this.translateService
+    .get('Story')
+    .pipe(takeUntilDestroyed())
+    .subscribe((CSS) => {
+      this.fields = PreferencesSchema(CSS)
+    })
 
   async ngOnInit() {
     const preferences = this.storyService.preferences() ?? {}
     this.formGroup.patchValue(preferences)
     this.model = assign(this.model, cloneDeep(preferences))
+    this.storyFormGroup.patchValue(preferences.story ?? {})
+    this.storyModel = assign(this.storyModel, cloneDeep(preferences.story ?? {}))
   }
 
   onModelChange(event) {
-    // console.log(event)
+    //
   }
 }

@@ -8,6 +8,7 @@ import {
   HostBinding,
   Input,
   OnInit,
+  booleanAttribute,
   effect,
   inject,
   input
@@ -69,6 +70,9 @@ export class NgmEntitySchemaComponent implements OnInit {
     EntityCapacity.Dimension,
     EntityCapacity.Measure,
   ]
+  readonly dragDisabled = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
   readonly dataSettings = input<DataSettings>()
 

@@ -112,6 +112,14 @@ const routes: Routes = [
         }
       },
       {
+        path: 'chatbi',
+        loadChildren: () => import('./chatbi/routes').then(m => m.routes),
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Chat-BI',
+        }
+      },
+      {
         path: '404',
         component: NotFoundComponent
       }

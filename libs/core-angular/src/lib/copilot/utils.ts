@@ -1,4 +1,4 @@
-import { Cube, EntityType, getEntityDimensions, getEntityMeasures, getEntityVariables } from '@metad/ocap-core'
+import { Cube, EntityType, getDimensionHierarchies, getEntityDimensions, getEntityMeasures, getEntityVariables, getHierarchyLevels, RuntimeLevelType } from '@metad/ocap-core'
 import { nonBlank } from '../helpers'
 
 /**
@@ -29,33 +29,44 @@ export function calcEntityTypePrompt(entityType: EntityType) {
 
 export function markdownEntityType(entityType: EntityType) {
   const variables = getEntityVariables(entityType)
-  return `The cube definition for ${entityType.name} is as follows:
-name: "${entityType.name}"
-caption: "${entityType.caption || ''}"
+  return `The cube definition for (${entityType.name}) is as follows:
+name: ${entityType.name}
+caption: ${entityType.caption || ''}
+description: >
+${prepend('  ', entityType.description || entityType.caption)}
 dimensions:
 ${getEntityDimensions(entityType)
     .map((dimension) =>
 [
   `  - name: "${dimension.name}"`,
   `    caption: "${dimension.caption || ''}"`,
+  dimension.description ?
+`    description: >
+${prepend('      ', dimension.description)}` : null,
   dimension.semantics?.semantic ? 
   `    semantic: ${dimension.semantics.semantic}` : null,
   `    hierarchies:`
 ].filter(nonBlank).join('\n') + '\n' +
-dimension.hierarchies?.map((item) =>
-`      - name: "${item.name}"
-        caption: "${item.caption || ''}"
-        levels:
-${item.levels?.map((item) =>
+getDimensionHierarchies(dimension).map((item) =>[
+`      - name: "${item.name}"`,
+`        caption: "${item.caption || ''}"`,
+item.description ?
+`        description: >
+${prepend('          ', item.description)}` : null,
+`        levels:
+${getHierarchyLevels(item).filter((level) => level.levelType !== RuntimeLevelType.ALL).map((item) =>
 [
 `          - name: "${item.name}"`,
 `            caption: "${item.caption || ''}"`,
+item.description ?
+`            description: >
+${prepend('              ', item.description)}` : null,
 item.semantics?.semantic ?
 `            semantic: ${item.semantics.semantic}` : null,
 item.semantics?.formatter ? 
 `            time_formatter: "${item.semantics.formatter}"` : null,
 ].filter(nonBlank).join('\n')).join('\n')}
-`).join('\n') ?? ''
+`].join('\n')).join('\n') ?? ''
 ).join('\n')}
 measures:
 ${getEntityMeasures(entityType).map((item) => 
@@ -63,8 +74,10 @@ ${getEntityMeasures(entityType).map((item) =>
     `  - name: "${item.name}"`,
     `    caption: ${item.caption || ''}`,
     item.description ? 
-    `    description: > ${item.description}` : null
-
+    `    description: >
+${prepend('      ', item.description)}` : null,
+    item.formatting?.unit ?
+    `    unit: ${item.formatting.unit}` : null
   ].filter(nonBlank).join(`\n`)
 ).join('\n')}
 ` + (variables.length ? 
@@ -162,4 +175,8 @@ export function markdownTable(table: EntityType) {
       .join('\n'),
     '```'
   ].join('\n')
+}
+
+export function prepend(prefix: string, text: string) {
+  return text.split('\n').map(line => prefix + line).join('\n')
 }

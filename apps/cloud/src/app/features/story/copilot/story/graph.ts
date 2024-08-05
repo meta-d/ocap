@@ -1,15 +1,23 @@
 import { inject, signal } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
-import { BaseMessage, HumanMessage, isAIMessage, ToolMessage } from '@langchain/core/messages'
-import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { HumanMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
-import { END, START, StateGraph } from '@langchain/langgraph/web'
-import { ChatOpenAI } from '@langchain/openai'
-import { AgentState, CreateGraphOptions, Team } from '@metad/copilot'
+import { ToolNode } from '@langchain/langgraph/prebuilt'
+import { START, StateGraph } from '@langchain/langgraph/web'
+import { CreateGraphOptions, referencesCommandName, Team } from '@metad/copilot'
 import { DataSettings } from '@metad/ocap-core'
 import { NGXLogger } from 'ngx-logger'
-import { CalculationAgentState, injectCreateCalculationGraph } from '../calculation'
+import { injectCreateCalculationGraph } from '../calculation'
+import { injectCreatePageAgent } from '../page'
+import { injectPickCubeTool } from '../tools'
+import { injectCreateWidgetAgent } from '../widget'
+import { injectCreateStyleGraph } from './style'
 import { StoryAgentState, storyAgentState } from './types'
+import { NxStoryService } from '@metad/story/core'
+import { injectAgentFewShotTemplate, injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
+import { STORY_STYLE_COMMAND_NAME } from './style/types'
+import { reference } from '@popperjs/core'
+import { formatDocumentsAsString } from 'langchain/util/document'
 
 export function injectCreateStoryGraph() {
   // Default
@@ -17,6 +25,10 @@ export function injectCreateStoryGraph() {
   const router = inject(Router)
   const route = inject(ActivatedRoute)
   const logger = inject(NGXLogger)
+  const storyService = inject(NxStoryService)
+  const defaultModelCubePrompt = storyService.defaultModelCubePrompt
+
+  const pickCubeTool = injectPickCubeTool()
 
   const createCalculationGraph = injectCreateCalculationGraph(
     defaultDataSettings,
@@ -28,114 +40,131 @@ export function injectCreateStoryGraph() {
     }
   )
 
+  const createPageAgent = injectCreatePageAgent()
+  // const createWidgetGraph = injectCreateWidgetAgent()
+  const createStyleAgent = injectCreateStyleGraph()
+
+  const styleReferencesRetriever = injectExampleRetriever(referencesCommandName(STORY_STYLE_COMMAND_NAME), { k: 3, vectorStore: null })
+  const styleFewShotPrompt = injectAgentFewShotTemplate(STORY_STYLE_COMMAND_NAME, { k: 1, vectorStore: null })
+
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
-    
-
     const calculationAgent = (await createCalculationGraph({ llm })).compile()
+    const pageAgent = await createPageAgent({ llm })
+    const styleAgent = await createStyleAgent({ llm })
 
-    const shouldContinue = (state: AgentState) => {
-      const { messages } = state
-      const lastMessage = messages[messages.length - 1]
-      if (isAIMessage(lastMessage)) {
-        if (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0) {
-          return END
-        } else {
-          return lastMessage.tool_calls[0].args.next
-        }
-      } else {
-        return END
-      }
-    }
-
-    const superAgent = await createStorySupervisorAgent(
+    const tools = [pickCubeTool]
+    const superAgent = await Team.createSupervisorAgent(
       llm,
-      `你是一名数据分析师。
+      [
+        {
+          name: 'style',
+          description: 'Set global styles of the story'
+        },
+        {
+          name: 'calcualtion',
+          description: 'create a calculation measure for cube'
+        },
+        {
+          name: 'page',
+          description: 'Create a dashboard page for the analysis topic'
+        },
+        // {
+        //   name: 'widget',
+        //   description: 'create a widget in story dashboard'
+        // },
+      ],
+      tools,
+      `You are a data analyst who wants to create a story dashboard.
 {role}
+{language}
 {context}
+Reference Documentations:
+{references}
 
-Story dashbaord 通常由多个页面组成，每个页面是一个分析主题，每个主题的页面通常由一个过滤器栏、多个主要的维度输入控制器、多个指标、多个图形、一个或多个表格组成。
+Story dashbaord 通常由多个页面组成，每个页面是一个分析主题。
+- 过滤器栏通常包含 3 至 8 个重要的维度过滤器，不要太多。
+
+如果目前没有默认的cube，请调用 pickCube tool to pick a cube.
 `
     )
+
+    // const widgetAgent = await createWidgetGraph({ llm })
 
     const superGraph = new StateGraph({ channels: storyAgentState })
       // Add steps nodes
       .addNode(
         Team.SUPERVISOR_NAME,
-        new RunnableLambda({ func: superAgent }).withConfig({ runName: Team.SUPERVISOR_NAME })
+        RunnableLambda.from(async (state: StoryAgentState) => {
+          return await superAgent({...state, context: state.context || defaultModelCubePrompt()})
+        }).withConfig({ runName: Team.SUPERVISOR_NAME })
       )
+      .addNode(Team.TOOLS_NAME, new ToolNode<StoryAgentState>(tools))
       .addNode(
         'calculation',
         RunnableLambda.from(async (state: StoryAgentState) => {
-          // const content = await fewShotPrompt.format({ input: state.input, context: state.context })
-          return {
-            input: state.input,
-            messages: [new HumanMessage(state.input)],
+          const { messages } = await calculationAgent.invoke({
+            input: state.instructions,
+            messages: [new HumanMessage(state.instructions)],
             role: state.role,
             context: state.context,
-            tool_call_id: state.tool_call_id
-          }
-        })
-          .pipe(calculationAgent)
-          .pipe((response: CalculationAgentState) => {
-            return {
-              tool_call_id: null,
-              messages: [
-                new ToolMessage({
-                  tool_call_id: response.tool_call_id,
-                  content: response.messages[response.messages.length - 1].content
-                })
-              ]
-            }
+            language: state.language
           })
+          return Team.responseToolMessage(state.tool_call_id, messages)
+        })
+      )
+      .addNode(
+        'page',
+        RunnableLambda.from(async (state: StoryAgentState) => {
+          const messages = await pageAgent.invoke({
+            input: state.instructions,
+            role: state.role,
+            context: state.context,
+            language: state.language,
+            messages: []
+          })
+
+          return Team.responseToolMessage(state.tool_call_id, messages)
+        })
+      )
+      // .addNode(
+      //   'widget',
+      //   RunnableLambda.from(async (state: StoryAgentState) => {
+      //     const messages = await widgetAgent.invoke({
+      //       input: state.instructions,
+      //       messages: [new HumanMessage(state.instructions)],
+      //       role: state.role,
+      //       context: state.context,
+      //       language: state.language
+      //     })
+
+      //     return Team.responseToolMessage(state.tool_call_id, messages)
+      //   })
+      // )
+      .addNode(
+        'style',
+        RunnableLambda.from(async (state: StoryAgentState) => {
+          const content = await styleFewShotPrompt.format({input: state.instructions, context: ''})
+          const references = await styleReferencesRetriever.pipe(formatDocumentsAsString).invoke(content)
+          const { messages } = await styleAgent.invoke({
+            input: state.instructions,
+            messages: [new HumanMessage(content)],
+            role: state.role,
+            context: state.context,
+            language: state.language,
+            references
+          })
+
+          return Team.responseToolMessage(state.tool_call_id, messages)
+        })
       )
       .addEdge('calculation', Team.SUPERVISOR_NAME)
-      .addConditionalEdges(Team.SUPERVISOR_NAME, shouldContinue, {
-        calculation: 'calculation',
-        [END]: END
-      })
+      .addEdge('page', Team.SUPERVISOR_NAME)
+      // .addEdge('widget', Team.SUPERVISOR_NAME)
+      .addEdge('style', Team.SUPERVISOR_NAME)
+      .addEdge(Team.TOOLS_NAME, Team.SUPERVISOR_NAME)
+      .addConditionalEdges(Team.SUPERVISOR_NAME, Team.supervisorRouter)
       .addEdge(START, Team.SUPERVISOR_NAME)
 
     return superGraph
   }
-}
-
-async function createStorySupervisorAgent(llm: ChatOpenAI, system: string) {
-  const members = ['calculation']
-  const functionDef = Team.createRouteFunctionDef(members)
-  const toolDef = {
-    type: 'function' as const,
-    function: functionDef
-  }
-
-  const modelWithTools = llm.bindTools([toolDef])
-  let prompt = ChatPromptTemplate.fromMessages([
-    ['system', system],
-    ['placeholder', '{messages}'],
-    ['system', `Given the conversation above, please give priority to answering questions with language only. If you need to execute a task, you need to get confirmation before calling the route function.
-To perform a task, you can select one of the following: {members}`]
-  ])
-  prompt = await prompt.partial({
-    members: members.join(', ')
-  })
-  const modelRunnable = prompt.pipe(modelWithTools)
-
-  const callModel = async (state: AgentState) => {
-    // TODO: Auto-promote streaming.
-    const message = await modelRunnable.invoke(state)
-
-    const newState = {
-      messages: [message as BaseMessage]
-    } as StoryAgentState
-
-    if (isAIMessage(message) && message.tool_calls && message.tool_calls[0]?.name === 'route') {
-      newState.tool_call_id = message.tool_calls[0].id
-      newState.next = message.tool_calls[0].args.next
-      newState.reasoning = message.tool_calls[0].args.reasoning
-      newState.instructions = message.tool_calls[0].args.instructions
-    }
-
-    return newState
-  }
-
-  return callModel
 }

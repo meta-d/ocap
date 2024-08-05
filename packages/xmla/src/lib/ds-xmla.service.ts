@@ -31,13 +31,13 @@ import {
   OcapCache,
   omit,
   omitBy,
-  ParameterProperty,
   Property,
   PropertyDimension,
   PropertyHierarchy,
   PropertyLevel,
   PropertyMeasure,
   QueryReturn,
+  RuntimeLevelType,
   Schema,
   Semantics,
   serializeArgs,
@@ -66,7 +66,6 @@ import {
   Hierarchy,
   isWrapBrackets,
   Level,
-  LEVEL_TYPE,
   MDOptions,
   MDXDialect,
   MDXDimension,
@@ -165,7 +164,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     return this.selectEntitySets(refresh) as unknown as Observable<DBTable[]>
   }
   /**
-   * Observable of cubes in xmla source, then merge 'caption' from custom schema
+   * Observable of cubes in xmla source, then merge caption and description from custom schema
    *
    * @param refresh For refresh cache
    * @returns
@@ -181,6 +180,8 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
           const index = cubes.findIndex((cube) => item.name === cube.name)
           if (index > -1) {
             cubes[index].caption = item.caption
+            cubes[index].description = item.description
+            cubes[index].visible = item.visible
             cubes[index].annotated = true
             results.push(...cubes.splice(index, 1))
           }
@@ -666,27 +667,27 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
                 levelProperty.hierarchy = levelProperty.hierarchyUniqueName
 
                 switch (level.LEVEL_TYPE) {
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_YEAR:
+                  case RuntimeLevelType.TIME_YEAR:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Year']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_QUARTER:
+                  case RuntimeLevelType.TIME_QUARTER:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Quarter']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_MONTH:
+                  case RuntimeLevelType.TIME_MONTH:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Month']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_WEEK:
+                  case RuntimeLevelType.TIME_WEEK:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Week']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_DAY:
+                  case RuntimeLevelType.TIME_DAY:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Day']
                     }
@@ -990,7 +991,8 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
 
     return {
       ...rtEntityType,
-      caption: rtEntityType.caption || cube.caption,
+      caption: cube.caption || rtEntityType.caption,
+      description: cube.description || rtEntityType.description,
       properties
     }
   }

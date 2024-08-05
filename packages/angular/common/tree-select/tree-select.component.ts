@@ -4,6 +4,7 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes'
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling'
 import { FlatTreeControl } from '@angular/cdk/tree'
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
@@ -14,6 +15,7 @@ import {
   Input,
   model,
   OnChanges,
+  output,
   SimpleChanges,
   ViewChild
 } from '@angular/core'
@@ -150,29 +152,17 @@ export class NgmTreeSelectComponent<T> implements OnChanges, ControlValueAccesso
   }
   private _virtualScroll = false
 
-  @Input() get autocomplete(): boolean {
-    return this._autocomplete
-  }
-  set autocomplete(value: boolean | string) {
-    this._autocomplete = coerceBooleanProperty(value)
-  }
-  private _autocomplete = false
+  readonly autocomplete = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() get searchable(): boolean {
-    return this._searchable
-  }
-  set searchable(value: boolean | string) {
-    this._searchable = coerceBooleanProperty(value)
-  }
-  private _searchable = false
-
-  @Input() get treeViewer(): boolean {
-    return this._treeViewer
-  }
-  set treeViewer(value: boolean | string) {
-    this._treeViewer = coerceBooleanProperty(value)
-  }
-  private _treeViewer = false
+  readonly searchable = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
+  
+  readonly treeViewer = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
   /**
    * Whether the first option should be highlighted when the autocomplete panel is opened.
@@ -200,12 +190,15 @@ export class NgmTreeSelectComponent<T> implements OnChanges, ControlValueAccesso
   readonly color = input<ThemePalette>()
   readonly loading = input(false)
 
+  readonly focus = output<FocusEvent>()
+  readonly blur = output<FocusEvent>()
+
   @ViewChild('autoInput') autoInput: ElementRef<HTMLInputElement>
   @ViewChild(CdkVirtualScrollViewport, { static: false })
   cdkVirtualScrollViewPort: CdkVirtualScrollViewport
 
   get useAutocomplete() {
-    return this.autocomplete || this.virtualScroll
+    return this.autocomplete() || this.virtualScroll
   }
 
   formControl = new FormControl<FlatTreeNode<any>[] | FlatTreeNode<any>>(null)
@@ -335,7 +328,7 @@ export class NgmTreeSelectComponent<T> implements OnChanges, ControlValueAccesso
   // Emit control value when select changed in select mode
   private _formControlSub = this.formControl.valueChanges
     .pipe(
-      filter(() => !this.autocomplete && !this.treeViewer),
+      filter(() => !this.autocomplete() && !this.treeViewer()),
       distinctUntilChanged(isEqual),
       takeUntilDestroyed()
     )
@@ -350,7 +343,7 @@ export class NgmTreeSelectComponent<T> implements OnChanges, ControlValueAccesso
   // Emit control value when single select changed in autocomplete and tree viewer modes
   private _singleSelectionSub = this.singleSelection.changed
     .pipe(
-      filter(() => !this.multiple && (!!this.useAutocomplete || this.treeViewer)),
+      filter(() => !this.multiple && (!!this.useAutocomplete || this.treeViewer())),
       takeUntilDestroyed()
     )
     .subscribe((event) => {
@@ -359,7 +352,7 @@ export class NgmTreeSelectComponent<T> implements OnChanges, ControlValueAccesso
   // Emit control value when multiple select changed in autocomplete and tree viewer modes
   private multipleSelectionSub = this.multipleSelection.changed
     .pipe(
-      filter(() => this.multiple && (!!this.useAutocomplete || this.treeViewer)),
+      filter(() => this.multiple && (!!this.useAutocomplete || this.treeViewer())),
       takeUntilDestroyed()
     )
     .subscribe((event) => {
@@ -390,7 +383,7 @@ export class NgmTreeSelectComponent<T> implements OnChanges, ControlValueAccesso
   writeValue(obj: any): void {
     if (obj) {
       // Update autocomplete or treeViewer modes
-      if (this.useAutocomplete || this.treeViewer) {
+      if (this.useAutocomplete || this.treeViewer()) {
         if (this.multiple) {
           this.multipleSelection.select(...obj)
         } else {

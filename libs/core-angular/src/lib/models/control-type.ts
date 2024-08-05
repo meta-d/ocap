@@ -1,3 +1,6 @@
+/**
+ * @deprecated use FilterControlType
+ */
 export enum ControlType {
   auto = 'auto',
   /**

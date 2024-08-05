@@ -16,8 +16,8 @@ import { ComponentStore } from '@metad/store'
 import { StoryModel, convertStoryModel2DataSource } from '@metad/story/core'
 import { EntityAdapter, EntityState, Update, createEntityAdapter } from '@ngrx/entity'
 import { assign, includes, indexOf, isEmpty, isEqual, sortBy, uniq } from 'lodash-es'
-import { Observable, Subject, combineLatest, firstValueFrom } from 'rxjs'
-import { distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
+import { BehaviorSubject, Observable, Subject, combineLatest, firstValueFrom } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
 import { IndicatorState, IndicatorTagEnum, LookbackDefault } from '../types'
 import { TranslateService } from '@ngx-translate/core'
 
@@ -35,8 +35,6 @@ export interface IndicatorStoreState extends EntityState<IndicatorState> {
   initialized: boolean
   dataSources: DataSources
   currentPage: number
-
-  search?: string
 
   locale?: string
 
@@ -132,17 +130,18 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
 
   readonly currentLang = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
   readonly isEmpty = toSignal(this.select((state) => !state.ids.length))
-  readonly search = toSignal(this.select((state) => state.search))
-  readonly indicators = computed(() => {
-    const indicators = this.sortedIndicators$()
-    const text = this.search()
+  readonly searchText = new BehaviorSubject('')
+  readonly indicators$ = combineLatest([
+    toObservable(this.sortedIndicators$),
+    this.searchText.pipe(debounceTime(500), map((text) => text?.trim().toLowerCase()))
+  ]).pipe(map(([indicators, text]) => {
     if (text) {
       return indicators.filter(
         (indicator) => includes(indicator.name.toLowerCase(), text) || includes(indicator.code.toLowerCase(), text)
       )
     }
     return indicators
-  })
+  }))
   
   /**
   |--------------------------------------------------------------------------
@@ -251,9 +250,9 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     })
   })
 
-  readonly updateSearch = this.updater((state, text: string) => {
-    state.search = text
-  })
+  updateSearch(value: string) {
+    this.searchText.next(value)
+  }
 
   init() {
     this.setState(adapter.setAll([], initialState))

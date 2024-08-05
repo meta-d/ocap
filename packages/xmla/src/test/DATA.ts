@@ -155,11 +155,12 @@ export const DEPARTMENT_ENTITY_TYPE: any = {
     '[ZCALMONTH]': {
       role: AggregationRole.dimension,
       name: '[ZCALMONTH]',
-      label: 'ZCALMONTH',
+      caption: 'ZCALMONTH',
+      defaultHierarchy: '[ZCALMONTH                     Z_H_MONTH_01]',
       hierarchies: [
         {
           name: '[ZCALMONTH                     Z_H_MONTH_01]',
-          label: 'ZCALMONTH                     Z_H_MONTH_01',
+          caption: 'ZCALMONTH                     Z_H_MONTH_01',
           levels: [
             {
               name: '[ZCALMONTH                     Z_H_MONTH_01].[LEVEL00]',

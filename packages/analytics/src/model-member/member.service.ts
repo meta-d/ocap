@@ -2,7 +2,7 @@ import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorsto
 import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
-import { AIEmbeddings, ISemanticModel, ISemanticModelEntity } from '@metad/contracts'
+import { OpenAIEmbeddingsProviders, ISemanticModel, ISemanticModelEntity } from '@metad/contracts'
 import {
 	EntityType,
 	PropertyDimension,
@@ -156,7 +156,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		}
 		const result = await this.copilotService.findAll({ where })
 		const copilot = result.items[0]
-		if (copilot && copilot.enabled && AIEmbeddings.includes(copilot.provider)) {
+		if (copilot && copilot.enabled && OpenAIEmbeddingsProviders.includes(copilot.provider)) {
 			const id = modelId ? `${modelId}${cube ? ':' + cube : ''}` : 'default'
 			if (!this.vectorStores.has(id)) {
 				const embeddings = new OpenAIEmbeddings({

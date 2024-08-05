@@ -1,0 +1,102 @@
+@for (item of toArray(message().data); track item) {
+    @switch (typeof(item)) {
+      @case ('string') {
+        <markdown clipboard class="w-full text-zinc-700 dark:text-zinc-300"
+          [clipboardButtonTemplate]="buttonTemplate"
+          lineNumbers
+          [start]="5"
+          [data]="$any(item)"
+        />
+      }
+      @case ('object') {
+        @if (isAnswer(item); as answer) {
+          @if (answer.visualType === 'table') {
+            <ngm-analytical-grid class="w-full h-[400px] group overflow-auto"
+              displayDensity="compact"
+              [dataSettings]="toGrid(answer.dataSettings)"
+              [slicers]="answer.slicers"
+              [options]="{showToolbar: true, paging: true, strip: true, sortable: true}"
+              [appearance]="{
+                displayDensity: DisplayDensity.compact
+              }"
+            >
+              <div class="flex-1 flex justify-start">
+                <button mat-icon-button displayDensity="cosy" class="shrink-0" [matTooltip]=" 'PAC.ChatBI.ShowChart' | translate: {Default: 'Show Chart'} "
+                  (click)="answer.visualType = 'chart'"
+                >
+                  <mat-icon fontSet="material-icons-outlined">pie_chart</mat-icon>
+                </button>
+              </div>
+            </ngm-analytical-grid>
+          } @else {
+            <ngm-analytical-card class="h-[300px] group" 
+              [dataSettings]="answer.dataSettings"
+              [chartOptions]="answer.chartOptions"
+              [chartSettings]="charts()[$index].chartSettings"
+              [options]="answer.options"
+              [slicers]="answer.slicers"
+            >
+              <div class="flex-1 flex justify-start">
+                <button mat-icon-button displayDensity="cosy" class="shrink-0" [matTooltip]=" 'PAC.ChatBI.ShowTable' | translate: {Default: 'Show Table'} "
+                  (click)="answer.visualType = 'table'"
+                >
+                  <mat-icon fontSet="material-icons-outlined">table_view</mat-icon>
+                </button>
+              </div>
+              <button mat-icon-button ngmAction displayDensity="compact" class="shrink-0" [matTooltip]=" 'PAC.ChatBI.AddtoStory' | translate: {Default: 'Add to Story'} "
+                (click)="$event.stopPropagation();$event.preventDefault();addToStory(answer)">
+                <mat-icon fontSet="material-icons-outlined"
+                  [matTooltip]="''"
+                >addchart</mat-icon>
+              </button>
+              <button mat-icon-button ngmAction displayDensity="compact" class="shrink-0"
+                [matTooltip]=" 'Story.Widget.Explore' | translate: {Default: 'Explore'} "
+                (click)="$event.stopPropagation();$event.preventDefault();openExplore(item)">
+                <mat-icon fontSet="material-icons-outlined">explore</mat-icon>
+              </button>
+              <button mat-icon-button ngmAction displayDensity="cosy" class="ngm-menu-trigger"
+                [color]="answer.slicers ? 'accent':''"
+                [matMenuTriggerFor]="filtersMenu"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
+                >
+                <mat-icon fontSet="material-icons-outlined">filter_alt</mat-icon>
+              </button>
+            </ngm-analytical-card>
+
+            <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
+              <div class="text-base font-semibold">{{ 'PAC.ChatBI.Slicers' | translate: {Default: "Slicers"} }}</div>
+              <ngm-slicers class="overflow-hidden" inline editable [slicers]="answer.slicers"
+                [dataSettings]="answer.dataSettings"
+                [limit]="5"
+                [capacities]="[
+                  SlicersCapacity.Variable,
+                  SlicersCapacity.CombinationSlicer,
+                  SlicersCapacity.AdvancedSlicer
+                ]"
+                (valueChange)="answer.slicers = $event"
+                (click)="$event.stopPropagation()"
+              />
+            </mat-menu>
+          }
+        }
+      }
+    }
+}
+
+<ng-template #buttonTemplate>
+  <!-- <button mat-flat-button displayDensity="compact" class="ngm-rounded-full"
+      (click)="run($event)">run</button> -->
+  <button #copyButton mat-flat-button displayDensity="compact" class="ngm-rounded-full" (click)="onCopy(copyButton)">
+    @if ($any(copyButton).copied) {
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M18.0633 5.67375C18.5196 5.98487 18.6374 6.607 18.3262 7.06331L10.8262 18.0633C10.6585 18.3093 10.3898 18.4678 10.0934 18.4956C9.79688 18.5234 9.50345 18.4176 9.29289 18.2071L4.79289 13.7071C4.40237 13.3166 4.40237 12.6834 4.79289 12.2929C5.18342 11.9023 5.81658 11.9023 6.20711 12.2929L9.85368 15.9394L16.6738 5.93664C16.9849 5.48033 17.607 5.36263 18.0633 5.67375Z" fill="currentColor">
+        </path>
+      </svg>
+    } @else {
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4C10.8954 4 10 4.89543 10 6H14C14 4.89543 13.1046 4 12 4ZM8.53513 4C9.22675 2.8044 10.5194 2 12 2C13.4806 2 14.7733 2.8044 15.4649 4H17C18.6569 4 20 5.34315 20 7V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V7C4 5.34315 5.34315 4 7 4H8.53513ZM8 6H7C6.44772 6 6 6.44772 6 7V19C6 19.5523 6.44772 20 7 20H17C17.5523 20 18 19.5523 18 19V7C18 6.44772 17.5523 6 17 6H16C16 7.10457 15.1046 8 14 8H10C8.89543 8 8 7.10457 8 6Z" fill="currentColor"></path>
+      </svg>
+    }
+  </button>
+</ng-template>

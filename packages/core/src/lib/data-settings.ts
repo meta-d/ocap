@@ -13,8 +13,19 @@ import { Dimension } from './types'
 import { isNil } from './utils'
 
 export interface DataSettings {
+  /**
+   * The semantic model id
+   */
+  modelId?: string
+  /**
+   * The name of dataSource: key of semantic model
+   */
   dataSource: string
+  /**
+   * The cube name in dataSource
+   */
   entitySet: string
+  
   dimension?: Dimension
   chartAnnotation?: ChartAnnotation
   selectionVariant?: SelectionVariant

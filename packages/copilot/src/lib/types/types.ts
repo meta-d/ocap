@@ -1,15 +1,18 @@
-import { BaseMessage } from '@langchain/core/messages'
-import { Message } from 'ai'
-import JSON5 from 'json5'
-import { ChatCompletionMessage } from 'openai/resources'
+import { BaseMessage, FunctionCall, OpenAIToolCall } from '@langchain/core/messages'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
 export const DefaultBusinessRole = 'default'
 
+export enum AiProviderRole {
+  Primary = 'primary',
+  Secondary = 'secondary'
+}
+
 export interface ICopilot {
   enabled: boolean
+  role: AiProviderRole
   provider?: AiProvider
   /**
    * Authorization key for the API
@@ -54,9 +57,34 @@ export enum CopilotChatMessageRoleEnum {
 }
 
 /**
- * @deprecated remove Message from `ai` package
  */
-export interface CopilotChatMessage extends Omit<Message, 'role'> {
+export interface CopilotChatMessage {
+  id: string
+  tool_call_id?: string
+  createdAt?: Date
+  content: string
+  /**
+   * If the message has a role of `function`, the `name` field is the name of the function.
+   * Otherwise, the name field should not be set.
+   */
+  name?: string
+  /**
+   * If the assistant role makes a function call, the `function_call` field
+   * contains the function call name and arguments. Otherwise, the field should
+   * not be set. (Deprecated and replaced by tool_calls.)
+   */
+  function_call?: string | FunctionCall
+  data?: JSONValue
+  /**
+   * If the assistant role makes a tool call, the `tool_calls` field contains
+   * the tool call name and arguments. Otherwise, the field should not be set.
+   */
+  tool_calls?: string | OpenAIToolCall[]
+  /**
+   * Additional message-specific information added on the server via StreamData
+   */
+  annotations?: JSONValue[] | undefined
+
   error?: string
 
   role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
@@ -87,59 +115,9 @@ export interface CopilotChatResponseChoice {
   //
 }
 
-/**
- * @deprecated use LangChain
- */
-export type AIOptions = ChatCompletionCreateParamsBase & {
-  useSystemPrompt?: boolean
-  verbose?: boolean
-  interactive?: boolean
-}
-
-// Helper function
-/**
- * @deprecated use LangChain
- */
-export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
-  if (message.role !== CopilotChatMessageRoleEnum.Assistant) {
-    throw new Error('Only assistant messages can be used to generate function calls')
-  }
-
-  if (name && name !== message.function_call.name) {
-    throw new Error(`The message is not the function call '${name}'`)
-  }
-
-  return {
-    name: message.function_call.name,
-    arguments: JSON5.parse(message.function_call.arguments)
-  }
-}
-
-/**
- * Split the prompt into command and prompt
- *
- * @param prompt
- * @returns
- */
-export function getCommandPrompt(prompt: string) {
-  prompt = prompt.trim()
-  // a regex match `/command prompt`
-  const match = prompt.match(/^\/([a-zA-Z\-]*)\s*/i)
-  const command = match?.[1]
-
-  return {
-    command,
-    prompt: command ? prompt.replace(`/${command}`, '').trim() : prompt
-  }
-}
-
 export const CopilotDefaultOptions = {
   model: 'gpt-3.5-turbo-0613',
   temperature: 0.2
-}
-
-export function nonNullable<T>(value: T): value is NonNullable<T> {
-  return value != null
 }
 
 export type BusinessRoleType = {
@@ -153,4 +131,26 @@ export type Headers = Record<string, string | null | undefined>
 export type RequestOptions = {
   headers?: Record<string, string> | Headers
   body?: object
+}
+
+export type JSONValue =
+  | null
+  | string
+  | number
+  | boolean
+  | {
+      [x: string]: JSONValue
+    }
+  | Array<JSONValue>
+
+export type AIOptions = ChatCompletionCreateParamsBase & {
+  useSystemPrompt?: boolean
+  verbose?: boolean
+  interactive?: boolean
+  recursionLimit?: number
+}
+
+export enum MessageDataType {
+  Route = 'route',
+  ToolsCall = 'tools_call',
 }

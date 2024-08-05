@@ -1,64 +1,72 @@
+import { inject } from '@angular/core'
 import { RunnableLambda } from '@langchain/core/runnables'
-import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
+import { ToolNode } from '@langchain/langgraph/prebuilt'
+import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions, Team } from '@metad/copilot'
+import { injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
+import { SemanticModelService } from '../../model.service'
 import { CUBE_MODELER_NAME, injectRunCubeModeler } from '../cube'
 import { DIMENSION_MODELER_NAME, injectRunDimensionModeler } from '../dimension/'
-import { injectRunModelerPlanner } from './planner'
-import { createSupervisor } from './supervisor'
-import { PLANNER_NAME, SUPERVISOR_NAME, State } from './types'
+import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
+import { createSupervisorAgent } from './supervisor'
+import { ModelerState } from './types'
 
-const superState: StateGraphArgs<State>['channels'] = {
-  ...Team.createState(),
-  plan: {
-    value: (x?: string[], y?: string[]) => y ?? x ?? [],
-    default: () => []
-  }
+const superState: StateGraphArgs<ModelerState>['channels'] = {
+  ...Team.createState()
 }
 
 export function injectCreateModelerGraph() {
-  const createModelerPlanner = injectRunModelerPlanner()
+  const modelService = inject(SemanticModelService)
   const createDimensionModeler = injectRunDimensionModeler()
   const createCubeModeler = injectRunCubeModeler()
+  const selectTablesTool = injectSelectTablesTool()
+  const queryTablesTool = injectQueryTablesTool()
+
+  const referencesRetriever = injectExampleRetriever('modeler/references', { k: 3, vectorStore: null })
+
+  const dimensions = modelService.dimensions
 
   return async ({ llm }: CreateGraphOptions) => {
-    const supervisorNode = await createSupervisor(llm, [PLANNER_NAME, DIMENSION_MODELER_NAME, CUBE_MODELER_NAME])
+    const tools = [selectTablesTool, queryTablesTool]
+    const supervisorAgent = await createSupervisorAgent({ llm, dimensions, tools, referencesRetriever })
+    const dimensionAgent = await createDimensionModeler({ llm })
+    const cubeAgent = await createCubeModeler({ llm })
 
     const superGraph = new StateGraph({ channels: superState })
       // Add steps nodes
-      .addNode(PLANNER_NAME, await createModelerPlanner({ llm }))
+      .addNode(Team.SUPERVISOR_NAME, supervisorAgent.withConfig({ runName: Team.SUPERVISOR_NAME }))
+      .addNode(Team.TOOLS_NAME, new ToolNode<ModelerState>(tools))
       .addNode(
         DIMENSION_MODELER_NAME,
-        RunnableLambda.from(async (state: State) => {
-          return {
+        RunnableLambda.from(async (state: ModelerState) => {
+          const { messages } = await dimensionAgent.invoke({
             input: state.instructions,
             role: state.role,
-            context: state.context
-          }
-        }).pipe(await createDimensionModeler({ llm }))
+            context: state.context,
+            language: state.language,
+            messages: []
+          })
+          return Team.responseToolMessage(state.tool_call_id, messages)
+        })
       )
       .addNode(
         CUBE_MODELER_NAME,
-        RunnableLambda.from(async (state: State) => {
-          return {
+        RunnableLambda.from(async (state: ModelerState) => {
+          const { messages } = await cubeAgent.invoke({
             input: state.instructions,
             role: state.role,
-            context: state.context
-          }
-        }).pipe(await createCubeModeler({ llm }))
+            context: state.context,
+            language: state.language,
+            messages: []
+          })
+          return Team.responseToolMessage(state.tool_call_id, messages)
+        })
       )
-      .addNode(SUPERVISOR_NAME, supervisorNode)
-
-    superGraph.addEdge(PLANNER_NAME, SUPERVISOR_NAME)
-    superGraph.addEdge(DIMENSION_MODELER_NAME, SUPERVISOR_NAME)
-    superGraph.addEdge(CUBE_MODELER_NAME, SUPERVISOR_NAME)
-    superGraph.addConditionalEdges(SUPERVISOR_NAME, (x) => x.next, {
-      [PLANNER_NAME]: PLANNER_NAME,
-      [DIMENSION_MODELER_NAME]: DIMENSION_MODELER_NAME,
-      [CUBE_MODELER_NAME]: CUBE_MODELER_NAME,
-      FINISH: END
-    })
-
-    superGraph.addEdge(START, SUPERVISOR_NAME)
+      .addEdge(Team.TOOLS_NAME, Team.SUPERVISOR_NAME)
+      .addEdge(DIMENSION_MODELER_NAME, Team.SUPERVISOR_NAME)
+      .addEdge(CUBE_MODELER_NAME, Team.SUPERVISOR_NAME)
+      .addConditionalEdges(Team.SUPERVISOR_NAME, Team.supervisorRouter)
+      .addEdge(START, Team.SUPERVISOR_NAME)
 
     return superGraph
   }

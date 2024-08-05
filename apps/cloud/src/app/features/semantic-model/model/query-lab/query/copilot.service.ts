@@ -1,5 +1,4 @@
 import { Injectable, effect, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { NgmCopilotEngineService } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { cloneDeep, isEqual } from 'lodash-es'
@@ -10,30 +9,17 @@ import { QueryService } from './query.service'
  */
 @Injectable()
 export class QueryCopilotEngineService extends NgmCopilotEngineService {
-  // private readonly copilotService = inject(NgmCopilotService)
   private readonly translateService = inject(TranslateService)
   readonly #queryService = inject(QueryService)
-
-  get name() {
-    return this._name()
-  }
-  private readonly _name = toSignal(
-    this.translateService.stream('PAC.MODEL.QUERY.CopilotName', { Default: 'Query Lab' })
-  )
-  // dbTablesPrompt = signal<string>(null)
-  // get systemPrompt() {
-  //   return this._systemPrompt()
-  // }
-  // private readonly _systemPrompt = computed(
-  //   () =>
-  //     `假设你是数据库 SQL 编程专家, 如果 system 未提供 database tables information 请给出提示, ${this.dbTablesPrompt()}, 请给出问题对应的 sql 语句 (注意：表字段区分大小写，需要用双引号括起来)。 `
-  // )
 
   #conversationSub = this.#queryService
     .select((state) => state.query?.conversations ?? [])
     .subscribe((conversations) => {
       this.conversations$.set(cloneDeep(conversations))
     })
+  #nameSub = this.translateService.stream('PAC.MODEL.QUERY.CopilotName', { Default: 'Query Lab' }).subscribe((name) => {
+    this.name = name
+  })
   constructor() {
     super()
 
