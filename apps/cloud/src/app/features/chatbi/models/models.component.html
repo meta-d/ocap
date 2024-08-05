@@ -11,14 +11,14 @@
   >
     <div *cdkVirtualFor="let option of cubeSelectOptions(); trackBy: trackByKey"
       class="ngm-chatbi__cube shrink-0 min-h-[64px] group relative gap-3 rounded-2xl overflow-hidden cursor-pointer mx-2 mb-2
-        transition duration-500 border border-transparent px-3 py-3.5"
+        transition duration-500 border border-transparent"
         [ngClass]="{
           'selected': cube() === option.key,
         }"
         (click)="onCubeChange(option.key)"
       >
-      <div class="w-full flex flex-col items-stretch justify-start">
-        <div class="w-full flex flex-col items-start">
+      <div class="w-full flex flex-col items-stretch justify-start pb-2">
+        <div class="w-full flex flex-col items-start px-3 py-3.5">
           <ngm-display-behaviour class="w-full line-clamp-1 transition group-hover:text-sky-600 text-base font-semibold" 
             [option]="option" [highlight]="searchText()" />
           <p class="mt-0.5 text-zinc-500 text-xs line-clamp-1">

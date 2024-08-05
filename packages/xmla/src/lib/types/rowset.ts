@@ -141,12 +141,14 @@ export interface Level {
 }
 
 export enum MondrianDataType {
-  None,
-  Boolean,
-  Double,
-  Integer,
-  String,
-  Numeric,
+  None = 0,
+  Boolean = 1,
+  Double = 2,
+  Integer = 3,
+  String = 4,
+  Numeric = 5,
+  // 不确定 130 一定是 formula 生成的， 但可以通过对 formula 设置 dataType 指定类型
+  Formula = 130,
 }
 
 /**
