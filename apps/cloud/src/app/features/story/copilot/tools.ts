@@ -112,11 +112,11 @@ export function injectCreateKPITool() {
         kpiValue: MeasureSchema,
         kpiTarget: MeasureSchema.optional()
       }),
-      styling: KPIStylingSchema,
+      styling: KPIStylingSchema.optional().describe('Css styles of this widget'),
       options: z.object({
         shortNumber: z.boolean().optional().describe('Format the kpi value as short number'),
         digitsInfo: z.string().default('0.1-1').optional().describe('The digits format of kpi value')
-      }).optional()
+      }).optional().describe('Options of this kpi widget')
     }),
     func: async ({ dataSettings, widget, styling, options }) => {
       logger.debug(`Execute copilot action 'createKPI' using dataSettings:`, dataSettings, `widget:`, widget, `options`, options, `styling`, styling)

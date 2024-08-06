@@ -99,7 +99,6 @@ export class ProjectComponent extends TranslationBaseComponent {
 
   readonly projectService = inject(ProjectService)
   readonly collectionService = inject(CollectionService)
-  // readonly copilotContext = inject(NgmCopilotContextToken)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly appService = inject(AppService)

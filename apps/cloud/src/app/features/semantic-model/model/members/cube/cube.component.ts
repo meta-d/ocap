@@ -107,7 +107,6 @@ export class ModelMembersCubeComponent {
 
   async refresh() {
     const cube = this.cube().name
-    // const dimensions = this.dimensions()
 
     this.loading.set(true)
     if (this.entity()?.id) {
@@ -117,27 +116,25 @@ export class ModelMembersCubeComponent {
 
     if (this.selectedDims()) {
       for (const name of this.selectedDims()) {
-        // storeMembers[name] = []
-
         let storeMembers = []
         const hierarchy = getEntityHierarchy(this.cube().entityType, name)
-        // const dimension = dimensions.find((dim) => dim.name === name)
-        // for (const hierarchy of dimension.hierarchies) {
-        const members = await tryHttp(
-          this.modelService.selectHierarchyMembers(cube, { dimension: hierarchy.dimension, hierarchy: hierarchy.name }),
-          this.toastrService
-        )
-        if (members) {
-          storeMembers = storeMembers.concat(members)
+        if (!hierarchy) {
+          this.toastrService.error('PAC.MODEL.CanntFoundHierarchy', null, {Default: `Can't found hierarchy '${name}'`, value: name})
+        } else {
+          const members = await tryHttp(
+            this.modelService.selectHierarchyMembers(cube, { dimension: hierarchy.dimension, hierarchy: hierarchy.name }),
+            this.toastrService
+          )
+          if (members) {
+            storeMembers = storeMembers.concat(members)
+          }
+
+          this.members.update((members) => ({
+            ...members,
+            [name]: storeMembers
+          }))
         }
-        // }
-
-        this.members.update((members) => ({
-          ...members,
-          [name]: storeMembers
-        }))
       }
-
       this.loaded.set(true)
     }
 

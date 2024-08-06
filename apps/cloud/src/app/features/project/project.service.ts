@@ -1,4 +1,4 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core'
+import { Injectable, computed, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import {
   BusinessAreasService,
@@ -11,7 +11,7 @@ import {
 import { dirtyCheckWith, nonBlank } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { MDCube, isEntitySet, isEqual, negate } from '@metad/ocap-core'
+import { MDCube, isEntitySet, isEqual, negate, nonNullable } from '@metad/ocap-core'
 import { Store, createStore, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { cloneDeep } from 'lodash-es'
@@ -69,6 +69,7 @@ export class ProjectService {
   readonly modelDetails = signal<Record<string, ISemanticModel>>({})
 
   readonly modelCubes$ = this.models$.pipe(
+    filter(nonNullable),
     tap(async (models) => {
       for await (const model of models) {
         await this.registerModel(model.key)

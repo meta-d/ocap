@@ -1,11 +1,13 @@
 import { Signal, inject } from '@angular/core'
-import { CopilotAgentType } from '@metad/copilot'
+import { CopilotAgentType, referencesCommandName } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { DataSettings } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
+import { injectExampleRetriever } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { injectCreateCalculationGraph } from './graph'
 import {
+  CALCULATION_COMMAND_NAME,
   CONDITIONAL_AGGREGATION_AGENT_NAME,
   FORMULA_AGENT_NAME,
   MEASURE_CONTROL_AGENT_NAME,
@@ -22,8 +24,11 @@ export function injectCalculationGraphCommand(
 
   const createGraph = injectCreateCalculationGraph(defaultDataSettings, callback)
 
-  const commandName = 'calculation'
-  return injectCopilotCommand(commandName, {
+  const referencesRetriever = injectExampleRetriever(referencesCommandName(CALCULATION_COMMAND_NAME), {
+    k: 3,
+    vectorStore: null
+  })
+  return injectCopilotCommand(CALCULATION_COMMAND_NAME, {
     alias: 'cc',
     description: translate.instant('PAC.Story.CommandCalculationDesc', {
       Default: 'Describe logic of the calculation you want'
@@ -37,7 +42,8 @@ export function injectCalculationGraphCommand(
         CONDITIONAL_AGGREGATION_AGENT_NAME,
         VARIANCE_AGENT_NAME,
         MEASURE_CONTROL_AGENT_NAME
-      ]
+      ],
+      referencesRetriever
     },
     createGraph
   })
