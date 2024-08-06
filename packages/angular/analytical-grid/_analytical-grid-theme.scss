@@ -17,9 +17,9 @@
         background: lighten(mat.get-color-from-palette($background, hover), 50%);
       }
 
-      tbody, mat-header-row, mat-row, mat-footer-row, [mat-header-row], [mat-row], [mat-footer-row] {
-        background: unset;
-      }
+      // tbody, mat-header-row, mat-row, mat-footer-row, [mat-header-row], [mat-row], [mat-footer-row] {
+      //   background: unset;
+      // }
     }
     .mat-paginator {
       background: lighten(mat.get-color-from-palette($background, hover), 50%);

@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   DestroyRef,
   effect,
   ElementRef,
@@ -57,7 +58,6 @@ import {
   mergeOptions,
   negate,
   omit,
-  omitBlank,
   PivotColumn,
   PrimitiveType,
   PropertyMeasure,
@@ -132,23 +132,11 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
   }
   private readonly _dataSettings = signal<DataSettings>(null, { equal: isEqual })
 
-  @Input() get options(): AnalyticalGridOptions {
-    return this.options$.value
-  }
-  set options(value) {
-    this.options$.next(omitBlank(value))
-  }
-  private options$ = new BehaviorSubject<AnalyticalGridOptions>(null)
+  readonly options = input<AnalyticalGridOptions>()
 
   @Input() appearance: NgmAppearance
   @Input() styling: any
-  // @Input() get columns() {
-  //   return this._columns$.value
-  // }
-  // set columns(value) {
-  //   this._columns$.next(value ?? {})
-  // }
-  // private _columns$ = new BehaviorSubject<Record<string, AnalyticalGridColumnOptions>>({})
+
 
   readonly columns = input<Record<string, AnalyticalGridColumnOptions>>({})
   readonly _columns$ = toObservable(this.columns)
@@ -173,6 +161,8 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
   private readonly _paginator = signal<MatPaginator>(null)
 
   @ViewChild(MatSort) sort: MatSort
+
+  readonly showToolbar = computed(() => isNil(this.options()?.showToolbar) || this.options().showToolbar)
 
   // Inner states
   matSortActive = ''
@@ -477,10 +467,10 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
 
       this.columnsDataSource.data = treeDataNodes
       // 初始化数据后展开列初始层级深度
-      if (this.options?.initialColumnLevel > 0) {
+      if (this.options()?.initialColumnLevel > 0) {
         this.columnTreeControl.dataNodes.forEach((node) => {
           const level = this.columnTreeControl.getLevel(node)
-          if (level < this.options.initialColumnLevel) {
+          if (level < this.options().initialColumnLevel) {
             this.columnTreeControl.expand(node)
           }
         })
@@ -598,10 +588,10 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
             .filter((key: string) => key !== this.rowRecursiveHierarchy.valueProperty)
           this.rowDataSource.data = hierarchize<T>(data as T[], this.rowRecursiveHierarchy, { compositeKeys })
           // 初始化数据后展开行初始层级深度
-          if (this.options?.initialRowLevel > 0) {
+          if (this.options()?.initialRowLevel > 0) {
             this.rowTreeControl.dataNodes.forEach((node) => {
               const level = this.rowTreeControl.getLevel(node)
-              if (level < this.options.initialRowLevel) {
+              if (level < this.options().initialRowLevel) {
                 this.rowTreeControl.expand(node)
               }
             })
@@ -898,7 +888,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
   }
 
   onClickColumnHeader(event, column: AnalyticalGridColumn) {
-    if (this.options?.selectable) {
+    if (this.options()?.selectable) {
       event.stopPropagation()
       event.preventDefault()
       if (this.selected.column?.name === column.name) {
@@ -1191,21 +1181,17 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
   }
 
   getTranslation(keyWord: string, params?: any) {
-    let result = ''
-    this.translateService.get(keyWord, params).subscribe((text) => {
-      result = text
-    })
-    return result
+    return this.translateService.instant(keyWord, params)
   }
 
   @HostBinding('class.striped')
   get _isStriped() {
-    return this.options?.strip
+    return this.options()?.strip
   }
 
   @HostBinding('class.ngm-with-toolbar')
   get _withToolbar() {
-    return this.options?.showToolbar
+    return this.options()?.showToolbar
   }
 
   // @HostListener('keydown.control.c', ['$event'])
