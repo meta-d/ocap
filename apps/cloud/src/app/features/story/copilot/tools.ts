@@ -10,20 +10,22 @@ import {
   tryFixSlicer,
   VariableSchema
 } from '@metad/core'
-import { DataSettings, omit } from '@metad/ocap-core'
+import { AnalyticalGridOptions } from '@metad/ocap-angular/analytical-grid'
+import { assignDeepOmitBlank, DataSettings, omit } from '@metad/ocap-core'
 import { FilterControlType, NxStoryService, WidgetComponentType } from '@metad/story/core'
 import {
   chartAnnotationCheck,
   ChartSchema,
-  tryFixAnalyticsAnnotation,
   completeChartAnnotation,
   createTableWidgetSchema,
   createWidgetSchema,
-  KPIStylingSchema
+  KPIStylingSchema,
+  tryFixAnalyticsAnnotation
 } from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import z from 'zod'
+import { AnalyticalGridOptionsSchema } from './schema'
 
 /**
  * Select default cube
@@ -48,7 +50,7 @@ export function injectPickCubeTool() {
           return markdownModelCube({ modelId: result.modelId, dataSource: result.dataSource, cube: entityType })
         }
         return ''
-      } catch(err: any) {
+      } catch (err: any) {
         console.error(err)
         return `Error: ${err.message}`
       }
@@ -112,14 +114,26 @@ export function injectCreateKPITool() {
         kpiValue: MeasureSchema,
         kpiTarget: MeasureSchema.optional()
       }),
-      styling: KPIStylingSchema,
-      options: z.object({
-        shortNumber: z.boolean().optional().describe('Format the kpi value as short number'),
-        digitsInfo: z.string().default('0.1-1').optional().describe('The digits format of kpi value')
-      }).optional()
+      styling: KPIStylingSchema.optional().describe('Css styles of this widget'),
+      options: z
+        .object({
+          shortNumber: z.boolean().optional().describe('Format the kpi value as short number'),
+          digitsInfo: z.string().default('0.1-1').optional().describe('The digits format of kpi value')
+        })
+        .optional()
+        .describe('Options of this kpi widget')
     }),
     func: async ({ dataSettings, widget, styling, options }) => {
-      logger.debug(`Execute copilot action 'createKPI' using dataSettings:`, dataSettings, `widget:`, widget, `options`, options, `styling`, styling)
+      logger.debug(
+        `Execute copilot action 'createKPI' using dataSettings:`,
+        dataSettings,
+        `widget:`,
+        widget,
+        `options`,
+        options,
+        `styling`,
+        styling
+      )
       try {
         storyService.createStoryWidget({
           ...omit(widget, 'kpiValue', 'kpiTarget'),
@@ -132,7 +146,7 @@ export function injectCreateKPITool() {
               }
             }
           },
-          options,
+          options: assignDeepOmitBlank({ shortNumber: true, digitsInfo: '0.1-1' }, options),
           styling,
           component: WidgetComponentType.KpiCard
         })
@@ -245,21 +259,18 @@ export function injectCreateChartTool() {
       dataSettings: DataSettingsSchema,
       widget: createWidgetSchema({
         chart: ChartSchema.describe('Chart configuration'),
-        slicers: z.array(
-          SlicerSchema
-        )
-        .optional()
-        .describe('The slicers used by the chart data')
-      }),
+        slicers: z.array(SlicerSchema).optional().describe('The slicers used by the chart data')
+      })
     }),
     func: async ({ key, dataSettings, widget }) => {
       logger.debug(
-        '[Story] [AI Copilot] [Command tool] [createChart] inputs:', key,
+        '[Story] [AI Copilot] [Command tool] [createChart] inputs:',
+        key,
         'dataSettings:',
         dataSettings,
         'position:',
         widget,
-        'widget:',
+        'widget:'
       )
 
       const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings as DataSettings))
@@ -310,7 +321,7 @@ export function injectCreateChartTool() {
 
 /**
  * Create table widget
- * 
+ *
  */
 export function injectCreateTableTool() {
   const logger = inject(NGXLogger)
@@ -322,18 +333,20 @@ export function injectCreateTableTool() {
     schema: z.object({
       key: z.string().optional().describe('Current widget key'),
       dataSettings: DataSettingsSchema,
-      widget: createWidgetSchema(createTableWidgetSchema())
+      widget: createWidgetSchema(createTableWidgetSchema()),
+      options: AnalyticalGridOptionsSchema.optional().describe('Options of table grid')
     }),
-    func: async ({key, dataSettings, widget}) => {
+    func: async ({ key, dataSettings, widget, options }) => {
       logger.debug(
         '[Story] [AI Copilot] [Command tool] [createTableWidget] inputs:',
         key,
         dataSettings,
         widget,
+        options
       )
 
       const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings as DataSettings))
-
+      const defaultOptions = { strip: true, paging: true, sortable: true, digitsInfo: '0.1-1' } as AnalyticalGridOptions
       try {
         if (key) {
           storyService.updateWidget({
@@ -345,6 +358,7 @@ export function injectCreateTableTool() {
                 ...(dataSettings ?? {}),
                 analytics: tryFixAnalyticsAnnotation(widget.analytics, entityType)
               },
+              options: assignDeepOmitBlank(defaultOptions, options)
             }
           })
 
@@ -359,9 +373,10 @@ export function injectCreateTableTool() {
               ...(dataSettings ?? {}),
               analytics: tryFixAnalyticsAnnotation(widget.analytics, entityType)
             },
+            options: assignDeepOmitBlank(defaultOptions, options)
           })
-        return `Story table widget '${key}' created!`
-      }
+          return `Story table widget '${key}' created!`
+        }
       } catch (error: any) {
         return `Error: ${error.message}`
       }

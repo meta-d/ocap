@@ -661,6 +661,7 @@
       "Synchronized": "已同步",
       "SyncMembersJobFinished": "同步成员任务已完成",
       "SyncMembersJobRunning": "同步成员任务正在运行",
+      "CanntFoundHierarchy": "找不到层次结构'{{value}}'",
 
       "QUERY": {
         "TITLE": "查询实验室",
@@ -1353,7 +1354,7 @@
       "ShowChart": "显示图形",
       "ShowTable": "显示表格",
       "AddtoStory": "添加到故事",
-      "SystemMessage_1": "您好，我是元数分析云 BI 智能助手，当前数据为《{value}》，可点击顶部切换。",
+      "SystemMessage_1": "您好，我是元数分析云 BI 智能助手，当前数据为《{{value}}》，可点击顶部切换。",
       "SystemMessage_2": "你也可以尝试点击样例",
       "SystemMessage_3": "我能准确识别含时间、条件、维度和指标的问题哦。",
       "SystemMessage_Samples": [

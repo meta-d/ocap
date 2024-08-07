@@ -3,13 +3,26 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
-import { injectDimensionMemberTool, makeCubeRulesPrompt, markdownEntityType, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/core'
+import {
+  injectDimensionMemberTool,
+  makeCubeRulesPrompt,
+  markdownEntityType,
+  PROMPT_RETRIEVE_DIMENSION_MEMBER
+} from '@metad/core'
+import { DataSettings, pick } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
-import { injectCreateChartTool, injectCreateKPITool, injectCreateTableTool, injectPickCubeTool } from '../tools'
-import { WidgetAgentState, widgetAgentState } from './types'
-import { DataSettings, pick } from '@metad/ocap-core'
 import { firstValueFrom } from 'rxjs'
+import {
+  injectCreateChartTool,
+  injectCreateFilterBarTool,
+  injectCreateInputControlTool,
+  injectCreateKPITool,
+  injectCreateTableTool,
+  injectCreateVariableTool,
+  injectPickCubeTool
+} from '../tools'
+import { WidgetAgentState, widgetAgentState } from './types'
 
 export function injectCreateWidgetGraph() {
   const logger = inject(NGXLogger)
@@ -22,6 +35,9 @@ export function injectCreateWidgetGraph() {
   const createChartTool = injectCreateChartTool()
   const pickCubeTool = injectPickCubeTool()
   const createKPITool = injectCreateKPITool()
+  const createFilterBar = injectCreateFilterBarTool()
+  const createVariable = injectCreateVariableTool()
+  const createInputControl = injectCreateInputControlTool()
 
   return async ({ llm, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     const widget = storyService.currentWidget
@@ -30,11 +46,22 @@ export function injectCreateWidgetGraph() {
       llm,
       interruptBefore,
       interruptAfter,
-      tools: [pickCubeTool, memberRetrieverTool, createTableTool, createChartTool, createKPITool],
+      tools: [
+        pickCubeTool,
+        memberRetrieverTool,
+        createFilterBar,
+        createVariable,
+        createInputControl,
+        createTableTool,
+        createChartTool,
+        createKPITool
+      ],
       messageModifier: async (state) => {
         let context = null
         if (widget()?.dataSettings?.entitySet) {
-          const entityType = await firstValueFrom(storyService.selectEntityType(pick<DataSettings>(widget().dataSettings, 'dataSource', 'entitySet')))
+          const entityType = await firstValueFrom(
+            storyService.selectEntityType(pick(widget().dataSettings, 'dataSource', 'entitySet') as DataSettings)
+          )
           if (entityType) {
             //@todo 还需要 modelId 信息
             context = markdownEntityType(entityType)
@@ -61,7 +88,7 @@ ${widget() ? JSON.stringify(pick(widget(), 'key', 'title', 'component', 'dataSet
 `
         const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
           templateFormat: 'mustache'
-        }).format({...state, context: state.context || context || defaultModelCubePrompt() })
+        }).format({ ...state, context: state.context || context || defaultModelCubePrompt() })
         return [new SystemMessage(system), ...state.messages]
       }
     })

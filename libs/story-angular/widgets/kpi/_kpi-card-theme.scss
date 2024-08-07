@@ -8,31 +8,6 @@
   $foreground: map.get($config, foreground);
   $primary: map.get($config, primary);
   $accent: map.get($config, accent);
-
-  // .ngm-kpi--title {
-  //   font-size: 2em;
-  // }
-
-  // .ngm-kpi--value {
-  //   .ngm-object-number--value {
-  //     font-size: 3em;
-  //   }
-  // }
-  // .ngm-kpi--reference.ngm-kpi--deviation {
-  //   .ngm-kpi--title {
-  //     font-size: 1em;
-  //   }
-  //   .ngm-object-number--value {
-  //     font-size: 1em;
-  //   }
-  //   .ngm-object-number--unit {
-
-  //   }
-  // }
-
-  // .ngm-kpi--additional {
-  //   font-size: .5rem;
-  // }
   
   pac-widget-kpi {
     .ngm-kpi--trend {
@@ -40,10 +15,10 @@
         font-size: 1rem;
         line-height: 1rem;
       }
-      .ngm-object-number--short-unit {
-        font-size: 0.5rem;
-        line-height: 0.5rem;
-      }
+      // .ngm-object-number--short-unit {
+      //   font-size: 0.5rem;
+      //   line-height: 0.5rem;
+      // }
     }
 
     .ngm-object-number--short-unit {
@@ -55,13 +30,13 @@
       align-content: flex-start;
     }
   
-    .ngm-kpi--reference {
-      .ngm-object-number--unit {
-        align-items: flex-start;
-        font-size: 0.5rem;
-        line-height: 0.5rem;
-      }
-    }
+    // .ngm-kpi--reference {
+    //   .ngm-object-number--unit {
+    //     align-items: flex-start;
+    //     font-size: 0.5rem;
+    //     line-height: 0.5rem;
+    //   }
+    // }
   }
   
 }

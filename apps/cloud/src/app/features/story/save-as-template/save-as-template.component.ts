@@ -162,7 +162,7 @@ export async function saveAsTemplate(
   storyStore: NxStoryStore
 ): Promise<Partial<IStoryTemplate>> {
   const options: IStoryTemplate['options'] = {
-    story: pick(story, 'options')
+    story: pick(story, 'options') as {options: Record<string, unknown>},
   }
   if (type === StoryTemplateType.Template) {
     options.pages = []

@@ -37,13 +37,13 @@ export function injectCreatePageTools() {
       description: 'Create a title widget in story dashboard page.',
       schema: z.object({
         widget: createWidgetSchema({}),
-        styling: WidgetStyleSchema,
         options: z.object({
-          text: z.string().describe('The text content of widget')
-        }).describe('The options of text widget')
+          text: z.string().describe('The text content of this widget')
+        }).describe('Options of this text widget'),
+        styling: WidgetStyleSchema.optional().describe('Css styles of this widget'),
       }),
       func: async ({ widget, styling, options }) => {
-        logger.debug(`Execute copilot action 'createTitle':`, `widget:`, widget)
+        logger.debug(`Execute copilot action 'createTitle':`, `widget:`, widget, options, styling)
         storyService.createStoryWidget({
           ...widget,
           component: WidgetComponentType.Text,

@@ -10,6 +10,7 @@ import { nonBlank, provideOcapCore } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { StoryExplorerModule } from '@metad/story'
 import { TranslateModule } from '@ngx-translate/core'
+import { NGXLogger } from 'ngx-logger'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { filter, map, switchMap } from 'rxjs'
 import { ChatBIConversationService, routeAnimations } from '../../@core'
@@ -49,6 +50,7 @@ export class ChatbiHomeComponent {
   readonly conversationService = inject(ChatBIConversationService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
+  readonly logger = inject(NGXLogger)
   readonly conversationId = injectQueryParams('id')
 
   readonly modelId = model<string>(null)
@@ -127,13 +129,13 @@ export class ChatbiHomeComponent {
   }
 
   async openExplore(message: CopilotChatMessage, answer: QuestionAnswer) {
-    console.log(answer)
+    this.logger.debug('openExplorer', answer)
     this.showExplorer.set(true)
-    this.explore.set({ ...answer, key: message.id })
+    this.explore.set({ ...structuredClone(answer), key: message.id })
   }
 
   closeExplorer(event?: QuestionAnswer) {
-    console.log(event)
+    this.logger.debug('closeExplorer', event)
     this.showExplorer.set(false)
     if (event) {
       this.chatbiService.updateQuestionAnswer(this.explore().key, event)

@@ -561,7 +561,7 @@ export class StoryToolbarComponent implements OnInit {
 
   async export() {
     this.exporting = true
-    await downloadStory(this.storiesService, this.storyService.story.id)
+    await downloadStory(this.storiesService, this.storyService.storySignal().id)
     this.exporting = false
   }
 

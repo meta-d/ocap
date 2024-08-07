@@ -82,8 +82,9 @@
     ></div>
 </div>
 
-<div class="w-full flex-1 p-2 flex justify-start items-stretch gap-2 overflow-hidden">
-    <div ngmResizer [resizerWidth]="360" class="relative">
+<div class="w-full flex-col-reverse flex-1 p-2 flex justify-start items-stretch gap-2 overflow-y-auto overflow-x-hidden
+  lg:flex-row lg:overflow-hidden">
+    <div ngmResizer class="relative w-full lg:w-[360px]">
         <div ngmResizerBar resizerBarPosition="right" class="z-10"
             cdkDrag
             cdkDragLockAxis="x"
@@ -207,7 +208,8 @@
           }
         }
     </div>
-    <div class="surface flex-1 rounded-xl flex flex-col justify-center items-center overflow-hidden">
+    <div class="surface flex-1 min-h-[600px] rounded-xl flex flex-col justify-center items-center overflow-hidden
+      lg:max-h-full lg:min-h-full">
         <div class="flex-1 w-full overflow-hidden">
           @switch (view) {
             @case ('chart') {

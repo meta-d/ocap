@@ -1,36 +1,40 @@
-<div *ngIf="options?.showToolbar" class="ngm-card-header flex justify-between items-center" [ngStyle]="styling?.bar">
-  <div>{{ title }}</div>
+@if (showToolbar()) {
+  <div class="ngm-card-header flex justify-between items-center" [ngStyle]="styling?.bar">
+    <div>{{ title }}</div>
 
-  <div style="flex: 1; display: flex; place-content: center flex-end; align-items: center;">
-    <ng-content></ng-content>
+    <div style="flex: 1; display: flex; place-content: center flex-end; align-items: center;">
+      <ng-content></ng-content>
+    </div>
+
+    <div class="actions flex justify-around items-center">
+
+      <ng-content select="[ngmAction]"></ng-content>
+
+      <!-- data download -->
+    @if (!options()?.hideDataDownload) {
+      <button mat-icon-button displayDensity="cosy"
+        [matTooltip]=" 'Ngm.AnalyticalGrid.DataDownload' | translate: {Default: 'Data Download'} "
+        (click)="downloadData()">
+        <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
+      </button>
+    }
+
+      <!-- Refresh & Loading icon -->
+      <button mat-icon-button class="ngm-analytical-grid__refresh" displayDensity="cosy"
+        [style.opacity]="(isLoading$ | async) ? '0' : '1'"
+        [style.visibility]="(isLoading$ | async) ? 'hidden' : 'visible'"
+        (click)="refresh()">
+        <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
+      </button>
+      
+      <mat-spinner *ngIf="isLoading$ | async" displayDensity="cosy"
+        [diameter]="20"
+        [strokeWidth]="1"
+      >
+      </mat-spinner>
+    </div>
   </div>
-
-  <div class="actions flex justify-around items-center">
-
-    <ng-content select="[ngmAction]"></ng-content>
-
-    <!-- data download -->
-    <button mat-icon-button *ngIf="!options?.hideDataDownload" displayDensity="cosy"
-      [matTooltip]=" 'Ngm.AnalyticalGrid.DataDownload' | translate: {Default: 'Data Download'} "
-      (click)="downloadData()">
-      <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
-    </button>
-
-    <!-- Refresh & Loading icon -->
-    <button mat-icon-button class="ngm-analytical-grid__refresh" displayDensity="cosy"
-      [style.opacity]="(isLoading$ | async) ? '0' : '1'"
-      [style.visibility]="(isLoading$ | async) ? 'hidden' : 'visible'"
-      (click)="refresh()">
-      <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
-    </button>
-    
-    <mat-spinner *ngIf="isLoading$ | async" displayDensity="cosy"
-      [diameter]="20"
-      [strokeWidth]="1"
-    >
-    </mat-spinner>
-  </div>
-</div>
+}
 
 <div class="ngm-card-content">
 @if (error$ | async) {
@@ -39,9 +43,9 @@
       <span>{{error$ | async}}</span>
     </div>
 } @else {
-  <table mat-table [class.ngm-table-grid]="options?.grid" [displayDensity]="appearance?.displayDensity"
+  <table mat-table [class.ngm-table-grid]="options()?.grid" [displayDensity]="appearance?.displayDensity"
     [dataSource]="dataSource"
-    matSort [matSortDisabled]="!options?.sortable"
+    matSort [matSortDisabled]="!options()?.sortable"
     [matSortActive]="matSortActive"
     [matSortDirection]="matSortDirection"
     >
@@ -184,7 +188,7 @@
           </button>
           {{columnAxis.caption || columnAxis.dimension}}
           
-          <ng-container *ngIf="options?.sortable && columnAxis.dimension !== C_MEASURES">
+          <ng-container *ngIf="options()?.sortable && columnAxis.dimension !== C_MEASURES">
             <button mat-icon-button *ngIf="columnAxis.sortDirection" displayDensity="compact"
               (click)="toggleColumnOrder(i)">
               <mat-icon *ngIf="columnAxis.sortDirection==='asc'">arrow_left</mat-icon>
@@ -226,7 +230,7 @@
               {{column.caption || column.name}}
             </div>
 
-            <div *ngIf="last" mat-sort-header [disabled]="!options?.sortable"></div>
+            <div *ngIf="last" mat-sort-header [disabled]="!options()?.sortable"></div>
           </div>
         </th>
 
@@ -243,26 +247,26 @@
             ></div>
             <span *ngIf="element[column.name]?.value === null || element[column.name]?.value === undefined; else cell" class="cell-value">-</span>
             <ng-template #cell>
-              <span *ngIf="column.formatting?.currencyCode || options?.currencyCode; else plain" class="cell-value">
-                {{element[column.name]?.value | currency: column.formatting?.currencyCode || options?.currencyCode:'symbol':column.formatting?.digitsInfo || options?.digitsInfo}}
+              <span *ngIf="column.formatting?.currencyCode || options()?.currencyCode; else plain" class="cell-value">
+                {{element[column.name]?.value | currency: column.formatting?.currencyCode || options()?.currencyCode:'symbol':column.formatting?.digitsInfo || options()?.digitsInfo}}
               </span>
             </ng-template>
 
             <ng-template #plain>
               <span class="cell-value">
-                <span *ngIf="(column.formatting?.unit ?? options?.unit) === '%'; else digits" class="ngm-analytical-grid__measure-value">
-                  {{element[column.name].value * 100 | number: column.formatting?.digitsInfo || options?.digitsInfo ?? '0.0-2'}}
+                <span *ngIf="(column.formatting?.unit ?? options()?.unit) === '%'; else digits" class="ngm-analytical-grid__measure-value">
+                  {{element[column.name].value * 100 | number: column.formatting?.digitsInfo || options()?.digitsInfo ?? '0.0-2'}}
                 </span>
                 
-                <span *ngIf="column.formatting?.unit || options?.unit" class="ngm-analytical-grid__measure-unit">
-                  {{column.formatting?.unit || options?.unit}}
+                <span *ngIf="column.formatting?.unit || options()?.unit" class="ngm-analytical-grid__measure-unit">
+                  {{column.formatting?.unit || options()?.unit}}
                 </span>
               </span>
             </ng-template>
 
             <ng-template #digits>
               <span class="ngm-analytical-grid__measure-value">
-                {{element[column.name]?.value | number: column.formatting?.digitsInfo || options?.digitsInfo || '0.0-2'}}
+                {{element[column.name]?.value | number: column.formatting?.digitsInfo || options()?.digitsInfo || '0.0-2'}}
               </span>
             </ng-template>
           </td>
@@ -271,13 +275,13 @@
     </ng-container>
     
     <!-- 单独设置一行抬头是因为全部放在下面循环里创建的话没有被识别出来, 还未找到原因 -->
-    <tr mat-header-row *matHeaderRowDef="matHeaders; sticky:options?.sticky" [ngStyle]="styling?.bar"></tr>
-    <tr mat-header-row *matHeaderRowDef="matRestHeaders[0]; sticky:options?.sticky" [class.empty]="!matRestHeaders[0]" [ngStyle]="styling?.bar"></tr>
-    <tr mat-header-row *matHeaderRowDef="matRestHeaders[1]; sticky:options?.sticky;" [class.empty]="!matRestHeaders[1]" [ngStyle]="styling?.bar"></tr>
+    <tr mat-header-row *matHeaderRowDef="matHeaders; sticky:options()?.sticky" [ngStyle]="styling?.bar"></tr>
+    <tr mat-header-row *matHeaderRowDef="matRestHeaders[0]; sticky:options()?.sticky" [class.empty]="!matRestHeaders[0]" [ngStyle]="styling?.bar"></tr>
+    <tr mat-header-row *matHeaderRowDef="matRestHeaders[1]; sticky:options()?.sticky;" [class.empty]="!matRestHeaders[1]" [ngStyle]="styling?.bar"></tr>
 
     <!-- 循环里的 mat-header-row 当变化时没有被识别出来, 所以固定写死几行 header row 用 empty class 的方式将空行其隐藏 -->
     <!-- <ng-container *ngFor="let columns of displayedColumns;">
-      <tr mat-header-row *matHeaderRowDef="columns; sticky:options?.sticky"></tr>
+      <tr mat-header-row *matHeaderRowDef="columns; sticky:options()?.sticky"></tr>
     </ng-container> -->
 
     <tr mat-row *matRowDef="let row; columns: matRowColumns; let i = index"
@@ -295,5 +299,6 @@
 }
 </div>
 
-<mat-paginator *ngIf="options?.paging" [displayDensity]="appearance?.displayDensity"
-  [pageSize]="options?.pageSize" [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons></mat-paginator>
+<mat-paginator *ngIf="options()?.paging" [displayDensity]="appearance?.displayDensity"
+  [pageSize]="options()?.pageSize" [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons
+/>

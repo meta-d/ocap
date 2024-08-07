@@ -4,13 +4,13 @@ import { Team } from '@metad/copilot'
 export const STORY_COMMAND_NAME = 'story'
 
 export interface StoryAgentState extends Team.State {
-  tool_call_id: string
+  story: string
 }
 
 export const storyAgentState: StateGraphArgs<StoryAgentState>['channels'] = {
   ...Team.createState(),
-  tool_call_id: {
-    value: (x: string, y?: string) => y,
+  story: {
+    value: (x: string, y?: string) => y ?? x,
     default: () => null
-  }
+  },
 }

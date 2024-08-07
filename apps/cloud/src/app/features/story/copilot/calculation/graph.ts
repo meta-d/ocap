@@ -96,9 +96,10 @@ When finished, respond FINISH. Choose strategically to minimize the number of st
 
 {role}
 
-{context}`
-
-  )
+The dataset context:
+{context}
+Reference Documentations:
+{references}`)
 
   const createFormulaAgent = await createFormulaWorker({
     llm,

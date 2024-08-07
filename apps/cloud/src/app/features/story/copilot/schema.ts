@@ -65,28 +65,18 @@ export const MeasureControlSchema = z.object({
   displayBehaviour: z.enum([DisplayBehaviour.descriptionAndId, DisplayBehaviour.descriptionOnly, DisplayBehaviour.idOnly]).optional().describe(`The display behaviour of measure options`),
 })
 
-export const RestrictedMeasureBikes = {
-  measure: 'Sales',
-  dimensions: [
-    {
-      dimension: '[Product]',
-      hierarchy: '[Product.Category]',
-      members: [
-        {
-          key: '[Bikes]'
-        }
-      ]
-    }
-  ],
-  enableConstantSelection: true
-  // slicers: [
-  //   {
-  //     dimension: { dimension: '[Product]' },
-  //     members: [
-  //       {
-  //         key: '[Product].[Bikes]'
-  //       }
-  //     ]
-  //   }
-  // ]
-}
+export const AnalyticalGridOptionsSchema = z.object({
+  showToolbar: z.boolean().optional().describe('Show toolbar of table grid'),
+  strip: z.boolean().optional().describe('Strip rows of table grid'),
+  grid: z.boolean().optional().describe('Table is grid style'),
+  paging: z.boolean().optional().describe('Table is paging'),
+  pageSize: z.number().optional().describe('Page size'),
+  sticky: z.boolean().optional().describe('Sticky header of table'),
+  initialRowLevel: z.number().optional().describe('Inital row level number'),
+  initialColumnLevel: z.number().optional().describe('Inital column level number'),
+  sortable: z.boolean().optional().describe('Columns of table is sortable'),
+  selectable: z.boolean().optional().describe('Columns of table is selectable'),
+  digitsInfo: z.string().default('0.1-1').optional().describe('Digits Info of measure value'),
+  unit: z.string().optional().describe('Unit of measure value'),
+  currencyCode: z.string().optional().describe('Currency Code of measure value'),
+})

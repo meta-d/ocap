@@ -49,13 +49,10 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   readonly storyService = inject(NxStoryService)
   readonly #logger = inject(NGXLogger)
 
-  get intent() {
-    return this.options?.intent
-  }
 
-  public readonly placeholder$ = this.dataSettings$.pipe(
-    map((dataSettings) => !(dataSettings?.dataSource && dataSettings?.entitySet))
-  )
+  readonly intent = computed(() => this.optionsSignal()?.intent)
+  readonly showPlaceholder = computed(() => !(this.dataSettingsSignal()?.dataSource && this.dataSettingsSignal()?.entitySet))
+
 
   public readonly kpiValue$ = this.dataService.kpiValue$
   public readonly trend$ = this.kpiValue$.pipe(filter((kpiValue) => !isNil(kpiValue?.arrow)))
@@ -161,8 +158,8 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   }
 
   onIntentClick() {
-    if (this.intent) {
-      this.coreService.sendIntent(this.intent)
+    if (this.intent()) {
+      this.coreService.sendIntent(this.intent())
     }
   }
 

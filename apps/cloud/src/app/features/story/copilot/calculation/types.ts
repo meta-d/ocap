@@ -1,6 +1,7 @@
 import { Team } from "@metad/copilot"
 import { MEMBER_RETRIEVER_TOOL_NAME } from "@metad/core"
 
+export const CALCULATION_COMMAND_NAME = 'calculation'
 export const SUPERVISOR_NAME = 'Supervisor'
 
 export const FORMULA_AGENT_NAME = 'FormulaMeasureAgent'

@@ -6,7 +6,6 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import {
   createSubStore,
-  debugDirtyCheckComparator,
   DeepPartial,
   dirtyCheckWith,
   getErrorMessage,
@@ -17,6 +16,7 @@ import {
   NxCoreService,
   write
 } from '@metad/core'
+import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import {
@@ -39,8 +39,9 @@ import {
 import { createStore, Query, select, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { TranslateService } from '@ngx-translate/core'
-import { cloneDeep, findKey, includes, isEmpty, isEqual, merge, negate, omit, some, sortBy } from 'lodash-es'
+import { cloneDeep, findKey, includes, isEmpty, isEqual, negate, omit, some, sortBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
+import { derivedAsync } from 'ngxtension/derived-async'
 import { combineLatest, firstValueFrom, Observable, of, Subject } from 'rxjs'
 import {
   delayWhen,
@@ -75,8 +76,6 @@ import {
   WidgetComponentType
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
-import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
-import { derivedAsync } from 'ngxtension/derived-async'
 
 @Injectable()
 export class NxStoryService {
@@ -112,13 +111,6 @@ export class NxStoryService {
   readonly pageSaving = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.saving))))
   readonly saving = computed(() => this.storySaving() || this.pageSaving())
 
-  get story() {
-    return this.store.getValue().story
-  }
-  get creatingWidget() {
-    return this.store.getValue().creatingWidget
-  }
-
   private saved$ = new Subject<void>()
   private readonly refresh$ = new Subject<boolean>()
 
@@ -145,6 +137,8 @@ export class NxStoryService {
 
   readonly story$ = this.select((state) => state.story)
   readonly id$ = this.select((state) => state.story?.id)
+  readonly storySignal = toSignal(this.select((state) => state.story))
+  readonly creatingWidgetSignal = toSignal(this.select((state) => state.creatingWidget))
 
   // Story options merge template
   public readonly storyOptions$: Observable<StoryOptions> = this.story$.pipe(
@@ -192,7 +186,6 @@ export class NxStoryService {
     }
     return null
   })
-
 
   readonly storyModel$ = this.select((state) => state.story.model)
   readonly storyModels$ = combineLatest([this.storyModel$, this.select((state) => state.story.models)]).pipe(
@@ -272,11 +265,11 @@ export class NxStoryService {
   readonly displayPoints$ = toObservable(this.displayPoints)
 
   public readonly isEmpty$ = this.pageStates$.pipe(map((points) => isEmpty(points)))
-  
+
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
-  
+
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
   /**
@@ -334,12 +327,13 @@ export class NxStoryService {
   )
 
   readonly modelCubes$ = this.storyModelsOptions$.pipe(
-    // tap(() => console.log(`loading cubes...`)),
-    switchMap((dataSources) => combineLatest(dataSources.map((option) => this.selectDataSource(option.key).pipe(
-      switchMap((dataSource) => dataSource.discoverMDCubes()),
-    ))).pipe(
-      map((cubess) => cubess.map((cubes, index) => ({ ...dataSources[index], cubes })))
-    )),
+    switchMap((dataSources) =>
+      combineLatest(
+        dataSources.map((option) =>
+          this.selectDataSource(option.key).pipe(switchMap((dataSource) => dataSource.discoverMDCubes()))
+        )
+      ).pipe(map((cubess) => cubess.map((cubes, index) => ({ ...dataSources[index], cubes }))))
+    ),
     shareReplay(1)
   )
 
@@ -422,7 +416,8 @@ export class NxStoryService {
     }
   })
   // 是否迁移回 storyService 中来, 不通过 core service
-  private storyUpdateEventSub = this.#ocapService?.onEntityUpdate()
+  private storyUpdateEventSub = this.#ocapService
+    ?.onEntityUpdate()
     .pipe(takeUntilDestroyed())
     .subscribe(({ type, dataSettings, parameter, property }) => {
       this.logger?.debug(`[StoryService] add calculation | type: '${type}'`, dataSettings, parameter, property)
@@ -452,8 +447,8 @@ export class NxStoryService {
 
   /**
    * Init story state
-   * 
-   * @param story 
+   *
+   * @param story
    * @param fetched Widgets fetched
    */
   setStory(story: Story, options = { fetched: false }) {
@@ -553,7 +548,7 @@ export class NxStoryService {
   }
 
   getDefaultDataSource() {
-    const story = this.story
+    const story = this.storySignal()
     const defaultModel = story.models?.[0]
     return {
       dataSource: defaultModel?.key,
@@ -597,16 +592,17 @@ export class NxStoryService {
   /**
    * 监听某个 Entity Type
    */
-  selectEntityType({ dataSource, entitySet }: {dataSource: string; entitySet: string;}): Observable<EntityType> {
-    return this.selectDataSource(dataSource)
-      .pipe(switchMap((dataSource) => dataSource.selectEntityType(entitySet).pipe(filter(isEntityType))))
+  selectEntityType({ dataSource, entitySet }: { dataSource: string; entitySet: string }): Observable<EntityType> {
+    return this.selectDataSource(dataSource).pipe(
+      switchMap((dataSource) => dataSource.selectEntityType(entitySet).pipe(filter(isEntityType)))
+    )
   }
 
   /**
    * Select entity type for widget by widget key
-   * 
-   * @param widgetKey 
-   * @returns 
+   *
+   * @param widgetKey
+   * @returns
    */
   selectWidgetEntityType(widgetKey: string) {
     const widget = this.store.query((state) => {
@@ -645,7 +641,9 @@ export class NxStoryService {
     return this.schemas$.pipe(
       map((schemas) => schemas?.[dataSource]),
       map((schemas) => schemas?.[entitySet]),
-      map<EntityType, T>((schema) => Object.values(schema?.properties ?? {}).find((property) => property.__id__ === key) as T),
+      map<EntityType, T>(
+        (schema) => Object.values(schema?.properties ?? {}).find((property) => property.__id__ === key) as T
+      )
     )
   }
 
@@ -698,7 +696,7 @@ export class NxStoryService {
         type: page.type ?? StoryPointType.Canvas,
         key,
         name,
-        storyId: this.story.id,
+        storyId: this.storySignal().id,
         // Add widgets
         widgets:
           page.widgets?.map((widget) => ({
@@ -801,19 +799,28 @@ export class NxStoryService {
    * Udpate story widget by pageKey and widgetId
    */
   readonly updateWidget = this.updater(
-    (state, { pageKey, widgetKey, widget }: { pageKey?: string; widgetKey: string; widget: DeepPartial<StoryWidget>}) => {
-    const pointKey = pageKey ?? state.currentPageKey
-    const currentPage = state.story.points.find((item) => item.key === pointKey)
-    const index = currentPage.widgets.findIndex((item) => item.key === widgetKey)
-    if (index > -1) {
-      // this.logger.debug(`[StoryService] update widget before:`, cloneDeep(currentPage.widgets[index]))
-      // this.logger.debug(`[StoryService] update widget value:`, cloneDeep(widget))
-      currentPage.widgets[index] = assignDeepOmitBlank(currentPage.widgets[index], widget, 10)
-      // this.logger.debug(`[StoryService] update widget after:`, cloneDeep(currentPage.widgets[index]))
-    } else {
-      throw new Error(this.getTranslation('Story.Story.WidgetNotExistInPage', `Widget '${widgetKey}' does not exist in page '${pointKey}'`))
+    (
+      state,
+      { pageKey, widgetKey, widget }: { pageKey?: string; widgetKey: string; widget: DeepPartial<StoryWidget> }
+    ) => {
+      const pointKey = pageKey ?? state.currentPageKey
+      const currentPage = state.story.points.find((item) => item.key === pointKey)
+      const index = currentPage.widgets.findIndex((item) => item.key === widgetKey)
+      if (index > -1) {
+        // this.logger.debug(`[StoryService] update widget before:`, cloneDeep(currentPage.widgets[index]))
+        // this.logger.debug(`[StoryService] update widget value:`, cloneDeep(widget))
+        currentPage.widgets[index] = assignDeepOmitBlank(currentPage.widgets[index], widget, 10)
+        // this.logger.debug(`[StoryService] update widget after:`, cloneDeep(currentPage.widgets[index]))
+      } else {
+        throw new Error(
+          this.getTranslation(
+            'Story.Story.WidgetNotExistInPage',
+            `Widget '${widgetKey}' does not exist in page '${pointKey}'`
+          )
+        )
+      }
     }
-  })
+  )
 
   createStoryWidget(event: DeepPartial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
@@ -914,7 +921,6 @@ export class NxStoryService {
         entityCaption
       }: { dataSettings: DataSettings; calculation: CalculationProperty & { options?: any }; entityCaption?: string }
     ) => {
-
       const properties = getOrInitEntityType(
         state,
         dataSettings.dataSource,
@@ -932,7 +938,7 @@ export class NxStoryService {
         ...omit(calculation, 'options'),
         role: AggregationRole.measure,
         dataType: 'number',
-        visible: true,
+        visible: true
       }
 
       const property = properties[calculation.name]

@@ -18,10 +18,10 @@
 
       @if (kpiValue$ | async; as kpiValue) {
         <div class="ngm-kpi--content"
-          [class.ngm-kpi__intent]="intent?.semanticObject"
+          [class.ngm-kpi__intent]="intent()?.semanticObject"
           (click)="onIntentClick()"
         >
-          <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: options}"></ng-container>
+          <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: optionsSignal()}"></ng-container>
         </div>
       }
       
@@ -36,8 +36,8 @@
               [unit]="trend.referenceValueUnit"
               [digitsInfo]="options?.digitsInfo"
               [shortNumber]="options?.shortNumber"
-              [locale]="locale">
-            </ngm-object-number>
+              [locale]="locale"
+            />
           </div>
 
           @if (options?.showDeviation) {
@@ -50,8 +50,8 @@
                 unit="%"
                 [digitsInfo]="options?.digitsInfo"
                 [shortNumber]="false"
-                [locale]="locale">
-              </ngm-object-number>
+                [locale]="locale"
+              />
             </div>
           }
           <ng-content select=".ngm-kpi--refs"></ng-content>
@@ -70,7 +70,7 @@
     @if (additionalDataPoints$ | async; as additionals) {
       <div class="ngm-kpi--additional">
         @for (kpiValue of additionals; track $index) {
-          <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: options?.additionalDataPoint || options}"></ng-container>
+          <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: optionsSignal()?.additionalDataPoint || optionsSignal()}"></ng-container>
         }
       </div>
     }
@@ -86,7 +86,7 @@
     'trend-strong-down': kpiValue.arrow === TrendType.StrongDown
   }">
     <span class="ngm-kpi--title" [ngStyle]="titleStyles$()">{{kpiValue?.Title || options?.valueText}}</span>
-    <div class="ngm-kpi--indicator flex" [ngStyle]="valueStyles()">
+    <div class="ngm-kpi--indicator flex">
       @if (kpiValue.arrow) {
         <div class="ngm-kpi--arrow flex justify-center items-end">
           @switch (kpiValue.arrow) {
@@ -121,12 +121,12 @@
               [number]="kpiValue.deviation" unit="%"
               [digitsInfo]="options?.digitsInfo"
               [shortNumber]="false"
-              [locale]="locale">
-            </ngm-object-number>
+              [locale]="locale"
+            />
           </div>
         }
 
-        <ngm-object-number class="ngm-kpi--value"
+        <ngm-object-number class="ngm-kpi--value" [ngStyle]="valueStyles()"
           [number]="kpiValue.value"
           [unit]="options?.unit || kpiValue.unit"
           [digitsInfo]="options?.digitsInfo"
@@ -134,8 +134,8 @@
           [unitSemantics]="options?.unitSemantics || kpiValue.unitSemantics"
           [nanPlaceholder]="options?.nanPlaceholder"
           [locale]="locale"
-          (click)="onClick($event)">
-        </ngm-object-number>
+          (click)="onClick($event)"
+        />
 
       </div>
 
@@ -144,9 +144,9 @@
   </div>
 </ng-template>
 
-@if (editable && (placeholder$ | async)) {
+@if (editableSignal() && showPlaceholder()) {
   <div class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
-    <pac-kpi-placeholder class="cursor-pointer" (click)="openDesigner()"></pac-kpi-placeholder>
+    <pac-kpi-placeholder class="cursor-pointer" (click)="openDesigner()" />
     <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.KPI.Title' | translate: {Default: 'KPI'} }}</span>
   </div>
 }

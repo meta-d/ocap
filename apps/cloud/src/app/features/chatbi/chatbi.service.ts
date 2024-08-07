@@ -267,7 +267,7 @@ export class ChatbiService {
   }
 
   updateQuestionAnswer(key: string, answer: QuestionAnswer) {
-    this._updateConversation(this.conversationKey(), (state) => {
+    this.updateConversation((state) => {
       const index = state.messages.findIndex((message) => message.id === key)
       if (index > -1) {
         state.messages[index] = {

@@ -288,6 +288,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 			}
 
 			const examples = entities.filter((item) => (role ? item.role === role : !item.role)).map((example) => ({...example, input: example.input?.trim(), output: example.output?.trim() }))
+				.filter((item) => !!item.command && !!item.input)
 			const roleExamples = await Promise.all(examples.map((entity) => super.create(entity)))
 			results.push(...roleExamples)
 			if (roleExamples.length && vectorStore) {

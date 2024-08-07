@@ -41,9 +41,6 @@ export function injectCreatePageGraph() {
 Reference Documentations:
 {{references}}
 
-Step 1. Create a new page in story dashboard. 
-Step 2. 根据提供的 Cube context 和分析主题逐个向 dashboard 中添加 widgets.
-
 Widget 类型分为 Text, FilterBar, InputControl, Table, Chart, and KPI。
 
 - 页面 layout 布局默认是 40 * 40.

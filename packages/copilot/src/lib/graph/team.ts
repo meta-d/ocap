@@ -132,7 +132,7 @@ export async function createSupervisor(
   return supervisor
 }
 
-export async function createSupervisorAgent(
+export async function createSupervisorAgent<S extends AgentState>(
   llm: ChatOpenAI,
   members: { name: string; description: string }[],
   tools: DynamicStructuredTool[],
@@ -161,7 +161,7 @@ To perform a task, you can select one of the following:
   })
   const modelRunnable = prompt.pipe(modelWithTools)
 
-  const callModel = async (state: AgentState) => {
+  const callModel = async (state: S) => {
     // TODO: Auto-promote streaming.
     const message = await modelRunnable.invoke(state)
 
