@@ -44,6 +44,8 @@ English | [中文](./README_zh.md)
 
 [More details](https://mtda.cloud/en/blog/releases-2-5-chatbi/)
 
+[ChatBI_Demo.mp4](https://github.com/user-attachments/assets/5f7c84be-2307-43cf-8342-bce39524e37d)
+
 ### Copilot Command Agents
 🎉🎉 New version brings several exciting new features, particularly a comprehensive upgrade to [Copilot Command](https://www.mtda.cloud/en/docs/server/copilot/#commands) and [Business Roles](https://www.mtda.cloud/en/docs/server/copilot/#business-roles).
 
