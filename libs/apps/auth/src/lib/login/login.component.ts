@@ -21,19 +21,22 @@ import { PacAuthService } from '../services/auth.service'
   selector: 'pac-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  providers: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
+
+
 export class UserLoginComponent implements OnDestroy {
   readonly #store = inject(Store)
 
   showMessages: any = {}
-
   redirectDelay = 0
   strategy = ''
 
   errors: string[] = []
   messages: string[] = []
+
+  showPassword = false  // Add this property
 
   get userName(): AbstractControl {
     return this.form.controls.userName
@@ -54,9 +57,6 @@ export class UserLoginComponent implements OnDestroy {
   count = 0
   interval$: any
 
-  /**
-   * Signals
-   */
   readonly tenantSettings = toSignal(this.#store.tenantSettings$)
   readonly enableDingtalk = computed(() => this.tenantSettings()?.tenant_enable_dingtalk)
   readonly enableFeishu = computed(() => this.tenantSettings()?.tenant_enable_feishu)
@@ -74,8 +74,6 @@ export class UserLoginComponent implements OnDestroy {
     this.form = fb.group({
       userName: [null, [Validators.required]],
       password: [null, [Validators.required]],
-      // mobile: [null, [Validators.required, Validators.pattern(/^1\d{10}$/)]],
-      // captcha: [null, [Validators.required]],
       rememberMe: [true]
     })
 
@@ -86,9 +84,6 @@ export class UserLoginComponent implements OnDestroy {
     this.strategy = this.getConfigValue('forms.login.strategy')
   }
 
-  /**
-   * Implemented Rememberd Me Feature
-   */
   checkRememberdMe() {
     if (this.cookieService.check('rememberMe')) {
       const { email, rememberMe } = this.cookieService.getAll()
@@ -165,9 +160,7 @@ export class UserLoginComponent implements OnDestroy {
     }
   }
 
-  open(type: string, openType = 'href'): void {
-    window.open('DOCKER_API_BASE_URL' + `/api/auth/${type}`, '_self')
-  }
+
 
   getConfigValue(key: string): any {
     return getDeepFromObject(this.options, key, null)
@@ -177,5 +170,10 @@ export class UserLoginComponent implements OnDestroy {
     if (this.interval$) {
       clearInterval(this.interval$)
     }
+  }
+
+  togglePasswordVisibility(): void {  // Add this method
+    this.showPassword = !this.showPassword
+
   }
 }

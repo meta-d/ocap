@@ -1,83 +1,77 @@
-<form [formGroup]="form" (ngSubmit)="submit()" role="form" class="flex flex-col justify-start items-stretch">
+<!-- Import Tailwind CSS -->
+<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 
-  <div class="w-full md:mt-0 sm:max-w-md xl:p-0">
-    <mat-tab-group mat-align-tabs="start" mat-stretch-tabs="false"  disableRipple>
-      <mat-tab [label]="'Auth.Signin' | translate: {Default: 'Sign-in'}">
-        <div class="flex flex-col justify-start items-stretch p-2 mt-2 gap-2">
-          <ng-container *ngIf="showMessages.error && errors?.length && !loading">
-            <mtx-alert *ngFor="let error of errors; let i = index" type="warning" dismissible (closed)="errors.splice(i, 1)">
-              {{ 'Auth.' + error | translate: {Default: error} }}
-            </mtx-alert>
-          </ng-container>
-          <div>
-            <label for="email" class="block mb-2 text-base font-medium text-gray-900 dark:text-white">
-              {{ 'AUTH.LOGIN.ACCOUNT' | translate: {Default: 'Account'} }}
-            </label>
-            <input matInput type="email" name="email" id="email" formControlName="userName" [placeholder]="'AUTH.LOGIN.USERNAME' | translate: {Default: 'Username / Email'} "
-              class="ngm-input-element"
-              required>
-          </div>
-          <div>
-              <label for="password" class="block mb-2 text-base font-medium text-gray-900 dark:text-white">
-                {{ 'AUTH.LOGIN.PASSWORD' | translate: {Default: 'Password'} }}
-              </label>
-              <input matInput type="password" name="password" id="password" formControlName="password"
-                placeholder="••••••••"
-                class="ngm-input-element"
-                required>
-          </div>
-        </div>
-      </mat-tab>
-    </mat-tab-group>
-  </div>
-
-  <div class="pac-auth__login-remember flex justify-between items-center">
-    <mat-checkbox formControlName="rememberMe">{{ 'AUTH.LOGIN.REMEMBER' | translate: {Default: 'Remember'} }}</mat-checkbox>
-    <a class="forgot" routerLink="/auth/request-password">{{ 'AUTH.LOGIN.FORGOT-PASSWORD' | translate: {Default: 'Forgot Password'} }}</a>
-  </div>
-
-  <button class="ngm-button relative inline-flex items-center justify-center cursor-pointer p-0.5 mb-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group
-    bg-gradient-to-br from-green-400 to-blue-600 group-hover:from-green-400 group-hover:to-blue-600 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800
-    disabled:text-gray-900 disabled:cursor-not-allowed disabled:opacity-50
-    "
-    [disabled]="form.invalid || loading"
-    [class.ngm-button-disabled]="form.invalid || loading">
-    <span class="relative w-full px-5 py-2.5 transition-all ease-in duration-75 bg-white rounded-md
-      group-hover:bg-opacity-0 group-disabled:bg-opacity-100
-      dark:bg-gray-900">
-      {{ 'AUTH.LOGIN.SUBMIT' | translate: {Default: 'Submit'} }}
-    </span>
-  </button>
-
-  <div class="pac-auth__login-remember flex justify-end items-center">
-    <a class="register" routerLink="/auth/register">{{ 'AUTH.LOGIN.SIGNUP' | translate: {Default: 'Signup'} }}</a>
-  </div>
-
-</form>
-
-<div class="pac-login__signins flex flex-wrap justify-center items-center gap-2">
-  @if (enableDingtalk()) {
-    <button mat-icon-button (click)="open('dingtalk', 'window')" class="pac-login__signin-button"
-      [matTooltip]="'AUTH.LOGIN.DINGTALK' | translate: {Default: 'Dingtalk'}">
-      <img class="m-auto" src="/assets/images/destinations/dingtalk.svg">
-    </button>
-  }
-  @if (enableFeishu()) {
-    <button mat-icon-button (click)="open('feishu', 'window')" class="pac-login__signin-button"
-      [matTooltip]="'AUTH.LOGIN.FEISHU' | translate: {Default: 'Feishu'}">
-      <img class="m-auto" src="/assets/images/destinations/feishu.png">
-    </button>
-  }
-
-  @if (enableGithub()) {
-    <button mat-icon-button (click)="open('github', 'window')" class="pac-login__signin-button"
-      [matTooltip]="'AUTH.LOGIN.GITHUB' | translate: {Default: 'Github'}">
-      <img class="m-auto" src="/assets/images/destinations/GitHub-Mark-120px-plus.png">
-    </button>
-  }
+<!-- Component Template -->
+<div
+  class="bg-purple-900 absolute top-0 left-0 bg-gradient-to-b from-gray-900 via-gray-900 to-purple-800 bottom-0 leading-5 h-full w-full overflow-hidden">
 </div>
 
-<div *ngIf="loading" class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">
-  <mat-spinner diameter="30" strokeWidth="2">
-  </mat-spinner>
+<div class="relative min-h-screen sm:flex sm:flex-row justify-center bg-transparent rounded-3xl shadow-xl">
+  <div class="flex-col flex self-center lg:px-14 sm:max-w-4xl xl:max-w-md z-10">
+    <div class="self-start hidden lg:flex flex-col text-gray-300">
+      <h1 class="my-3 font-semibold text-4xl">元数信息平台</h1>
+      <p class="pr-3 text-sm opacity-75">Open-Source Analytics Platform for Enterprise Data Analysis, Indicator
+        Management and Reporting</p>
+    </div>
+  </div>
+
+  <div class="flex justify-center self-center z-10">
+    <div class="p-12 bg-white mx-auto rounded-3xl w-96">
+      <div class="mb-7">
+        <h3 class="font-semibold text-2xl text-gray-800">Sign In</h3>
+        <p class="text-gray-400">Don't have an account? <a href="#" routerLink="/auth/register"
+            class="text-sm text-purple-700 hover:text-purple-700">Sign Up</a></p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="space-y-6">
+          <div>
+            <input formControlName="userName"
+              class="w-full text-sm px-4 py-3 bg-gray-200 focus:bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-400"
+              type="text" placeholder="Email" />
+          </div>
+
+          <div class="relative">
+            <input formControlName="password" [type]="showPassword ? 'text' : 'password'"
+              class="w-full text-sm px-4 py-3 bg-gray-200 focus:bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-400 pr-10"
+              placeholder="Password" />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg (click)="togglePasswordVisibility()" [class.hidden]="showPassword"
+                class="h-4 text-purple-700 cursor-pointer" fill="none" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 576 512">
+                <path fill="currentColor"
+                  d="M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400a144 144 0 1 1 144-144 143.93 143.93 0 0 1-144 144zm0-240a95.31 95.31 0 0 0-25.31 3.79a47.85 47.85 0 0 1-66.9 66.9A95.78 95.78 0 1 0 288 160z">
+                </path>
+              </svg>
+              <svg (click)="togglePasswordVisibility()" [class.hidden]="!showPassword"
+                class="h-4 text-purple-700 cursor-pointer" fill="none" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 448 512">
+                <path fill="currentColor"
+                  d="M225.92 360.08a119.93 119.93 0 0 1-47.93-11.02A96.07 96.07 0 0 0 111.55 277.43a119.98 119.98 0 0 1 0-78.86 96.07 96.07 0 0 0 66.43-71.63A119.93 119.93 0 0 1 225.92 152a95.68 95.68 0 0 1 87.42 68.63A95.66 95.66 0 0 1 256 288a95.68 95.68 0 0 1-30.08 72.08zm-56.8-78.69a48.02 48.02 0 0 1 24.68-24.69A80.07 80.07 0 0 1 192 288a80.07 80.07 0 0 1 80-80 80.07 80.07 0 0 1 24.68 4.69A48.02 48.02 0 0 1 168.12 281.39z">
+                </path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="flex items-center text-sm">
+              <input formControlName="rememberMe" type="checkbox"
+                class="w-4 h-4 text-purple-700 border-gray-300 rounded" />
+              <span class="ml-2 text-gray-600">Remember Me</span>
+            </label>
+
+            <a href="#" routerLink="/auth/request-password" class="text-sm text-purple-700 hover:text-purple-700">Forgot
+              Password?</a>
+          </div>
+
+          <button type="submit" [disabled]="loading"
+            class="w-full py-3 text-sm text-white bg-purple-700 hover:bg-purple-800 rounded-lg focus:outline-none transition cursor-pointer">
+            <span *ngIf="loading">Loading...</span>
+            <span *ngIf="!loading">Sign In</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
 </div>
