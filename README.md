@@ -30,7 +30,21 @@ English | [中文](./README_zh.md)
 # Metad Analytics Platform
 
 ## 💡 What's New
+### ChatBI: Natural Language-Driven Business Intelligence Analysis
 
+[ChatBI](https://mtda.cloud/en/docs/chatbi) is an innovative feature we are introducing, combining chat functionality with business intelligence (BI) analysis capabilities. It offers users a more intuitive and convenient data analysis experience through natural language interaction. The main features of ChatBI include:
+
+1. **Natural Language Querying**: Users can ask questions in natural language and get data analysis results directly without needing to understand complex query languages. This feature allows even non-technical personnel to easily obtain data insights.
+
+2. **Multi-Turn Conversations**: Supports multi-turn conversations, allowing for continuous, context-aware interactions. The system remembers previous conversation content, enabling deeper and more precise data analysis.
+
+3. **Support for Various Large Language Models**: ChatBI integrates multiple mainstream large language models, such as ChatGPT and Llama, enhancing the accuracy of natural language understanding and generation to meet different business needs and language support.
+4. **Security and Access Control**: Provides strict data security and access control to ensure the protection of sensitive data.
+5. **Integration with Multiple Data Sources**: Supports connection and integration with data from various sources, such as databases, cloud services, and SAP ERP systems, providing users with rich data sources.
+
+[More details](https://mtda.cloud/en/blog/releases-2-5-chatbi/)
+
+### Copilot Command Agents
 🎉🎉 New version brings several exciting new features, particularly a comprehensive upgrade to [Copilot Command](https://www.mtda.cloud/en/docs/server/copilot/#commands) and [Business Roles](https://www.mtda.cloud/en/docs/server/copilot/#business-roles).
 
 - [New Version 2.4 - Copilot Multi-Agent Command](https://www.mtda.cloud/en/blog/releases-2-4-copilot-multi-agent).

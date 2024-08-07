@@ -60,7 +60,7 @@ export function injectCreateWidgetGraph() {
         let context = null
         if (widget()?.dataSettings?.entitySet) {
           const entityType = await firstValueFrom(
-            storyService.selectEntityType(pick<DataSettings>(widget().dataSettings, 'dataSource', 'entitySet'))
+            storyService.selectEntityType(pick(widget().dataSettings, 'dataSource', 'entitySet') as DataSettings)
           )
           if (entityType) {
             //@todo 还需要 modelId 信息

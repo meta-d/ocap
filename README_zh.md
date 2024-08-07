@@ -12,6 +12,19 @@
 
 ## 💡 新功能
 
+### ChatBI：自然语言驱动的商业智能分析
+
+[ChatBI](https://mtda.cloud/docs/chatbi) 是我们新推出的一个创新功能，它将聊天功能与商业智能（BI）分析能力相结合，通过自然语言交互的方式，为用户提供更加直观和便捷的数据分析体验。以下是 ChatBI 的主要特点：
+1. **自然语言查询 (Natural Language Querying)**：用户可以使用自然语言提问，直接获取数据分析结果，无需掌握复杂的查询语言。这一功能让即便是非技术人员，也能轻松获取数据洞察。
+2. **多轮对话 (Multi-Turn Conversations)**：支持多轮对话功能，允许用户进行连续的、上下文相关的交互。系统能够记住前面的对话内容，使数据分析更加深入和精准。
+3. **支持各种大语言模型 (Various Large Language Models)**：ChatBI 集成了多种主流大语言模型，如 ChatGPT 和 Llama，提升了自然语言理解和生成的准确性，满足不同业务需求和语言支持。
+4. **安全与权限管理 (Security and Access Control)**：提供严格的数据安全和权限管理，确保敏感数据的保护。
+5. **集成多数据源 (Integration with Multiple Data Sources)**：支持连接和集成来自不同来源的数据，如数据库、云端服务、SAP ERP 系统等，为用户提供丰富的数据来源。
+
+[更多详情](https://mtda.cloud/blog/releases-2-5-chatbi)
+
+### 副驾命令智能体
+
 🎉🎉 新版本带来了一些令人兴奋的新功能，特别是对 [Copilot Command](https://www.mtda.cloud/docs/server/copilot/#命令) 和 [Business Roles](https://www.mtda.cloud/docs/server/copilot/#业务角色) 的全面升级。
 
 - [新版本 2.4 - 副驾多智能体命令](https://www.mtda.cloud/blog/releases-2-4-copilot-multi-agent/)。

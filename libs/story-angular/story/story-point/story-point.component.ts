@@ -438,10 +438,10 @@ export class NxStoryPointComponent {
       })
     } else {
       this.storyPointService.createWidget({
-        ...(this.storyService.creatingWidget ?? {}),
+        ...(this.storyService.creatingWidgetSignal() ?? {}),
         dataSettings: {
           ...dataSettings,
-          ...(this.storyService.creatingWidget?.dataSettings ?? {})
+          ...(this.storyService.creatingWidgetSignal()?.dataSettings ?? {})
         },
         position: {
           x: item.x,

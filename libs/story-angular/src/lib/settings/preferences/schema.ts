@@ -29,7 +29,7 @@ export function PreferencesSchema(Story: any) {
           key: 'storyStyling',
           type: 'styling',
           props: {
-            label: Story?.Widgets?.Common?.StoryStyling ?? 'Story Styling',
+            label: Story?.Widgets?.Common?.StoryStyling ?? 'Story Styles',
             expanded: false
           }
         },
