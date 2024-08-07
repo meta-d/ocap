@@ -23,6 +23,8 @@
 
 [更多详情](https://mtda.cloud/blog/releases-2-5-chatbi)
 
+[ChatBI_Demo.mp4](https://github.com/user-attachments/assets/5f7c84be-2307-43cf-8342-bce39524e37d)
+
 ### 副驾命令智能体
 
 🎉🎉 新版本带来了一些令人兴奋的新功能，特别是对 [Copilot Command](https://www.mtda.cloud/docs/server/copilot/#命令) 和 [Business Roles](https://www.mtda.cloud/docs/server/copilot/#业务角色) 的全面升级。
