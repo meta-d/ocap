@@ -43,6 +43,8 @@ import { CopilotExampleModule } from './copilot-example'
 import { RedisModule } from './core/redis.module'
 import { CqrsModule } from '@nestjs/cqrs'
 import { CopilotRoleModule } from './copilot-role/copilot-role.module'
+import { CopilotUserModule } from './copilot-user/copilot-user.module'
+import { CopilotOrganizationModule } from './copilot-organization/copilot-organization.module'
 
 @Module({
   imports: [
@@ -100,7 +102,9 @@ import { CopilotRoleModule } from './copilot-role/copilot-role.module'
     CopilotExampleModule,
     CopilotRoleModule,
     StorageFileModule,
-    AIModule
+    AIModule,
+    CopilotUserModule,
+    CopilotOrganizationModule
   ],
   controllers: [AppController],
   providers: [AppService],

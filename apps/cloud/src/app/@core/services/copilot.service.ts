@@ -11,6 +11,8 @@ import { combineLatest, distinctUntilChanged, filter, firstValueFrom, map, start
 import { ICopilot as IServerCopilot } from '../types'
 import { CopilotRoleService } from './copilot-role.service'
 import { Store } from './store.service'
+import { AgentService } from './agent.service'
+import { pick } from '@metad/ocap-core'
 
 const baseUrl = environment.API_BASE_URL
 const API_CHAT = constructUrl(baseUrl) + '/api/ai/chat'
@@ -23,8 +25,9 @@ export class PACCopilotService extends NgmCopilotService {
   readonly authService = inject(AuthService)
   readonly roleService = inject(CopilotRoleService)
   readonly router = inject(Router)
+  readonly #agentService = inject(AgentService)
 
-  readonly copilots = signal<ICopilot[]>(null)
+  readonly copilots = signal<(ICopilot & {organizationId: string})[]>(null)
 
   // Init copilot config
   private _userSub = this.#store.user$
@@ -34,7 +37,7 @@ export class PACCopilotService extends NgmCopilotService {
       distinctUntilChanged(),
       filter(Boolean),
       switchMap(() => this.#store.selectOrganizationId()),
-      switchMap(() => this.httpClient.get<{ total: number; items: ICopilot[] }>(API_PREFIX + '/copilot')),
+      switchMap(() => this.httpClient.get<{ total: number; items: (ICopilot & {organizationId: string})[] }>(API_PREFIX + '/copilot')),
       takeUntilDestroyed()
     )
     .subscribe((result) => {
@@ -78,6 +81,17 @@ export class PACCopilotService extends NgmCopilotService {
       }))
     )
     .subscribe((options) => this.clientOptions$.next(options))
+
+  private tokenSub = this.tokenUsage$.pipe(
+    takeUntilDestroyed(),
+  ).subscribe((usage) => {
+    console.log(usage)
+    this.#agentService.emit('copilot', {
+      organizationId: this.#store.organizationId,
+      copilot: pick(usage.copilot, 'organizationId', 'provider', 'id'),
+      tokenUsed: usage.tokenUsed
+    })
+  })
 
   constructor() {
     super()
@@ -138,7 +152,7 @@ export class PACCopilotService extends NgmCopilotService {
       )
     )
 
-    this.copilots.set(items as ICopilot[])
+    this.copilots.set(items as (ICopilot & {organizationId: string})[])
   }
 
   enableCopilot(): void {

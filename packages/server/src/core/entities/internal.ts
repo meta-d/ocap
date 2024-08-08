@@ -36,9 +36,10 @@ export * from '../../language/language.entity'
 export * from '../../copilot/copilot.entity'
 export * from '../../copilot-example/copilot-example.entity'
 export * from '../../copilot-role/copilot-role.entity'
+export * from '../../copilot-organization/copilot-organization.entity'
+export * from '../../copilot-user/copilot-user.entity'
 export * from '../../storage-file/storage-file.entity'
 export * from '../../storage-file/storage-file.subscriber'
 export * from '../../secret-token/secret-token.entity'
 export * from '../../tags/tag.subscriber'
 //core subscribers
-

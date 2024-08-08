@@ -4,7 +4,7 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { distinctUntilChanged, startWith } from 'rxjs'
-import { AiProviderRole, PACCopilotService, ToastrService, getErrorMessage } from '../../../../@core'
+import { AiProviderRole, PACCopilotService, Store, ToastrService, getErrorMessage } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 
 @Component({
@@ -16,6 +16,7 @@ import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 })
 export class CopilotBasicComponent extends TranslationBaseComponent {
   AiProvider = AiProvider
+  readonly #store = inject(Store)
   readonly copilotService = inject(PACCopilotService)
   readonly _toastrService = inject(ToastrService)
 
@@ -89,7 +90,7 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
     super()
 
     effect(() => {
-      const items = this.copilotService.copilots()
+      const items = this.copilotService.copilots()?.filter((item) => item.organizationId === this.#store.organizationId)
       this.formGroup.reset()
       if (items) {
         const primary = items.find(({ role }) => role === AiProviderRole.Primary)

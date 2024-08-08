@@ -136,7 +136,7 @@ export class ChatbiService {
       takeUntilDestroyed()
     )
     .subscribe((conversation) => {
-      this.pristineConversation.set(conversation)
+      this.pristineConversation.set(structuredClone(conversation))
       this._updateConversation(conversation.key, (state) => conversation)
     })
 

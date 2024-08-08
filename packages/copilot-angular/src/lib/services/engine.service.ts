@@ -270,6 +270,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
         name: 'free',
         description: 'free chat',
         hidden: true,
+        agent: {
+          type: CopilotAgentType.Graph
+        },
         createGraph: this.createChatAgent
       }
       this.upsertConversation({

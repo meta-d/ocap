@@ -5,6 +5,9 @@ import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
 import { AI_PROVIDERS } from './providers'
 import { AiService } from './ai.service'
+import { CopilotUserService } from '../copilot-user/index'
+import { RequestContext } from '../core'
+import { CopilotOrganizationService } from '../copilot-organization/index'
 
 function chatCompletionsUrl(copilot: ICopilot, path?: string) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -20,7 +23,10 @@ export class AIController {
 
 	constructor(
 		private readonly aiService: AiService,
-		private readonly copilotService: CopilotService) {}
+		private readonly copilotService: CopilotService,
+		private readonly copilotUserService: CopilotUserService,
+		private readonly copilotOrganizationService: CopilotOrganizationService,
+	) {}
 
 	@ApiOperation({ summary: 'Chat with AI provider apis' })
 	@ApiResponse({
@@ -141,10 +147,31 @@ failed: ${error.message}`)
 	}
 
 	async getCopilot(role: AiProviderRole) {
-		const result = await this.copilotService.findOneByRole(role)
-		if (!result?.enabled) {
-			throw new Error('No copilot found')
+		const userId = RequestContext.currentUserId()
+		const organizationId = RequestContext.getOrganizationId()
+		let result = await this.copilotService.findOneByRole(role)
+		if (result?.enabled) {
+			// Check token usage in organizaiton
+			const usage = await this.copilotUserService.findOneOrFail({ userId, organizationId, provider: result.provider })
+			if (usage.success && usage.record.tokenLimit) {
+				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
+					throw new Error('Token usage exceeds limit')
+				}
+			}
+		} else {
+			result = await this.copilotService.findTenantOneByRole(role)
+			if (!result?.enabled) {
+				throw new Error('No copilot found')
+			}
+			// Check token usage in tenant
+			const usage = await this.copilotOrganizationService.findOneOrFail({ organizationId, provider: result.provider })
+			if (usage.success && usage.record.tokenLimit) {
+				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
+					throw new Error('Token usage exceeds limit')
+				}
+			}
 		}
+
 		return result
 	}
 }
@@ -162,15 +189,18 @@ export async function streamToResponse(
 	  ...(init?.headers ?? {}),
 	});
   
+	let collectedValue = ''; // 初始化收集字符串变量
 	const reader = res.body.getReader();
 	async function read() {
 	  const { done, value } = await reader.read()
 	  if (done) {
 		response.end();
+		console.log(collectedValue); // 打印收集的值
 		return;
 	  }
 	  if (value) {
 		response.write(value);
+		collectedValue += new TextDecoder().decode(value); // 将值转换为字符串并添加到收集变量中
 	  }
 	  await read();
 	}

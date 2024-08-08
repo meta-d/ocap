@@ -30,6 +30,8 @@ import {
 	CopilotRole,
 	StorageFile,
 	SecretToken,
+	CopilotUser,
+	CopilotOrganization
 } from './internal';
 
 export const coreEntities = [
@@ -61,6 +63,8 @@ export const coreEntities = [
 	CustomSmtp,
 	Copilot,
 	CopilotExample,
+	CopilotUser,
+	CopilotOrganization,
 	CopilotRole,
 	StorageFile,
 	SecretToken
