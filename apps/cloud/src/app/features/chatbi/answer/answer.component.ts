@@ -17,7 +17,7 @@ import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
-import { CalculatedProperty, CalculationType, DataSettings, Indicator, Syntax } from '@metad/ocap-core'
+import { CalculatedProperty, CalculationType, DataSettings, Indicator, ISlicer, isString, Syntax } from '@metad/ocap-core'
 import { WidgetComponentType } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -92,11 +92,15 @@ export class ChatbiAnswerComponent {
   )
 
   toArray(data: JSONValue) {
-    return Array.isArray(data) ? data : []
+    return (Array.isArray(data) ? data : []) as Array<string | QuestionAnswer>
   }
 
-  typeof(data: JSONValue) {
+  typeof(data: string | QuestionAnswer) {
     return typeof data
+  }
+
+  trackByKey(item: string | QuestionAnswer) {
+    return isString(item) ? item : item.key
   }
 
   onCopy(copyButton) {
@@ -106,11 +110,11 @@ export class ChatbiAnswerComponent {
     }, 3000)
   }
 
-  isAnswer(value: JSONValue): QuestionAnswer {
+  isAnswer(value: string | QuestionAnswer): QuestionAnswer {
     return value as unknown as QuestionAnswer
   }
 
-  openExplore(item: JSONValue) {
+  openExplore(item: string | QuestionAnswer) {
     this.homeComponent.openExplore(this.message(), item as unknown as QuestionAnswer)
   }
 
@@ -223,5 +227,9 @@ export class ChatbiAnswerComponent {
           })
         }
       })
+  }
+
+  updateSlicers(slicers: ISlicer[]) {
+    this.chatbiService.updateQuestionAnswer(this.message().id, { slicers })
   }
 }

@@ -124,7 +124,9 @@ export class ChatbiService {
       map(([prev, curr]) => {
         // Set pristine conversation when changed to new one.
         if (prev?.key !== curr?.key) {
-          this.pristineConversation.set(curr)
+          if (curr) {
+            this.pristineConversation.set(structuredClone(curr))
+          }
         }
         return curr
       }),
@@ -266,7 +268,7 @@ export class ChatbiService {
     })
   }
 
-  updateQuestionAnswer(key: string, answer: QuestionAnswer) {
+  updateQuestionAnswer(key: string, answer: Partial<QuestionAnswer>) {
     this.updateConversation((state) => {
       const index = state.messages.findIndex((message) => message.id === key)
       if (index > -1) {
@@ -278,11 +280,11 @@ export class ChatbiService {
               : {
                   ...item,
                   ...answer,
-                  dataSettings: {
+                  dataSettings: answer.dataSettings ? {
                     ...answer.dataSettings,
                     selectionVariant: null
-                  },
-                  slicers: answer.dataSettings.selectionVariant?.selectOptions ?? []
+                  } : item.dataSettings,
+                  slicers: answer.slicers ?? answer.dataSettings.selectionVariant?.selectOptions ?? item.slicers
                 }
           )
         }
