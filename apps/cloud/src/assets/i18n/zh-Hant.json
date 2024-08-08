@@ -605,7 +605,6 @@
       "DescriptionPlaceholder": "可選，語義模型的詳細描述",
       "UploadModel": "上載模型",
       "SaveAsDefaultCube": "保存為默認數據集",
-      
       "QUERY": {
         "TITLE": "查詢",
         "SaveAsModel": "另存為模型",
@@ -1406,7 +1405,6 @@
         "connections": "系統連接"
       }
     },
-
     "ORGANIZATIONS_PAGE": {
       "PERMISSIONS": {
         "ADMIN_DASHBOARD_VIEW": "查看 Admin 儀表盤",
@@ -1563,7 +1561,8 @@
       "SUBMIT": "登錄",
       "FEISHU": "飛書",
       "DINGTALK": "釘釘",
-      "GITHUB": "Github"
+      "GITHUB": "Github",
+      "INTRODUCE": "登入您的帳戶，探索一個充滿可能性的世界。 你的旅程從這裡開始。"
     },
     "REGISTER": {
       "REGISTER": "註冊",
@@ -1605,7 +1604,6 @@
       }
     },
     "WIDGETS": {
-
       "FilterBar": {
         "Query": "查詢"
       },
@@ -1618,7 +1616,6 @@
       "CANCEL": "取消",
       "DELETE": "刪除"
     }
-    
   },
   "STORY_DESIGNER": {
     "BUILDER_TITLE": "構建",
@@ -1737,7 +1734,6 @@
         "Indicators": "明細指標",
         "LookBack": "回顧期間數"
       },
-      
       "IFrame": {
         "SRC": "src"
       },
@@ -1834,11 +1830,9 @@
           "FontFamily_Song": "宋體"
         }
       },
-
       "CANVAS": {
         "TITLE": "畫布"
       },
-
       "STORY_PAGE": {
         "PAGE_SIZE": "頁面大小",
         "DefaultBackground": "預設背景",
@@ -1848,7 +1842,6 @@
         "PresetBackground": "預設背景",
         "PageType": "類型"
       },
-    
       "ECHARTS": {
         "Common": {
           "Align": "對齊",
@@ -2210,7 +2203,6 @@
             "TITLE": "單個體樣式",
             "OPACITY": "不透明度"
           },
-
           "LABEL": {
             "TITLE": "標簽"
           },
@@ -2250,7 +2242,7 @@
         },
         "SeriesStyle": {
           "Title": "系列屬性",
-          "HasAll":"有 All 成員",
+          "HasAll": "有 All 成員",
           "FunnelAlign": "漏鬥對齊",
           "BoundaryGap": "邊界間隙"
         },
@@ -2661,7 +2653,6 @@
       "Compare": "比",
       "To": "較",
       "BaseDimension": "基準維度",
-      
       "SetNoDataasZero": "將無數據當作零",
       "CalculateasPercentage": "計算為百分比",
       "DirectDivide": "直接除",
@@ -2737,7 +2728,6 @@
         "BottomPercent": "後百分比的",
         "TopSum": "前總數",
         "BottomSum": "後總數"
-
       },
       "SLICER": {
         "ADVANCED_SLICER": "高級切片器",
@@ -2989,11 +2979,10 @@
       "ROLE": "選擇角色"
     }
   },
-  
   "EMAIL_TEMPLATES_PAGE": {
     "TEMPLATE_NAMES": {
       "password": "密碼重置",
-			"welcome-user": "歡迎用戶",
+      "welcome-user": "歡迎用戶",
       "invite-user": "邀請用戶",
       "TEMPLATE_NAMES": "模板名稱"
     }

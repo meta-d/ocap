@@ -588,7 +588,6 @@
       "DescriptionPlaceholder": "可选，语义模型的详细描述",
       "UploadModel": "上载模型",
       "SaveAsDefaultCube": "保存为默认数据集",
-      
       "QUERY": {
         "TITLE": "查询",
         "SaveAsModel": "另存为模型",
@@ -1346,7 +1345,6 @@
         "connections": "系统连接"
       }
     },
-
     "ORGANIZATIONS_PAGE": {
       "PERMISSIONS": {
         "ADMIN_DASHBOARD_VIEW": "查看 Admin 仪表盘",
@@ -1543,7 +1541,6 @@
       }
     },
     "WIDGETS": {
-
       "FilterBar": {
         "Query": "查询"
       },
@@ -1556,7 +1553,6 @@
       "CANCEL": "取消",
       "DELETE": "删除"
     }
-    
   },
   "STORY_DESIGNER": {
     "BUILDER_TITLE": "构建",
@@ -1675,7 +1671,6 @@
         "Indicators": "明细指标",
         "LookBack": "回顾期间数"
       },
-      
       "IFrame": {
         "SRC": "src"
       },
@@ -1772,11 +1767,9 @@
           "FontFamily_Song": "宋体"
         }
       },
-
       "CANVAS": {
         "TITLE": "画布"
       },
-
       "STORY_PAGE": {
         "PAGE_SIZE": "页面大小",
         "DefaultBackground": "预设背景",
@@ -1786,7 +1779,6 @@
         "PresetBackground": "预设背景",
         "PageType": "类型"
       },
-    
       "ECHARTS": {
         "Common": {
           "Align": "对齐",
@@ -2148,7 +2140,6 @@
             "TITLE": "单个体样式",
             "OPACITY": "不透明度"
           },
-
           "LABEL": {
             "TITLE": "标签"
           },
@@ -2188,7 +2179,7 @@
         },
         "SeriesStyle": {
           "Title": "系列属性",
-          "HasAll":"有 All 成员",
+          "HasAll": "有 All 成员",
           "FunnelAlign": "漏斗对齐",
           "BoundaryGap": "边界间隙"
         },
@@ -2599,7 +2590,6 @@
       "Compare": "比",
       "To": "较",
       "BaseDimension": "基准维度",
-      
       "SetNoDataasZero": "将无数据当作零",
       "CalculateasPercentage": "计算为百分比",
       "DirectDivide": "直接除",
@@ -2675,7 +2665,6 @@
         "BottomPercent": "后百分比的",
         "TopSum": "前总数",
         "BottomSum": "后总数"
-
       },
       "SLICER": {
         "ADVANCED_SLICER": "高级切片器",
@@ -2928,11 +2917,10 @@
       "ROLE": "选择角色"
     }
   },
-  
   "EMAIL_TEMPLATES_PAGE": {
     "TEMPLATE_NAMES": {
       "password": "密码重置",
-			"welcome-user": "欢迎用户",
+      "welcome-user": "欢迎用户",
       "invite-user": "邀请用户",
       "TEMPLATE_NAMES": "模板名称"
     }

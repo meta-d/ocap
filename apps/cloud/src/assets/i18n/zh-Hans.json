@@ -46,7 +46,7 @@
       "Cube": "多维数据集",
       "Tags": "标签",
       "DATA": "数据",
-      "DataSource":"数据源",
+      "DataSource": "数据源",
       "DATA_SOURCE": "数据源",
       "DATA_SOURCES": "数据源",
       "DELETE": "删除",
@@ -660,7 +660,6 @@
       "Synchronized": "已同步",
       "SyncMembersJobFinished": "同步成员任务已完成",
       "SyncMembersJobRunning": "同步成员任务正在运行",
-
       "QUERY": {
         "TITLE": "查询",
         "SaveAsModel": "另存为模型",
@@ -1517,7 +1516,6 @@
         "connections": "系统连接"
       }
     },
-
     "ORGANIZATIONS_PAGE": {
       "PERMISSIONS": {
         "ADMIN_DASHBOARD_VIEW": "查看 Admin 仪表盘",
@@ -1674,7 +1672,8 @@
       "SUBMIT": "登录",
       "FEISHU": "飞书",
       "DINGTALK": "钉钉",
-      "GITHUB": "Github"
+      "GITHUB": "Github",
+      "INTRODUCE": "登录您的帐户，探索一个充满可能性的世界。你的旅程从这里开始。"
     },
     "REGISTER": {
       "REGISTER": "注册",
@@ -1716,7 +1715,6 @@
       }
     },
     "WIDGETS": {
-
       "FilterBar": {
         "Query": "查询"
       },
@@ -1729,7 +1727,6 @@
       "CANCEL": "取消",
       "DELETE": "删除"
     }
-    
   },
   "STORY_DESIGNER": {
     "BUILDER_TITLE": "构建",
@@ -1848,7 +1845,6 @@
         "Indicators": "明细指标",
         "LookBack": "回顾期间数"
       },
-      
       "IFrame": {
         "SRC": "src"
       },
@@ -1945,11 +1941,9 @@
           "FontFamily_Song": "宋体"
         }
       },
-
       "CANVAS": {
         "TITLE": "画布"
       },
-
       "STORY_PAGE": {
         "PAGE_SIZE": "页面大小",
         "DefaultBackground": "预设背景",
@@ -1959,7 +1953,6 @@
         "PresetBackground": "预设背景",
         "PageType": "类型"
       },
-    
       "ECHARTS": {
         "Common": {
           "Align": "对齐",
@@ -2321,7 +2314,6 @@
             "TITLE": "单个体样式",
             "OPACITY": "不透明度"
           },
-
           "LABEL": {
             "TITLE": "标签"
           },
@@ -2361,7 +2353,7 @@
         },
         "SeriesStyle": {
           "Title": "系列属性",
-          "HasAll":"有 All 成员",
+          "HasAll": "有 All 成员",
           "FunnelAlign": "漏斗对齐",
           "BoundaryGap": "边界间隙"
         },
@@ -2665,24 +2657,12 @@
       "Indicator": "指标",
       "Calendar": "日历",
       "Address.Country": "国家"
-
     },
-    "ENTITY": {
-  
-    },
-    "PROPERTY": {
-      
-    },
-    "CALCULATION": {
-      
-    },
-
-    "VALUE_HELP": {
-
-    },
-    "SELECTION": {
-
-    },
+    "ENTITY": {},
+    "PROPERTY": {},
+    "CALCULATION": {},
+    "VALUE_HELP": {},
+    "SELECTION": {},
     "COUNTDOWN_CONFIRMATION": {
       "CONFIRM": "确认",
       "WAS": "秒",
@@ -2705,10 +2685,7 @@
     "EDITOR": {
       "EDIT": "编辑"
     },
-   
-    "Table": {
-
-    }
+    "Table": {}
   },
   "FORMLY": {
     "COMMON": {
@@ -2867,11 +2844,10 @@
       "ROLE": "选择角色"
     }
   },
-  
   "EMAIL_TEMPLATES_PAGE": {
     "TEMPLATE_NAMES": {
       "password": "密码重置",
-			"welcome-user": "欢迎用户",
+      "welcome-user": "欢迎用户",
       "invite-user": "邀请用户",
       "TEMPLATE_NAMES": "模板名称"
     }

@@ -1,77 +1,97 @@
-<!-- Import Tailwind CSS -->
-<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+<div class="font-[sans-serif]">
+  <button (click)="toggleTheme()" class="absolute top-4 right-4 p-2 bg-gray-300 rounded-full dark:bg-gray-700">
+    <span *ngIf="isDarkTheme">🌙</span>
+    <span *ngIf="!isDarkTheme">☀️</span>
+  </button>
 
-<!-- Component Template -->
-<div
-  class="bg-purple-900 absolute top-0 left-0 bg-gradient-to-b from-gray-900 via-gray-900 to-purple-800 bottom-0 leading-5 h-full w-full overflow-hidden">
-</div>
-
-<div class="relative min-h-screen sm:flex sm:flex-row justify-center bg-transparent rounded-3xl shadow-xl">
-  <div class="flex-col flex self-center lg:px-14 sm:max-w-4xl xl:max-w-md z-10">
-    <div class="self-start hidden lg:flex flex-col text-gray-300">
-      <h1 class="my-3 font-semibold text-4xl">元数信息平台</h1>
-      <p class="pr-3 text-sm opacity-75">Open-Source Analytics Platform for Enterprise Data Analysis, Indicator
-        Management and Reporting</p>
-    </div>
-  </div>
-
-  <div class="flex justify-center self-center z-10">
-    <div class="p-12 bg-white mx-auto rounded-3xl w-96">
-      <div class="mb-7">
-        <h3 class="font-semibold text-2xl text-gray-800">Sign In</h3>
-        <p class="text-gray-400">Don't have an account? <a href="#" routerLink="/auth/register"
-            class="text-sm text-purple-700 hover:text-purple-700">Sign Up</a></p>
-      </div>
-
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="space-y-6">
-          <div>
-            <input formControlName="userName"
-              class="w-full text-sm px-4 py-3 bg-gray-200 focus:bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-400"
-              type="text" placeholder="Email" />
-          </div>
-
-          <div class="relative">
-            <input formControlName="password" [type]="showPassword ? 'text' : 'password'"
-              class="w-full text-sm px-4 py-3 bg-gray-200 focus:bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-400 pr-10"
-              placeholder="Password" />
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-              <svg (click)="togglePasswordVisibility()" [class.hidden]="showPassword"
-                class="h-4 text-purple-700 cursor-pointer" fill="none" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 576 512">
-                <path fill="currentColor"
-                  d="M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400a144 144 0 1 1 144-144 143.93 143.93 0 0 1-144 144zm0-240a95.31 95.31 0 0 0-25.31 3.79a47.85 47.85 0 0 1-66.9 66.9A95.78 95.78 0 1 0 288 160z">
-                </path>
-              </svg>
-              <svg (click)="togglePasswordVisibility()" [class.hidden]="!showPassword"
-                class="h-4 text-purple-700 cursor-pointer" fill="none" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 448 512">
-                <path fill="currentColor"
-                  d="M225.92 360.08a119.93 119.93 0 0 1-47.93-11.02A96.07 96.07 0 0 0 111.55 277.43a119.98 119.98 0 0 1 0-78.86 96.07 96.07 0 0 0 66.43-71.63A119.93 119.93 0 0 1 225.92 152a95.68 95.68 0 0 1 87.42 68.63A95.66 95.66 0 0 1 256 288a95.68 95.68 0 0 1-30.08 72.08zm-56.8-78.69a48.02 48.02 0 0 1 24.68-24.69A80.07 80.07 0 0 1 192 288a80.07 80.07 0 0 1 80-80 80.07 80.07 0 0 1 24.68 4.69A48.02 48.02 0 0 1 168.12 281.39z">
-                </path>
-              </svg>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <label class="flex items-center text-sm">
-              <input formControlName="rememberMe" type="checkbox"
-                class="w-4 h-4 text-purple-700 border-gray-300 rounded" />
-              <span class="ml-2 text-gray-600">Remember Me</span>
-            </label>
-
-            <a href="#" routerLink="/auth/request-password" class="text-sm text-purple-700 hover:text-purple-700">Forgot
-              Password?</a>
-          </div>
-
-          <button type="submit" [disabled]="loading"
-            class="w-full py-3 text-sm text-white bg-purple-700 hover:bg-purple-800 rounded-lg focus:outline-none transition cursor-pointer">
-            <span *ngIf="loading">Loading...</span>
-            <span *ngIf="!loading">Sign In</span>
-          </button>
+  <div class="grid md:grid-cols-2 items-center gap-4 w-full">
+    <div class="p-6 w-full max-w-md mx-auto">
+      <form class="space-y-4">
+        <div class="mb-8 text-center">
+          <h3 class="text-gray-800 text-3xl font-extrabold dark:text-white">{{ 'Auth.Signin' | translate: {Default:
+            'Sign in'} }}</h3>
+          <p class="text-gray-500 text-sm mt-4 leading-relaxed dark:text-gray-300">
+            {{
+            'AUTH.LOGIN.INTRODUCE' |
+            translate: {Default:
+            'Sign in to your account and explore a world of possibilities. Your journey begins here.'} }}
+          </p>
         </div>
 
+        <div>
+          <label class="text-gray-800 text-sm mb-2 block dark:text-gray-300">{{ 'AUTH.LOGIN.ACCOUNT' | translate:
+            {Default: 'Account'} }}</label>
+          <div class="relative flex items-center">
+            <input name="username" type="text" required
+              class="w-full text-sm text-gray-800 border border-gray-300 px-4 py-3 rounded-lg outline-blue-600 dark:bg-gray-800 dark:text-gray-200"
+              [placeholder]="'AUTH.LOGIN.USERNAME' | translate: {Default: 'Username / Email'}" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb" class="w-[18px] h-[18px] absolute right-4"
+              viewBox="0 0 24 24">
+              <circle cx="10" cy="7" r="6"></circle>
+              <path
+                d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z">
+              </path>
+            </svg>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-gray-800 text-sm mb-2 block dark:text-gray-300">{{ 'AUTH.REGISTER.PASSWORD' | translate:
+            {Default: 'Password'} }}</label>
+          <div class="relative flex items-center">
+            <input [type]="showPassword ? 'text' : 'password'" name="password" required
+              class="w-full text-sm text-gray-800 border border-gray-300 px-4 py-3 rounded-lg outline-blue-600 dark:bg-gray-800 dark:text-gray-200"
+              [placeholder]="'AUTH.LOGIN.PASSWORD' | translate: {Default: 'Password'}" />
+            <svg (click)="togglePasswordVisibility()" xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb"
+              class="w-[18px] h-[18px] absolute right-4 cursor-pointer" viewBox="0 0 128 128">
+              <path
+                d="M64 104C22.127 104 1.367 67.496.504 65.943a4 4 0 0 1 0-3.887C1.367 60.504 22.127 24 64 24s62.633 36.504 63.496 38.057a4 4 0 0 1 0 3.887C126.633 67.496 105.873 104 64 104zM8.707 63.994C13.465 71.205 32.146 96 64 96c31.955 0 50.553-24.775 55.293-31.994C114.535 56.795 95.854 32 64 32 32.045 32 13.447 56.775 8.707 63.994zM64 88c-13.234 0-24-10.766-24-24s10.766-24 24-24 24 10.766 24 24-10.766 24-24 24zm0-40c-8.822 0-16 7.178-16 16s7.178 16 16 16 16-7.178 16-16-7.178-16-16-16z">
+              </path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center">
+            <input id="remember-me" name="remember-me" type="checkbox"
+              class="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-800 dark:text-gray-200" />
+            <label for="remember-me" class="ml-3 block text-sm text-gray-800 dark:text-gray-300">{{
+              'AUTH.LOGIN.REMEMBER' |
+              translate: {Default:
+              'Remember me'} }}</label>
+          </div>
+
+          <div class="text-sm">
+            <a routerLink="/auth/request-password"
+              class="text-blue-600 hover:underline font-semibold dark:text-blue-400">{{
+              'AUTH.LOGIN.FORGOT-PASSWORD' |
+              translate: {Default:
+              'Forgot your password?'} }}</a>
+          </div>
+        </div>
+
+        <div class="!mt-8">
+          <button type="submit"
+            class="w-full shadow-xl py-3 px-4 text-sm tracking-wide rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">{{
+            'AUTH.LOGIN.SUBMIT' |
+            translate: {Default:
+            'Log in'} }}</button>
+        </div>
+
+        <p class="text-sm !mt-8 text-center text-gray-800 dark:text-gray-300">
+          <a routerLink="/register"
+            class="text-blue-600 font-semibold hover:underline ml-1 whitespace-nowrap dark:text-blue-400">{{
+            'AUTH.LOGIN.SIGNUP' |
+            translate: {Default:
+            'Don\'t have an account? Register here'} }}</a>
+        </p>
       </form>
+    </div>
+
+    <div class="lg:h-[400px] md:h-[300px] max-md:mt-8">
+      <img src="https://readymadeui.com/login-image.webp" class="w-full h-full max-md:w-4/5 mx-auto block object-cover"
+        alt="Dining Experience" />
+
     </div>
   </div>
 </div>
