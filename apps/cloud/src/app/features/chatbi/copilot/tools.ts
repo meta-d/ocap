@@ -22,118 +22,129 @@ export function injectCreateChartTool() {
     schema: ChatAnswerSchema,
     func: async (answer) => {
       logger.debug(`Execute copilot action 'answerQuestion':`, answer)
+      try {
 
-      const entityType = chatbiService.entityType()
+        const entityType = chatbiService.entityType()
+        const indicators = chatbiService.indicators()
 
-      const { chartAnnotation, slicers, chartOptions } = transformCopilotChart(answer.chart, entityType)
-      const _slicers = (answer.slicers || slicers)?.map((slicer) => tryFixSlicer(slicer, entityType))
-      const chartTypes = [
-        {
-          name: translate.instant('PAC.ChatBI.Chart_Line', { Default: 'Line' }),
-          type: NxChartType.Line,
-          orient: ChartOrient.vertical,
-          chartOptions: {
-            legend: {
-              show: true
-            },
-            tooltip: {
-              appendToBody: true
-            }
-          }
-        },
-        {
-          name: translate.instant('PAC.ChatBI.Chart_Column', { Default: 'Column' }),
-          type: NxChartType.Bar,
-          orient: ChartOrient.vertical,
-          chartOptions: {
-            legend: {
-              show: true
-            },
-            tooltip: {
-              appendToBody: true
-            }
-          }
-        },
-        {
-          name: translate.instant('PAC.ChatBI.Chart_Bar', { Default: 'Bar' }),
-          type: NxChartType.Bar,
-          orient: ChartOrient.horizontal,
-          chartOptions: {
-            legend: {
-              show: true
-            },
-            tooltip: {
-              appendToBody: true
-            }
-          }
-        },
-        {
-          name: translate.instant('PAC.ChatBI.Chart_Pie', { Default: 'Pie' }),
-          type: NxChartType.Pie,
-          variant: PieVariant.None,
-          chartOptions: {
-            seriesStyle: {
-              __showitemStyle__: true,
-              itemStyle: {
-                borderColor: 'white',
-                borderWidth: 1,
-                borderRadius: 10
-              }
-            },
-            __showlegend__: true,
-            legend: {
-              type: 'scroll',
-              orient: 'vertical',
-              right: 0,
-              align: 'right'
-            },
-            tooltip: {
-              appendToBody: true
-            }
-          }
-        }
-      ]
-      const index = chartTypes.findIndex(
-        ({ type, orient }) => type === chartAnnotation.chartType.type && orient === chartAnnotation.chartType.orient
-      )
-      if (index > -1) {
-        chartAnnotation.chartType = chartTypes.splice(index, 1)[0]
-      }
-
-      chatbiService.addAiMessage(
-        [
-          answer.preface,
+        const { chartAnnotation, slicers, chartOptions } = transformCopilotChart(answer.chart, entityType)
+        const _slicers = (answer.slicers || slicers)?.map((slicer) => tryFixSlicer(slicer, entityType))
+        const chartTypes = [
           {
-            dataSettings: {
-              ...(answer.dataSettings ?? {}),
-              chartAnnotation,
-              presentationVariant: {
-                maxItems: answer.top,
-                groupBy: getEntityDimensions(entityType).map((property) => ({
-                  dimension: property.name,
-                  hierarchy: property.defaultHierarchy,
-                  level: null
-                }))
+            name: translate.instant('PAC.ChatBI.Chart_Line', { Default: 'Line' }),
+            type: NxChartType.Line,
+            orient: ChartOrient.vertical,
+            chartOptions: {
+              legend: {
+                show: true
+              },
+              tooltip: {
+                appendToBody: true
               }
-            } as DataSettings,
-            chartOptions,
-            chartSettings: {
-              chartTypes,
-              universalTransition: true
-            },
-            slicers: _slicers
-          } as Partial<QuestionAnswer>,
-          answer.conclusion
-        ].filter(Boolean)
-      )
+            }
+          },
+          {
+            name: translate.instant('PAC.ChatBI.Chart_Column', { Default: 'Column' }),
+            type: NxChartType.Bar,
+            orient: ChartOrient.vertical,
+            chartOptions: {
+              legend: {
+                show: true
+              },
+              tooltip: {
+                appendToBody: true
+              }
+            }
+          },
+          {
+            name: translate.instant('PAC.ChatBI.Chart_Bar', { Default: 'Bar' }),
+            type: NxChartType.Bar,
+            orient: ChartOrient.horizontal,
+            chartOptions: {
+              legend: {
+                show: true
+              },
+              tooltip: {
+                appendToBody: true
+              }
+            }
+          },
+          {
+            name: translate.instant('PAC.ChatBI.Chart_Pie', { Default: 'Pie' }),
+            type: NxChartType.Pie,
+            variant: PieVariant.None,
+            chartOptions: {
+              seriesStyle: {
+                __showitemStyle__: true,
+                itemStyle: {
+                  borderColor: 'white',
+                  borderWidth: 1,
+                  borderRadius: 10
+                }
+              },
+              __showlegend__: true,
+              legend: {
+                type: 'scroll',
+                orient: 'vertical',
+                right: 0,
+                align: 'right'
+              },
+              tooltip: {
+                appendToBody: true
+              }
+            }
+          }
+        ]
+        const index = chartTypes.findIndex(
+          ({ type, orient }) => type === chartAnnotation.chartType.type && orient === chartAnnotation.chartType.orient
+        )
+        if (index > -1) {
+          chartAnnotation.chartType = chartTypes.splice(index, 1)[0]
+        }
 
-      return `Chart answer is created!`
+        chatbiService.addAiMessage(
+          [
+            answer.preface,
+            {
+              key: nanoid(),
+              dataSettings: {
+                ...(answer.dataSettings ?? {}),
+                chartAnnotation,
+                presentationVariant: {
+                  maxItems: answer.top,
+                  groupBy: getEntityDimensions(entityType).map((property) => ({
+                    dimension: property.name,
+                    hierarchy: property.defaultHierarchy,
+                    level: null
+                  }))
+                }
+              } as DataSettings,
+              chartOptions,
+              chartSettings: {
+                chartTypes,
+                universalTransition: true
+              },
+              slicers: _slicers,
+              indicators: indicators?.map((indicator) => indicator.id), // indicators snapshot
+              visualType: 'chart'
+            } as Partial<QuestionAnswer>,
+            answer.conclusion
+          ].filter(Boolean)
+        )
+
+        return `Chart answer is created!`
+      } catch(err: any) {
+        return `Error: ${err.message}`
+      }
     }
   })
 
   return answerTool
 }
 
+/**
+ * Create calculated measure with formula
+ */
 export function injectCreateFormulaTool() {
   const logger = inject(NGXLogger)
   const chatbiService = inject(ChatbiService)
@@ -149,11 +160,15 @@ export function injectCreateFormulaTool() {
     }),
     func: async ({ cube, name, formula, unit }) => {
       logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
-
-      chatbiService.addIndicator({ id: nanoid(), name, entity: cube, code: name, formula, unit })
-
-      return `The new calculated measure has been created!`
+      try {
+        const key = nanoid()
+        chatbiService.upsertIndicator({ id: key, name, entity: cube, code: name, formula, unit })
+        return `The new calculated measure with key '${key}' has been created!`
+      } catch(err: any) {
+        return `Error: ${err.message}`
+      }
     }
   })
+
   return createFormulaTool
 }

@@ -291,10 +291,22 @@ export class ChatbiService {
     })
   }
 
-  addIndicator(indicator: Indicator) {
-    this.updateConversation((state) => ({
-      ...state,
-      indicators: [...(state.indicators ?? []), {...indicator, visible: true}]
-    }))
+  upsertIndicator(indicator: Indicator) {
+    this.updateConversation((state) => {
+      const indicators = state.indicators ? [...state.indicators] : []
+      const index = indicators.findIndex((item) => item.id === indicator.id)
+      if (index > -1) {
+        indicators[index] = {
+          ...indicators[index],
+          ...indicator,
+        }
+      } else {
+        indicators.push({...indicator, visible: true})
+      }
+      return {
+        ...state,
+        indicators
+      }
+    })
   }
 }

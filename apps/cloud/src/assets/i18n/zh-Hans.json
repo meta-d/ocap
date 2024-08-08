@@ -192,7 +192,8 @@
       "Delete": "删除",
       "MemberRetriever": "成员检索器",
       "Variables": "参数变量",
-      "Knowledges": "知识库"
+      "Knowledges": "知识库",
+      "IsDefault": "默认"
     },
     "MENU": {
       "Certification": "认证",
@@ -1347,6 +1348,7 @@
       "Title": "ChatBI-数据分析与洞察",
       "TransformData": "利用人工智能将数据转化为洞察力。",
       "InputPlaceholder": "针对数据集询问问题，按 Enter 发送",
+      "NoSemanticModel": "无语义模型",
       "NewConversation": "新建对话",
       "Cubes": "多维数据集",
       "Slicers": "过滤器",
@@ -1373,7 +1375,8 @@
       "Chart_Line": "线图",
       "Chart_Column": "柱形图",
       "Chart_Bar": "条形图",
-      "Chart_Pie": "饼图"
+      "Chart_Pie": "饼图",
+      "NewCalculatedMeasures": "新增计算指标"
     },
     "Home": {
       "Insight": {

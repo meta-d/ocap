@@ -10,6 +10,34 @@
       }
       @case ('object') {
         @if (isAnswer(item); as answer) {
+          @if (answer.indicators) {
+            <div class="flex flex-col justify-start items-start gap-2">
+              <p>{{ 'PAC.ChatBI.NewCalculatedMeasures' | translate: {Default: 'New calculated measures'} }}:</p>
+            @for (id of answer.indicators; track id) {
+              @if (indicators()[id]; as indicator) {
+              <a class="w-full inline-flex items-center justify-center p-2 text-base font-medium cursor-pointer
+                text-gray-500 rounded-lg bg-gray-50 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-white"
+                (click)="openIndicator(indicator, answer)">
+                <span>
+                  <span class="w-full">{{indicator.name}}</span>
+                  @if (indicator.unit) {
+                    <span class="p-1 text-sm rounded-md bg-gray-100 dark:bg-zinc-600">{{indicator.unit}}</span>
+                  }<br>
+                  <span class="w-full text-sm">[{{indicator.code}}]</span><br>
+                  <p class="w-full p-1 text-sm rounded-md bg-gray-100 dark:bg-zinc-600">
+                    <span >{{indicator.formula}}</span>
+                  </p>
+                  
+                </span>
+                
+                <svg class="w-4 h-4 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                </svg>
+              </a>
+              }
+            }
+            </div>
+          }
           @if (answer.visualType === 'table') {
             <ngm-analytical-grid class="w-full h-[400px] group overflow-auto"
               displayDensity="compact"
@@ -28,7 +56,7 @@
                 </button>
               </div>
             </ngm-analytical-grid>
-          } @else {
+          } @else if (answer.visualType === 'chart') {
             <ngm-analytical-card class="h-[300px] group" 
               [dataSettings]="answer.dataSettings"
               [chartOptions]="answer.chartOptions"

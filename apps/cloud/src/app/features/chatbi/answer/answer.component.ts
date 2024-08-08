@@ -1,6 +1,7 @@
 import { ClipboardModule } from '@angular/cdk/clipboard'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, inject, input, ViewContainerRef } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
@@ -14,11 +15,11 @@ import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
+import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
-import { DataSettings } from '@metad/ocap-core'
+import { CalculatedProperty, CalculationType, DataSettings, Indicator, Syntax } from '@metad/ocap-core'
 import { WidgetComponentType } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { NGXLogger } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
 import { firstValueFrom } from 'rxjs'
@@ -63,22 +64,32 @@ export class ChatbiAnswerComponent {
   readonly #logger = inject(NGXLogger)
   readonly homeComponent = inject(ChatbiHomeComponent)
   readonly #translate = inject(TranslateService)
-  readonly _dialog = inject(MatDialog)
+  readonly #dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
   readonly router = inject(Router)
   readonly #store = inject(Store)
+  readonly #viewContainerRef = inject(ViewContainerRef)
 
   readonly message = input<CopilotChatMessage>(null)
   readonly primaryTheme = toSignal(this.#store.primaryTheme$)
   readonly model = this.chatbiService.model
+  readonly indicators = computed(() => {
+    const indicators = this.chatbiService.indicators()
+    return indicators?.reduce((result, indicator) => {
+      result[indicator.id] = indicator
+      return result
+    }, {})
+  })
 
-  readonly charts = computed(() => this.toArray(this.message().data).map((item) => {
-    if (this.typeof(item) === 'object' && this.isAnswer(item)) {
-      return {
-        chartSettings: this.toChartSettings(item as unknown as QuestionAnswer)
+  readonly charts = computed(() =>
+    this.toArray(this.message().data).map((item) => {
+      if (this.typeof(item) === 'object' && this.isAnswer(item)) {
+        return {
+          chartSettings: this.toChartSettings(item as unknown as QuestionAnswer)
+        }
       }
-    }
-  }))
+    })
+  )
 
   toArray(data: JSONValue) {
     return Array.isArray(data) ? data : []
@@ -125,7 +136,7 @@ export class ChatbiAnswerComponent {
       Default: 'Add widget to story'
     })
     const result = await firstValueFrom(
-      this._dialog
+      this.#dialog
         .open(StorySelectorComponent, {
           data: {
             title: addToStoryTitle,
@@ -179,5 +190,38 @@ export class ChatbiAnswerComponent {
           })
         })
     }
+  }
+
+  openIndicator(indicator: Indicator, answer: QuestionAnswer) {
+    this.#dialog
+      .open(NgmCalculationEditorComponent, {
+        viewContainerRef: this.#viewContainerRef,
+        data: {
+          dataSettings: answer.dataSettings,
+          entityType: this.chatbiService.entityType(),
+          syntax: Syntax.MDX,
+          value: {
+            name: indicator.code,
+            caption: indicator.name,
+            calculationType: CalculationType.Calculated,
+            formula: indicator.formula,
+            formatting: {
+              unit: indicator.unit
+            }
+          } as CalculatedProperty
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.chatbiService.upsertIndicator({
+            ...indicator,
+            code: result.name,
+            name: result.caption,
+            formula: result.formula,
+            unit: result.formatting?.unit
+          })
+        }
+      })
   }
 }

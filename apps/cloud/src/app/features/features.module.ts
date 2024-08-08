@@ -31,6 +31,7 @@ import { FeaturesComponent } from './features.component'
 import { provideCheckpointSaver, provideCommandFewShotPrompt, provideDimensionMemberRetriever } from '../@core/copilot'
 import { NgmDrawerComponent, NgmDrawerContainerComponent } from '@metad/ocap-angular/common'
 import { NgxEchartsModule } from 'ngx-echarts'
+import { MonacoEditorModule } from 'ngx-monaco-editor'
 
 registerEChartsThemes()
 
@@ -52,6 +53,7 @@ registerEChartsThemes()
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
+    MonacoEditorModule.forRoot(), // chatbi
 
     // Formly
     NgmFormlyModule,

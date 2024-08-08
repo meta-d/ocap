@@ -66,6 +66,7 @@ export class ChatbiHomeComponent {
       )
     )
   )
+  readonly hasModel = computed(() => this.models()?.length > 0)
   readonly _conversationId = computed(() => this.chatbiService.conversation()?.id)
 
   // Story explorer
