@@ -75,7 +75,7 @@ export abstract class TenantAwareCrudService<T extends TenantBaseEntity>
 			  } as any)
 	}
 
-	private findOneWithTenant(
+	protected findOneWithTenant(
 		filter?: FindOneOptions<T>
 	): FindOneOptions<T> {
 

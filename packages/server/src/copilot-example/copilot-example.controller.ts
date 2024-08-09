@@ -4,17 +4,17 @@ import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { CrudController, PaginationParams, TransformInterceptor } from '../core'
 import { ParseJsonPipe, UseValidationPipe } from '../shared/pipes'
-import { CopilotExample } from './copilot-example.entity'
-import { CopilotExampleService } from './copilot-example.service'
+import { CopilotKnowledge } from './copilot-example.entity'
+import { CopilotKnowledgeService } from './copilot-example.service'
 
-@ApiTags('CopilotExample')
+@ApiTags('CopilotKnowledge')
 @ApiBearerAuth()
 @UseInterceptors(TransformInterceptor)
 @Controller()
-export class CopilotExampleController extends CrudController<CopilotExample> {
-	readonly #logger = new Logger(CopilotExampleController.name)
+export class CopilotKnowledgeController extends CrudController<CopilotKnowledge> {
+	readonly #logger = new Logger(CopilotKnowledgeController.name)
 	constructor(
-		private readonly service: CopilotExampleService,
+		private readonly service: CopilotKnowledgeService,
 		private readonly commandBus: CommandBus
 	) {
 		super(service)
@@ -32,7 +32,7 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
 	@ApiResponse({
 		status: HttpStatus.OK,
 		description: 'Found copilot examples',
-		type: CopilotExample
+		type: CopilotKnowledge
 	})
 	@ApiResponse({
 		status: HttpStatus.NOT_FOUND,
@@ -41,9 +41,9 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
 	@Get()
 	@UseValidationPipe()
 	async getAll(
-		@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotExample>['where'],
-		@Query('$relations', ParseJsonPipe) relations: PaginationParams<CopilotExample>['relations']
-	): Promise<IPagination<CopilotExample>> {
+		@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotKnowledge>['where'],
+		@Query('$relations', ParseJsonPipe) relations: PaginationParams<CopilotKnowledge>['relations']
+	): Promise<IPagination<CopilotKnowledge>> {
 		return await this.service.findAll({ where, relations })
 	}
 
@@ -72,13 +72,13 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
 	}
 
 	@Get('commands')
-	async getCommands(@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotExample>['where']) {
+	async getCommands(@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotKnowledge>['where']) {
 		return this.service.getCommands({ where })
 	}
 
 	@Post('bulk')
 	async createBulk(
-		@Body('examples') entities: CopilotExample[],
+		@Body('examples') entities: CopilotKnowledge[],
 		@Body('roles') roles: ICopilotRole[],
 		@Body('options') options: { createRole: boolean; clearRole: boolean }
 	) {

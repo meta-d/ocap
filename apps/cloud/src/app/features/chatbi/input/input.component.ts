@@ -24,7 +24,6 @@ import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, delay } from 'rxjs'
 import { ChatbiService } from '../chatbi.service'
 import { CHATBI_COMMAND_NAME } from '../copilot/'
-import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,

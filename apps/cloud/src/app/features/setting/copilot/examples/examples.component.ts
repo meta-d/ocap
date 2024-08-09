@@ -19,7 +19,7 @@ import {
   AiBusinessRole,
   CopilotExampleService,
   CopilotRoleService,
-  ICopilotExample,
+  ICopilotKnowledge,
   ICopilotRole,
   LanguagesEnum,
   ToastrService,
@@ -216,7 +216,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   }
 
   async handleUploadChange(event) {
-    const { roles, examples } = await uploadYamlFile<{ roles: ICopilotRole[]; examples: ICopilotExample[] }>(
+    const { roles, examples } = await uploadYamlFile<{ roles: ICopilotRole[]; examples: ICopilotKnowledge[] }>(
       event.target.files[0]
     )
 

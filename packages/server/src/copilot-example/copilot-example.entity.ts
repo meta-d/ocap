@@ -1,11 +1,11 @@
-import { AiBusinessRole, AiProvider, ICopilotExample } from '@metad/contracts'
+import { AiBusinessRole, AiProvider, ICopilotKnowledge } from '@metad/contracts'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 import { IsBoolean, IsOptional, IsString } from 'class-validator'
 import { Column, Entity } from 'typeorm'
-import { TenantBaseEntity } from '../core/entities/internal'
+import { TenantOrganizationBaseEntity } from '../core/entities/internal'
 
-@Entity('copilot_example')
-export class CopilotExample extends TenantBaseEntity implements ICopilotExample {
+@Entity('copilot_knowledge')
+export class CopilotKnowledge extends TenantOrganizationBaseEntity implements ICopilotKnowledge {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@IsOptional()

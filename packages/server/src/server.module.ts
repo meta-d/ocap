@@ -39,7 +39,7 @@ import { LanguageModule } from './language/language.module'
 import { CopilotModule } from './copilot'
 import { StorageFileModule } from './storage-file/storage-file.module'
 import { AIModule } from './ai/ai.module'
-import { CopilotExampleModule } from './copilot-example'
+import { CopilotKnowledgeModule } from './copilot-example'
 import { RedisModule } from './core/redis.module'
 import { CqrsModule } from '@nestjs/cqrs'
 import { CopilotRoleModule } from './copilot-role/copilot-role.module'
@@ -99,12 +99,12 @@ import { CopilotOrganizationModule } from './copilot-organization/copilot-organi
     CustomSmtpModule,
     LanguageModule,
     CopilotModule,
-    CopilotExampleModule,
+    CopilotKnowledgeModule,
     CopilotRoleModule,
+    CopilotUserModule,
+    CopilotOrganizationModule,
     StorageFileModule,
     AIModule,
-    CopilotUserModule,
-    CopilotOrganizationModule
   ],
   controllers: [AppController],
   providers: [AppService],

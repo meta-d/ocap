@@ -137,7 +137,9 @@ export class ChatbiService {
     )
     .subscribe((conversation) => {
       this.pristineConversation.set(structuredClone(conversation))
-      this._updateConversation(conversation.key, (state) => conversation)
+      if (this.conversation().id !== conversation.id) {
+        this._updateConversation(conversation.key, (state) => ({...state, id: conversation.id}))
+      }
     })
 
   constructor() {
@@ -163,6 +165,13 @@ export class ChatbiService {
       { allowSignalWrites: true }
     )
 
+    // Set default cube of model
+    effect(() => {
+      if (this.model() && !this.entity()) {
+        this.setCube(this.model().cube)
+      }
+    }, { allowSignalWrites: true })
+
     effect(() => {
       const dataSource = this.dataSource()
       const indicators = this.indicators()
@@ -181,7 +190,7 @@ export class ChatbiService {
   }
 
   setModelId(id: string) {
-    this._updateConversation(this.conversationKey(), (state) => ({ ...state, modelId: id }))
+    this.updateConversation((state) => ({ ...state, modelId: id, entity: null }))
   }
 
   private registerModel(model: NgmSemanticModel) {

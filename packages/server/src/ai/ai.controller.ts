@@ -189,18 +189,15 @@ export async function streamToResponse(
 	  ...(init?.headers ?? {}),
 	});
   
-	let collectedValue = ''; // 初始化收集字符串变量
 	const reader = res.body.getReader();
 	async function read() {
 	  const { done, value } = await reader.read()
 	  if (done) {
 		response.end();
-		console.log(collectedValue); // 打印收集的值
 		return;
 	  }
 	  if (value) {
 		response.write(value);
-		collectedValue += new TextDecoder().decode(value); // 将值转换为字符串并添加到收集变量中
 	  }
 	  await read();
 	}

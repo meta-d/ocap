@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, inject, model, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
@@ -53,7 +53,13 @@ export class ChatbiHomeComponent {
   readonly logger = inject(NGXLogger)
   readonly conversationId = injectQueryParams('id')
 
-  readonly modelId = model<string>(null)
+  // readonly modelId = model<string>(null)
+  get modelId() {
+    return this.chatbiService.modelId()
+  }
+  set modelId(value) {
+    this.chatbiService.setModelId(value)
+  }
 
   readonly models = toSignal(
     this.chatbiService.models$.pipe(
@@ -89,28 +95,29 @@ export class ChatbiHomeComponent {
     .subscribe((conversation) => this.chatbiService.addConversation(conversation))
 
   constructor() {
-    effect(
-      () => {
-        if (this.modelId()) {
-          this.chatbiService.setModelId(this.modelId())
-        }
-      },
-      { allowSignalWrites: true }
-    )
+    // effect(
+    //   () => {
+    //     if (this.modelId()) {
+    //       this.chatbiService.setModelId(this.modelId())
+    //     }
+    //   },
+    //   { allowSignalWrites: true }
+    // )
+
+    // effect(
+    //   () => {
+    //     if (this.chatbiService.modelId()) {
+    //       this.modelId.set(this.chatbiService.modelId())
+    //     }
+    //   },
+    //   { allowSignalWrites: true }
+    // )
 
     effect(
       () => {
-        if (this.chatbiService.modelId()) {
-          this.modelId.set(this.chatbiService.modelId())
-        }
-      },
-      { allowSignalWrites: true }
-    )
-
-    effect(
-      () => {
-        if (this.conversationId()) {
-          this.chatbiService.conversationId.set(this.conversationId())
+        const conversationId = this.conversationId()
+        if (conversationId) {
+          this.chatbiService.conversationId.set(conversationId)
         }
       },
       { allowSignalWrites: true }

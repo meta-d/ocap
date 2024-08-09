@@ -9,7 +9,7 @@ import {
 	AiProvider,
 	AiProviderRole,
 	ICopilot,
-	ICopilotExample,
+	ICopilotKnowledge,
 	ICopilotRole,
 	OllamaEmbeddingsProviders,
 	OpenAIEmbeddingsProviders
@@ -24,19 +24,19 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { CopilotRoleCreateCommand } from '../copilot-role/commands/'
 import { CopilotService } from '../copilot/copilot.service'
 import { RequestContext } from '../core'
-import { TenantAwareCrudService } from '../core/crud'
+import { TenantOrganizationAwareCrudService } from '../core/crud'
 import { DATABASE_POOL_TOKEN } from '../database'
-import { CopilotExample } from './copilot-example.entity'
+import { CopilotKnowledge } from './copilot-example.entity'
 
 @Injectable()
-export class CopilotExampleService extends TenantAwareCrudService<CopilotExample> {
-	readonly #logger = new Logger(CopilotExampleService.name)
+export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<CopilotKnowledge> {
+	readonly #logger = new Logger(CopilotKnowledgeService.name)
 
 	private readonly vectorStores = new Map<string, PGMemberVectorStore>()
 
 	constructor(
-		@InjectRepository(CopilotExample)
-		repository: Repository<CopilotExample>,
+		@InjectRepository(CopilotKnowledge)
+		repository: Repository<CopilotKnowledge>,
 
 		private copilotService: CopilotService,
 		@Inject(DATABASE_POOL_TOKEN) private pgPool: Pool,
@@ -52,8 +52,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 	) {
 		const { role, command, k, score, filter } = options ?? {}
 
-		const tenantId = RequestContext.currentTenantId()
-		let vectorStore = await this.getVectorStore(tenantId, role)
+		let vectorStore = await this.getVectorStore(role)
 		if (vectorStore) {
 			let results = []
 			try {
@@ -72,7 +71,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 					this.#logger.debug(
 						`Examples does not exist for role: ${role} with command '${command}'. use examples in default instead`
 					)
-					vectorStore = await this.getVectorStore(tenantId)
+					vectorStore = await this.getVectorStore(null)
 					try {
 						results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, {
 							...(filter ?? {}),
@@ -103,8 +102,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 	) {
 		const { role, command, k, filter } = options ?? {}
 
-		const tenantId = RequestContext.currentTenantId()
-		const vectorStore = await this.getVectorStore(tenantId, role)
+		const vectorStore = await this.getVectorStore(role)
 
 		if (vectorStore) {
 			return await vectorStore.vectorStore.maxMarginalRelevanceSearch(
@@ -118,12 +116,11 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		return null
 	}
 
-	override async create(partialEntity: Partial<ICopilotExample>, ...options: any[]): Promise<CopilotExample> {
-		const tenantId = RequestContext.currentTenantId()
+	override async create(partialEntity: Partial<ICopilotKnowledge>, ...options: any[]): Promise<CopilotKnowledge> {
 		const entity = await super.create(partialEntity, ...options)
 
 		// Update to vector store
-		const vectorStore = await this.getVectorStore(tenantId, entity.role)
+		const vectorStore = await this.getVectorStore(entity.role)
 		if (vectorStore) {
 			await vectorStore.updateExamples([entity])
 			super.update(entity.id, { provider: vectorStore.provider, vector: true })
@@ -134,16 +131,14 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 	override async update(
 		id: string,
-		partialEntity: QueryDeepPartialEntity<CopilotExample>,
+		partialEntity: QueryDeepPartialEntity<CopilotKnowledge>,
 		...options: any[]
-	): Promise<UpdateResult | CopilotExample> {
-		const tenantId = RequestContext.currentTenantId()
-
+	): Promise<UpdateResult | CopilotKnowledge> {
 		await super.update(id, partialEntity)
 		const entity = await this.findOneByIdString(id)
 
 		// Update to vector store
-		const vectorStore = await this.getVectorStore(tenantId, entity.role)
+		const vectorStore = await this.getVectorStore(entity.role)
 		if (vectorStore) {
 			await vectorStore.updateExamples([entity])
 			super.update(entity.id, { provider: vectorStore.provider, vector: true })
@@ -152,14 +147,12 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		return entity
 	}
 
-	override async delete(criteria: string, options?: FindOneOptions<CopilotExample>): Promise<DeleteResult> {
+	override async delete(criteria: string, options?: FindOneOptions<CopilotKnowledge>): Promise<DeleteResult> {
 		const entity = await this.findOne(criteria, options)
 		const result = await super.delete(criteria, options)
 
-		const tenantId = RequestContext.currentTenantId()
-
 		// Delete example from vector store
-		const vectorStore = await this.getVectorStore(tenantId, entity.role)
+		const vectorStore = await this.getVectorStore(entity.role)
 		if (vectorStore) {
 			await vectorStore.deleteExample(entity)
 		}
@@ -196,19 +189,18 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 	}
 
 	async getVectorStore(
-		tenantId: string,
-		role?: AiBusinessRole | string,
-		command: string = null,
-		// organizationId: string = null
+		role: AiBusinessRole | string,
+		// command: string,
 	) {
-		const id = tenantId + `:${role || 'default'}${command ? ':' + command : ''}`
+		const tenantId = RequestContext.currentTenantId()
+		const organizationId = RequestContext.getOrganizationId()
+		const id = (organizationId || tenantId) + `:${role || 'default'}` // ${command ? ':' + command : ''}`
 		if (!this.vectorStores.has(id)) {
-			// const secondaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Secondary)
-			const primaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Primary)
+			let primaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Primary)
+			if (!primaryCopilot?.enabled) {
+				primaryCopilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary)
+			}
 			let copilot: ICopilot = null
-			// if (secondaryCopilot?.enabled) {
-			// 	copilot = secondaryCopilot
-			// } else 
 			if (primaryCopilot?.enabled) {
 				copilot = primaryCopilot
 			}
@@ -218,8 +210,8 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 			if (embeddings) {
 				const vectorStore = new PGMemberVectorStore(copilot.provider, embeddings, {
 					pool: this.pgPool,
-					tableName: 'copilot_example_vector',
-					collectionTableName: 'copilot_example_collection',
+					tableName: 'copilot_knowledge_vector',
+					collectionTableName: 'copilot_knowledge_collection',
 					collectionName: id,
 					columns: {
 						idColumnName: 'id',
@@ -241,17 +233,18 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		return this.vectorStores.get(id)
 	}
 
-	async getCommands(options?: FindManyOptions<CopilotExample>) {
+	async getCommands(options?: FindManyOptions<CopilotKnowledge>) {
+		const condition = this.findOneWithTenant(options)
 		return this.repository
-			.createQueryBuilder('example')
-			.select('example.command')
-			.distinctOn(['example.command'])
-			.where(options?.where)
+			.createQueryBuilder('knowledge')
+			.select('knowledge.command')
+			.distinctOn(['knowledge.command'])
+			.where(condition?.where)
 			.getMany()
 	}
 
 	async createBulk(
-		entities: ICopilotExample[],
+		entities: ICopilotKnowledge[],
 		roles: ICopilotRole[],
 		options: { createRole: boolean; clearRole: boolean }
 	) {
@@ -278,9 +271,8 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		const results = []
 
 		// Add examples to vector store
-		const tenantId = RequestContext.currentTenantId()
 		for (const role of roleNames) {
-			const vectorStore = await this.getVectorStore(tenantId, role ? role : null)
+			const vectorStore = await this.getVectorStore(role ? role : null)
 			if (clearRole) {
 				const { items } = await this.findAll({ where: { role: role } })
 				await vectorStore?.vectorStore.delete({ filter: { role: role } })
@@ -312,7 +304,7 @@ class PGMemberVectorStore {
 		this.vectorStore = new PGVectorStore(embeddings, _dbConfig)
 	}
 
-	async addExamples(examples: ICopilotExample[]): Promise<void> {
+	async addExamples(examples: ICopilotKnowledge[]): Promise<void> {
 		if (!examples.length) return
 
 		const documents = examples.map(
@@ -334,7 +326,7 @@ class PGMemberVectorStore {
 		})
 	}
 
-	async updateExamples(examples: ICopilotExample[]): Promise<void> {
+	async updateExamples(examples: ICopilotKnowledge[]): Promise<void> {
 		// Delete old example vectors
 		await this.vectorStore.delete({ ids: examples.map((example) => example.id) })
 
@@ -342,7 +334,7 @@ class PGMemberVectorStore {
 		await this.addExamples(examples)
 	}
 
-	async deleteExample(example: ICopilotExample) {
+	async deleteExample(example: ICopilotKnowledge) {
 		return await this.vectorStore.delete({ ids: [example.id] })
 	}
 

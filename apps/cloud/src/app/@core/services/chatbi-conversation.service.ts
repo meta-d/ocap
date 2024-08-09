@@ -31,7 +31,15 @@ export class ChatBIConversationService {
 
   getMy() {
     return this.httpClient
-      .get<{ items: IChatBIConversation[] }>(API_CHATBI_CONVERSATION + '/my')
+      .get<{ items: IChatBIConversation[] }>(API_CHATBI_CONVERSATION + '/my', {
+        params: {
+          data: JSON.stringify({
+            order: {
+              createdAt: 'desc'
+            }
+          })
+        }
+      })
       .pipe(map(({ items }) => items.map(convertChatBIConversationResult)))
   }
 
@@ -65,7 +73,7 @@ export function convertChatBIConversation(input: Partial<ChatbiConverstion>) {
     ...omit(input, 'messages', 'indicators'),
     options: {
       messages: input.messages,
-      indicators: input.indicators,
+      indicators: input.indicators
     }
   } as IChatBIConversation
 }
