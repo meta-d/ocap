@@ -29,6 +29,24 @@
       <mat-icon fontSet="material-icons-outlined">tips_and_updates</mat-icon>
       {{ 'PAC.KEY_WORDS.Knowledges' | translate: {Default: "Knowledges"} }}
     </span>
+
+    @if (organizationId$ | async) {
+      <span mat-tab-link [routerLink]="['./users']"
+        routerLinkActive #rla4="routerLinkActive"
+        [active]="rla4.isActive"
+      >
+        <mat-icon fontSet="material-icons-outlined">data_usage</mat-icon>
+        {{ 'PAC.KEY_WORDS.Users' | translate: {Default: "Users"} }}
+      </span>
+    } @else {
+      <span mat-tab-link [routerLink]="['./usages']"
+        routerLinkActive #rla4="routerLinkActive"
+        [active]="rla4.isActive"
+      >
+        <mat-icon fontSet="material-icons-outlined">data_usage</mat-icon>
+        {{ 'PAC.KEY_WORDS.Usages' | translate: {Default: "Usages"} }}
+      </span>
+    }
   </nav>
 </div>
 

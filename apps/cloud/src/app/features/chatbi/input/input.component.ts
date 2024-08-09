@@ -103,17 +103,28 @@ export class ChatbiInputComponent {
       this.answering.set(true)
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
+      this.chatbiService.initAiMessage()
       if (!this.conversation().command) {
         this.chatbiService.updateConversation((state) => ({
           ...state,
           command: CHATBI_COMMAND_NAME
         }))
-        await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {})
+        await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {
+          conversationId: this.conversation().key
+        })
       } else {
-        await this.#copilotEngine.chat(prompt, {})
+        await this.#copilotEngine.chat(prompt, {
+          command: CHATBI_COMMAND_NAME,
+          conversationId: this.conversation().key
+        })
       }
-    } catch (err) {
+      this.chatbiService.endAiMessage()
+    } catch (err: any) {
       this.#logger.error(err)
+      this.chatbiService.updateAiMessage({
+        status: 'error',
+        error: err?.message || 'Unknown error',
+      })
     } finally {
       this.answering.set(false)
     }

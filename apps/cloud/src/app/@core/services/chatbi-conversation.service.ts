@@ -6,7 +6,7 @@ import { Indicator } from '@metad/ocap-core'
 import { omit } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, map } from 'rxjs'
-import { IChatBIConversation } from '../types'
+import { IChatBIConversation, OrderTypeEnum } from '../types'
 
 const API_CHATBI_CONVERSATION = API_PREFIX + '/chatbi-conversation'
 
@@ -35,7 +35,7 @@ export class ChatBIConversationService {
         params: {
           data: JSON.stringify({
             order: {
-              createdAt: 'desc'
+              createdAt: OrderTypeEnum.DESC
             }
           })
         }

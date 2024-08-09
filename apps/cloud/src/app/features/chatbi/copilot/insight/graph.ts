@@ -49,7 +49,7 @@ ${createAgentStepsInstructions(
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
   `If there are variables in the cube, please add the variables (Use variable name as dimension, defaultValueKey and defaultValueCaption as the default member) to the slicers in tool.`,
   `Add the time and slicers to slicers in tool`,
-  `Final call 'answerQuestion' tool to answer question`
+  `Final call 'answerQuestion' tool to answer question, use the complete conditions to answer`
 )}
 `
         const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {

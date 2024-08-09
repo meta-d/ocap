@@ -28,6 +28,7 @@ import { StorySelectorComponent } from '../../../@shared'
 import { ChatbiService } from '../chatbi.service'
 import { ChatbiHomeComponent } from '../home.component'
 import { QuestionAnswer } from '../types'
+import { ChatbiLoadingComponent } from '../loading/loading.component'
 
 @Component({
   standalone: true,
@@ -49,7 +50,8 @@ import { QuestionAnswer } from '../types'
 
     AnalyticalCardModule,
     AnalyticalGridModule,
-    NgmSelectionModule
+    NgmSelectionModule,
+    ChatbiLoadingComponent
   ],
   selector: 'pac-chatbi-answer',
   templateUrl: 'answer.component.html',

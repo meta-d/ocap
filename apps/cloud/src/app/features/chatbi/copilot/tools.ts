@@ -25,7 +25,6 @@ export function injectCreateChartTool() {
       try {
 
         const entityType = chatbiService.entityType()
-        const indicators = chatbiService.indicators()
 
         const { chartAnnotation, slicers, chartOptions } = transformCopilotChart(answer.chart, entityType)
         const _slicers = (answer.slicers || slicers)?.map((slicer) => tryFixSlicer(slicer, entityType))
@@ -102,8 +101,7 @@ export function injectCreateChartTool() {
           chartAnnotation.chartType = chartTypes.splice(index, 1)[0]
         }
 
-        chatbiService.addAiMessage(
-          [
+        chatbiService.appendAiMessageData([
             answer.preface,
             {
               key: nanoid(),
@@ -125,12 +123,10 @@ export function injectCreateChartTool() {
                 universalTransition: true
               },
               slicers: _slicers,
-              indicators: indicators?.map((indicator) => indicator.id), // indicators snapshot
               visualType: 'chart'
             } as Partial<QuestionAnswer>,
             answer.conclusion
-          ].filter(Boolean)
-        )
+          ].filter(Boolean))
 
         return `Chart answer is created!`
       } catch(err: any) {
@@ -163,6 +159,16 @@ export function injectCreateFormulaTool() {
       try {
         const key = nanoid()
         chatbiService.upsertIndicator({ id: key, name, entity: cube, code: name, formula, unit })
+        const dataSource = chatbiService.dataSourceName()
+        chatbiService.appendAiMessageData([
+          {
+            dataSettings: {
+              dataSource,
+              entitySet: cube
+            },
+            indicators: [key], // indicators snapshot
+          }
+        ])
         return `The new calculated measure with key '${key}' has been created!`
       } catch(err: any) {
         return `Error: ${err.message}`

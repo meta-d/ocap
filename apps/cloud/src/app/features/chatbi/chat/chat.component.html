@@ -70,7 +70,7 @@
                       <pac-chatbi-answer class="w-full break-words flex flex-col items-stretch" [message]="message" />
                     </div>
                     <div class="flex items-center gap-3">
-                      <span class="text-stone-400 text-xs">{{ message.createdAt | date: 'short' }}</span>
+                      <span class="text-stone-400 text-xs dark:text-stone-300">{{ message.createdAt | date: 'short' }}</span>
                     </div>
                   </div>
                 </div>
@@ -107,8 +107,8 @@
                         class="p-1 rounded-md text-xs text-stone-500 flex flex-row gap-1 items-center group transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                         (click)="editQuestion(message)"
                       >
-                        <span
-                          ><svg
+                        <span>
+                          <svg
                             aria-hidden="true"
                             viewBox="0 0 1024 1024"
                             class="w-4 fill-stone-500 transition-all duration-300 group-hover:fill-sky-600"
@@ -118,8 +118,9 @@
                               fill-rule="evenodd"
                               clip-rule="evenodd"
                               d="M928 896a32 32 0 1 1 0 64h-832a32 32 0 1 1 0-64h832zM784.256 83.2L876.8 175.744c25.6 25.6 25.6 67.008 0 92.544l-498.176 498.24c-7.232 7.168-16 12.608-25.6 15.808l-138.88 46.336a65.472 65.472 0 0 1-82.816-82.816l46.336-138.88c3.2-9.6 8.64-18.368 15.808-25.6L691.712 83.2c25.536-25.6 67.008-25.6 92.544 0z m-118.208 116.096L238.72 626.624a1.472 1.472 0 0 0-0.384 0.64l-46.272 138.816a1.472 1.472 0 0 0 1.856 1.856l138.88-46.272a1.472 1.472 0 0 0 0.576-0.384l427.328-427.328-94.656-94.656z m70.912-70.848l-25.664 25.6 94.656 94.656 25.6-25.6a1.472 1.472 0 0 0 0-2.112l-92.544-92.544a1.472 1.472 0 0 0-2.048 0z"
-                            ></path></svg
-                        ></span>
+                            ></path>
+                          </svg>
+                        </span>
                       </button>
                     </div>
                   </div>

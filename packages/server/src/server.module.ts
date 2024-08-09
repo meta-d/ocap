@@ -45,6 +45,7 @@ import { CqrsModule } from '@nestjs/cqrs'
 import { CopilotRoleModule } from './copilot-role/copilot-role.module'
 import { CopilotUserModule } from './copilot-user/copilot-user.module'
 import { CopilotOrganizationModule } from './copilot-organization/copilot-organization.module'
+import { CopilotCheckpointModule } from './copilot-checkpoint/copilot-checkpoint.module'
 
 @Module({
   imports: [
@@ -105,6 +106,7 @@ import { CopilotOrganizationModule } from './copilot-organization/copilot-organi
     CopilotOrganizationModule,
     StorageFileModule,
     AIModule,
+    CopilotCheckpointModule
   ],
   controllers: [AppController],
   providers: [AppService],

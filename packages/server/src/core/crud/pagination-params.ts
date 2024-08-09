@@ -2,11 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, Max, Min, ValidateNested } from 'class-validator';
 import { TenantOrganizationBaseDTO } from '../dto';
+import { OrderTypeEnum } from '@metad/contracts';
 
-export enum OrderTypeEnum {
-	DESC = 'DESC',
-	ASC = 'ASC'
-}
 
 /**
  * Describes generic pagination params

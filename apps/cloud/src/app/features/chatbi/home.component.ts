@@ -34,7 +34,7 @@ import { QuestionAnswer } from './types'
     ChatbiModelsComponent,
     ChatbiChatComponent,
 
-    StoryExplorerModule
+    StoryExplorerModule,
   ],
   selector: 'pac-chatbi-home',
   templateUrl: './home.component.html',

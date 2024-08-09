@@ -1,5 +1,5 @@
 import { AiProviderRole, ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param, Get } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param, Get, ForbiddenException } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
@@ -111,8 +111,15 @@ failed: ${error.message}`)
 	}
 
 	async proxy(role: AiProviderRole, path: string, headers: any, body: any, resp: ServerResponse) {
-		const copilot = await this.getCopilot(role)
-		const copilotUrl = chatCompletionsUrl(copilot, path)
+		let copilot = null
+		let copilotUrl = null
+		try {
+			copilot = await this.getCopilot(role)
+			copilotUrl = chatCompletionsUrl(copilot, path)
+		} catch(err) {
+			throw new ForbiddenException(err.message)
+		}
+		
 		try {
 			const response = await fetch(copilotUrl, {
 				method: 'POST',
@@ -152,7 +159,7 @@ failed: ${error.message}`)
 		let result = await this.copilotService.findOneByRole(role)
 		if (result?.enabled) {
 			// Check token usage in organizaiton
-			const usage = await this.copilotUserService.findOneOrFail({ userId, organizationId, provider: result.provider })
+			const usage = await this.copilotUserService.findOneOrFail({ where: { userId, organizationId, provider: result.provider }})
 			if (usage.success && usage.record.tokenLimit) {
 				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
 					throw new Error('Token usage exceeds limit')
@@ -164,14 +171,13 @@ failed: ${error.message}`)
 				throw new Error('No copilot found')
 			}
 			// Check token usage in tenant
-			const usage = await this.copilotOrganizationService.findOneOrFail({ organizationId, provider: result.provider })
+			const usage = await this.copilotOrganizationService.findOneOrFail({where: { organizationId, provider: result.provider }})
 			if (usage.success && usage.record.tokenLimit) {
 				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
 					throw new Error('Token usage exceeds limit')
 				}
 			}
 		}
-
 		return result
 	}
 }

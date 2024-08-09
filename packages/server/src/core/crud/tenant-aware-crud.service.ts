@@ -152,7 +152,7 @@ export abstract class TenantAwareCrudService<T extends TenantBaseEntity>
 	public async findOneOrFail(
 		id: string | number | FindOneOptions<T> | FindConditions<T>,
 		options?: FindOneOptions<T>
-	): Promise<ITryRequest> {
+	): Promise<ITryRequest<T>> {
 		if (typeof id === 'object') {
 			const firstOptions = id as FindOneOptions<T>;
 			return await super.findOneOrFail(

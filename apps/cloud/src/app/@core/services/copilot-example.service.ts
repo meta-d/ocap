@@ -36,7 +36,7 @@ export class CopilotExampleService {
     return this.httpClient
       .get<{ items: ICopilotKnowledge[] }>(`${API_COPILOT_KNOWLEDGE}`, {
         params: {
-          $fitler: JSON.stringify(filter),
+          $filter: JSON.stringify(filter),
           $relations: JSON.stringify(relations)
         }
       })
@@ -63,7 +63,7 @@ export class CopilotExampleService {
     return this.httpClient
       .get<ICopilotKnowledge[]>(`${API_COPILOT_KNOWLEDGE}/commands`, {
         params: {
-          $fitler: JSON.stringify(filter)
+          $filter: JSON.stringify(filter)
         }
       })
       .pipe(map((items) => items.map(({ command }) => command)))

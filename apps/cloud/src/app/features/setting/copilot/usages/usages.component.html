@@ -1,0 +1,37 @@
+<ngm-table class="overflow-hidden rounded-lg border m-4"
+    displayDensity="comfortable"
+    paging
+    [data]="usages()"
+    [columns]="[
+      {
+        name: 'organization',
+        caption: 'PAC.KEY_WORDS.Organization' | translate: {Default: 'Organization'},
+        cellTemplate: orgTempl
+      },
+      {
+        name: 'provider',
+        caption: 'PAC.KEY_WORDS.Provider' | translate: {Default: 'Provider'},
+      },
+      {
+        name: 'tokenUsed',
+        caption: 'PAC.KEY_WORDS.TokenUsed' | translate: {Default: 'Token Used'}
+      },
+      {
+        name: 'tokenLimit',
+        caption: 'PAC.KEY_WORDS.TokenLimit' | translate: {Default: 'Token Limit'}
+      },
+      {
+        name: 'tokenTotalUsed',
+        caption: 'PAC.KEY_WORDS.TokenTotalUsed' | translate: {Default: 'Token Total Used'}
+      },
+    ]"
+/>
+
+<ng-template #orgTempl let-organization>
+  @if (organization) {
+    <div class="flex justify-start items-center overflow-hidden text-ellipsis">
+      <pac-org-avatar [organization]="organization" class="shrink-0 w-6 h-6 rounded-full overflow-hidden block mr-2" />
+      <span class="whitespace-nowrap" [title]="organization.name">{{organization.name}}</span>
+    </div>
+  }
+</ng-template>

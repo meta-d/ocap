@@ -1,7 +1,7 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { nanoid } from '@metad/copilot'
+import { CopilotChatMessage, nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -101,6 +101,8 @@ export class ChatbiService {
   readonly pristineConversation = signal<ChatbiConverstion | null>(null)
   readonly indicators = computed(() => this.conversation()?.indicators)
 
+  readonly aiMessage = signal<CopilotChatMessage>(null)
+
   private allSub = this.conversationService
     .getMy()
     .pipe(takeUntilDestroyed())
@@ -130,7 +132,7 @@ export class ChatbiService {
         }
         return curr
       }),
-      debounceTime(1000 * 10),
+      debounceTime(1000 * 5),
       filter((conversation) => !isEqual(conversation, this.pristineConversation())),
       switchMap((conversation) => this.conversationService.upsert(conversation)),
       takeUntilDestroyed()
@@ -259,22 +261,68 @@ export class ChatbiService {
     })
   }
 
-  addAiMessage(data: any[]) {
-    this._updateConversation(this.conversationKey(), (state) => {
+  initAiMessage() {
+    this.aiMessage.set({
+      id: nanoid(),
+      role: 'assistant',
+      content: '',
+      createdAt: new Date(),
+      status: 'thinking'
+    })
+    this.updateConversation((state) => {
       return {
         ...state,
         messages: [
           ...(state.messages ?? []),
-          {
-            id: nanoid(),
-            role: 'assistant',
-            content: '',
-            data,
-            createdAt: new Date()
-          }
+          this.aiMessage()
         ]
       }
     })
+  }
+
+  updateAiMessage(message: Partial<CopilotChatMessage>) {
+    this.updateConversation((state) => {
+      const id = this.aiMessage().id
+      const messages = state.messages ? [...state.messages] : []
+      const index = messages.findIndex((item) => item.id === id)
+      if (index > -1) {
+        messages[index] = {
+          ...messages[index],
+          ...message
+        }
+      }
+
+      return {
+        ...state,
+        messages
+      }
+    })
+  }
+
+  appendAiMessageData(data: any[]) {
+    this.updateConversation((state) => {
+      const id = this.aiMessage().id
+      const messages = state.messages ? [...state.messages] : []
+      const index = messages.findIndex((item) => item.id === id)
+      if (index > -1) {
+        messages[index] = {
+          ...messages[index],
+          data: [
+            ...(messages[index].data as Array<any> ?? []),
+            ...data
+          ]
+        }
+      }
+
+      return {
+        ...state,
+        messages
+      }
+    })
+  }
+
+  endAiMessage() {
+    this.updateAiMessage({ status: 'done' })
   }
 
   updateQuestionAnswer(key: string, answer: Partial<QuestionAnswer>) {

@@ -41,7 +41,7 @@ export class CopilotKnowledgeController extends CrudController<CopilotKnowledge>
 	@Get()
 	@UseValidationPipe()
 	async getAll(
-		@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotKnowledge>['where'],
+		@Query('$filter', ParseJsonPipe) where: PaginationParams<CopilotKnowledge>['where'],
 		@Query('$relations', ParseJsonPipe) relations: PaginationParams<CopilotKnowledge>['relations']
 	): Promise<IPagination<CopilotKnowledge>> {
 		return await this.service.findAll({ where, relations })
@@ -72,7 +72,7 @@ export class CopilotKnowledgeController extends CrudController<CopilotKnowledge>
 	}
 
 	@Get('commands')
-	async getCommands(@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotKnowledge>['where']) {
+	async getCommands(@Query('$filter', ParseJsonPipe) where: PaginationParams<CopilotKnowledge>['where']) {
 		return this.service.getCommands({ where })
 	}
 
