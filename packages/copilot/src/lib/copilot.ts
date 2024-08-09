@@ -133,7 +133,6 @@ function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOpti
               let tokenUsed = 0
               output.generations?.forEach((generation) => {
                 generation.forEach((item) => {
-                  console.log((<AIMessage>(item as any).message).usage_metadata)
                   tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
                 })
               })
@@ -155,7 +154,6 @@ function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOpti
               let tokenUsed = 0
               output.generations?.forEach((generation) => {
                 generation.forEach((item) => {
-                  console.log((<AIMessage>(item as any).message).usage_metadata)
                   tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
                 })
               })

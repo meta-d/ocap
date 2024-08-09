@@ -5,15 +5,12 @@ import {
   IMember,
   ParameterControlEnum,
   PrimitiveType,
+  VariableEntryType,
   wrapHierarchyValue
 } from '@metad/ocap-core'
 import { isArray } from 'lodash'
 import { MDXHierarchyFilter } from './filter'
 
-export enum VariableEntryType {
-  None,
-  Required
-}
 
 export enum VariableSelectionType {
   Unknown,

@@ -327,6 +327,11 @@ export interface ParameterProperty extends EntityProperty {
   hierarchy?: string
 }
 
+// SAP Variables
+export enum VariableEntryType {
+  Default,
+  Required,
+}
 export enum VariableSelectionType {
   Default,
   Value,
@@ -343,7 +348,7 @@ export interface VariableProperty extends ParameterProperty {
   defaultLow: string
   defaultLowCaption: string
   variableCaption: string
-  variableEntryType: number
+  variableEntryType: VariableEntryType
   variableGuid: string
   variableName: string
   variableOrdinal: number

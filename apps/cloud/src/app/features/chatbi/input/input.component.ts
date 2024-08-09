@@ -104,19 +104,23 @@ export class ChatbiInputComponent {
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
       this.chatbiService.initAiMessage()
+      let result = ''
       if (!this.conversation().command) {
         this.chatbiService.updateConversation((state) => ({
           ...state,
           command: CHATBI_COMMAND_NAME
         }))
-        await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {
+        result = await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {
           conversationId: this.conversation().key
         })
       } else {
-        await this.#copilotEngine.chat(prompt, {
+        result = await this.#copilotEngine.chat(prompt, {
           command: CHATBI_COMMAND_NAME,
           conversationId: this.conversation().key
         })
+      }
+      if (result) {
+        this.chatbiService.appendAiMessageData([result])
       }
       this.chatbiService.endAiMessage()
     } catch (err: any) {

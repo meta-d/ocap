@@ -4,8 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { DisplayBehaviour } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
+import { DisplayBehaviour, formatNumber } from '@metad/ocap-core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { CopilotUsageService, ICopilotOrganization, ToastrService } from '../../../../@core'
 import { MaterialModule, OrgAvatarComponent, TranslationBaseComponent } from '../../../../@shared'
 
@@ -24,6 +24,7 @@ export class CopilotUsagesComponent extends TranslationBaseComponent {
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly dialog = inject(MatDialog)
+  readonly translate = inject(TranslateService)
 
   readonly usages = signal<ICopilotOrganization[]>([])
 
@@ -33,4 +34,9 @@ export class CopilotUsagesComponent extends TranslationBaseComponent {
     .subscribe((usages) => {
       this.usages.set(usages)
     })
+
+  _formatNumber(value: number): string {
+    return formatNumber(value, this.translate.currentLang, '0.0-0')
+  }
+  formatNumber = this._formatNumber.bind(this)
 }

@@ -10,7 +10,7 @@ import { IChatBIConversation, OrderTypeEnum } from '../types'
 
 const API_CHATBI_CONVERSATION = API_PREFIX + '/chatbi-conversation'
 
-export interface ChatbiConverstion {
+export interface ChatbiConverstion<T = any> {
   id?: string
   key: string
   name: string
@@ -20,6 +20,7 @@ export interface ChatbiConverstion {
   command: string
   messages: CopilotChatMessage[]
   indicators: Indicator[]
+  answer: T
 }
 
 @Injectable({ providedIn: 'root' })
@@ -70,10 +71,11 @@ export class ChatBIConversationService {
 
 export function convertChatBIConversation(input: Partial<ChatbiConverstion>) {
   return {
-    ...omit(input, 'messages', 'indicators'),
+    ...omit(input, 'messages', 'indicators', 'answer'),
     options: {
       messages: input.messages,
-      indicators: input.indicators
+      indicators: input.indicators,
+      answer: input.answer,
     }
   } as IChatBIConversation
 }
@@ -82,6 +84,7 @@ export function convertChatBIConversationResult(result: IChatBIConversation) {
   return {
     ...omit(result, 'options', ...SystemPrivacyFields),
     messages: result.options?.messages || [],
-    indicators: result.options?.indicators
+    indicators: result.options?.indicators,
+    answer: result.options?.answer
   } as ChatbiConverstion
 }

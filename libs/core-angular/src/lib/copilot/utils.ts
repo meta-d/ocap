@@ -1,4 +1,4 @@
-import { Cube, EntityType, getDimensionHierarchies, getEntityDimensions, getEntityMeasures, getEntityVariables, getHierarchyLevels, RuntimeLevelType } from '@metad/ocap-core'
+import { Cube, EntityType, getDimensionHierarchies, getEntityDimensions, getEntityMeasures, getEntityVariables, getHierarchyLevels, RuntimeLevelType, VariableEntryType } from '@metad/ocap-core'
 import { nonBlank } from '../helpers'
 
 /**
@@ -82,13 +82,20 @@ ${prepend('      ', item.description)}` : null,
 ).join('\n')}
 ` + (variables.length ? 
 `variables:
-${variables.map((variable) => 
-`  - name: ${variable.name}
-    caption: ${variable.caption}
-    referenceDimension: ${variable.referenceDimension}
-    referenceHierarchy: ${variable.referenceHierarchy}
-    defaultValueKey: ${variable.defaultLow || ''}
-    defaultValueCaption: ${variable.defaultLowCaption || ''}`
+${variables.map((variable) =>
+  [
+  `  - name: ${variable.name}`,
+  `    caption: ${variable.caption}`,
+  `    referenceDimension: ${variable.referenceDimension}`,
+  `    referenceHierarchy: ${variable.referenceHierarchy}`,
+  variable.variableEntryType === VariableEntryType.Required?
+  `    required: true` : null,
+  variable.defaultLow?
+  `    defaultValueKey: ${variable.defaultLow}` : null,
+  variable.defaultLowCaption?
+  `    defaultValueCaption: ${variable.defaultLowCaption}` : null,
+  ``,
+  ].filter(nonBlank).join(`\n`)
 ).join('\n')}`
 : '')
 }

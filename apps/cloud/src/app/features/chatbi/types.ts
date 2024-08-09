@@ -1,4 +1,4 @@
-import { ChartSettings, DataSettings, Indicator, ISlicer } from '@metad/ocap-core'
+import { ChartAnnotation, ChartSettings, DataSettings, Indicator, ISlicer } from '@metad/ocap-core'
 
 export interface QuestionAnswer {
   key: string
@@ -21,4 +21,6 @@ export interface QuestionAnswer {
    */
   title: string
   visualType?: 'table' | 'chart'
+  chartAnnotation?: ChartAnnotation
+  variables?: ISlicer[]
 }

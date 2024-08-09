@@ -2,7 +2,7 @@ import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
 import { NxChartType, tryFixSlicer } from '@metad/core'
-import { ChartOrient, DataSettings, getEntityDimensions, PieVariant } from '@metad/ocap-core'
+import { assignDeepOmitBlank, ChartOrient, DataSettings, getEntityDimensions, ISlicer, PieVariant } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
@@ -16,6 +16,73 @@ export function injectCreateChartTool() {
   const chatbiService = inject(ChatbiService)
   const translate = inject(TranslateService)
 
+  const CHART_TYPES = [
+    {
+      name: translate.instant('PAC.ChatBI.Chart_Line', { Default: 'Line' }),
+      type: NxChartType.Line,
+      orient: ChartOrient.vertical,
+      chartOptions: {
+        legend: {
+          show: true
+        },
+        tooltip: {
+          appendToBody: true
+        }
+      }
+    },
+    {
+      name: translate.instant('PAC.ChatBI.Chart_Column', { Default: 'Column' }),
+      type: NxChartType.Bar,
+      orient: ChartOrient.vertical,
+      chartOptions: {
+        legend: {
+          show: true
+        },
+        tooltip: {
+          appendToBody: true
+        }
+      }
+    },
+    {
+      name: translate.instant('PAC.ChatBI.Chart_Bar', { Default: 'Bar' }),
+      type: NxChartType.Bar,
+      orient: ChartOrient.horizontal,
+      chartOptions: {
+        legend: {
+          show: true
+        },
+        tooltip: {
+          appendToBody: true
+        }
+      }
+    },
+    {
+      name: translate.instant('PAC.ChatBI.Chart_Pie', { Default: 'Pie' }),
+      type: NxChartType.Pie,
+      variant: PieVariant.None,
+      chartOptions: {
+        seriesStyle: {
+          __showitemStyle__: true,
+          itemStyle: {
+            borderColor: 'white',
+            borderWidth: 1,
+            borderRadius: 10
+          }
+        },
+        __showlegend__: true,
+        legend: {
+          type: 'scroll',
+          orient: 'vertical',
+          right: 0,
+          align: 'right'
+        },
+        tooltip: {
+          appendToBody: true
+        }
+      }
+    }
+  ]
+
   const answerTool = new DynamicStructuredTool({
     name: 'answerQuestion',
     description: 'Create chart answer for the question',
@@ -25,80 +92,42 @@ export function injectCreateChartTool() {
       try {
 
         const entityType = chatbiService.entityType()
-
-        const { chartAnnotation, slicers, chartOptions } = transformCopilotChart(answer.chart, entityType)
-        const _slicers = (answer.slicers || slicers)?.map((slicer) => tryFixSlicer(slicer, entityType))
-        const chartTypes = [
-          {
-            name: translate.instant('PAC.ChatBI.Chart_Line', { Default: 'Line' }),
-            type: NxChartType.Line,
-            orient: ChartOrient.vertical,
-            chartOptions: {
-              legend: {
-                show: true
-              },
-              tooltip: {
-                appendToBody: true
-              }
-            }
-          },
-          {
-            name: translate.instant('PAC.ChatBI.Chart_Column', { Default: 'Column' }),
-            type: NxChartType.Bar,
-            orient: ChartOrient.vertical,
-            chartOptions: {
-              legend: {
-                show: true
-              },
-              tooltip: {
-                appendToBody: true
-              }
-            }
-          },
-          {
-            name: translate.instant('PAC.ChatBI.Chart_Bar', { Default: 'Bar' }),
-            type: NxChartType.Bar,
-            orient: ChartOrient.horizontal,
-            chartOptions: {
-              legend: {
-                show: true
-              },
-              tooltip: {
-                appendToBody: true
-              }
-            }
-          },
-          {
-            name: translate.instant('PAC.ChatBI.Chart_Pie', { Default: 'Pie' }),
-            type: NxChartType.Pie,
-            variant: PieVariant.None,
-            chartOptions: {
-              seriesStyle: {
-                __showitemStyle__: true,
-                itemStyle: {
-                  borderColor: 'white',
-                  borderWidth: 1,
-                  borderRadius: 10
-                }
-              },
-              __showlegend__: true,
-              legend: {
-                type: 'scroll',
-                orient: 'vertical',
-                right: 0,
-                align: 'right'
-              },
-              tooltip: {
-                appendToBody: true
-              }
-            }
+        const finalAnswer = {} as QuestionAnswer
+        if (answer.dataSettings) {
+          finalAnswer.dataSettings = answer.dataSettings as DataSettings
+        }
+        if (answer.variables) {
+          finalAnswer.variables = answer.variables as ISlicer[]
+        }
+        if (answer.slicers) {
+          finalAnswer.slicers = answer.slicers.map((slicer: any) => tryFixSlicer(slicer, entityType))
+        }
+        
+        if (answer.chartType) {
+          const { chartAnnotation, chartOptions } = transformCopilotChart(answer, entityType)
+          const chartTypes = [...CHART_TYPES]
+          const index = chartTypes.findIndex(
+            ({ type, orient }) => type === chartAnnotation.chartType.type && orient === chartAnnotation.chartType.orient
+          )
+          if (index > -1) {
+            chartAnnotation.chartType = chartTypes.splice(index, 1)[0]
           }
-        ]
-        const index = chartTypes.findIndex(
-          ({ type, orient }) => type === chartAnnotation.chartType.type && orient === chartAnnotation.chartType.orient
-        )
-        if (index > -1) {
-          chartAnnotation.chartType = chartTypes.splice(index, 1)[0]
+          finalAnswer.chartAnnotation = chartAnnotation
+          finalAnswer.chartOptions = chartOptions
+          finalAnswer.chartSettings = {
+            chartTypes,
+            universalTransition: true
+          }
+        }
+
+        chatbiService.updateAnswer(finalAnswer)
+
+        const slicers = []
+        if (chatbiService.answer().variables) {
+          slicers.push(...chatbiService.answer().variables)
+        }
+        if (chatbiService.answer().slicers) {
+          slicers.push(...chatbiService.answer().slicers)
         }
 
         chatbiService.appendAiMessageData([
@@ -106,8 +135,8 @@ export function injectCreateChartTool() {
             {
               key: nanoid(),
               dataSettings: {
-                ...(answer.dataSettings ?? {}),
-                chartAnnotation,
+                ...(chatbiService.answer().dataSettings ?? {}),
+                chartAnnotation: chatbiService.answer().chartAnnotation,
                 presentationVariant: {
                   maxItems: answer.top,
                   groupBy: getEntityDimensions(entityType).map((property) => ({
@@ -117,12 +146,9 @@ export function injectCreateChartTool() {
                   }))
                 }
               } as DataSettings,
-              chartOptions,
-              chartSettings: {
-                chartTypes,
-                universalTransition: true
-              },
-              slicers: _slicers,
+              chartOptions: chatbiService.answer().chartOptions,
+              chartSettings: chatbiService.answer().chartSettings,
+              slicers: slicers.length ? slicers : null,
               visualType: 'chart'
             } as Partial<QuestionAnswer>,
             answer.conclusion

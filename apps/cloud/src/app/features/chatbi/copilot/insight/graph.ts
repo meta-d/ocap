@@ -4,6 +4,7 @@ import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
 import {
   createAgentStepsInstructions,
+  CubeVariablePrompt,
   injectDimensionMemberTool,
   makeCubeRulesPrompt,
   PROMPT_RETRIEVE_DIMENSION_MEMBER
@@ -47,7 +48,7 @@ ${createAgentStepsInstructions(
   `Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
   `Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a calculated measure for that.`,
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
-  `If there are variables in the cube, please add the variables (Use variable name as dimension, defaultValueKey and defaultValueCaption as the default member) to the slicers in tool.`,
+  CubeVariablePrompt,
   `Add the time and slicers to slicers in tool`,
   `Final call 'answerQuestion' tool to answer question, use the complete conditions to answer`
 )}

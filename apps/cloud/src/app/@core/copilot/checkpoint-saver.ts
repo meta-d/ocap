@@ -18,7 +18,6 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
   }
 
   async getTuple(config: RunnableConfig): Promise<CheckpointTuple | undefined> {
-    console.log(`get tuple:`, config.configurable)
     const { thread_id, checkpoint_id } = config.configurable || {}
     const row = await firstValueFrom(
       this.#httpClient
@@ -64,7 +63,6 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
   }
 
   async put(config: RunnableConfig, checkpoint: Checkpoint, metadata: CheckpointMetadata): Promise<RunnableConfig> {
-    console.log(`put checkpoint:`, config, checkpoint, metadata)
     await firstValueFrom(
       this.#httpClient.post(API_COPILOT_CHECKPOINT, {
         thread_id: config.configurable?.thread_id,

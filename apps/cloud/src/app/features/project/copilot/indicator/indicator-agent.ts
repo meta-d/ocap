@@ -1,5 +1,5 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { makeCubeRulesPrompt, MEMBER_RETRIEVER_TOOL_NAME } from '@metad/core'
+import { CubeVariablePrompt, makeCubeRulesPrompt, MEMBER_RETRIEVER_TOOL_NAME } from '@metad/core'
 import { Route } from '../../../../@core/copilot'
 import { markdownBusinessAreas, markdownTags } from '../schema'
 import { promptIndicatorCode } from '../prompt'
@@ -19,20 +19,7 @@ export async function createIndicatorWorker(
 4. First, select a suitable measure from the Measures of the Cube as the measure field for defining the basic type of indicator. If the measure field of the basic indicator cannot meet the requirements, consider creating an MDX formula of calculated measure as the formula for the derived indicator. You don't need to multiply by 100 when defining a percentage formula
 5. Set all dimensions (not hierarchy) not used in filters or formula or calendar to the 'dimensions' field.
 6. If the indicator value is a ratio or percentage, you need to set unit to '%'.
-7. If the cube has variables then all variables with defaultValueKey are added to the indicator's variables property, where each variable has the format:
-{
-  dimension: {
-    dimension: variable.referenceDimension,
-    hierarchy: variable.referenceHierarchy,
-    parameter: variable.name
-  },
-  members: [
-    {
-      key: variable.defaultValueKey,
-      caption: variable.defaultValueCaption
-    }
-  ]
-}.
+7. ${CubeVariablePrompt}
 8. Select the appropriate Business Areas from the following to fill in the businessAreaId field:
 ${markdownBusinessAreas(businessAreas())}
 9. Select the relevant tags from the following and fill in the tags field:
