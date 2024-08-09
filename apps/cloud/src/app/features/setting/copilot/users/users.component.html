@@ -59,7 +59,7 @@
       <ngm-input type="number" simple [disabled]="loading()" [(ngModel)]="tokenLimit" />
       <button mat-icon-button class="text-gray-400"
         [disabled]="loading()"
-        [matTooltip]="'PAC.'"
+        [matTooltip]="'PAC.ChatBI.Save' | translate: {Default: 'Save'}"
         (click)="save(id)"
       >
         <mat-icon fontSet="material-icons-outlined">save</mat-icon>
@@ -67,7 +67,7 @@
     } @else {
       <button mat-icon-button class="text-gray-400"
         [disabled]="loading()"
-        [matTooltip]="''"
+        [matTooltip]="'PAC.ChatBI.RenewTokenLimit' | translate: {Default: 'Renew token limit'}"
         (click)="renewToken(id)"
       >
         <mat-icon fontSet="material-icons-outlined">autorenew</mat-icon>

@@ -193,7 +193,13 @@
       "MemberRetriever": "成员检索器",
       "Variables": "参数变量",
       "Knowledges": "知识库",
-      "IsDefault": "默认"
+      "IsDefault": "默认",
+      "Organization": "组织",
+      "Provider": "提供商",
+      "TokenUsed": "已用(Token)",
+      "TokenLimit": "限制(Token)",
+      "TokenTotalUsed": "累计使用(Token)",
+      "Usages": "使用量"
     },
     "MENU": {
       "Certification": "认证",
@@ -1376,7 +1382,9 @@
       "Chart_Column": "柱形图",
       "Chart_Bar": "条形图",
       "Chart_Pie": "饼图",
-      "NewCalculatedMeasures": "新增计算指标"
+      "NewCalculatedMeasures": "新增计算指标",
+      "RenewTokenLimit": "重置 Token 限制",
+      "Save": "保存"
     },
     "Home": {
       "Insight": {
