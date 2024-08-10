@@ -1,21 +1,18 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { inject, Injectable } from '@angular/core'
 import { BusinessAreaRole, IBusinessArea, IBusinessAreaUser } from '@metad/contracts'
 import { TreeNodeInterface, hierarchize } from '@metad/ocap-core'
 import { Observable } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
 import { C_API_BUSINESS_AREA } from './constants'
 import { OrganizationBaseService } from './organization-base.service'
-import { Store } from './store.service'
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class BusinessAreasService extends OrganizationBaseService {
-  constructor(protected store: Store, public httpClient: HttpClient) {
-    super(store)
-  }
+  readonly httpClient = inject(HttpClient)
 
   getAll() {
     return super.selectOrganizationId().pipe(

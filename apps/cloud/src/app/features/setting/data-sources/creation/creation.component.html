@@ -10,25 +10,25 @@
         <mat-selection-list class="pac-ds-creation__types ngm-nav-list" formControlName="type" disableRipple [multiple]="false"
             [compareWith]="compareFn"
             >
-            <ng-container *ngIf="connectionTypes$ | async as connectionTypes; else loader">
-                <mat-list-option *ngFor="let item of connectionTypes" [value]="item" class="rounded-lg mb-1">
-                    <span>
-                        <img src="assets/images/db-logos/{{item.type}}.png" width="32" height="32" class="m-0 inline-block">
-                        {{item.name}}
-                    </span>
-                </mat-list-option>
-            </ng-container>
+          @if (connectionTypes$ | async; as connectionTypes) {
+            @for (item of connectionTypes; track item.id) {
+              <mat-list-option [value]="item" class="rounded-lg mb-1">
+                <span>
+                    <img src="assets/images/db-logos/{{item.type}}.png" width="32" height="32" class="m-0 inline-block">
+                    {{item.name}}
+                </span>
+              </mat-list-option>
+            }
+          } @else {
+            <list-content-loader />
+          }
         </mat-selection-list>
-
-        <ng-template #loader>
-            <list-content-loader></list-content-loader>
-        </ng-template>
     </form>
 
     <div class="flex justify-between items-center">
         <div ngmButtonGroup>
             <button mat-raised-button color="accent"
-                [disabled]="loading || formGroup.pristine || formGroup.invalid"
+                [disabled]="loading() || formGroup.pristine || formGroup.invalid"
                 (click)="ping()">
                 {{ 'PAC.ACTIONS.PING' | translate: {Default: 'Ping'} }}
             </button>

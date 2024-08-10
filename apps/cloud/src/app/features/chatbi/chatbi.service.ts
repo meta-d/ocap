@@ -106,17 +106,21 @@ export class ChatbiService {
     .getMy()
     .pipe(takeUntilDestroyed())
     .subscribe((items) => {
-      if (items.length) {
-        this.conversations.update((state) => [
-          ...state,
-          ...items.filter((item) => !state.some((conv) => conv.key === item.key))
-        ])
-        if (!this.conversationId()) {
-          this.setConversation(items[0].key)
-        }
-      } else {
-        this.newConversation()
+      this.conversations.set(items)
+      if (!this.conversationId()) {
+        this.setConversation(items[0]?.key)
       }
+      // if (items.length) {
+      //   this.conversations.update((state) => [
+      //     ...state,
+      //     ...items.filter((item) => !state.some((conv) => conv.key === item.key))
+      //   ])
+      //   if (!this.conversationId()) {
+      //     this.setConversation(items[0].key)
+      //   }
+      // } else {
+      //   this.newConversation()
+      // }
     })
 
   private saveSub = toObservable(this.conversation)
@@ -132,7 +136,7 @@ export class ChatbiService {
         return curr
       }),
       debounceTime(1000 * 5),
-      filter((conversation) => !isEqual(conversation, this.pristineConversation())),
+      filter((conversation) => !!conversation && !isEqual(conversation, this.pristineConversation())),
       switchMap((conversation) => this.conversationService.upsert(conversation)),
       takeUntilDestroyed()
     )

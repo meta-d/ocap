@@ -85,7 +85,6 @@ export class PACCopilotService extends NgmCopilotService {
   private tokenSub = this.tokenUsage$.pipe(
     takeUntilDestroyed(),
   ).subscribe((usage) => {
-    console.log(usage)
     this.#agentService.emit('copilot', {
       organizationId: this.#store.organizationId,
       copilot: pick(usage.copilot, 'organizationId', 'provider', 'id'),

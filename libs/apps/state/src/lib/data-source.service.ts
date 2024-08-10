@@ -4,14 +4,13 @@ import { IDataSource, IDataSourceAuthentication } from '@metad/contracts'
 import { map, Observable, switchMap } from 'rxjs'
 import { C_API_DATA_SOURCE } from './constants'
 import { OrganizationBaseService } from './organization-base.service'
-import { Store } from './store.service'
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataSourceService extends OrganizationBaseService {
-  constructor(store: Store, private http: HttpClient) {
-    super(store)
+  constructor(private http: HttpClient) {
+    super()
   }
 
   getAll(relations: string[] = []) {
@@ -19,7 +18,7 @@ export class DataSourceService extends OrganizationBaseService {
     const query = JSON.stringify({ relations, order: { updatedAt: 'DESC' } })
     params = params.append('$query', query)
 
-    return this.organizationId$.pipe(
+    return this.selectOrganizationId().pipe(
       switchMap(() => {
         return this.http.get<{ items: IDataSource[]; totals: number }>(C_API_DATA_SOURCE, {
           params

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core'
+import { Component, OnInit, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
@@ -34,7 +34,7 @@ export class PACDataSourceCreationComponent implements OnInit {
   private localAgent? = inject(LocalAgent, { optional: true })
   private serverAgent = inject(ServerAgent)
 
-  loading = false
+  readonly loading = signal(false)
 
   public readonly connectionTypes$ = this.typesService.types$.pipe(takeUntilDestroyed())
   public typeFormGroup = new FormGroup({
@@ -105,7 +105,7 @@ export class PACDataSourceCreationComponent implements OnInit {
 
   async ping() {
     const agent = this.formGroup.value.useLocalAgent ? this.localAgent : this.serverAgent
-    this.loading = true
+    this.loading.set(true)
     try {
       await agent.request(
         {
@@ -125,11 +125,11 @@ export class PACDataSourceCreationComponent implements OnInit {
         }
       )
 
-      this.loading = false
+      this.loading.set(false)
       this.toastrService.success('PAC.ACTIONS.PING', { Default: 'Ping' })
     } catch (err) {
       const message = getErrorMessage(err)
-      this.loading = false
+      this.loading.set(false)
       this.toastrService.error(message)
     }
   }

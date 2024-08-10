@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { OrganizationBaseService, Store } from '@metad/cloud/state'
+import { OrganizationBaseService } from '@metad/cloud/state'
 import { map, switchMap } from 'rxjs/operators'
 import { API_FEEDS } from '../constants/app.constants'
 
@@ -8,12 +8,14 @@ import { API_FEEDS } from '../constants/app.constants'
   providedIn: 'root'
 })
 export class FeedsService extends OrganizationBaseService {
-  constructor(private httpClient: HttpClient, store: Store) {
-    super(store)
+  constructor(private httpClient: HttpClient) {
+    super()
   }
 
   public getAll() {
-    return this.selectOrganizationId().pipe(switchMap(() => this.httpClient.get<{ items: any[] }>(API_FEEDS).pipe(map(({items}) => items))))
+    return this.selectOrganizationId().pipe(
+      switchMap(() => this.httpClient.get<{ items: any[] }>(API_FEEDS).pipe(map(({ items }) => items)))
+    )
   }
 
   public create(entity: any) {
@@ -29,6 +31,6 @@ export class FeedsService extends OrganizationBaseService {
   }
 
   public search(text: string) {
-    return this.httpClient.get<any>(API_FEEDS + '/search', {params: {text}})
+    return this.httpClient.get<any>(API_FEEDS + '/search', { params: { text } })
   }
 }

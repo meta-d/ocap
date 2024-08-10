@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
-import { API_PREFIX, SystemPrivacyFields } from '@metad/cloud/state'
+import { API_PREFIX, OrganizationBaseService, SystemPrivacyFields } from '@metad/cloud/state'
 import { CopilotChatMessage } from '@metad/copilot'
 import { Indicator } from '@metad/ocap-core'
 import { omit } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, map } from 'rxjs'
+import { BehaviorSubject, map, switchMap } from 'rxjs'
 import { IChatBIConversation, OrderTypeEnum } from '../types'
 
 const API_CHATBI_CONVERSATION = API_PREFIX + '/chatbi-conversation'
@@ -24,24 +24,27 @@ export interface ChatbiConverstion<T = any> {
 }
 
 @Injectable({ providedIn: 'root' })
-export class ChatBIConversationService {
+export class ChatBIConversationService extends OrganizationBaseService {
   readonly #logger = inject(NGXLogger)
   readonly httpClient = inject(HttpClient)
 
   readonly #refresh = new BehaviorSubject<void>(null)
 
   getMy() {
-    return this.httpClient
-      .get<{ items: IChatBIConversation[] }>(API_CHATBI_CONVERSATION + '/my', {
-        params: {
-          data: JSON.stringify({
-            order: {
-              createdAt: OrderTypeEnum.DESC
-            }
-          })
-        }
-      })
-      .pipe(map(({ items }) => items.map(convertChatBIConversationResult)))
+    return this.selectOrganizationId().pipe(
+      switchMap(() =>
+        this.httpClient.get<{ items: IChatBIConversation[] }>(API_CHATBI_CONVERSATION + '/my', {
+          params: {
+            data: JSON.stringify({
+              order: {
+                createdAt: OrderTypeEnum.DESC
+              }
+            })
+          }
+        })
+      ),
+      map(({ items }) => items.map(convertChatBIConversationResult))
+    )
   }
 
   getById(id: string) {
@@ -75,7 +78,7 @@ export function convertChatBIConversation(input: Partial<ChatbiConverstion>) {
     options: {
       messages: input.messages,
       indicators: input.indicators,
-      answer: input.answer,
+      answer: input.answer
     }
   } as IChatBIConversation
 }
