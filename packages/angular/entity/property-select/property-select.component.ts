@@ -694,8 +694,6 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
         this._disabled.set(this.disabled())
       }
     }, { allowSignalWrites: true })
-
-    // effect(() => console.log(this._entityType(), this.measures()))
   }
 
   writeValue(obj: any): void {
@@ -704,9 +702,9 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     if (obj && !isEqual(this.#value, this.formGroup.value)) {
       this.patchValue(this.#value)
       if (isMeasure(obj)) {
-        this.keyControl.setValue(obj.measure)
+        this.keyControl.setValue(obj.measure, {emitEvent: false})
       } else if (isDimension(obj)) {
-        this.keyControl.setValue(obj.level || obj.hierarchy || obj.dimension)
+        this.keyControl.setValue(obj.level || obj.hierarchy || obj.dimension, {emitEvent: false})
       }
     }
   }
@@ -753,7 +751,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     })
   }
 
-  patchValue(value) {
+  patchValue(value: string | Measure | Dimension) {
     if (isString(value)) {
       this.formGroup.patchValue({
         dimension: value,

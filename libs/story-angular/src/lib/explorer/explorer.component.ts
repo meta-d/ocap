@@ -179,7 +179,7 @@ export class StoryExplorerComponent {
         )
         // Udpate dimensions
         dimensions.push(...slicers
-          .filter((slicer) => !!slicer.dimension)
+          .filter((slicer) => !!slicer.dimension && !slicer.dimension.parameter)
           .map((slicer) => pick(slicer.dimension, 'dimension', 'hierarchy') as Dimension)
           .filter((d) => d.dimension))
       }

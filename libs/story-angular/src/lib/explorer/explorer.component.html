@@ -102,7 +102,7 @@
                             (cdkDropListDropped)="dropRow($event)"
                             [cdkDropListEnterPredicate]="dropRowPredicate">
                           @for (row of rows(); track i; let i = $index) {
-                            <ngm-chart-property class="w-full"
+                            <ngm-chart-property class="w-full group"
                                 removable
                                 [capacities]="dimensionCapacities()"
                                 [dataSettings]="dataSettings()"
@@ -113,9 +113,10 @@
                                 cdkDrag
                                 [cdkDragData]="row"
                             >
-                                <button ngmSuffix displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
-                                    (click)="$event.stopPropagation();$event.preventDefault();removeRow(i)">
-                                    <mat-icon>clear</mat-icon>
+                                <button ngmSuffix class="opacity-0 group-hover:opacity-100 transition-opacity"
+                                  displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
+                                  (click)="$event.stopPropagation();$event.preventDefault();removeRow(i)">
+                                  <mat-icon>clear</mat-icon>
                                 </button>
                             </ngm-chart-property>
                           }
@@ -129,7 +130,7 @@
                             (cdkDropListDropped)="dropColumn($event)"
                             [cdkDropListEnterPredicate]="dropColumnPredicate">
                           @for (item of columns(); track i; let i = $index) {
-                            <ngm-chart-property class="w-full"
+                            <ngm-chart-property class="w-full group"
                                 removable
                                 [capacities]="measureCapacities()"
                                 [dataSettings]="dataSettings()"
@@ -141,9 +142,10 @@
                                 cdkDrag
                                 [cdkDragData]="item"
                             >
-                                <button ngmSuffix displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
-                                    (click)="$event.stopPropagation();$event.preventDefault();removeColumn(i)">
-                                    <mat-icon>clear</mat-icon>
+                                <button ngmSuffix class="opacity-0 group-hover:opacity-100 transition-opacity"
+                                  displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
+                                  (click)="$event.stopPropagation();$event.preventDefault();removeColumn(i)">
+                                  <mat-icon>clear</mat-icon>
                                 </button>
                             </ngm-chart-property>
                           }
