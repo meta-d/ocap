@@ -23,11 +23,23 @@ export class CopilotCheckpoint extends TenantOrganizationBaseEntity implements I
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Column({ length: 10000 })
+	@Column({
+		type: 'bytea',
+		transformer: {
+			to: (value?: string) => (value ? Buffer.from(value, 'utf-8') : value),
+			from: (value?: Buffer) => (Buffer.isBuffer(value) ? value.toString('utf-8') : value)
+		}
+	})
 	checkpoint: string
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Column({ length: 10000 })
+	@Column({
+		type: 'bytea',
+		transformer: {
+			to: (value?: string) => (value ? Buffer.from(value, 'utf-8') : value),
+			from: (value?: Buffer) => (Buffer.isBuffer(value) ? value.toString('utf-8') : value)
+		}
+	})
 	metadata: string
 }
