@@ -23,10 +23,10 @@
             <p>{{ 'PAC.ChatBI.NewCalculatedMeasures' | translate: {Default: 'New calculated measures'} }}:</p>
           @for (id of answer.indicators; track id) {
             @if (indicators()[id]; as indicator) {
-            <a class="w-full inline-flex items-center justify-center p-2 text-base font-medium cursor-pointer
+            <a class="w-full inline-flex items-center justify-between p-2 text-base font-medium cursor-pointer
               text-gray-500 rounded-lg bg-gray-50 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-white"
               (click)="openIndicator(indicator, answer)">
-              <span>
+              <span class="flex-1">
                 <span class="w-full">{{indicator.name}}</span>
                 @if (indicator.unit) {
                   <span class="p-1 text-sm rounded-md bg-gray-100 dark:bg-zinc-600">{{indicator.unit}}</span>

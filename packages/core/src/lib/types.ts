@@ -373,3 +373,13 @@ export function formatting(value: number | string, formatting: Measure['formatti
   }
   return num
 }
+
+export type JSONValue =
+  | null
+  | string
+  | number
+  | boolean
+  | {
+      [x: string]: JSONValue
+    }
+  | Array<JSONValue>

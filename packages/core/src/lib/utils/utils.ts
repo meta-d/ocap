@@ -1,3 +1,4 @@
+import { JSONValue } from '../types'
 import { assign } from './assign'
 import { isArray } from './isArray'
 import { isNil } from './isNil'
@@ -9,7 +10,7 @@ export function isBlank(value: unknown) {
 }
 
 export function mergeOptions(obj1: object, ...objs: unknown[]) {
-  return assign(obj1, ...objs.map((item) => omitBlank(item)))
+  return assign(obj1, ...objs.map((item) => omitBlank(item as JSONValue)))
 }
 
 /**
@@ -37,7 +38,7 @@ export function assignDeepOmitBlank(source: object, target: object, dpth = 1) {
           { ...(source ?? {}) }
         )
     } else {
-      return assign(source, omitBlank(target))
+      return assign(source, omitBlank(target as JSONValue))
     }
   } else if (isArray<object>(target) && isArray<object>(source)) {
     const result = []
@@ -50,13 +51,13 @@ export function assignDeepOmitBlank(source: object, target: object, dpth = 1) {
   }
 }
 
-export function omitBlank(obj: Array<unknown> | object | unknown) {
+export function omitBlank<T>(obj: T): T {
   if (Array.isArray(obj)) {
-    return obj.map((value) => omitBlank(value))
+    return obj.map((value) => omitBlank(value)) as T
   } else if (isPlainObject(obj)) {
     return Object.entries(obj)
       .filter(([, v]) => !isBlank(v))
-      .reduce((r, [key, value]) => ({ ...r, [key]: omitBlank(value) }), {})
+      .reduce((r, [key, value]) => ({ ...r, [key]: omitBlank(value) }), {}) as T
   } else {
     return obj
   }

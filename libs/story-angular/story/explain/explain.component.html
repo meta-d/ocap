@@ -51,10 +51,9 @@
       <div>
         <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.DataSettings' | translate: {Default: 'Data Settings'} }}:</h5>
         <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4"
-          [code]="explain.data | json"
+          [code]="explain.data | omitBlank | json"
           language="json"
-          >
-        </ngm-prism-highlight>
+        />
       </div>
     }
     @case ('statements') {
