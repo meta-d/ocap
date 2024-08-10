@@ -2,7 +2,7 @@ import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
 import { NxChartType, tryFixSlicer } from '@metad/core'
-import { assignDeepOmitBlank, ChartOrient, DataSettings, getEntityDimensions, ISlicer, PieVariant } from '@metad/ocap-core'
+import { assignDeepOmitBlank, ChartOrient, DataSettings, getEntityDimensions, ISlicer, OrderBy, PieVariant } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
@@ -102,6 +102,9 @@ export function injectCreateChartTool() {
         if (answer.slicers) {
           finalAnswer.slicers = answer.slicers.map((slicer: any) => tryFixSlicer(slicer, entityType))
         }
+        if (answer.orders) {
+          finalAnswer.orders = answer.orders as OrderBy[]
+        }
         
         if (answer.chartType) {
           const { chartAnnotation, chartOptions } = transformCopilotChart(answer, entityType)
@@ -138,17 +141,18 @@ export function injectCreateChartTool() {
                 ...(chatbiService.answer().dataSettings ?? {}),
                 chartAnnotation: chatbiService.answer().chartAnnotation,
                 presentationVariant: {
-                  maxItems: answer.top,
                   groupBy: getEntityDimensions(entityType).map((property) => ({
                     dimension: property.name,
                     hierarchy: property.defaultHierarchy,
                     level: null
-                  }))
+                  })),
                 }
               } as DataSettings,
               chartOptions: chatbiService.answer().chartOptions,
               chartSettings: chatbiService.answer().chartSettings,
               slicers: slicers.length ? slicers : null,
+              orders: chatbiService.answer().orders,
+              top: chatbiService.answer().top,
               visualType: 'chart'
             } as Partial<QuestionAnswer>,
             answer.conclusion

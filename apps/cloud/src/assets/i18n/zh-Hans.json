@@ -199,7 +199,9 @@
       "TokenUsed": "已用(Token)",
       "TokenLimit": "限制(Token)",
       "TokenTotalUsed": "累计使用(Token)",
-      "Usages": "使用量"
+      "Usages": "使用量",
+      "Sort": "排序",
+      "Top": "前"
     },
     "MENU": {
       "Certification": "认证",

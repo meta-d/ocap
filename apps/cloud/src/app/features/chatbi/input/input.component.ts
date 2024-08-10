@@ -119,10 +119,7 @@ export class ChatbiInputComponent {
           conversationId: this.conversation().key
         })
       }
-      if (result) {
-        this.chatbiService.appendAiMessageData([result])
-      }
-      this.chatbiService.endAiMessage()
+      this.chatbiService.endAiMessage(result)
     } catch (err: any) {
       this.#logger.error(err)
       this.chatbiService.updateAiMessage({

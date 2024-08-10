@@ -1,4 +1,4 @@
-import { ChartAnnotation, ChartSettings, DataSettings, Indicator, ISlicer } from '@metad/ocap-core'
+import { ChartAnnotation, ChartSettings, DataSettings, Indicator, ISlicer, OrderBy } from '@metad/ocap-core'
 
 export interface QuestionAnswer {
   key: string
@@ -23,4 +23,10 @@ export interface QuestionAnswer {
   visualType?: 'table' | 'chart'
   chartAnnotation?: ChartAnnotation
   variables?: ISlicer[]
+  orders?: OrderBy[]
+  top?: number
+}
+
+export function isQuestionAnswer(input: unknown): input is QuestionAnswer {
+  return typeof (input as QuestionAnswer).key === 'string'
 }

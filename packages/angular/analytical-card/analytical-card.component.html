@@ -1,22 +1,26 @@
-@if (!options?.hideHeader) {
+@if (showHeader()) {
   <div class="ngm-card-header flex justify-between items-center z-10">
     <div class="ngm-card-header__title">{{ title }}</div>
     
     <div class="flex-1 flex justify-end items-center">
 
       <ng-content></ng-content>
-
-      <mat-button-toggle-group *ngIf="chartSettings?.chartTypes?.length" displayDensity="compact" ngmAppearance="color" color="primary"
+    @if (chartSettings()?.chartTypes?.length) {
+      <mat-button-toggle-group displayDensity="compact" ngmAppearance="color" color="primary"
         [(ngModel)]="chartType"  
       >
-        <mat-button-toggle *ngIf="_dataSettings()?.chartAnnotation?.chartType"
-          [value]="_dataSettings().chartAnnotation.chartType">
-          {{ _dataSettings().chartAnnotation.chartType.name || _dataSettings().chartAnnotation.chartType.type }}
-        </mat-button-toggle>
-        <mat-button-toggle *ngFor="let chartType of chartSettings.chartTypes" [value]="chartType">
-          {{ chartType?.name || chartType?.type }}
-        </mat-button-toggle>
+        @if (_dataSettings()?.chartAnnotation?.chartType) {
+          <mat-button-toggle [value]="_dataSettings().chartAnnotation.chartType">
+            {{ _dataSettings().chartAnnotation.chartType.name || _dataSettings().chartAnnotation.chartType.type }}
+          </mat-button-toggle>
+        }
+        @for (chartType of chartSettings().chartTypes; track $index) {
+          <mat-button-toggle [value]="chartType">
+            {{ chartType?.name || chartType?.type }}
+          </mat-button-toggle>
+        }
       </mat-button-toggle-group>
+    }
     </div>
 
     <div class="actions flex justify-around items-center">
@@ -24,16 +28,19 @@
       <ng-content select="[ngmAction]"></ng-content>
 
       <!-- data download -->
-      <button mat-icon-button *ngIf="!options?.hideDataDownload" displayDensity="cosy" [matTooltip]=" 'Ngm.AnalyticalCard.DataDownload' | translate: {Default: 'Data Download'} "
+    @if (!options()?.hideDataDownload) {
+      <button mat-icon-button displayDensity="cosy" [matTooltip]=" 'Ngm.AnalyticalCard.DataDownload' | translate: {Default: 'Data Download'} "
         (click)="downloadData()">
         <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
       </button>
-
+    }
       <!-- screenshot -->
-      <button mat-icon-button *ngIf="!options?.hideScreenshot" displayDensity="cosy" [matTooltip]=" 'Ngm.AnalyticalCard.Screenshot' | translate: {Default: 'Screenshot'} "
+    @if (!options()?.hideScreenshot) {
+      <button mat-icon-button displayDensity="cosy" [matTooltip]=" 'Ngm.AnalyticalCard.Screenshot' | translate: {Default: 'Screenshot'} "
         (click)="screenshot()">
         <mat-icon fontSet="material-icons-outlined">photo_camera</mat-icon>
       </button>
+    }
 
       <!-- Refresh & Loading icon -->
       <button mat-icon-button class="ngm-analytical-card__refresh" displayDensity="cosy"
@@ -42,11 +49,12 @@
         (click)="refresh()">
         <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
       </button>
-      <mat-spinner *ngIf="isLoading$ | async" class="ngm-analytical-card__loading"
+    @if (isLoading$ | async) {
+      <mat-spinner class="ngm-analytical-card__loading"
         [diameter]="20"
         [strokeWidth]="1"
-      >
-      </mat-spinner>
+      />
+    }
     </div>
   </div>
 }
@@ -77,7 +85,7 @@
   <ng-container *ngIf="!((error$ | async) || (empty$ | async))">
     <div echarts class="echarts-chart"
       [options]="options$ | async"
-      [theme]="chartSettings?.theme ?? 'default'"
+      [theme]="chartSettings()?.theme ?? 'default'"
       (chartInit)="onChartInit($event)"
       (optionsError)="onOptionsError($event)"
     >

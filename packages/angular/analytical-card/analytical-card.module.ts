@@ -32,7 +32,7 @@ import { AnalyticalCardComponent } from './analytical-card.component'
     TranslateModule,
     NgmCommonModule,
     NgmEntityPropertyComponent,
-    OcapCoreModule
+    OcapCoreModule,
   ],
   declarations: [AnalyticalCardComponent],
   exports: [AnalyticalCardComponent]

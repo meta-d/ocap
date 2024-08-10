@@ -1,3 +1,6 @@
+.text-color {
+  @apply text-zinc-700 dark:text-zinc-300;
+}
 :host::ng-deep {
   .ngm-analytical-card {
     .ngm-card-header {

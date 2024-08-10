@@ -55,6 +55,11 @@ export function generateMDXStatement(query: MDXQuery, entityType: EntityType, di
     query.slicers
   )
 
+  // Add order measure before add calculated members
+  if (rows.statement) {
+    rows.statement = serializeOrderRank(rows, query.orderbys, query.rank, getQueryDefaultMeasure(query))
+  }
+
   // 添加依赖的计算成员
   const calculationProperties = Object.values(entityType.properties).filter(isCalculationProperty)
   const parameters = Object.values(entityType.parameters || {})
@@ -64,7 +69,7 @@ export function generateMDXStatement(query: MDXQuery, entityType: EntityType, di
   cols.statement = serializeDimensionProperties(query.columns, cols.statement, entityType)
 
   if (rows.statement) {
-    rows.statement = serializeOrderRank(rows, query.orderbys, query.rank, getQueryDefaultMeasure(query))
+    // rows.statement = serializeOrderRank(rows, query.orderbys, query.rank, getQueryDefaultMeasure(query))
     rows.statement = serializeDimensionProperties(query.rows, rows.statement, entityType)
     // COLUMNS 轴不能为空
     mdx += `non empty ${cols.statement || '{}'} ON COLUMNS,\n${rows.zeroSuppression ? 'non empty ' : ''}${

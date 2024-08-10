@@ -252,7 +252,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
         return
       } else {
-        await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
+        return await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
       }
     } else {
       if (this.currentCommand()?.agent?.conversation) {
@@ -283,7 +283,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
 
-      await this.triggerGraphAgent(prompt, lastConversation, freeCommand, { context: this.copilotContext })
+      return await this.triggerGraphAgent(prompt, lastConversation, freeCommand, { context: this.copilotContext })
     }
   }
 
@@ -713,7 +713,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         this.deleteMessage(assistantId)
       }
 
-      return null
+      return lastMessage.content
     } catch (err: any) {
       console.error(err)
       this.upsertMessage({

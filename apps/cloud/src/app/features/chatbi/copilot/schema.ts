@@ -1,4 +1,4 @@
-import { ChartMeasureSchema, DataSettingsSchema, DimensionSchema, makeChartEnum, SlicerSchema } from '@metad/core'
+import { ChartMeasureSchema, DataSettingsSchema, DimensionSchema, makeChartEnum, OrderBySchema, SlicerSchema } from '@metad/core'
 import { EChartsOptions } from '@metad/story/story'
 import { z } from 'zod'
 
@@ -19,6 +19,7 @@ export const ChatAnswerSchema = z.object({
     .describe('Chart configuration'),
   dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),
   measures: z.array(ChartMeasureSchema).optional().describe('The measures used by the chart'),
+  orders: z.array(OrderBySchema).optional().describe('The orders used by the chart'),
   top: z.number().optional().describe('The number of top members'),
   slicers: z.array(SlicerSchema).optional().describe('The slicers to filter data'),
   variables: z.array(SlicerSchema).optional().describe('The variables to the query of cube'),

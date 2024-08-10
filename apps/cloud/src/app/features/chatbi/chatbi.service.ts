@@ -284,46 +284,48 @@ export class ChatbiService {
     })
   }
 
-  updateAiMessage(message: Partial<CopilotChatMessage>) {
+  _updateAiMessage(fn: (state: CopilotChatMessage) => CopilotChatMessage) {
     this.updateConversation((state) => {
       const id = this.aiMessage().id
       const messages = state.messages ? [...state.messages] : []
       const index = messages.findIndex((item) => item.id === id)
       if (index > -1) {
-        messages[index] = {
-          ...messages[index],
-          ...message
-        }
+        messages[index] = fn(messages[index])
       }
 
       return {
         ...state,
         messages
+      }
+    })
+  }
+
+  updateAiMessage(message: Partial<CopilotChatMessage>) {
+    this._updateAiMessage((state) => {
+      return {
+        ...state,
+        ...message
       }
     })
   }
 
   appendAiMessageData(data: any[]) {
-    this.updateConversation((state) => {
-      const id = this.aiMessage().id
-      const messages = state.messages ? [...state.messages] : []
-      const index = messages.findIndex((item) => item.id === id)
-      if (index > -1) {
-        messages[index] = {
-          ...messages[index],
-          data: [...((messages[index].data as Array<any>) ?? []), ...data]
-        }
-      }
-
+    this._updateAiMessage((state) => {
       return {
         ...state,
-        messages
+        data: [...((state.data as Array<any>) ?? []), ...data]
       }
     })
   }
 
-  endAiMessage() {
-    this.updateAiMessage({ status: 'done' })
+  endAiMessage(result: string) {
+    this._updateAiMessage((state) => {
+      return {
+        ...state,
+        content: state.data ? null : result,
+        status: 'done'
+      }
+    })
   }
 
   updateQuestionAnswer(key: string, answer: Partial<QuestionAnswer>) {
@@ -344,7 +346,7 @@ export class ChatbiService {
                         selectionVariant: null
                       }
                     : item.dataSettings,
-                  slicers: answer.slicers ?? answer.dataSettings.selectionVariant?.selectOptions ?? item.slicers
+                  slicers: answer.slicers ?? answer.dataSettings?.selectionVariant?.selectOptions ?? item.slicers
                 }
           )
         }

@@ -27,9 +27,10 @@
 <div *ngIf="editable && (placeholder$ | async)" class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
   @if (chartAnnotation) {
     <pac-analytical-chart-placeholder class="w-full h-full"
-      [chartAnnotation]="chartAnnotation"/>
+      [chartAnnotation]="chartAnnotation"
+    />
   } @else {
-    <pac-placeholder-add></pac-placeholder-add>
+    <pac-placeholder-add />
     <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.AnalyticalCard.Title' | translate: {Default: 'Analytical Card'} }}</span>
   }
 </div>
@@ -43,5 +44,5 @@
     [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer]"
     (valueChange)="setSelectOptions($event)"
     (click)="$event.stopPropagation()"
-  ></ngm-slicers>
+  />
 </mat-menu>
