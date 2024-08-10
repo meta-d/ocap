@@ -20,6 +20,7 @@ import {
   Catalog,
   convertSlicerToDimension,
   Cube,
+  DataType,
   Entity,
   EntitySet,
   EntityType,
@@ -455,7 +456,7 @@ export function mapIndicatorToMeasures(indicator: Indicator) {
     measures.push({
       name: measureName,
       caption: indicator.name,
-      dataType: 'number',
+      dataType: indicator.dataType || DataType.Unknown,
       role: AggregationRole.measure,
       calculationType: CalculationType.Calculated,
       formula: indicator.formula,
@@ -468,7 +469,7 @@ export function mapIndicatorToMeasures(indicator: Indicator) {
   measures.push({
     name,
     caption: indicator.name,
-    dataType: 'number',
+    dataType: indicator.dataType || DataType.Unknown,
     role: AggregationRole.measure,
     calculationType: CalculationType.Indicator,
     measure: measureName,

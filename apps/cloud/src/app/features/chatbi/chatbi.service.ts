@@ -187,9 +187,14 @@ export class ChatbiService {
         const dataSource = this.dataSource()
         const indicators = this.indicators()
         if (dataSource) {
+          const schema = dataSource.options.schema
+          const _indicators = [...(schema?.indicators ?? [])].filter(
+            (indicator) => !indicators.some((item) => item.id === indicator.id || item.code === indicator.code)
+          )
+          _indicators.push(...indicators)
           dataSource.setSchema({
             ...(dataSource.options.schema ?? {}),
-            indicators
+            indicators: _indicators
           } as Schema)
         }
       },
