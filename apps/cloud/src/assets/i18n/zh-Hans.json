@@ -150,7 +150,7 @@
       "Profile": "配置",
       "UpdatedAt": "更新于",
       "NoData": "无数据",
-      "Copilot": "副驾驶",
+      "Copilot": "智能助理",
       "CalculatedFormula": "计算公式",
       "Visits": "访问量",
       "UpdatedDate": "更新日期",
@@ -201,7 +201,8 @@
       "TokenTotalUsed": "累计使用(Token)",
       "Usages": "使用量",
       "Sort": "排序",
-      "Top": "前"
+      "Top": "前",
+      "You": "你"
     },
     "MENU": {
       "Certification": "认证",

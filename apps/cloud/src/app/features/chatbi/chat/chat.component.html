@@ -21,7 +21,7 @@
             <div class="flex-1 inline-flex flex-col items-start gap-y-3">
               <div class="w-full flex flex-col items-start">
                 <div class="w-full mb-1 font-semibold">
-                  Copilot<span class="text-xs text-violet-500 bg-violet-500/10 px-1.5 py-1 rounded-full m-2">ChatBI</span>
+                  {{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}<span class="text-xs text-violet-500 bg-violet-500/10 px-1.5 py-1 rounded-full m-2">ChatBI</span>
                 </div>
                 <div class="text-zinc-700 dark:text-zinc-300">
                   <p class="mb-1">{{'PAC.ChatBI.SystemMessage_1' | translate: {value: entityType()?.caption || cube() || '', Default: 'Hello, I am the BI copilot of Metad Analytics Cloud. The current dataset is "'+(entityType()?.caption || cube() || 'Empty')+'". You can click the top to switch.'} }}</p>
@@ -65,7 +65,7 @@
                   <div class="flex-1 inline-flex flex-col items-start gap-y-3">
                     <div class="w-full flex flex-col items-start">
                       <div class="w-full mb-1 font-semibold">
-                        Copilot<span class="text-xs text-violet-500 bg-violet-500/10 px-1.5 py-1 rounded-full m-2">ChatBI</span>
+                        {{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}<span class="text-xs text-violet-500 bg-violet-500/10 px-1.5 py-1 rounded-full m-2">ChatBI</span>
                       </div>
                       <pac-chatbi-answer class="w-full break-words flex flex-col items-stretch" [message]="message" />
                     </div>
@@ -97,7 +97,7 @@
                   </div>
                   <div class="w-[90%] md:w-auto md:max-w-[90%] inline-flex flex-col items-start gap-y-3">
                     <div class="w-full flex flex-col items-start">
-                      <div class="w-full mb-1 font-semibold">You</div>
+                      <div class="w-full mb-1 font-semibold">{{'PAC.KEY_WORDS.You' | translate: {Default: 'You'} }}</div>
                       <div class="w-full"></div>
                       <p class="w-full whitespace-pre-wrap text-base break-words text-zinc-700 dark:text-zinc-300">{{ message.content }}</p>
                     </div>

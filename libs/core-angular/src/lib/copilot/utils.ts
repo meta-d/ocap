@@ -185,5 +185,5 @@ export function markdownTable(table: EntityType) {
 }
 
 export function prepend(prefix: string, text: string) {
-  return text.split('\n').map(line => prefix + line).join('\n')
+  return text?.split('\n').map(line => prefix + line).join('\n') ?? ''
 }
