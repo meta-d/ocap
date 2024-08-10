@@ -21,12 +21,12 @@ import { compact, uniq } from 'lodash'
 import { Pool } from 'pg'
 import { DeleteResult, FindManyOptions, FindOneOptions, Repository, UpdateResult } from 'typeorm'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
-import { CopilotRoleCreateCommand } from '../copilot-role/commands/'
+import { CopilotRoleCreateCommand } from '../copilot-role/commands'
 import { CopilotService } from '../copilot/copilot.service'
 import { RequestContext } from '../core'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
 import { DATABASE_POOL_TOKEN } from '../database'
-import { CopilotKnowledge } from './copilot-example.entity'
+import { CopilotKnowledge } from './copilot-knowledge.entity'
 
 @Injectable()
 export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<CopilotKnowledge> {
@@ -48,9 +48,10 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 	async similaritySearch(
 		query: string,
-		options?: { role?: AiBusinessRole; command: string; k: number; filter: PGVectorStore['filter']; score?: number }
+		options?: { role?: AiBusinessRole; command: string | string[]; k: number; filter: PGVectorStore['filter']; score?: number }
 	) {
 		const { role, command, k, score, filter } = options ?? {}
+		const commands = Array.isArray(command) ? {in: command} : command
 
 		let vectorStore = await this.getVectorStore(role)
 		if (vectorStore) {
@@ -58,7 +59,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 			try {
 				results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, {
 					...(filter ?? {}),
-					command
+					command: commands
 				})
 			} catch (error) {
 				results = []
@@ -75,7 +76,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 					try {
 						results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, {
 							...(filter ?? {}),
-							command
+							command: commands
 						})
 
 						if (!results.length) {

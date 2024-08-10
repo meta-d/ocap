@@ -3,7 +3,7 @@ import { ExampleVectorStoreRetrieverInput, NgmCopilotService } from '@metad/copi
 import { CopilotExampleService } from '../services/copilot-example.service'
 import { ExampleVectorStoreRetriever } from './example-vector-retriever'
 
-export function injectExampleRetriever(command: string, fields?: ExampleVectorStoreRetrieverInput) {
+export function injectExampleRetriever(command: string | string[], fields?: ExampleVectorStoreRetrieverInput) {
   const copilotService = inject(NgmCopilotService)
   const copilotExampleService = inject(CopilotExampleService)
 

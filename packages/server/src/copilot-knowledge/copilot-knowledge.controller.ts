@@ -2,10 +2,11 @@ import { ICopilotRole, IPagination } from '@metad/contracts'
 import { Body, Controller, Get, HttpStatus, Logger, Post, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { CrudController, PaginationParams, TransformInterceptor } from '../core'
 import { ParseJsonPipe, UseValidationPipe } from '../shared/pipes'
-import { CopilotKnowledge } from './copilot-example.entity'
-import { CopilotKnowledgeService } from './copilot-example.service'
+import { CopilotKnowledge } from './copilot-knowledge.entity'
+import { CopilotKnowledgeService } from './copilot-knowledge.service'
+import { TransformInterceptor } from '../core/interceptors'
+import { CrudController, PaginationParams } from '../core/crud'
 
 @ApiTags('CopilotKnowledge')
 @ApiBearerAuth()
@@ -50,7 +51,7 @@ export class CopilotKnowledgeController extends CrudController<CopilotKnowledge>
 	@Post('similarity-search')
 	async similaritySearch(
 		@Body('query') query: string,
-		@Body('options') options?: { k: number; filter: any; score?: number; command: string }
+		@Body('options') options?: { k: number; filter: any; score?: number; command: string | string[] }
 	) {
 		this.#logger.debug(
 			`[CopilotExampleController] Retrieving documents for query: ${query} with k = ${options?.k} score = ${options?.score} and filter = ${options?.filter}`

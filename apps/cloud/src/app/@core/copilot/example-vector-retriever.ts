@@ -44,7 +44,7 @@ export class ExampleVectorStoreRetriever<V extends VectorStoreInterface = Vector
 
   filter?: V['FilterType']
 
-  command: string
+  command: string | string[]
   role: Signal<string>
   score?: number
   _vectorstoreType(): string {
@@ -52,7 +52,7 @@ export class ExampleVectorStoreRetriever<V extends VectorStoreInterface = Vector
   }
 
   constructor(
-    fields: VectorStoreRetrieverInput<V> & { command: string; role: Signal<string>; score?: number },
+    fields: VectorStoreRetrieverInput<V> & { command: string | string[]; role: Signal<string>; score?: number },
     private readonly service: CopilotExampleService
   ) {
     super(fields)

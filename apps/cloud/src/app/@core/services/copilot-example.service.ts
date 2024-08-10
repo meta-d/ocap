@@ -16,7 +16,7 @@ export class CopilotExampleService {
 
   similaritySearch(
     query: string,
-    options: { k?: number; filter?: VectorStoreInterface['FilterType']; command: string; role: string; score: number }
+    options: { k?: number; filter?: VectorStoreInterface['FilterType']; command: string | string[]; role: string; score: number }
   ) {
     return this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_KNOWLEDGE}/similarity-search`, { query, options })
   }
@@ -24,7 +24,7 @@ export class CopilotExampleService {
   maxMarginalRelevanceSearch(
     query: string,
     options: MaxMarginalRelevanceSearchOptions<VectorStoreInterface['FilterType']> & {
-      command: string
+      command: string | string[]
       role: string
     }
   ) {
