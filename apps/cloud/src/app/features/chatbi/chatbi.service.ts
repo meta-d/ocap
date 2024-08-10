@@ -160,7 +160,9 @@ export class ChatbiService {
           )
           this.detailModels.update((state) => ({ ...state, [model.id]: model }))
           this.registerModel(model)
-          this.setCube(model.cube)
+          if (!this.entity() && model.cube) {
+            this.setEntity(model.cube)
+          }
         }
       },
       { allowSignalWrites: true }
@@ -170,7 +172,7 @@ export class ChatbiService {
     effect(
       () => {
         if (this.model() && !this.entity()) {
-          this.setCube(this.model().cube)
+          this.setEntity(this.model().cube)
         }
       },
       { allowSignalWrites: true }
@@ -191,7 +193,7 @@ export class ChatbiService {
     )
   }
 
-  setCube(entity: string) {
+  setEntity(entity: string) {
     this.error.set(null)
     this.updateConversation((state) => ({ ...state, entity }))
   }

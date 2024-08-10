@@ -65,7 +65,7 @@ export class ChatbiModelsComponent {
   }
   
   onCubeChange(key: string) {
-    this.chatbiService.setCube(key)
+    this.chatbiService.setEntity(key)
   }
 
   toggleExpanded(option) {
