@@ -46,7 +46,7 @@ If you add two or more measures to the chart, and the measures have different un
 
 ${createAgentStepsInstructions(
   `Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
-  `Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a calculated measure for that.`,
+  `Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a indicator for that. After creating the indicator, you need to call the subsequent steps to re-answer the complete answer.`,
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
   CubeVariablePrompt,
   `Add the time and slicers to slicers in tool`,

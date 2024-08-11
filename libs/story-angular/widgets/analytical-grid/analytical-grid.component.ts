@@ -12,6 +12,7 @@ import { WidgetComponentType } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { EMPTY, Observable } from 'rxjs'
 import { map, switchMap, tap } from 'rxjs/operators'
+import { SlicersCapacity } from '@metad/ocap-angular/selection'
 
 export interface WidgetAnalyticalGridOptions extends AnalyticalGridOptions {
   strip: boolean
@@ -34,6 +35,8 @@ export class WidgetAnalyticalGridComponent extends AbstractStoryWidget<
   WidgetAnalyticalGridOptions,
   AnalyticalGridState
 > {
+  SlicersCapacity = SlicersCapacity
+  
   @HostBinding('class.pac-widget-analytical-grid') readonly isAnalyticalGridComponent = true
 
   private readonly settingsService? = inject(NxSettingsPanelService, { optional: true })

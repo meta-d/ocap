@@ -8,7 +8,7 @@ import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
 import { ChatbiService } from '../chatbi.service'
 import { QuestionAnswer } from '../types'
-import { transformCopilotChart } from './copilot'
+import { transformCopilotChart, transformCopilotKpi } from './copilot'
 import { ChatAnswerSchema } from './schema'
 
 export function injectCreateChartTool() {
@@ -121,6 +121,11 @@ export function injectCreateChartTool() {
             chartTypes,
             universalTransition: true
           }
+          finalAnswer.visualType = 'chart'
+        } else {
+          const { kpi } = transformCopilotKpi(answer, entityType)
+          finalAnswer.kpi = kpi
+          finalAnswer.visualType = 'kpi'
         }
 
         chatbiService.updateAnswer(finalAnswer)
@@ -150,10 +155,11 @@ export function injectCreateChartTool() {
               } as DataSettings,
               chartOptions: chatbiService.answer().chartOptions,
               chartSettings: chatbiService.answer().chartSettings,
+              kpi: chatbiService.answer().kpi,
               slicers: slicers.length ? slicers : null,
               orders: chatbiService.answer().orders,
               top: chatbiService.answer().top,
-              visualType: 'chart'
+              visualType: chatbiService.answer().visualType,
             } as Partial<QuestionAnswer>,
             answer.conclusion
           ].filter(Boolean))

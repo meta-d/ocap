@@ -1,5 +1,5 @@
 import { FocusOrigin, FocusableOption } from '@angular/cdk/a11y'
-import { AfterViewInit, DestroyRef, Directive, EventEmitter, HostBinding, Input, Output, computed, inject, signal } from '@angular/core'
+import { AfterViewInit, DestroyRef, Directive, EventEmitter, HostBinding, Input, Output, computed, inject, output, signal } from '@angular/core'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
 import {
   DataSettings,
@@ -228,6 +228,7 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
     )
   )
   @Output() dataSettingsChange = createEventEmitter(this._dataSettings$)
+  readonly explain = output<any[]>()
 
   dataChange?: EventEmitter<WidgetData>
   filterChange?: EventEmitter<IFilter[]>
@@ -437,8 +438,9 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
     return this.translateService?.instant(code, { Default: text, ...(params ?? {}) })
   }
 
-  setExplains(items) {
+  setExplains(items: unknown[]) {
     this.widgetService?.explains.set(items)
+    this.explain.emit(items)
   }
 
   @HostBinding('class.ngm-density__comfortable')

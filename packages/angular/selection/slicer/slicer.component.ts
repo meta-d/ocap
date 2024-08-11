@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output, computed, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { Component, EventEmitter, Output, booleanAttribute, computed, inject, input } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import {
   ISlicer,
   advancedSlicerAsString,
@@ -12,7 +12,7 @@ import {
   timeRangesSlicerAsString
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatest, combineLatestWith, filter, map } from 'rxjs'
+import { combineLatest, combineLatestWith, filter, map } from 'rxjs'
 import { BaseSlicersComponent } from '../base-slicers'
 
 @Component({
@@ -23,21 +23,19 @@ import { BaseSlicersComponent } from '../base-slicers'
 export class SlicerComponent extends BaseSlicersComponent {
   private translate = inject(TranslateService)
 
-  @Input() get slicer() {
-    return this.slicer$.value
-  }
-  set slicer(value) {
-    this.slicer$.next(value)
-  }
-  private slicer$ = new BehaviorSubject<ISlicer>(null)
-
-  @Input() disabled: boolean
-  @Input() limit: number
+  readonly slicer = input<ISlicer>()
+  readonly disabled = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
+  readonly limit = input<number>()
 
   @Output() removed = new EventEmitter()
   @Output() slicerChange = new EventEmitter<ISlicer>()
 
-  public readonly title$ = combineLatest([this.slicer$.pipe(filter((value) => !!value)), this.entityType$]).pipe(
+  public readonly title$ = combineLatest([
+    toObservable(this.slicer).pipe(filter((value) => !!value)),
+    this.entityType$
+  ]).pipe(
     map(([slicer, entityType]) => {
       const SELECTION = this.translate.instant('Ngm.Selection', { Default: {} })
 
@@ -61,18 +59,19 @@ export class SlicerComponent extends BaseSlicersComponent {
     })
   )
 
-  public readonly slicerSignal = toSignal(this.slicer$)
   public readonly members = computed(
     () =>
-      this.slicerSignal()
-        ?.members?.slice(0, this.limit || this.slicerSignal()?.members?.length)
+      this.slicer()
+        ?.members?.slice(0, this.limit() || this.slicer()?.members?.length)
         .filter(nonNullable) ?? []
   )
-  public readonly more = computed(() => (this.limit ? this.slicerSignal()?.members?.length - this.limit : 0))
+  public readonly more = computed(() => (this.limit ? this.slicer()?.members?.length - this.limit() : 0))
 
-  public readonly displayBehaviour$ = this.slicer$.pipe(map((slicer) => slicer?.dimension?.displayBehaviour))
+  public readonly displayBehaviour$ = toObservable(this.slicer).pipe(
+    map((slicer) => slicer?.dimension?.displayBehaviour)
+  )
 
-  public readonly advancedSlicer$ = this.slicer$.pipe(
+  public readonly advancedSlicer$ = toObservable(this.slicer).pipe(
     combineLatestWith(this.translate.stream('Ngm.Selection')),
     map(([slicer, SELECTION]) => {
       if (isAdvancedSlicer(slicer)) {
@@ -91,29 +90,29 @@ export class SlicerComponent extends BaseSlicersComponent {
     this.removed.emit()
   }
 
-  removeMember(index) {
+  removeMember(index: number) {
     const value = {
-      ...this.slicer,
-      members: [...this.slicer.members]
+      ...this.slicer(),
+      members: [...this.slicer().members]
     }
     value.members.splice(index, 1)
-    this.slicer = value
+
     this.slicerChange.emit(value)
   }
 
   async editSlicer() {
-    const slicer = await this.openSlicerEditor(this.slicer)
+    let slicer = await this.openSlicerEditor(this.slicer())
     if (slicer) {
-      this.slicer = {
-        ...this.slicer,
+      slicer = {
+        ...this.slicer(),
         ...slicer,
         // Update dimension
         dimension: {
-          ...this.slicer.dimension,
+          ...this.slicer().dimension,
           ...slicer.dimension
         }
       }
-      this.slicerChange.emit(this.slicer)
+      this.slicerChange.emit(slicer)
     }
   }
 }

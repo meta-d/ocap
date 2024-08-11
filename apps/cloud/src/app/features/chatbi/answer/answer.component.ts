@@ -31,6 +31,7 @@ import { isQuestionAnswer, QuestionAnswer } from '../types'
 import { ChatbiLoadingComponent } from '../loading/loading.component'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { ExplainComponent } from '@metad/story/story'
+import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
 
 @Component({
   standalone: true,
@@ -53,6 +54,7 @@ import { ExplainComponent } from '@metad/story/story'
 
     AnalyticalCardModule,
     AnalyticalGridModule,
+    NxWidgetKpiComponent,
     NgmSelectionModule,
     NgmEntityPropertyComponent,
     NgmSearchComponent,
@@ -110,7 +112,7 @@ export class ChatbiAnswerComponent {
 
   readonly charts = computed(() =>
     this.toArray(this.message().data).map((item) => {
-      if (this.typeof(item) === 'object' && this.isAnswer(item)) {
+      if (this.typeof(item) === 'object' && isQuestionAnswer(item)) {
         const dataSettings = (<QuestionAnswer>item).dataSettings
         return {
           dataSettings: {
@@ -119,9 +121,10 @@ export class ChatbiAnswerComponent {
               ...(dataSettings.presentationVariant ?? {}),
               maxItems: (<QuestionAnswer>item).top,
               sortOrder: (<QuestionAnswer>item).orders
-            }
+            },
+            KPIAnnotation: item.kpi
           },
-          chartSettings: this.toChartSettings(item as unknown as QuestionAnswer)
+          chartSettings: this.toChartSettings(item as unknown as QuestionAnswer),
         }
       }
     })

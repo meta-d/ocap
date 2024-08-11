@@ -58,6 +58,7 @@
     [slicers]="selectOptions$ | async"
     [dataSettings]="dataSettings$ | async"
     [limit]="5"
+    [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer, SlicersCapacity.Variable]"
     (valueChange)="setSelectOptions($event)"
     (click)="$event.stopPropagation()"
   ></ngm-slicers>

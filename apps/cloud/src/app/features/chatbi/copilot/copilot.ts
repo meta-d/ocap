@@ -5,13 +5,14 @@ import {
   ChartDimension,
   ChartMeasure,
   EntityType,
+  KPIType,
   assignDeepOmitBlank,
   omit
 } from '@metad/ocap-core'
 import { cloneDeep, upperFirst } from 'lodash-es'
 
 /**
- * Transform copilot answer to chart annotation
+ * Transform copilot answer to chart annotation or kpi
  *
  * @param answer Answer from copilot
  * @param entityType Entity type of the cube
@@ -77,14 +78,31 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
       } as ChartMeasure)
   )
 
-  // // Default order measure
-  // if (!chartAnnotation.measures.some((measure) => measure.order)) {
-  //   chartAnnotation.measures[0].order = OrderDirection.DESC
-  // }
-
   return {
     chartAnnotation,
     slicers: answer.slicers ?? answer.filters, // 因为过滤器会被翻译成 filters
     chartOptions: answer.chartOptions ?? answer.chartType?.chartOptions
+  }
+}
+
+export function transformCopilotKpi(answer: any, entityType: EntityType) {
+  const KPIAnnotation = {} as KPIType
+  const measures = answer.measure ? [answer.measure] : answer.measures ?? []
+  if (measures.length === 0) {
+    throw new Error('At least one measure is required.')
+  }
+
+  KPIAnnotation.DataPoint = {
+    Value: {
+      ...measures[0],
+      dimension: C_MEASURES,
+      formatting: {
+        shortNumber: true
+      },
+    }
+  }
+
+  return {
+    kpi: KPIAnnotation,
   }
 }

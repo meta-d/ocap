@@ -1,4 +1,4 @@
-import { ChartAnnotation, ChartSettings, DataSettings, Indicator, ISlicer, OrderBy } from '@metad/ocap-core'
+import { ChartAnnotation, ChartSettings, DataSettings, ISlicer, KPIType, OrderBy } from '@metad/ocap-core'
 
 export interface QuestionAnswer {
   key: string
@@ -20,8 +20,9 @@ export interface QuestionAnswer {
    * @deprecated 还在用吗？
    */
   title: string
-  visualType?: 'table' | 'chart'
+  visualType?: 'table' | 'chart' | 'kpi'
   chartAnnotation?: ChartAnnotation
+  kpi?: KPIType
   variables?: ISlicer[]
   orders?: OrderBy[]
   top?: number

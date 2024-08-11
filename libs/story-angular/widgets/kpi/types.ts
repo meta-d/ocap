@@ -1,7 +1,8 @@
 import { Intent } from "@metad/core"
 
 export interface NxWidgetKPIOptions {
-  icon: string
+  showToolbar?: boolean
+  icon?: string
   unit?: string
   unitSemantics?: 'currency-code' | 'unit-of-measure' | string
   layoutDirection?: 'row' | 'column'
@@ -16,8 +17,8 @@ export interface NxWidgetKPIOptions {
   deviationText?: string
   nanPlaceholder?: string
 
-  valueText: string
-  targetText: string
+  valueText?: string
+  targetText?: string
 
   intent?: Intent
 }

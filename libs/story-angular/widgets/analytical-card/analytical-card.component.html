@@ -18,7 +18,9 @@
       [matMenuTriggerFor]="filtersMenu"
       #mt="matMenuTrigger"
       [class.active]="mt.menuOpen"
-      >
+      [matTooltip]="'Story.Common.Slicers' | translate: {Default: 'Slicers'}"
+      matTooltipPosition="above"
+    >
       <mat-icon fontSet="material-icons-outlined">filter_alt</mat-icon>
     </button>
   </div>
@@ -41,7 +43,7 @@
   <ngm-slicers class="overflow-hidden" inline editable [slicers]="selectOptions$ | async"
     [dataSettings]="dataSettings$ | async"
     [limit]="5"
-    [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer]"
+    [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer, SlicersCapacity.Variable]"
     (valueChange)="setSelectOptions($event)"
     (click)="$event.stopPropagation()"
   />
