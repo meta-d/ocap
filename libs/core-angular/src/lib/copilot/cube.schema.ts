@@ -54,18 +54,6 @@ export const MemberSchema = z.object({
   caption: z.string().optional().describe('the caption of dimension member')
 })
 
-export const SlicerSchema = z.object({
-  dimension: z
-    .object({
-      dimension: z.string().describe('The name of the dimension'),
-      hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
-      level: z.string().optional().describe('The name of the level in the hierarchy'),
-      parameter: z.string().optional().describe('The name of variable reference to')
-    })
-    .describe('dimension of the slicer'),
-  members: z.array(MemberSchema).describe('Members in the slicer')
-})
-
 export const DimensionMemberSchema = z.object({
   ...baseDimensionSchema,
   members: z.array(MemberSchema).optional().describe('Members in the dimension')
@@ -82,10 +70,6 @@ export const CalculationSchema = z.object({
     unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
     decimal: z.number().optional().describe('The decimal of value when formatting the measure')
   }).optional().describe('The formatting config of this measure')
-})
-
-export const VariableSchema = z.object({
-  variable: z.string().describe('The name of the variable'),
 })
 
 /**
@@ -150,13 +134,3 @@ export function tryFixSlicer(slicer: ISlicer, entityType: EntityType) {
     dimension: tryFixDimension(slicer.dimension, entityType)
   }
 }
-
-// export function tryFixMembers(dimension: Dimension, entityType: EntityType) {
-//   return dimension ? {
-//     ...dimension,
-//     members: dimension.members?.map((member: any) => ({
-//       ...member,
-//       key: member.key.startsWith(dimension.hierarchy)
-//     }),
-//   } : dimension
-// }

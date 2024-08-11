@@ -64,7 +64,8 @@ export class WidgetAnalyticalGridComponent extends AbstractStoryWidget<
   }
 
   onSlicersChanging(slicers: ISlicer[]) {
-    this.slicersChange.emit(slicers)
+    // this.slicersChange.emit(slicers)
+    this.linkSlicersChange.emit(slicers)
 
     // Pin this table to be not filterd by outer slicers if selected item
     this.pin = !!slicers?.length

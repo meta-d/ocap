@@ -304,7 +304,8 @@ export class NxStoryWidgetComponent implements OnInit, AfterViewInit {
     })
   )
 
-  public readonly linkedAnalysis$ = this.stateService.linkedAnalysis$
+  // public readonly linkedAnalysis$ = this.stateService.linkedAnalysis$
+  readonly linkedAnalysis = this.stateService.linkedAnalysis
 
   public readonly comments$ = toObservable(this.comments)
 
@@ -505,28 +506,27 @@ export class NxStoryWidgetComponent implements OnInit, AfterViewInit {
     /**
      * 切片器与关联分析事件
      */
-    componentRef.instance.slicersChange
-      ?.pipe(withLatestFrom(this.linkedAnalysis$), takeUntilDestroyed(this.destroyRef))
-      .subscribe(([slicers, linkedAnalysis]) => {
-        switch (linkedAnalysis?.interactionApplyTo) {
-          case LinkedInteractionApplyTo.OnlySelectedWidgets:
-            this.storyPointService.sendLinkedAnalysis({
-              originalWidget: this.widget().key,
-              linkedWidgets: linkedAnalysis.linkedWidgets,
-              slicers
-            })
-            break
-          case LinkedInteractionApplyTo.OnlyThisWidget:
-            break
-          case LinkedInteractionApplyTo.AllWidgetsOnPage:
-          default:
-            // TODO: page 级别的全局过滤
-            this.storyPointService.sendLinkedAnalysis({
-              originalWidget: this.widget().key,
-              slicers
-            })
-        }
-      })
+    componentRef.instance.linkSlicersChange?.subscribe((slicers) => {
+      const linkedAnalysis = this.linkedAnalysis()
+      switch (linkedAnalysis?.interactionApplyTo) {
+        case LinkedInteractionApplyTo.OnlySelectedWidgets:
+          this.storyPointService.sendLinkedAnalysis({
+            originalWidget: this.widget().key,
+            linkedWidgets: linkedAnalysis.linkedWidgets,
+            slicers
+          })
+          break
+        case LinkedInteractionApplyTo.OnlyThisWidget:
+          break
+        case LinkedInteractionApplyTo.AllWidgetsOnPage:
+        default:
+          // TODO: page 级别的全局过滤
+          this.storyPointService.sendLinkedAnalysis({
+            originalWidget: this.widget().key,
+            slicers
+          })
+      }
+    })
   }
 
   onMenuClick(action) {

@@ -1,4 +1,4 @@
-import { ChartAnnotation, ChartSettings, DataSettings, ISlicer, KPIType, OrderBy } from '@metad/ocap-core'
+import { ChartAnnotation, ChartSettings, DataSettings, ISlicer, KPIType, OrderBy, TimeRangesSlicer } from '@metad/ocap-core'
 
 export interface QuestionAnswer {
   key: string
@@ -12,6 +12,7 @@ export interface QuestionAnswer {
    */
   message: string
   slicers: ISlicer[]
+  timeSlicers: TimeRangesSlicer[]
   /**
    * Snapshot of ids of current indicators (i.e. calculated measures)
    */

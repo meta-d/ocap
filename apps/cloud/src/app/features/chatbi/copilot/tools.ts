@@ -2,7 +2,7 @@ import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
 import { NxChartType, tryFixSlicer } from '@metad/core'
-import { assignDeepOmitBlank, ChartOrient, DataSettings, getEntityDimensions, ISlicer, OrderBy, PieVariant } from '@metad/ocap-core'
+import { assignDeepOmitBlank, ChartOrient, DataSettings, getEntityDimensions, ISlicer, OrderBy, PieVariant, TimeRangesSlicer } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
@@ -102,6 +102,9 @@ export function injectCreateChartTool() {
         if (answer.slicers) {
           finalAnswer.slicers = answer.slicers.map((slicer: any) => tryFixSlicer(slicer, entityType))
         }
+        if (answer.timeSlicers) {
+          finalAnswer.timeSlicers = answer.timeSlicers as TimeRangesSlicer[]
+        }
         if (answer.orders) {
           finalAnswer.orders = answer.orders as OrderBy[]
         }
@@ -136,6 +139,12 @@ export function injectCreateChartTool() {
         }
         if (chatbiService.answer().slicers) {
           slicers.push(...chatbiService.answer().slicers)
+        }
+        if (chatbiService.answer().timeSlicers) {
+          slicers.push(...chatbiService.answer().timeSlicers.map((slicer) => ({
+            ...slicer,
+            currentDate: 'TODAY',
+          })))
         }
 
         chatbiService.appendAiMessageData([

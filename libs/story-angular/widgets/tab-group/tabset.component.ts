@@ -10,6 +10,7 @@ import {
   ViewChild,
   computed,
   inject,
+  output,
   signal
 } from '@angular/core'
 import { ThemePalette } from '@angular/material/core'
@@ -101,8 +102,6 @@ export class NxWidgetTabGroupComponent implements IStoryWidget<NxWidgetTabsetOpt
   }
   public readonly _slicers = signal<ISlicer[]>([])
 
-  @Output() slicersChange = new EventEmitter<Array<ISlicer | IAdvancedFilter>>()
-  
   public readonly placeholder$ = computed(() => !this.options?.slides?.length)
 
   public slides$ = computed(() => {
@@ -120,6 +119,10 @@ export class NxWidgetTabGroupComponent implements IStoryWidget<NxWidgetTabsetOpt
   editable: boolean
 
   @Input() locale?: string
+
+  // @Output() slicersChange = new EventEmitter<Array<ISlicer | IAdvancedFilter>>()
+  readonly slicersChange = output<ISlicer[]>()
+  readonly linkSlicersChange = output<ISlicer[]>()
 
   @ViewChild(MatTabGroup) _tabGroup: MatTabGroup
 
@@ -144,6 +147,7 @@ export class NxWidgetTabGroupComponent implements IStoryWidget<NxWidgetTabsetOpt
   }
 
   onSlicersChange(event: ISlicer[]) {
-    this.slicersChange.emit(event)
+    // this.slicersChange.emit(event)
+    this.linkSlicersChange.emit(event)
   }
 }

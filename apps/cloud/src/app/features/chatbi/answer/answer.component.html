@@ -124,6 +124,7 @@
                   [dataSettings]="charts()[$index].dataSettings"
                   [slicers]="answer.slicers"
                   [options]="{showToolbar: true, shortNumber: true, digitsInfo: '0.1-1'}"
+                  (slicersChange)="updateSlicers($event)"
                   (explain)="setExplains($event)"
                 />
               }

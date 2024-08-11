@@ -167,7 +167,7 @@ export function calcRange(current: Date, range: TimeRange) {
       calcOffset(current, {
         direction: OffSetDirection.LookBack,
         granularity: range.granularity,
-        amount: range.lookBack || 0
+        amount: range.lookBack ?? -range.lookAhead
       }),
       range.granularity,
       range.formatter
@@ -177,7 +177,7 @@ export function calcRange(current: Date, range: TimeRange) {
       calcOffset(current, {
         direction: OffSetDirection.LookAhead,
         granularity: range.granularity,
-        amount: range.lookAhead || 0
+        amount: range.lookAhead ?? -range.lookBack
       }),
       range.granularity,
       range.formatter
@@ -234,7 +234,7 @@ export function timeRangesSlicerAsString(slicer: TimeRangesSlicer, i18nTimeRange
       (range) =>
         `${range.type}|${range.granularity}${
           range.type === TimeRangeType.Offset ? `(${range.current.direction}:${range.current.amount})` : ''
-        }:[${range.lookBack ?? 0}, ${range.lookAhead ?? 0}]`
+        }:[${isNil(range.lookBack) ? range.lookAhead ?? 0 : -range.lookBack}, ${isNil(range.lookAhead) ? -(range.lookBack ?? 0) : range.lookAhead}]`
     )
     .join(' & ')}`
 }
