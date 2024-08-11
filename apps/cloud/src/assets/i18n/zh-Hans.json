@@ -202,7 +202,9 @@
       "Usages": "使用量",
       "Sort": "排序",
       "Top": "前",
-      "You": "你"
+      "You": "你",
+      "ColumnChart": "柱形图",
+      "LineChart": "线图"
     },
     "MENU": {
       "Certification": "认证",

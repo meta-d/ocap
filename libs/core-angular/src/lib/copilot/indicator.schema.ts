@@ -21,7 +21,7 @@ export const IndicatorSchema = z
       .optional()
       .describe('The dimensions that not restricted by filters'),
     filters: z.array(SlicerSchema).optional().describe('The filters to restrict the indicator'),
-    variables: z.array(SlicerSchema).describe('The variables (parameters) of cube'),
+    variables: z.array(SlicerSchema).optional().describe('The variables (parameters) of cube'),
     measure: z.string().optional().describe(`Measure name when indicator type is 'BASIC'`),
     formula: z.string().optional().describe(`MDX formula when indicator type is 'DERIVE'`),
     unit: z.string().optional().describe(`The unit of indicator`),

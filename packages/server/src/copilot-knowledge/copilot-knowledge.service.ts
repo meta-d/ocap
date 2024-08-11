@@ -280,7 +280,11 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 				await this.repository.remove(items)
 			}
 
-			const examples = entities.filter((item) => (role ? item.role === role : !item.role)).map((example) => ({...example, input: example.input?.trim(), output: example.output?.trim() }))
+			const examples = entities.filter((item) => (role ? item.role === role : !item.role)).map((example) => ({
+				...example,
+				input: example.input ? `${example.input}`.trim() : null,
+				output: example.output ? `${example.output}`.trim() : null
+			}))
 				.filter((item) => !!item.command && !!item.input)
 			const roleExamples = await Promise.all(examples.map((entity) => super.create(entity)))
 			results.push(...roleExamples)

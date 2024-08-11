@@ -49,7 +49,7 @@ ${createAgentStepsInstructions(
   `Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a indicator for that. After creating the indicator, you need to call the subsequent steps to re-answer the complete answer.`,
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
   CubeVariablePrompt,
-  `Add the time and slicers to slicers in tool`,
+  `Add the time and slicers to slicers in tool and if the measure to be displayed is time-related, add the current period as a filter to the slicers.`,
   `Final call 'answerQuestion' tool to answer question, use the complete conditions to answer`
 )}
 `

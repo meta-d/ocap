@@ -1,4 +1,4 @@
-import { inject } from '@angular/core'
+import { inject, NgZone } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { DynamicStructuredTool } from '@langchain/core/tools'
@@ -16,6 +16,7 @@ export function injectCreateIndicatorTool() {
   const logger = inject(NGXLogger)
   const router = inject(Router)
   const route = inject(ActivatedRoute)
+  const zone = inject(NgZone)
   const projectService = inject(ProjectService)
 
   const businessAreas = projectService.businessAreas
@@ -41,7 +42,7 @@ export function injectCreateIndicatorTool() {
         createdAt: new Date(),
       } as Indicator)
 
-      setTimeout(async () => {
+      zone.run(async () => {
         await router.navigate(['indicators', indicator.id], {
           relativeTo: route
         })
