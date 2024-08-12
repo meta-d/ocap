@@ -20,7 +20,7 @@ export class MemberProcessor {
 			try {
 				const cubes = groupBy(members, 'cube')
 				for (const [cube, items] of Object.entries<any>(cubes)) {
-					const vectorStore = await this.memberService.getVectorStore(modelId, cube, organizationId)
+					const vectorStore = await this.memberService.getVectorStore(modelId, cube)
 					if (vectorStore) {
 						// const existed = await vectorStore.checkIndexExists()
 						// if (!existed) {

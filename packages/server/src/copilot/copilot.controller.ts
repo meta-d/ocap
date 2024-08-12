@@ -1,9 +1,9 @@
-import { PermissionsEnum } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, UseInterceptors } from '@nestjs/common'
+import { IPagination, PermissionsEnum } from '@metad/contracts'
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { DeepPartial } from 'typeorm'
-import { CrudController, TransformInterceptor } from '../core'
+import { CrudController, PaginationParams, TransformInterceptor } from '../core'
 import { PermissionGuard, Permissions } from './../shared';
 import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
@@ -15,6 +15,19 @@ import { CopilotService } from './copilot.service'
 export class CopilotController extends CrudController<Copilot> {
 	constructor(private readonly service: CopilotService, private readonly commandBus: CommandBus) {
 		super(service)
+	}
+
+	@ApiOperation({ summary: 'find all' })
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Found records' /* type: IPagination<T> */
+	})
+	@Get()
+	async findAll(
+		filter?: PaginationParams<Copilot>,
+		...options: any[]
+	): Promise<IPagination<Copilot>> {
+		return this.service.findAvalibles(filter)
 	}
 
 	@ApiOperation({ summary: 'Create new record' })

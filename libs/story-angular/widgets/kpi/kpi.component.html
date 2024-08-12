@@ -1,5 +1,23 @@
+@if (showToolbar()) {
+  <div class="flex justify-between items-center">
+    <span class="title"></span>
+
+    <div class="flex items-center gap-1">
+      <button mat-icon-button displayDensity="cosy" class="ngm-menu-trigger opacity-20 group-hover:opacity-100 duration-200"
+        [color]="(hasSlicers$ | async) ? 'accent':''"
+        [matMenuTriggerFor]="filtersMenu"
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen"
+        [matTooltip]="'Story.Common.Slicers' | translate: {Default: 'Slicers'}"
+        matTooltipPosition="above"
+        >
+        <mat-icon fontSet="material-icons-outlined">filter_alt</mat-icon>
+      </button>
+    </div>
+  </div>
+}
 @if (error()) {
-  <div class="pac-kpi-card__error ngm-card-error absolute left-0 top-0 w-full h-full overflow-auto 
+  <div class="pac-kpi-card__error ngm-card-error relative left-0 top-0 w-full h-full overflow-auto
     flex flex-col justify-center items-center"
   >
     <span class="text-2xl font-notoColorEmoji">🐞</span>
@@ -150,3 +168,17 @@
     <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.KPI.Title' | translate: {Default: 'KPI'} }}</span>
   </div>
 }
+
+
+
+<mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
+  <div class="text-base font-semibold">{{ 'Ngm.Selection.Slicers' | translate: {Default: "Slicers"} }}</div>
+
+  <ngm-slicers class="overflow-hidden" inline editable [slicers]="selectOptions$ | async"
+    [dataSettings]="dataSettings$ | async"
+    [limit]="5"
+    [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer, SlicersCapacity.Variable]"
+    (valueChange)="setSelectOptions($event)"
+    (click)="$event.stopPropagation()"
+  />
+</mat-menu>

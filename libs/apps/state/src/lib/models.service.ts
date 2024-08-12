@@ -1,23 +1,22 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { IDataSource, ISemanticModel, ISemanticModelMember } from '@metad/contracts'
-import { hierarchize, Indicator, omit, pick, SemanticModel as OcapSemanticModel, EntityType } from '@metad/ocap-core'
+import { IDataSource, ISemanticModel } from '@metad/contracts'
+import { hierarchize, Indicator, omit, pick, SemanticModel as OcapSemanticModel } from '@metad/ocap-core'
 import { StoryModel } from '@metad/story/core'
 import { zip } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
 import { BusinessAreasService } from './business-area.service'
 import { C_URI_API_MODELS, C_URI_API_MODEL_MEMBERS } from './constants'
 import { OrganizationBaseService } from './organization-base.service'
-import { Store } from './store.service'
 import { convertIndicatorResult, convertStoryModel } from './types'
 
 @Injectable({
   providedIn: 'root'
 })
 export class ModelsService extends OrganizationBaseService {
-  constructor(store: Store, public httpClient: HttpClient, private businessAreaService: BusinessAreasService) {
-    super(store)
+  constructor(public httpClient: HttpClient, private businessAreaService: BusinessAreasService) {
+    super()
   }
 
   getModels(path: string, query?) {
@@ -35,7 +34,7 @@ export class ModelsService extends OrganizationBaseService {
       params = params.appendAll(query)
     }
 
-    return this.organizationId$.pipe(
+    return this.selectOrganizationId().pipe(
       switchMap(() =>
         this.httpClient
           .get<{ items: Array<ISemanticModel> }>(C_URI_API_MODELS + path, {
@@ -109,7 +108,7 @@ export class ModelsService extends OrganizationBaseService {
       findInput['groupId'] = groupId
     }
 
-    return this.organizationId$.pipe(
+    return this.selectOrganizationId().pipe(
       switchMap(() =>
         this.httpClient
           .get<{ items: Array<ISemanticModel> }>(C_URI_API_MODELS, {

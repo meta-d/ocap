@@ -26,10 +26,13 @@ import {
 	CustomSmtp,
 	Language,
 	Copilot,
-	CopilotExample,
+	CopilotKnowledge,
 	CopilotRole,
 	StorageFile,
 	SecretToken,
+	CopilotUser,
+	CopilotOrganization,
+	CopilotCheckpoint
 } from './internal';
 
 export const coreEntities = [
@@ -60,8 +63,11 @@ export const coreEntities = [
 	Invite,
 	CustomSmtp,
 	Copilot,
-	CopilotExample,
+	CopilotKnowledge,
+	CopilotUser,
+	CopilotOrganization,
 	CopilotRole,
+	CopilotCheckpoint,
 	StorageFile,
 	SecretToken
 ];

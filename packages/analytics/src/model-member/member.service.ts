@@ -2,7 +2,7 @@ import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorsto
 import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
-import { OpenAIEmbeddingsProviders, ISemanticModel, ISemanticModelEntity } from '@metad/contracts'
+import { OpenAIEmbeddingsProviders, ISemanticModel, ISemanticModelEntity, AiProviderRole } from '@metad/contracts'
 import {
 	EntityType,
 	PropertyDimension,
@@ -96,7 +96,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	 */
 	async storeMembers(model: SemanticModel, cube: string, members: DeepPartial<SemanticModelMember[]>, entityType: EntityType) {
 		const entities = await this.bulkCreate(model, cube, members)
-		const vectorStore = await this.getVectorStore(model.id, entityType.name, model.organizationId)
+		const vectorStore = await this.getVectorStore(model.id, entityType.name)
 		if (vectorStore) {
 			await vectorStore.clear()
 			await vectorStore.addMembers(entities, entityType)
@@ -149,14 +149,12 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		return []
 	}
 
-	async getVectorStore(modelId: string, cube: string, organizationId: string = null) {
-		const where = {}
-		if (organizationId) {
-			where['organizationId'] = organizationId
+	async getVectorStore(modelId: string, cube: string) {
+		let copilot = await this.copilotService.findOneByRole(AiProviderRole.Primary)
+		if (!copilot?.enabled) {
+			copilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary)
 		}
-		const result = await this.copilotService.findAll({ where })
-		const copilot = result.items[0]
-		if (copilot && copilot.enabled && OpenAIEmbeddingsProviders.includes(copilot.provider)) {
+		if (copilot?.enabled && OpenAIEmbeddingsProviders.includes(copilot.provider)) {
 			const id = modelId ? `${modelId}${cube ? ':' + cube : ''}` : 'default'
 			if (!this.vectorStores.has(id)) {
 				const embeddings = new OpenAIEmbeddings({

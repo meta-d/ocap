@@ -10,6 +10,7 @@ import { PlaceholderAddComponent } from '@metad/story/story'
 import { WidgetAnalyticalCardComponent } from './analytical-card.component'
 import { AnalyticalChartPlaceholderComponent } from './chart-placeholder/chart-placeholder.component'
 import { NgmSelectionModule } from '@metad/ocap-angular/selection'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 
 @NgModule({
@@ -19,6 +20,7 @@ import { NgmSelectionModule } from '@metad/ocap-angular/selection'
     MatMenuModule,
     MatButtonModule,
     MatIconModule,
+    MatTooltipModule,
     TranslateModule,
     OcapCoreModule,
     NgmSelectionModule,

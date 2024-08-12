@@ -537,7 +537,8 @@ export class NxInputControlComponent extends AbstractStoryWidget<
 
   emitSlicer() {
     // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突
-    this.slicersChange.emit([structuredClone(this._slicer())])
+    // this.slicersChange.emit([structuredClone(this._slicer())])
+    this.linkSlicersChange.emit([structuredClone(this._slicer())])
   }
 
   openDesigner() {

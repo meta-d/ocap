@@ -4,15 +4,13 @@ import { BusinessType, IFavorite } from '@metad/contracts'
 import { map, switchMap } from 'rxjs/operators'
 import { C_URI_API_FAVORITES } from './constants'
 import { OrganizationBaseService } from './organization-base.service'
-import { Store } from './store.service'
-
 
 @Injectable({
   providedIn: 'root'
 })
 export class FavoritesService extends OrganizationBaseService {
-  constructor(store: Store, public httpClient: HttpClient) {
-    super(store)
+  constructor(public httpClient: HttpClient) {
+    super()
   }
 
   getAll() {
@@ -28,7 +26,7 @@ export class FavoritesService extends OrganizationBaseService {
       params = params.append('$query', JSON.stringify({ where: { type }, relations }))
     }
 
-    return this.organizationId$.pipe(
+    return this.selectOrganizationId().pipe(
       switchMap(() => this.httpClient
         .get<{ items: IFavorite[]; total: number }>(C_URI_API_FAVORITES, { params })
         .pipe(map(({ items }) => items))
@@ -52,7 +50,7 @@ export class FavoritesService extends OrganizationBaseService {
     }
     params = params.append('$query', JSON.stringify({ where: conditions, relations }))
 
-    return this.organizationId$.pipe(
+    return this.selectOrganizationId().pipe(
       switchMap(() => this.httpClient
         .get<{ items: IFavorite[]; total: number }>(C_URI_API_FAVORITES, { params })
         .pipe(map(({ items }) => items))

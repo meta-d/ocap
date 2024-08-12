@@ -1,11 +1,11 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { nanoid } from '@metad/copilot'
+import { CopilotChatMessage, nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { EntityType, Indicator, isEntityType, isEqual, isString, Schema } from '@metad/ocap-core'
+import { EntityType, Indicator, isEntityType, isEqual, isString, omitBlank, Schema } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import {
@@ -63,9 +63,8 @@ export class ChatbiService {
   readonly conversations = signal<ChatbiConverstion[]>([])
   readonly conversationId = signal<string | null>(null)
   readonly conversationKey = signal<string | null>(null)
-  readonly conversation = computed(() => {
-    return this.conversations()?.find((conv) => conv.key === this.conversationKey())
-  })
+  readonly conversation = computed(() => this.conversations()?.find((conv) => conv.key === this.conversationKey()))
+  readonly answer = computed(() => this.conversation()?.answer)
 
   readonly entityType = derivedAsync<EntityType>(() => {
     const dataSourceName = this.dataSourceName()
@@ -99,21 +98,19 @@ export class ChatbiService {
   })
 
   readonly pristineConversation = signal<ChatbiConverstion | null>(null)
-  readonly indicators = computed(() => this.conversation()?.indicators)
+  readonly indicators = computed(() => this.conversation()?.indicators ?? [])
+
+  readonly aiMessage = signal<CopilotChatMessage>(null)
 
   private allSub = this.conversationService
     .getMy()
     .pipe(takeUntilDestroyed())
     .subscribe((items) => {
-      if (items.length) {
-        this.conversations.update((state) => [
-          ...state,
-          ...items.filter((item) => !state.some((conv) => conv.key === item.key))
-        ])
-        if (!this.conversationId()) {
-          this.setConversation(items[0].key)
-        }
-      } else {
+      this.conversations.set(items)
+      if (!this.conversationId()) {
+        this.setConversation(items[0]?.key)
+      }
+      if (!this.conversationKey()) {
         this.newConversation()
       }
     })
@@ -124,18 +121,22 @@ export class ChatbiService {
       map(([prev, curr]) => {
         // Set pristine conversation when changed to new one.
         if (prev?.key !== curr?.key) {
-          this.pristineConversation.set(curr)
+          if (curr) {
+            this.pristineConversation.set(structuredClone(curr))
+          }
         }
         return curr
       }),
-      debounceTime(1000 * 10),
-      filter((conversation) => !isEqual(conversation, this.pristineConversation())),
+      debounceTime(1000 * 5),
+      filter((conversation) => !!conversation && !isEqual(conversation, this.pristineConversation())),
       switchMap((conversation) => this.conversationService.upsert(conversation)),
       takeUntilDestroyed()
     )
     .subscribe((conversation) => {
-      this.pristineConversation.set(conversation)
-      this._updateConversation(conversation.key, (state) => conversation)
+      this.pristineConversation.set(structuredClone(conversation))
+      if (this.conversation().id !== conversation.id) {
+        this._updateConversation(conversation.key, (state) => ({ ...state, id: conversation.id }))
+      }
     })
 
   constructor() {
@@ -155,31 +156,51 @@ export class ChatbiService {
           )
           this.detailModels.update((state) => ({ ...state, [model.id]: model }))
           this.registerModel(model)
-          this.setCube(model.cube)
+          if (!this.entity() && model.cube) {
+            this.setEntity(model.cube)
+          }
         }
       },
       { allowSignalWrites: true }
     )
 
-    effect(() => {
-      const dataSource = this.dataSource()
-      const indicators = this.indicators()
-      if (dataSource) {
-        dataSource.setSchema({
-          ...(dataSource.options.schema ?? {}),
-          indicators
-        } as Schema)
-      }
-    }, { allowSignalWrites: true })
+    // Set default cube of model
+    effect(
+      () => {
+        if (this.model() && !this.entity()) {
+          this.setEntity(this.model().cube)
+        }
+      },
+      { allowSignalWrites: true }
+    )
+
+    effect(
+      () => {
+        const dataSource = this.dataSource()
+        const indicators = this.indicators()
+        if (dataSource && indicators) {
+          const schema = dataSource.options.schema
+          const _indicators = [...(schema?.indicators ?? [])].filter(
+            (indicator) => !indicators.some((item) => item.id === indicator.id || item.code === indicator.code)
+          )
+          _indicators.push(...indicators)
+          dataSource.setSchema({
+            ...(dataSource.options.schema ?? {}),
+            indicators: _indicators
+          } as Schema)
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
-  setCube(entity: string) {
+  setEntity(entity: string) {
     this.error.set(null)
     this.updateConversation((state) => ({ ...state, entity }))
   }
 
   setModelId(id: string) {
-    this._updateConversation(this.conversationKey(), (state) => ({ ...state, modelId: id }))
+    this.updateConversation((state) => ({ ...state, modelId: id, entity: null }))
   }
 
   private registerModel(model: NgmSemanticModel) {
@@ -248,25 +269,67 @@ export class ChatbiService {
     })
   }
 
-  addAiMessage(data: any[]) {
-    this._updateConversation(this.conversationKey(), (state) => {
+  initAiMessage() {
+    this.aiMessage.set({
+      id: nanoid(),
+      role: 'assistant',
+      content: '',
+      createdAt: new Date(),
+      status: 'thinking'
+    })
+    this.updateConversation((state) => {
       return {
         ...state,
-        messages: [
-          ...(state.messages ?? []),
-          {
-            id: nanoid(),
-            role: 'assistant',
-            content: '',
-            data,
-            createdAt: new Date()
-          }
-        ]
+        messages: [...(state.messages ?? []), this.aiMessage()]
       }
     })
   }
 
-  updateQuestionAnswer(key: string, answer: QuestionAnswer) {
+  _updateAiMessage(fn: (state: CopilotChatMessage) => CopilotChatMessage) {
+    this.updateConversation((state) => {
+      const id = this.aiMessage().id
+      const messages = state.messages ? [...state.messages] : []
+      const index = messages.findIndex((item) => item.id === id)
+      if (index > -1) {
+        messages[index] = fn(messages[index])
+      }
+
+      return {
+        ...state,
+        messages
+      }
+    })
+  }
+
+  updateAiMessage(message: Partial<CopilotChatMessage>) {
+    this._updateAiMessage((state) => {
+      return {
+        ...state,
+        ...message
+      }
+    })
+  }
+
+  appendAiMessageData(data: any[]) {
+    this._updateAiMessage((state) => {
+      return {
+        ...state,
+        data: [...((state.data as Array<any>) ?? []), ...data]
+      }
+    })
+  }
+
+  endAiMessage(result: string) {
+    this._updateAiMessage((state) => {
+      return {
+        ...state,
+        content: state.data ? null : result,
+        status: 'done'
+      }
+    })
+  }
+
+  updateQuestionAnswer(key: string, answer: Partial<QuestionAnswer>) {
     this.updateConversation((state) => {
       const index = state.messages.findIndex((message) => message.id === key)
       if (index > -1) {
@@ -278,11 +341,13 @@ export class ChatbiService {
               : {
                   ...item,
                   ...answer,
-                  dataSettings: {
-                    ...answer.dataSettings,
-                    selectionVariant: null
-                  },
-                  slicers: answer.dataSettings.selectionVariant?.selectOptions ?? []
+                  dataSettings: answer.dataSettings
+                    ? {
+                        ...answer.dataSettings,
+                        selectionVariant: null
+                      }
+                    : item.dataSettings,
+                  slicers: answer.slicers ?? answer.dataSettings?.selectionVariant?.selectOptions ?? item.slicers
                 }
           )
         }
@@ -291,10 +356,34 @@ export class ChatbiService {
     })
   }
 
-  addIndicator(indicator: Indicator) {
-    this.updateConversation((state) => ({
-      ...state,
-      indicators: [...(state.indicators ?? []), {...indicator, visible: true}]
-    }))
+  upsertIndicator(indicator: Indicator) {
+    this.updateConversation((state) => {
+      const indicators = state.indicators ? [...state.indicators] : []
+      const index = indicators.findIndex((item) => item.id === indicator.id)
+      if (index > -1) {
+        indicators[index] = {
+          ...indicators[index],
+          ...indicator
+        }
+      } else {
+        indicators.push({ ...indicator, visible: true })
+      }
+      return {
+        ...state,
+        indicators
+      }
+    })
+  }
+
+  updateAnswer(answer: QuestionAnswer) {
+    this.updateConversation((state) => {
+      return {
+        ...state,
+        answer: {
+          ...(state.answer ?? {}),
+          ...omitBlank(answer)
+        }
+      }
+    })
   }
 }

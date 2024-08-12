@@ -253,7 +253,7 @@
 
         <div *ngIf="menu.type === WIDGET_MENU_TYPE.Action" class="w-full flex-1 flex justify-start items-center">
           <mat-icon *ngIf="menu.icon" class="mr-2 shrink-0">{{menu.icon}}</mat-icon>
-          <ngm-display-behaviour class="max-w-full flex-1 text-left" [option]="{value: menu.name, label: menu.label}"></ngm-display-behaviour>
+          <ngm-display-behaviour class="max-w-full flex-1 text-left" [option]="{key: menu.name, caption: menu.label}" />
         </div>
       </button>
     </ng-container>

@@ -11,6 +11,7 @@ export enum AiProviderRole {
 }
 
 export interface ICopilot {
+  organizationId: string
   enabled: boolean
   role: AiProviderRole
   provider?: AiProvider

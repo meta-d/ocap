@@ -123,7 +123,7 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
       // Resend request when the server returns a 401 unauthorized status
       socket.on('exception', (data) => {
         const { id, status } = data
-        if (status === 401) {
+        if (status === 401 && this.queuePool()[id]) {
           this.request$.next(this.queuePool()[id].request)
         }
       })

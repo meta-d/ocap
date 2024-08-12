@@ -5,7 +5,6 @@ import { Story } from '@metad/story/core'
 import { map, Observable } from 'rxjs'
 import { C_API_STORY } from './constants'
 import { OrganizationBaseService } from './organization-base.service'
-import { Store } from './store.service'
 import { convertStory, convertStoryResult } from './types'
 
 const C_API_STORY_PUBLIC = C_API_STORY + '/public/'
@@ -14,8 +13,8 @@ const C_API_STORY_PUBLIC = C_API_STORY + '/public/'
   providedIn: 'root'
 })
 export class StoriesService extends OrganizationBaseService {
-  constructor(store: Store, private httpClient: HttpClient) {
-    super(store)
+  constructor(private httpClient: HttpClient) {
+    super()
   }
 
   getCatalogs(relations: Array<string> = []) {

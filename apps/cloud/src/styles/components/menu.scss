@@ -34,7 +34,7 @@
       @apply bg-red-400 text-white;
     }
 
-    & > .mat-icon {
+    & + .mat-icon {
       margin-right: 10px;
     }
 

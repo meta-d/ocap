@@ -1,10 +1,14 @@
+import { inject } from '@angular/core'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { Store } from './store.service'
 
 export class OrganizationBaseService {
-  public readonly organizationId$ = this.store.selectedOrganization$.pipe(map((org) => org?.id), distinctUntilChanged())
+  protected store = inject(Store)
 
-  constructor(protected store: Store) {}
+  private readonly organizationId$ = this.store.selectedOrganization$.pipe(
+    map((org) => org?.id),
+    distinctUntilChanged()
+  )
 
   selectOrganizationId() {
     return this.organizationId$

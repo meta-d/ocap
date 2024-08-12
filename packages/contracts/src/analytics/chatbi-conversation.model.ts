@@ -10,5 +10,6 @@ export interface IChatBIConversation extends IBasePerTenantAndOrganizationEntity
   options?: {
     messages: any[]
     indicators?: IIndicator
+    answer?: any
   }
 }

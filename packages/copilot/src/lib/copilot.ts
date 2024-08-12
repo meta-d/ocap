@@ -1,6 +1,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatOpenAI, ClientOptions } from '@langchain/openai'
-import { BehaviorSubject, catchError, combineLatest, map, of, shareReplay, switchMap } from 'rxjs'
+import { AIMessage } from '@langchain/core/messages'
+import { BehaviorSubject, catchError, combineLatest, map, of, shareReplay, Subject, switchMap } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { AI_PROVIDERS, AiProvider, BusinessRoleType, ICopilot } from './types'
 import { NgmChatOllama } from './chat_models/chat-ollama'
@@ -54,14 +55,23 @@ export abstract class CopilotService {
   readonly clientOptions$ = new BehaviorSubject<ClientOptions>(null)
 
   readonly llm$ = combineLatest([this.copilot$, this.clientOptions$]).pipe(
-    map(([copilot, clientOptions]) => createLLM<ChatOpenAI>(copilot, clientOptions)),
+    map(([copilot, clientOptions]) => createLLM<ChatOpenAI>(copilot, clientOptions, (input) => {
+      this.tokenUsage$.next(input)
+    })),
     shareReplay(1)
   )
 
   readonly secondaryLLM$ = combineLatest([this.#secondary$, this.clientOptions$]).pipe(
-    map(([secondary, clientOptions]) => createLLM(secondary, clientOptions)),
+    map(([secondary, clientOptions]) => createLLM(secondary, clientOptions, (input) => {
+      this.tokenUsage$.next(input)
+    })),
     shareReplay(1)
   )
+
+  /**
+   * Token usage event
+   */
+  readonly tokenUsage$ = new Subject<{copilot: ICopilot; tokenUsed: number;}>()
 
   constructor(copilot?: ICopilot) {
     if (copilot) {
@@ -104,7 +114,8 @@ export abstract class CopilotService {
   }
 }
 
-function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOptions: ClientOptions): T {
+function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOptions: ClientOptions,
+  tokenRecord: (input: {copilot: ICopilot; tokenUsed: number;}) => void): T {
   switch (copilot?.provider) {
     case AiProvider.OpenAI:
     case AiProvider.Azure:
@@ -115,7 +126,20 @@ function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOpti
           ...(clientOptions ?? {})
         },
         model: copilot.defaultModel,
-        temperature: 0
+        temperature: 0,
+        callbacks: [
+          {
+            handleLLMEnd(output) {
+              let tokenUsed = 0
+              output.generations?.forEach((generation) => {
+                generation.forEach((item) => {
+                  tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
+                })
+              })
+              tokenRecord({ copilot, tokenUsed })
+            },
+          },
+        ],
       }) as T
     case AiProvider.Ollama:
       return new NgmChatOllama({
@@ -123,7 +147,20 @@ function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOpti
         model: copilot.defaultModel,
         headers: {
           ...(clientOptions?.defaultHeaders ?? {})
-        }
+        },
+        callbacks: [
+          {
+            handleLLMEnd(output) {
+              let tokenUsed = 0
+              output.generations?.forEach((generation) => {
+                generation.forEach((item) => {
+                  tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
+                })
+              })
+              tokenRecord({ copilot, tokenUsed })
+            },
+          },
+        ],
       }) as T
     default:
       return null

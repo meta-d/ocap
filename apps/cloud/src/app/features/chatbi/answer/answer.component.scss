@@ -1,7 +1,19 @@
+.text-color {
+  @apply text-zinc-700 dark:text-zinc-300;
+}
 :host::ng-deep {
   .ngm-analytical-card {
     .ngm-card-header {
       @apply flex-wrap;
+    }
+  }
+  .ngm-kpi--kpi {
+    .ngm-kpi--title {
+      @apply text-xl;
+    }
+    .ngm-kpi--value {
+      font-size: 3rem;
+      line-height: 1.5;
     }
   }
 }

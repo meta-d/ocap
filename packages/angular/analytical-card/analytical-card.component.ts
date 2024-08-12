@@ -7,13 +7,14 @@ import {
   HostBinding,
   Input,
   NgZone,
-  OnChanges,
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
   ViewChild,
+  computed,
+  effect,
   inject,
+  input,
   signal
 } from '@angular/core'
 import { MatMenuTrigger } from '@angular/material/menu'
@@ -108,7 +109,7 @@ export interface AnalyticalCardState {
     '[class.ngm-density__cosy]': `displayDensity==='cosy'`
   }
 })
-export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState> implements OnInit, OnChanges, OnDestroy {
+export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState> implements OnInit, OnDestroy {
   DisplayDensity = DisplayDensity
 
   private readonly businessService = inject(AnalyticalCardService)
@@ -137,12 +138,12 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
     })
   }
   private _dataSettings$ = this.select((state) => state.dataSettings)
-  public _dataSettings = signal<DataSettings>(null)
+  public _dataSettings = signal<DataSettings>(null, {equal: isEqual})
 
-  @Input() chartSettings: ChartSettings
-  @Input() chartOptions: ChartOptions
+  readonly chartSettings = input<ChartSettings>(null)
+  readonly chartOptions = input<ChartOptions>(null)
+  readonly options = input<AnalyticalCardOptions>(null)
 
-  @Input() options: AnalyticalCardOptions
   @Input() get slicers() {
     return this.get((state) => state.slicers)
   }
@@ -169,6 +170,11 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
   get displayDensity() {
     return this.appearance?.displayDensity
   }
+
+  readonly _chartSettings = computed(() => this.chartSettings(), {equal: isEqual})
+  readonly _chartOptions = computed(() => this.chartOptions(), {equal: isEqual})
+  readonly _options = computed(() => this.options(), {equal: isEqual})
+  readonly showHeader = computed(() => !this.options()?.hideHeader)
 
   get chartType() {
     return this.dataSettings?.chartAnnotation?.chartType
@@ -443,6 +449,21 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
 
   constructor() {
     super({} as AnalyticalCardState)
+
+    effect(() => {
+      const dataSettings = this._dataSettings()
+      const chartSettings = this._chartSettings()
+      const chartOptions = this._chartOptions()
+      this.error$.next(null)
+    })
+
+    effect(() => {
+      this.echartsEngine.settings = this.chartSettings()
+    })
+
+    effect(() => {
+      this.echartsEngine.options = this.chartOptions()
+    })
   }
 
   ngOnInit(): void {
@@ -473,21 +494,6 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
         this.echartsEngine.entityType = await this.businessService.getEntityType()
         this.refresh()
       })
-    
-  }
-
-  ngOnChanges({ dataSettings, chartSettings, chartOptions }: SimpleChanges) {
-    if (dataSettings || chartSettings || chartOptions) {
-      this.error$.next(null)
-    }
-
-    if (chartSettings) {
-      this.echartsEngine.settings = chartSettings.currentValue
-    }
-
-    if (chartOptions) {
-      this.echartsEngine.options = chartOptions.currentValue
-    }
   }
 
   /**
@@ -531,11 +537,11 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
       this.contextMenu.closeMenu()
       this.onLinkAnalysis([])
     } else {
-      if (!this.options?.disableContextMenu) {
+      if (!this.options()?.disableContextMenu) {
         this.contextMenu.openMenu()
       }
       
-      if (this.options?.realtimeLinked) {
+      if (this.options()?.realtimeLinked) {
         this.onLinkAnalysis(slicers)
       }
     }

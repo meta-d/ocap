@@ -16,7 +16,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { convertIndicatorResult, Indicator, IndicatorsService, Store } from '@metad/cloud/state'
-import { createSubStore, dirtyCheckWith, IsDirty, IsNilPipe, nonBlank, saveAsYaml } from '@metad/core'
+import { createSubStore, dirtyCheckWith, IsDirty, IsNilPipe, nonBlank, NxChartType, saveAsYaml } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective, PERIODS } from '@metad/ocap-angular/core'
@@ -24,6 +24,8 @@ import {
   C_MEASURES,
   calcRange,
   ChartDimensionRoleType,
+  ChartOrient,
+  ChartSettings,
   DataSettings,
   FilterOperator,
   getIndicatorEntityCalendar,
@@ -33,7 +35,7 @@ import {
   TimeRangeType
 } from '@metad/ocap-core'
 import { withProps } from '@ngneat/elf'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { cloneDeep } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { injectParams } from 'ngxtension/inject-params'
@@ -83,6 +85,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   private _route = inject(ActivatedRoute)
   private _router = inject(Router)
   private _dialog = inject(MatDialog)
+  readonly #translate = inject(TranslateService)
   private _logger? = inject(NGXLogger, { optional: true })
 
   readonly registerForm = viewChild<IndicatorRegisterFormComponent>('register_form')
@@ -162,7 +165,15 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
           ...dataSettings,
           chartAnnotation: {
             chartType: {
-              type: 'Line'
+              type: NxChartType.Line,
+              name: this.translateService.instant(`PAC.KEY_WORDS.LineChart`, {
+                Default: 'Line'
+              }),
+              chartOptions: {
+                aria: {
+                  decal: { show: true }
+                }
+              }
             },
             dimensions: [
               {
@@ -184,6 +195,17 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
                 formatting: {
                   shortNumber: true,
                   unit: indicator.unit
+                },
+                chartOptions: {
+                  seriesStyle: {
+                    symbolSize: 20,
+                    lineStyle: {
+                      width: 3
+                    },
+                    emphasis: {
+                      focus: 'item'
+                    },
+                  }
                 }
               }
             ]
@@ -212,6 +234,26 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
         return obj
       }
     }
+  })
+
+  readonly i18nColumn = toSignal(this.#translate.stream('PAC.KEY_WORDS.ColumnChart', {Default: 'Column'}))
+  readonly chartSettings = computed(() => {
+    return {
+      theme: this.primaryTheme$(),
+      universalTransition: true,
+      chartTypes: [
+        {
+          type: NxChartType.Bar,
+          orient: ChartOrient.vertical,
+          name: this.i18nColumn(),
+          chartOptions: {
+            aria: {
+              decal: { show: true }
+            }
+          }
+        }
+      ]
+    } as ChartSettings
   })
 
   readonly preview = signal(true)

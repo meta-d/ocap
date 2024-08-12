@@ -24,7 +24,6 @@ import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, delay } from 'rxjs'
 import { ChatbiService } from '../chatbi.service'
 import { CHATBI_COMMAND_NAME } from '../copilot/'
-import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,
@@ -104,17 +103,29 @@ export class ChatbiInputComponent {
       this.answering.set(true)
       this.prompt.set('')
       this.chatbiService.addHumanMessage(prompt)
+      this.chatbiService.initAiMessage()
+      let result = ''
       if (!this.conversation().command) {
         this.chatbiService.updateConversation((state) => ({
           ...state,
           command: CHATBI_COMMAND_NAME
         }))
-        await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {})
+        result = await this.#copilotEngine.chat(`/${CHATBI_COMMAND_NAME} ${prompt}`, {
+          conversationId: this.conversation().key
+        })
       } else {
-        await this.#copilotEngine.chat(prompt, {})
+        result = await this.#copilotEngine.chat(prompt, {
+          command: CHATBI_COMMAND_NAME,
+          conversationId: this.conversation().key
+        })
       }
-    } catch (err) {
+      this.chatbiService.endAiMessage(result)
+    } catch (err: any) {
       this.#logger.error(err)
+      this.chatbiService.updateAiMessage({
+        status: 'error',
+        error: err?.message || 'Unknown error',
+      })
     } finally {
       this.answering.set(false)
     }

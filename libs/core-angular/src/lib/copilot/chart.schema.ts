@@ -5,6 +5,7 @@ import {
   ChartMeasureRoleType,
   ChartOrient,
   ChartType,
+  OrderDirection,
   PieVariant,
   pick
 } from '@metad/ocap-core'
@@ -778,4 +779,9 @@ export function getChartType(chartType: ChartType | string) {
 export const ChartMeasureSchema = z.object({
   ...BaseMeasureSchema,
   role: z.enum([null, 'Axis1', 'Axis2']).optional().describe('Role of value axis')
+})
+
+export const OrderBySchema = z.object({
+  by: z.string().describe('Field to order by'),
+  order: z.enum([OrderDirection.ASC, OrderDirection.DESC]).describe('Order direction')
 })

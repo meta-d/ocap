@@ -1,4 +1,4 @@
-<ngm-property-select class="max-w-full"
+<ngm-property-select class="max-w-full" displayDensity="compact"
   [formControl]="formControl"
   [label]="label()"
   [editable]="true"
@@ -9,7 +9,6 @@
   [dsCoreService]="dsCoreService"
   [capacities]="capacities()"
   [syntax]="syntax()"
-  displayDensity="compact"
   (calculationChange)="onCalculationChange($event)"
 >
   <div ngmSuffix>

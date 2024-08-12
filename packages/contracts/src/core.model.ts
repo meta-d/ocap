@@ -29,3 +29,8 @@ export interface IListQueryInput<T> {
 	readonly findInput?: T | any;
 	readonly where?: any;
 }
+
+export enum OrderTypeEnum {
+	DESC = 'DESC',
+	ASC = 'ASC'
+}

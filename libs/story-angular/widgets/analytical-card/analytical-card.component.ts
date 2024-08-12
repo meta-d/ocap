@@ -220,20 +220,21 @@ export class WidgetAnalyticalCardComponent extends AbstractStoryWidget<
   onLinkAnalysis(event: ISlicer[]) {
     this.pin = !isEmpty(event)
     if (isEmpty(event)) {
-      return this.slicersChange.emit([])
+      // return this.slicersChange.emit([])
+      return this.linkSlicersChange.emit([])
     }
 
     if (isAdvancedFilter(event)) {
-      this.slicersChange.emit(event.children)
+      this.linkSlicersChange.emit(event.children)
     } else {
       if (isArray(event)) {
         if (event.length > 1) {
-          this.slicersChange.emit([{ filteringLogic: FilteringLogic.Or, children: event }])
+          this.linkSlicersChange.emit([{ filteringLogic: FilteringLogic.Or, children: event }])
         } else {
-          this.slicersChange.emit(event)
+          this.linkSlicersChange.emit(event)
         }
       } else {
-        this.slicersChange.emit([event])
+        this.linkSlicersChange.emit([event])
       }
     }
   }

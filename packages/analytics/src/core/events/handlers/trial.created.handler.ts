@@ -45,13 +45,13 @@ export class TrialUserCreatedHandler
 
 	async handle(event: TrialUserCreatedEvent) {
 
-		const employee = await this.employeeRepository.findOne(event.employeeId)
+		// const employee = await this.employeeRepository.findOne(event.employeeId)
 
-		await createLocalAgentDataSource(
-			employee,
-			this.dsRepository,
-			this.dstService
-		)
+		// await createLocalAgentDataSource(
+		// 	employee,
+		// 	this.dsRepository,
+		// 	this.dstService
+		// )
 
 		// await seedTenantDefaultData(
 		// 	this.dstService,

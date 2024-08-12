@@ -8,9 +8,8 @@ import { signal } from '@angular/core'
 
 export abstract class AbstractAgent {
 
-  #auth = signal<Record<string, [string, Subject<any>]>>({})
+  readonly #auth = signal<Record<string, [string, Subject<any>]>>({})
 
-  // private _auth: Record<string, [string, Subject<any>]> = {}
   get auth() {
     return this.#auth
   }
@@ -57,7 +56,7 @@ export abstract class AbstractAgent {
         }
       }
 
-      return firstValueFrom(this.#auth()[dataSource.id][1])
+      return this.#auth()[dataSource.id] ? firstValueFrom(this.#auth()[dataSource.id][1]) : null
     } else {
       return this.signIn(dataSource, event)
     }

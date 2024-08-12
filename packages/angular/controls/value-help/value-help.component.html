@@ -73,23 +73,25 @@
         <mat-divider></mat-divider>
 
         <div class="ngm-value-help__members pt-2 flex flex-col">
-            <ngm-member-list *ngIf="presentation !== PresentationEnum.Hierarchy" class="w-full flex-1" cdkFocusInitial
+          @if (presentation === PresentationEnum.Hierarchy) {
+            <ngm-member-tree class="w-full flex-1"
                 [displayDensity]="appearance?.displayDensity"
                 [appearance]="appearance"
                 [dataSettings]="dataSettings"
                 [dimension]="dimension"
                 [options]="options"
                 [(ngModel)]="slicerModel"
-            ></ngm-member-list>
-
-            <ngm-member-tree *ngIf="presentation === PresentationEnum.Hierarchy" class="w-full flex-1" cdkFocusInitial
+            />
+          } @else {
+            <ngm-member-list class="w-full flex-1"
                 [displayDensity]="appearance?.displayDensity"
                 [appearance]="appearance"
                 [dataSettings]="dataSettings"
                 [dimension]="dimension"
                 [options]="options"
                 [(ngModel)]="slicerModel"
-            ></ngm-member-tree>
+            />
+          }
         </div>
     </div>
 

@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { AbstractStoryWidget, StoryWidgetState, StoryWidgetStyling, WidgetMenuType, nonNullable } from '@metad/core'
 import { NgmObjectNumberComponent } from '@metad/ocap-angular/common'
-import { TrendType, assignDeepOmitBlank, isEqual, isNil } from '@metad/ocap-core'
+import { TrendType, assignDeepOmitBlank, isEmpty, isEqual, isNil } from '@metad/ocap-core'
 import { ComponentStyling, componentStyling, NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -14,6 +14,10 @@ import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { KeyPerformanceIndicatorService } from './key-performance-indicator.service'
 import { KPIPlaceholderComponent } from './placeholder/placeholder.component'
 import { NxWidgetKPIOptions } from './types'
+import { MatMenuModule } from '@angular/material/menu'
+import { MatButtonModule } from '@angular/material/button'
+import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 export interface PacWidgetKPIStyling extends StoryWidgetStyling {
   title: ComponentStyling
@@ -31,11 +35,15 @@ export interface PacWidgetKPIStyling extends StoryWidgetStyling {
     CommonModule,
     FormsModule,
     TranslateModule,
+    MatMenuModule,
     MatIconModule,
+    MatButtonModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
 
     NgmObjectNumberComponent,
-    KPIPlaceholderComponent
+    KPIPlaceholderComponent,
+    NgmSelectionModule
   ]
 })
 export class NxWidgetKpiComponent extends AbstractStoryWidget<
@@ -44,15 +52,17 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   PacWidgetKPIStyling
 > {
   TrendType = TrendType
+  SlicersCapacity = SlicersCapacity
 
   readonly dataService = inject(KeyPerformanceIndicatorService)
-  readonly storyService = inject(NxStoryService)
+  readonly storyService = inject(NxStoryService, { optional: true })
   readonly #logger = inject(NGXLogger)
 
 
   readonly intent = computed(() => this.optionsSignal()?.intent)
   readonly showPlaceholder = computed(() => !(this.dataSettingsSignal()?.dataSource && this.dataSettingsSignal()?.entitySet))
-
+  readonly showToolbar = computed(() => this.optionsSignal()?.showToolbar)
+  readonly hasSlicers$ = this.selectOptions$.pipe(map((selectOptions) => !isEmpty(selectOptions)))
 
   public readonly kpiValue$ = this.dataService.kpiValue$
   public readonly trend$ = this.kpiValue$.pipe(filter((kpiValue) => !isNil(kpiValue?.arrow)))
@@ -90,11 +100,29 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   */
   readonly isLoading = toSignal(this.dataService.loading$)
   readonly error = signal<string | null>(null)
-  readonly kpiStyles = computed(() => this.storyService.storyOptions()?.preferences?.kpi, { equal: isEqual})
-  readonly titleStyling = computed(() => assignDeepOmitBlank(assignDeepOmitBlank({}, this.kpiStyles()?.title, 2), this.styling$()?.title, 2))
-  readonly valueStyling = computed(() => assignDeepOmitBlank(assignDeepOmitBlank({}, this.kpiStyles()?.value, 2), this.styling$()?.value, 2))
-  readonly titleStyles$ = computed(() => componentStyling(this.titleStyling()))
-  readonly valueStyles = computed(() => componentStyling(this.valueStyling()))
+  readonly kpiStyles = computed(() => this.storyService?.storyOptions()?.preferences?.kpi, { equal: isEqual})
+  readonly titleStyling = computed(() => {
+    let result = null
+    if (this.kpiStyles()?.title) {
+      result = assignDeepOmitBlank({}, this.kpiStyles()?.title, 2)
+    }
+    if (this.styling$()?.title) {
+      result = assignDeepOmitBlank(result || {}, this.styling$()?.title, 2)
+    }
+    return result
+  })
+  readonly valueStyling = computed(() => {
+    let result = null
+    if (this.kpiStyles()?.value) {
+      result = assignDeepOmitBlank({}, this.kpiStyles()?.value, 2)
+    }
+    if (this.styling$()?.value) {
+      result = assignDeepOmitBlank(result || {}, this.styling$()?.value, 2)
+    }
+    return result
+  })
+  readonly titleStyles$ = computed(() => this.titleStyling() ? componentStyling(this.titleStyling()) : null)
+  readonly valueStyles = computed(() => this.valueStyling() ? componentStyling(this.valueStyling()) : null)
 
   /**
   |--------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { FocusOrigin, FocusableOption } from '@angular/cdk/a11y'
-import { AfterViewInit, DestroyRef, Directive, EventEmitter, HostBinding, Input, Output, computed, inject, signal } from '@angular/core'
+import { AfterViewInit, DestroyRef, Directive, EventEmitter, HostBinding, Input, Output, OutputEmitterRef, computed, inject, output, signal } from '@angular/core'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
 import {
   DataSettings,
@@ -74,7 +74,9 @@ export interface IStoryWidget<T> extends IFilterChange, FocusableOption {
   dataSettingsChange?: EventEmitter<DataSettings> | Observable<DataSettings>
 
   slicers?: ISlicer[]
-  slicersChange?: EventEmitter<ISlicer[]>
+  slicersChange: OutputEmitterRef<ISlicer[]>
+
+  linkSlicersChange: OutputEmitterRef<ISlicer[]>
 
   /**
    * 是否可编辑状态
@@ -219,7 +221,10 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   protected readonly _pin = signal(false)
   protected readonly pin$ = toObservable(this._pin)
 
-  @Output() slicersChange = new EventEmitter<Array<ISlicer | IAdvancedFilter>>()
+  /**
+   * @deprecated use linkSlicersChange
+   */
+  // @Output() slicersChange = new EventEmitter<Array<ISlicer | IAdvancedFilter>>()
   @Output() optionsChange = createEventEmitter(
     this.options$.pipe(
       withLatestFrom(this._options$),
@@ -228,6 +233,9 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
     )
   )
   @Output() dataSettingsChange = createEventEmitter(this._dataSettings$)
+  readonly explain = output<any[]>()
+  readonly slicersChange = output<(ISlicer | IAdvancedFilter)[]>()
+  readonly linkSlicersChange = output<(ISlicer | IAdvancedFilter)[]>()
 
   dataChange?: EventEmitter<WidgetData>
   filterChange?: EventEmitter<IFilter[]>
@@ -313,6 +321,7 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   readonly setSelectOptions = this.updater((state, slicers: ISlicer[]) => {
     if (slicers) {
       state.slicers = [...slicers]
+      this.slicersChange.emit(state.slicers)
     }
   })
 
@@ -437,8 +446,9 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
     return this.translateService?.instant(code, { Default: text, ...(params ?? {}) })
   }
 
-  setExplains(items) {
+  setExplains(items: unknown[]) {
     this.widgetService?.explains.set(items)
+    this.explain.emit(items)
   }
 
   @HostBinding('class.ngm-density__comfortable')

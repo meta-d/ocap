@@ -1,7 +1,8 @@
 import { ClipboardModule } from '@angular/cdk/clipboard'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal, viewChild, ViewContainerRef } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
@@ -10,23 +11,28 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { Router, RouterModule } from '@angular/router'
 import { CopilotChatMessage, JSONValue, nanoid } from '@metad/copilot'
-import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
-import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
+import { AnalyticalCardComponent, AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
+import { AnalyticalGridComponent, AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
+import { NgmDisplayBehaviourComponent, NgmInputComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
+import { NgmCalculationEditorComponent, NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
-import { DataSettings } from '@metad/ocap-core'
+import { CalculatedProperty, CalculationType, DataSettings, getEntityMeasures, Indicator, ISlicer, isString, OrderDirection, PropertyMeasure, Syntax } from '@metad/ocap-core'
 import { WidgetComponentType } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { NGXLogger } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
-import { firstValueFrom } from 'rxjs'
+import { combineLatest, debounceTime, firstValueFrom, map, startWith } from 'rxjs'
 import { Store, ToastrService } from '../../../@core'
 import { StorySelectorComponent } from '../../../@shared'
 import { ChatbiService } from '../chatbi.service'
 import { ChatbiHomeComponent } from '../home.component'
-import { QuestionAnswer } from '../types'
+import { isQuestionAnswer, QuestionAnswer } from '../types'
+import { ChatbiLoadingComponent } from '../loading/loading.component'
+import { CdkMenuModule } from '@angular/cdk/menu'
+import { ExplainComponent } from '@metad/story/story'
+import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
+import { WidgetService } from '@metad/core'
 
 @Component({
   standalone: true,
@@ -37,6 +43,7 @@ import { QuestionAnswer } from '../types'
     RouterModule,
     TranslateModule,
     ClipboardModule,
+    CdkMenuModule,
     MarkdownModule,
     MatIconModule,
     MatTooltipModule,
@@ -48,44 +55,118 @@ import { QuestionAnswer } from '../types'
 
     AnalyticalCardModule,
     AnalyticalGridModule,
-    NgmSelectionModule
+    NxWidgetKpiComponent,
+    NgmSelectionModule,
+    NgmEntityPropertyComponent,
+    NgmSearchComponent,
+    NgmInputComponent,
+    ChatbiLoadingComponent
   ],
   selector: 'pac-chatbi-answer',
   templateUrl: 'answer.component.html',
   styleUrl: 'answer.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [WidgetService]
 })
 export class ChatbiAnswerComponent {
   SlicersCapacity = SlicersCapacity
   DisplayDensity = DisplayDensity
+  OrderDirection = OrderDirection
 
   readonly chatbiService = inject(ChatbiService)
+  readonly widgetService = inject(WidgetService)
   readonly #logger = inject(NGXLogger)
   readonly homeComponent = inject(ChatbiHomeComponent)
   readonly #translate = inject(TranslateService)
-  readonly _dialog = inject(MatDialog)
+  readonly #dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
   readonly router = inject(Router)
   readonly #store = inject(Store)
+  readonly #viewContainerRef = inject(ViewContainerRef)
+
+  TOPS = [5, 10, 20, 100]
 
   readonly message = input<CopilotChatMessage>(null)
+  readonly analyticalCard = viewChild(AnalyticalCardComponent)
+  readonly analyticalGrid = viewChild(AnalyticalGridComponent)
+
   readonly primaryTheme = toSignal(this.#store.primaryTheme$)
   readonly model = this.chatbiService.model
+  readonly indicators = computed(() => {
+    const indicators = this.chatbiService.indicators()
+    return indicators?.reduce((result, indicator) => {
+      result[indicator.id] = indicator
+      return result
+    }, {})
+  })
 
-  readonly charts = computed(() => this.toArray(this.message().data).map((item) => {
-    if (this.typeof(item) === 'object' && this.isAnswer(item)) {
-      return {
-        chartSettings: this.toChartSettings(item as unknown as QuestionAnswer)
-      }
+  readonly answerObject = computed(() => {
+    this.toArray(this.message().data).find((item) => this.typeof(item) === 'object' && this.isAnswer(item))
+  })
+
+  readonly visualObject = computed(() => this.toArray(this.message().data).filter(isQuestionAnswer).find((item) => item.visualType))
+
+  readonly orders = computed(() => this.visualObject()?.orders)
+  readonly rankTop = computed(() => this.visualObject()?.top)
+
+  readonly hasOrder = computed(() => {
+    const orders = this.orders()
+    return (measure: PropertyMeasure) => {
+      return orders?.find((item) => item.by === measure.name)
     }
-  }))
+  })
+
+  readonly charts = computed(() =>
+    this.toArray(this.message().data).map((item) => {
+      if (this.typeof(item) === 'object' && isQuestionAnswer(item)) {
+        const dataSettings = (<QuestionAnswer>item).dataSettings
+        return {
+          dataSettings: {
+            ...dataSettings,
+            presentationVariant: {
+              ...(dataSettings.presentationVariant ?? {}),
+              maxItems: (<QuestionAnswer>item).top,
+              sortOrder: (<QuestionAnswer>item).orders
+            },
+            KPIAnnotation: item.kpi
+          },
+          chartSettings: this.toChartSettings(item as unknown as QuestionAnswer),
+        }
+      }
+    })
+  )
+
+  // readonly entityType = this.chatbiService.entityType
+  readonly searchMeasure = model<string>(null)
+  readonly measures$ = combineLatest([
+    toObservable(this.chatbiService.entityType),
+    toObservable(this.searchMeasure).pipe(
+      debounceTime(500),
+      startWith(''),
+      map((text) => text?.trim().toLowerCase())
+    )
+  ]).pipe(
+    map(([entityType, text]) => {
+      const measures = getEntityMeasures(entityType)
+      if (text) {
+        return measures?.filter((measure) => measure?.caption.toLowerCase().includes(text) || measure?.name.toLowerCase().includes(text))
+      }
+      return measures
+    })
+  )
+
+  readonly explains = signal<any[]>([])
 
   toArray(data: JSONValue) {
-    return Array.isArray(data) ? data : []
+    return (Array.isArray(data) ? data : []) as Array<string | QuestionAnswer>
   }
 
-  typeof(data: JSONValue) {
+  typeof(data: string | QuestionAnswer) {
     return typeof data
+  }
+
+  trackByKey(item: string | QuestionAnswer) {
+    return isString(item) ? item : item.key
   }
 
   onCopy(copyButton) {
@@ -95,11 +176,11 @@ export class ChatbiAnswerComponent {
     }, 3000)
   }
 
-  isAnswer(value: JSONValue): QuestionAnswer {
+  isAnswer(value: string | QuestionAnswer): QuestionAnswer {
     return value as unknown as QuestionAnswer
   }
 
-  openExplore(item: JSONValue) {
+  openExplore(item: string | QuestionAnswer) {
     this.homeComponent.openExplore(this.message(), item as unknown as QuestionAnswer)
   }
 
@@ -125,7 +206,7 @@ export class ChatbiAnswerComponent {
       Default: 'Add widget to story'
     })
     const result = await firstValueFrom(
-      this._dialog
+      this.#dialog
         .open(StorySelectorComponent, {
           data: {
             title: addToStoryTitle,
@@ -179,5 +260,92 @@ export class ChatbiAnswerComponent {
           })
         })
     }
+  }
+
+  openIndicator(indicator: Indicator, answer: QuestionAnswer) {
+    this.#dialog
+      .open(NgmCalculationEditorComponent, {
+        viewContainerRef: this.#viewContainerRef,
+        data: {
+          dataSettings: answer.dataSettings,
+          entityType: this.chatbiService.entityType(),
+          syntax: Syntax.MDX,
+          value: {
+            name: indicator.code,
+            caption: indicator.name,
+            calculationType: CalculationType.Calculated,
+            formula: indicator.formula,
+            formatting: {
+              unit: indicator.unit
+            }
+          } as CalculatedProperty
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.chatbiService.upsertIndicator({
+            ...indicator,
+            code: result.name,
+            name: result.caption,
+            formula: result.formula,
+            unit: result.formatting?.unit
+          })
+        }
+      })
+  }
+
+  updateSlicers(slicers: ISlicer[]) {
+    this.chatbiService.updateQuestionAnswer(this.message().id, { slicers })
+  }
+  
+  toggleMeasureSort(measure: PropertyMeasure) {
+    const orders = [...(this.orders() || [])]
+    const index = orders.findIndex((order) => order.by === measure.name);
+    if (index > -1) {
+      if (orders[index].order === OrderDirection.ASC) {
+        orders[index] = {
+          ...orders[index],
+          order: OrderDirection.DESC
+        }
+      } else {
+        orders.splice(index, 1)
+      }
+    } else {
+      orders.push({
+        by: measure.name,
+        order: OrderDirection.ASC
+      })
+    }
+
+    this.chatbiService.updateQuestionAnswer(this.message().id, { orders })
+  }
+
+  toggleTop(top: number) {
+    this.chatbiService.updateQuestionAnswer(this.message().id, { top: this.rankTop() === top ? null : top })
+  }
+
+  setRankTop(top: number) {
+    this.chatbiService.updateQuestionAnswer(this.message().id, { top: top ? top : null })
+  }
+
+  refresh(force = false) {
+    this.widgetService.refresh(force)
+    this.analyticalCard()?.refresh(force)
+    this.analyticalGrid()?.refresh(force)
+  }
+
+  setExplains(items) {
+    this.explains.set(items)
+  }
+
+  explain() {
+    this.#dialog
+      .open(ExplainComponent, {
+        panelClass: 'small',
+        data: [...(this.explains() ?? [])]
+      })
+      .afterClosed()
+      .subscribe(() => {})
   }
 }

@@ -1,4 +1,5 @@
 import { ISlicer } from '../types'
+import { DataType } from './property'
 
 export enum IndicatorType {
   /**
@@ -56,6 +57,10 @@ export interface Indicator {
    * Formula for DERIVE type
    */
   formula?: string
+  /**
+   * Data type of measure or formula
+   */
+  dataType?: DataType
   /**
    * Aggregator function for measure or formula
    */

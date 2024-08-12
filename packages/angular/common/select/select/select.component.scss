@@ -17,6 +17,9 @@
 }
 
 :host::ng-deep {
+  .mat-mdc-select-value {
+    padding-right: 5px;
+  }
   .mat-mdc-select-placeholder {
     @apply italic opacity-50;
   }

@@ -40,7 +40,7 @@ export class ModelEntityController extends CrudController<SemanticModelEntity> {
 	})
 	@Get()
 	async findAlls(
-		@Query('$fitler', ParseJsonPipe) where: PaginationParams<SemanticModelEntity>['where'],
+		@Query('$filter', ParseJsonPipe) where: PaginationParams<SemanticModelEntity>['where'],
 		@Query('$relations', ParseJsonPipe) relations: PaginationParams<SemanticModelEntity>['relations']
 	): Promise<IPagination<SemanticModelEntity>> {
 		return this.entityService.findAll({ where, relations })

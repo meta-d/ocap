@@ -10,7 +10,10 @@ export function injectInsightCommand() {
   const translate = inject(TranslateService)
   const createGraph = injectCreateInsightGraph()
 
-  const referencesRetriever = injectExampleRetriever(referencesCommandName('calculated'), { k: 3, vectorStore: null })
+  const referencesRetriever = injectExampleRetriever(
+    [referencesCommandName(CHATBI_COMMAND_NAME), referencesCommandName('calculated')],
+    { k: 3, vectorStore: null }
+  )
   const fewShotPrompt = injectAgentFewShotTemplate(CHATBI_COMMAND_NAME, { k: 1, vectorStore: null })
   return injectCopilotCommand(CHATBI_COMMAND_NAME, {
     alias: 'ci',

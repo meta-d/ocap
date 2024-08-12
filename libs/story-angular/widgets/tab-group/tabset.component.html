@@ -11,63 +11,67 @@
 >
   <mat-tab *ngFor="let slide of slides$(); trackBy:trackByKey" [label]="slide.title"
     [disabled]="slide.disabled"
-    [ngSwitch]="slide.type"
+    [ngSwitch]=""
     >
-    <pac-widget-accounting-statement *ngSwitchCase="'AccountingStatement'" class="tab-widget flex-1 w-full h-full"
-      [editable]="editable"
-      [dataSettings]="slide.options?.dataSettings"
-      [options]="slide.options?.options"
-      [styling]="slide.styling"
-      [style]="slide.options?.styling?.widget"
-      [slicers]="_slicers()"
-      (slicersChange)="onSlicersChange($event)"
-    >
-    </pac-widget-accounting-statement>
-    
-    <pac-indicator-card *ngSwitchCase="IndicatorCardWidgetType.IndicatorCard" class="tab-widget flex-1 w-full h-full"
-      [editable]="editable"
-      [dataSettings]="slide.options?.dataSettings"
-      [options]="slide.options?.options"
-      [styling]="slide.styling"
-      [style]="slide.options?.styling?.widget"
-      [slicers]="_slicers()"
-      (slicersChange)="onSlicersChange($event)"
-    >
-    </pac-indicator-card>
-
-    <pac-widget-analytical-card *ngSwitchCase="WidgetComponentType.AnalyticalCard" class="tab-widget flex-1 w-full h-full"
-      [editable]="editable"
-      [title]="slide.options?.title"
-      [dataSettings]="slide.options?.dataSettings"
-      [options]="slide.options?.options"
-      [chartSettings]="slide.options?.chartSettings"
-      [styling]="slide.styling"
-      [style]="slide.options?.styling?.widget"
-      [slicers]="_slicers()"
-      (slicersChange)="onSlicersChange($event)"
-    >
-    </pac-widget-analytical-card>
-
-    <pac-widget-analytical-grid *ngSwitchCase="WidgetComponentType.AnalyticalGrid" class="tab-widget flex-1 w-full h-full"
-      [editable]="editable"
-      [title]="slide.options?.title"
-      [dataSettings]="slide.options?.dataSettings"
-      [options]="slide.options?.options"
-      [styling]="slide.styling"
-      [slicers]="_slicers()"
-      (slicersChange)="onSlicersChange($event)"
-    ></pac-widget-analytical-grid>
-
-    <pac-story-widget-tabgroup *ngSwitchCase="'TabGroup'" class="tab-widget flex-1 w-full h-full"
-      [editable]="editable"
-      [title]="slide.title"
-      [options]="slide.options?.options"
-      [styling]="slide.styling"
-      [style]="slide.options?.styling?.widget"
-      [slicers]="_slicers()"
-      (slicersChange)="onSlicersChange($event)"
-    >
-    </pac-story-widget-tabgroup>
+  @switch (slide.type) {
+    @case ('AccountingStatement') {
+      <pac-widget-accounting-statement class="tab-widget flex-1 w-full h-full"
+        [editable]="editable"
+        [dataSettings]="slide.options?.dataSettings"
+        [options]="slide.options?.options"
+        [styling]="slide.styling"
+        [style]="slide.options?.styling?.widget"
+        [slicers]="_slicers()"
+        (linkSlicersChange)="onSlicersChange($event)"
+      />
+    }
+    @case (IndicatorCardWidgetType.IndicatorCard) {
+      <pac-indicator-card class="tab-widget flex-1 w-full h-full"
+        [editable]="editable"
+        [dataSettings]="slide.options?.dataSettings"
+        [options]="slide.options?.options"
+        [styling]="slide.styling"
+        [style]="slide.options?.styling?.widget"
+        [slicers]="_slicers()"
+        (linkSlicersChange)="onSlicersChange($event)"
+      />
+    }
+    @case (WidgetComponentType.AnalyticalCard) {
+      <pac-widget-analytical-card class="tab-widget flex-1 w-full h-full"
+        [editable]="editable"
+        [title]="slide.options?.title"
+        [dataSettings]="slide.options?.dataSettings"
+        [options]="slide.options?.options"
+        [chartSettings]="slide.options?.chartSettings"
+        [styling]="slide.styling"
+        [style]="slide.options?.styling?.widget"
+        [slicers]="_slicers()"
+        (linkSlicersChange)="onSlicersChange($event)"
+      />
+    }
+    @case (WidgetComponentType.AnalyticalGrid) {
+      <pac-widget-analytical-grid class="tab-widget flex-1 w-full h-full"
+        [editable]="editable"
+        [title]="slide.options?.title"
+        [dataSettings]="slide.options?.dataSettings"
+        [options]="slide.options?.options"
+        [styling]="slide.styling"
+        [slicers]="_slicers()"
+        (linkSlicersChange)="onSlicersChange($event)"
+      />
+    }
+    @case ('TabGroup') {
+      <pac-story-widget-tabgroup class="tab-widget flex-1 w-full h-full"
+        [editable]="editable"
+        [title]="slide.title"
+        [options]="slide.options?.options"
+        [styling]="slide.styling"
+        [style]="slide.options?.styling?.widget"
+        [slicers]="_slicers()"
+        (linkSlicersChange)="onSlicersChange($event)"
+      />
+    }
+  }
   </mat-tab>
 </mat-tab-group>
 

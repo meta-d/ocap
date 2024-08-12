@@ -60,9 +60,9 @@
           [title]="indicator()?.name"
           [dataSettings]="dataSettings()"
           [chartOptions]="chartOptions()"
-          [chartSettings]="{theme: primaryTheme$()}"
+          [chartSettings]="chartSettings()"
           [options]="{
-            realtimeLinked: true
+            realtimeLinked: true,
           }"
           >
           <div class=" flex-1 flex items-center md:gap-2">

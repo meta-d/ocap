@@ -2,7 +2,7 @@ import { DeepPartial } from '@metad/server-common'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { TenantOrganizationAwareCrudService } from '../core/crud'
+import { PaginationParams, TenantOrganizationAwareCrudService } from '../core/crud'
 import { Copilot } from './copilot.entity'
 
 @Injectable()
@@ -14,8 +14,21 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 		super(repository)
 	}
 
+	async findAvalibles(filter?: PaginationParams<Copilot>,) {
+		const {items, total} = await super.findAll(filter)
+		if (items.some((item) => item.enabled)) {
+			return {items, total}
+		}
+		return await super.findAllWithoutOrganization()
+	}
+
 	async findOneByRole(role: string): Promise<Copilot> {
 		const { success, record } = await this.findOneOrFail({ where: { role } })
+		return success ? record : null
+	}
+
+	async findTenantOneByRole(role: string): Promise<Copilot> {
+		const { success, record } = await this.findOneOrFailWithoutOrg({ where: { role } })
 		return success ? record : null
 	}
 

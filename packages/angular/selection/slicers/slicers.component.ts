@@ -1,15 +1,4 @@
-import {
-  booleanAttribute,
-  Component,
-  computed,
-  EventEmitter,
-  forwardRef,
-  inject,
-  input,
-  Input,
-  OnInit,
-  Output
-} from '@angular/core'
+import { booleanAttribute, Component, computed, forwardRef, inject, input, Input, output } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -27,7 +16,6 @@ import {
   BehaviorSubject,
   catchError,
   combineLatestWith,
-  distinctUntilChanged,
   EMPTY,
   filter,
   firstValueFrom,
@@ -52,7 +40,7 @@ import { SlicersCapacity } from '../types'
     }
   ]
 })
-export class SlicersComponent extends BaseSlicersComponent implements OnInit, ControlValueAccessor {
+export class SlicersComponent extends BaseSlicersComponent implements ControlValueAccessor {
   DisplayBehaviour = DisplayBehaviour
   SlicersCapacity = SlicersCapacity
 
@@ -70,21 +58,26 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
     transform: booleanAttribute
   })
 
-  // @Input() limit: number
-  // @Input() capacities: SlicersCapacity[]
   readonly limit = input<number>()
   readonly capacities = input<SlicersCapacity[]>()
 
-  @Output() valueChange = new EventEmitter<ISlicer[]>()
+  readonly valueChange = output<ISlicer[]>()
 
   searchControl = new FormControl<string>(null)
   get highlight() {
     return this.searchControl.value
   }
 
-  readonly showCombinationSlicer = computed(() => this.entityTypeSignal()?.syntax === Syntax.SQL && this.capacities()?.includes(SlicersCapacity.CombinationSlicer))
-  readonly showAdvancedSlicer = computed(() => this.entityTypeSignal()?.syntax === Syntax.MDX && this.capacities()?.includes(SlicersCapacity.AdvancedSlicer))
-  readonly showVariable = computed(() => this.entityTypeSignal()?.syntax === Syntax.MDX && this.capacities()?.includes(SlicersCapacity.Variable))
+  readonly showCombinationSlicer = computed(
+    () =>
+      this.entityTypeSignal()?.syntax === Syntax.SQL && this.capacities()?.includes(SlicersCapacity.CombinationSlicer)
+  )
+  readonly showAdvancedSlicer = computed(
+    () => this.entityTypeSignal()?.syntax === Syntax.MDX && this.capacities()?.includes(SlicersCapacity.AdvancedSlicer)
+  )
+  readonly showVariable = computed(
+    () => this.entityTypeSignal()?.syntax === Syntax.MDX && this.capacities()?.includes(SlicersCapacity.Variable)
+  )
 
   readonly dimensions$ = this.entityType$.pipe(
     filter((val) => !!val),
@@ -138,15 +131,6 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
       this.entityType = entityType
     })
 
-  ngOnInit() {
-    this.slicers$.pipe(distinctUntilChanged()).subscribe((value) => {
-      if (value) {
-        this.valueChange.emit(value)
-        this.onChange?.(value)
-      }
-    })
-  }
-
   writeValue(obj: any): void {
     if (obj) {
       this.slicers = obj
@@ -160,6 +144,11 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
   }
   setDisabledState?(isDisabled: boolean): void {
     this.isDisabled = isDisabled
+  }
+
+  private onSlicersChange() {
+    this.valueChange.emit(this.slicers)
+    this.onChange?.(this.slicers)
   }
 
   async openSlicerBar(event) {
@@ -176,6 +165,7 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
     )
     if (slicer) {
       this.slicers = [...slicer]
+      this.onSlicersChange()
     }
   }
 
@@ -183,12 +173,14 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
     const values = [...this.slicers]
     values[index] = value
     this.slicers = values
+    this.onSlicersChange()
   }
 
   remove(index: number) {
     const values = [...this.slicers]
     values.splice(index, 1)
     this.slicers = values
+    this.onSlicersChange()
   }
 
   override async addSlicer(slicer: ISlicer) {
@@ -200,6 +192,7 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
       this.update(slicer, index)
     } else {
       this.slicers = [...this.slicers, slicer]
+      this.onSlicersChange()
     }
   }
 }

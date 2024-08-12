@@ -61,6 +61,7 @@ export function injectCreateIndicatorGraph() {
           const result = await createIndicator.invoke({
             role: state.role,
             context: state.context,
+            references: state.references,
             indicator: state.indicator,
             messages: [
               new HumanMessage(state.instructions)
@@ -94,7 +95,8 @@ export function injectRunIndicatorAgent() {
         input: state.input,
         messages: [new HumanMessage(content)],
         role: state.role,
-        context: state.context
+        context: state.context,
+        references: state.references,
       }
     }).pipe(agent)
   }

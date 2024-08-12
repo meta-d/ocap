@@ -5,6 +5,11 @@
     [data]="organizations$ | async"
     [columns]="[
       {
+        name: 'isDefault',
+        caption: 'PAC.KEY_WORDS.IsDefault' | translate: {Default: 'Is Default'},
+        cellTemplate: isDefaultTempl
+      },
+      {
         name: 'imageUrl',
         caption: 'PAC.KEY_WORDS.Logo' | translate: {Default: 'Logo'},
         cellTemplate: avatarTempl
@@ -29,6 +34,12 @@
     ]"
   ></ngm-table>
 </div>
+
+<ng-template #isDefaultTempl let-isDefault>
+  @if (isDefault) {
+    <span>✅</span>
+  }
+</ng-template>
 
 <ng-template #avatarTempl let-imageUrl let-name="name">
   <pac-org-avatar [organization]="{imageUrl, name}" class="block w-8 h-8 rounded-full overflow-hidden"></pac-org-avatar>

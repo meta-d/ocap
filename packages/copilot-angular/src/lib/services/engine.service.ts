@@ -206,8 +206,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
     let { command } = options ?? {}
     const { conversationId } = options ?? {}
-    // New messages
-    // const newMessages: CopilotChatMessage[] = []
+
+    let conversation = null
+    if (command && conversationId) {
+      conversation = this.conversations().find((item) => item.id === conversationId)
+    }
 
     // deconstruct prompt to get command and prompt
     if (!command && prompt) {
@@ -223,11 +226,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
 
     if (command && commandWithContext?.command) {
-      this.upsertConversation({
-        id: conversationId,
-        type: 'command',
-        command: commandWithContext.command
-      })
+      // Initialize conversation
+      if (!conversation) {
+        this.upsertConversation({
+          id: conversationId,
+          type: 'command',
+          command: commandWithContext.command
+        })
+      }
 
       const _command = commandWithContext.command
 
@@ -252,7 +258,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
         return
       } else {
-        await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
+        return await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
       }
     } else {
       if (this.currentCommand()?.agent?.conversation) {
@@ -270,6 +276,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
         name: 'free',
         description: 'free chat',
         hidden: true,
+        agent: {
+          type: CopilotAgentType.Graph
+        },
         createGraph: this.createChatAgent
       }
       this.upsertConversation({
@@ -280,7 +289,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
 
-      await this.triggerGraphAgent(prompt, lastConversation, freeCommand, { context: this.copilotContext })
+      return await this.triggerGraphAgent(prompt, lastConversation, freeCommand, { context: this.copilotContext })
     }
   }
 
@@ -314,18 +323,23 @@ export class NgmCopilotEngineService implements CopilotEngine {
    * @returns
    */
   async triggerCommandAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
-    const currentConversation = this.currentConversation()
+    const { conversationId } = options ?? {}
+    let currentConversation = this.currentConversation()
+    if (conversationId) {
+      currentConversation = this.conversations().find((c) => c.id === conversationId)
+    }
+    
     switch (command.agent.type) {
       case CopilotAgentType.Default:
-        return await this.triggerDefaultAgent(content, command, options)
+        return await this.triggerDefaultAgent(content, currentConversation, command, options)
       case CopilotAgentType.Graph:
         return await this.triggerGraphAgent(content, currentConversation, command, options)
     }
   }
 
-  async triggerDefaultAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
+  async triggerDefaultAgent(content: string, conversation: CopilotChatConversation, command: CopilotCommand, options?: CopilotChatOptions) {
     // ------------------------- 重复，需重构
-    let { conversationId } = options ?? {}
+    const conversationId = conversation.id
     const { context } = options ?? {}
     const abortController = new AbortController()
 
@@ -335,7 +349,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
     // Context content
     const { systemPrompt, contextContent } = await this.upsertUserInputMessage(command, content, context)
 
-    conversationId ??= this.currentConversationId()
     const assistantId = nanoid()
 
     this.upsertMessage({
@@ -491,7 +504,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     if (content) {
       const result = await this.upsertUserInputMessage(command, content, context)
       if (result.error) {
-        return
+        return ''
       }
       contextContent = result.contextContent
     }
@@ -538,7 +551,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       try {
         graph = await this.createCommandGraph(command, interactive)
 
-        this.updateLastConversation((conversation) => ({
+        this.updateConversation(conversation.id, (conversation) => ({
           ...conversation,
           graph
         }))
@@ -710,7 +723,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         this.deleteMessage(assistantId)
       }
 
-      return null
+      return lastMessage.content
     } catch (err: any) {
       console.error(err)
       this.upsertMessage({

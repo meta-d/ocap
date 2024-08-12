@@ -1,10 +1,13 @@
 import { AiProviderRole, ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param, Get } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param, Get, ForbiddenException } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
 import { AI_PROVIDERS } from './providers'
 import { AiService } from './ai.service'
+import { CopilotUserService } from '../copilot-user/index'
+import { RequestContext } from '../core'
+import { CopilotOrganizationService } from '../copilot-organization/index'
 
 function chatCompletionsUrl(copilot: ICopilot, path?: string) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -20,7 +23,10 @@ export class AIController {
 
 	constructor(
 		private readonly aiService: AiService,
-		private readonly copilotService: CopilotService) {}
+		private readonly copilotService: CopilotService,
+		private readonly copilotUserService: CopilotUserService,
+		private readonly copilotOrganizationService: CopilotOrganizationService,
+	) {}
 
 	@ApiOperation({ summary: 'Chat with AI provider apis' })
 	@ApiResponse({
@@ -105,8 +111,15 @@ failed: ${error.message}`)
 	}
 
 	async proxy(role: AiProviderRole, path: string, headers: any, body: any, resp: ServerResponse) {
-		const copilot = await this.getCopilot(role)
-		const copilotUrl = chatCompletionsUrl(copilot, path)
+		let copilot = null
+		let copilotUrl = null
+		try {
+			copilot = await this.getCopilot(role)
+			copilotUrl = chatCompletionsUrl(copilot, path)
+		} catch(err) {
+			throw new ForbiddenException(err.message)
+		}
+		
 		try {
 			const response = await fetch(copilotUrl, {
 				method: 'POST',
@@ -141,9 +154,29 @@ failed: ${error.message}`)
 	}
 
 	async getCopilot(role: AiProviderRole) {
-		const result = await this.copilotService.findOneByRole(role)
-		if (!result?.enabled) {
-			throw new Error('No copilot found')
+		const userId = RequestContext.currentUserId()
+		const organizationId = RequestContext.getOrganizationId()
+		let result = await this.copilotService.findOneByRole(role)
+		if (result?.enabled) {
+			// Check token usage in organizaiton
+			const usage = await this.copilotUserService.findOneOrFail({ where: { userId, orgId: organizationId, provider: result.provider }})
+			if (usage.success && usage.record.tokenLimit) {
+				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
+					throw new Error('Token usage exceeds limit')
+				}
+			}
+		} else {
+			result = await this.copilotService.findTenantOneByRole(role)
+			if (!result?.enabled) {
+				throw new Error('No copilot found')
+			}
+			// Check token usage in tenant
+			const usage = await this.copilotOrganizationService.findOneOrFail({where: { organizationId, provider: result.provider }})
+			if (usage.success && usage.record.tokenLimit) {
+				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
+					throw new Error('Token usage exceeds limit')
+				}
+			}
 		}
 		return result
 	}

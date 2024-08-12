@@ -1,4 +1,4 @@
-import { SharedModule, TenantModule } from '@metad/server-core'
+import { CopilotCheckpointModule, SharedModule, TenantModule } from '@metad/server-core'
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -13,7 +13,8 @@ import { ChatBIConversationService } from './conversation.service'
 		forwardRef(() => TypeOrmModule.forFeature([ChatBIConversation])),
 		forwardRef(() => TenantModule),
 		SharedModule,
-		CqrsModule
+		CqrsModule,
+		CopilotCheckpointModule
 	],
 	controllers: [ChatBIConversationController],
 	providers: [ChatBIConversationService]

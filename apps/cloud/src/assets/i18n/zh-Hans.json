@@ -150,7 +150,7 @@
       "Profile": "配置",
       "UpdatedAt": "更新于",
       "NoData": "无数据",
-      "Copilot": "副驾驶",
+      "Copilot": "智能助理",
       "CalculatedFormula": "计算公式",
       "Visits": "访问量",
       "UpdatedDate": "更新日期",
@@ -192,7 +192,19 @@
       "Delete": "删除",
       "MemberRetriever": "成员检索器",
       "Variables": "参数变量",
-      "Knowledges": "知识库"
+      "Knowledges": "知识库",
+      "IsDefault": "默认",
+      "Organization": "组织",
+      "Provider": "提供商",
+      "TokenUsed": "已用(Token)",
+      "TokenLimit": "限制(Token)",
+      "TokenTotalUsed": "累计使用(Token)",
+      "Usages": "使用量",
+      "Sort": "排序",
+      "Top": "前",
+      "You": "你",
+      "ColumnChart": "柱形图",
+      "LineChart": "线图"
     },
     "MENU": {
       "Certification": "认证",
@@ -1347,6 +1359,7 @@
       "Title": "ChatBI-数据分析与洞察",
       "TransformData": "利用人工智能将数据转化为洞察力。",
       "InputPlaceholder": "针对数据集询问问题，按 Enter 发送",
+      "NoSemanticModel": "无语义模型",
       "NewConversation": "新建对话",
       "Cubes": "多维数据集",
       "Slicers": "过滤器",
@@ -1373,7 +1386,10 @@
       "Chart_Line": "线图",
       "Chart_Column": "柱形图",
       "Chart_Bar": "条形图",
-      "Chart_Pie": "饼图"
+      "Chart_Pie": "饼图",
+      "NewCalculatedMeasures": "新增计算指标",
+      "RenewTokenLimit": "重置 Token 限制",
+      "Save": "保存"
     },
     "Home": {
       "Insight": {

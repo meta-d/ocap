@@ -1,6 +1,6 @@
 import { IPagination } from '@metad/contracts'
-import { CrudController, PaginationParams, RequestContext } from '@metad/server-core'
-import { Controller, Get, HttpStatus } from '@nestjs/common'
+import { CrudController, PaginationParams, ParseJsonPipe, RequestContext } from '@metad/server-core'
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ChatBIConversation } from './conversation.entity'
 import { ChatBIConversationService } from './conversation.service'
@@ -20,7 +20,7 @@ export class ChatBIConversationController extends CrudController<ChatBIConversat
 	})
 	@Get('my')
 	async findMyAll(
-		filter?: PaginationParams<ChatBIConversation>,
+		@Query('data', ParseJsonPipe) filter?: PaginationParams<ChatBIConversation>,
 		...options: any[]
 	): Promise<IPagination<ChatBIConversation>> {
 		return this.service.findAll({...filter, where: {createdById: RequestContext.currentUserId()}})

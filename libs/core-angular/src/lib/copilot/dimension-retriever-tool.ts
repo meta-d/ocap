@@ -40,7 +40,6 @@ export function createDimensionMemberRetrieverTool(
           `${dimension || ''} ${hierarchy ? `hierarchy: ${hierarchy}` : ''} ${level ? `level: ${level}` : ''} ${member}`,
           runManager?.getChild('retriever')
         )
-        console.log(docs)
         return formatDocumentsAsString(docs)
       } catch (e) {
         console.error(e)

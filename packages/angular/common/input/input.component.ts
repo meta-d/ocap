@@ -7,6 +7,7 @@ import {
   Input,
   Output,
   TemplateRef,
+  booleanAttribute,
   forwardRef,
   input,
   signal
@@ -48,6 +49,10 @@ export class NgmInputComponent implements ControlValueAccessor {
 
   readonly disabled = input(false)
   readonly _disabled = signal(false)
+
+  readonly simple = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
   @Output() blur = new EventEmitter()
 

@@ -4,8 +4,8 @@ import { DocumentInterface } from '@langchain/core/documents'
 import { MaxMarginalRelevanceSearchOptions, VectorStoreInterface } from '@langchain/core/vectorstores'
 import { NGXLogger } from 'ngx-logger'
 import { map, tap } from 'rxjs'
-import { API_COPILOT_EXAMPLE } from '../constants/app.constants'
-import { ICopilotExample, ICopilotRole } from '../types'
+import { API_COPILOT_KNOWLEDGE } from '../constants/app.constants'
+import { ICopilotKnowledge, ICopilotRole } from '../types'
 import { CopilotRoleService } from './copilot-role.service'
 
 @Injectable({ providedIn: 'root' })
@@ -16,27 +16,27 @@ export class CopilotExampleService {
 
   similaritySearch(
     query: string,
-    options: { k?: number; filter?: VectorStoreInterface['FilterType']; command: string; role: string; score: number }
+    options: { k?: number; filter?: VectorStoreInterface['FilterType']; command: string | string[]; role: string; score: number }
   ) {
-    return this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_EXAMPLE}/similarity-search`, { query, options })
+    return this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_KNOWLEDGE}/similarity-search`, { query, options })
   }
 
   maxMarginalRelevanceSearch(
     query: string,
     options: MaxMarginalRelevanceSearchOptions<VectorStoreInterface['FilterType']> & {
-      command: string
+      command: string | string[]
       role: string
     }
   ) {
-    return this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_EXAMPLE}/mmr-search`, { query, options })
+    return this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_KNOWLEDGE}/mmr-search`, { query, options })
   }
 
   getAll(options?: { relations: string[]; filter?: Record<string, any> }) {
     const { relations, filter } = options || {}
     return this.httpClient
-      .get<{ items: ICopilotExample[] }>(`${API_COPILOT_EXAMPLE}`, {
+      .get<{ items: ICopilotKnowledge[] }>(`${API_COPILOT_KNOWLEDGE}`, {
         params: {
-          $fitler: JSON.stringify(filter),
+          $filter: JSON.stringify(filter),
           $relations: JSON.stringify(relations)
         }
       })
@@ -44,34 +44,34 @@ export class CopilotExampleService {
   }
 
   getById(id: string) {
-    return this.httpClient.get<ICopilotExample>(`${API_COPILOT_EXAMPLE}/${id}`)
+    return this.httpClient.get<ICopilotKnowledge>(`${API_COPILOT_KNOWLEDGE}/${id}`)
   }
 
-  create(entity: Partial<ICopilotExample>) {
-    return this.httpClient.post<ICopilotExample>(`${API_COPILOT_EXAMPLE}`, entity)
+  create(entity: Partial<ICopilotKnowledge>) {
+    return this.httpClient.post<ICopilotKnowledge>(`${API_COPILOT_KNOWLEDGE}`, entity)
   }
 
-  update(id: string, entity: Partial<ICopilotExample>) {
-    return this.httpClient.put<ICopilotExample>(`${API_COPILOT_EXAMPLE}/${id}`, entity)
+  update(id: string, entity: Partial<ICopilotKnowledge>) {
+    return this.httpClient.put<ICopilotKnowledge>(`${API_COPILOT_KNOWLEDGE}/${id}`, entity)
   }
 
   delete(id: string) {
-    return this.httpClient.delete(`${API_COPILOT_EXAMPLE}/${id}`)
+    return this.httpClient.delete(`${API_COPILOT_KNOWLEDGE}/${id}`)
   }
 
   getCommands(filter: { role: string }) {
     return this.httpClient
-      .get<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/commands`, {
+      .get<ICopilotKnowledge[]>(`${API_COPILOT_KNOWLEDGE}/commands`, {
         params: {
-          $fitler: JSON.stringify(filter)
+          $filter: JSON.stringify(filter)
         }
       })
       .pipe(map((items) => items.map(({ command }) => command)))
   }
 
-  createBulk(entities: ICopilotExample[], roles: ICopilotRole[], options: { clearRole: boolean }) {
+  createBulk(entities: ICopilotKnowledge[], roles: ICopilotRole[], options: { clearRole: boolean }) {
     return this.httpClient
-      .post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, {
+      .post<ICopilotKnowledge[]>(`${API_COPILOT_KNOWLEDGE}/bulk`, {
         examples: entities,
         roles,
         options

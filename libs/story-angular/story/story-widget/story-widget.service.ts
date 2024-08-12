@@ -14,7 +14,7 @@ import { firstValueFrom, Observable } from 'rxjs'
 import { filter, tap } from 'rxjs/operators'
 import { NxStoryPointService } from '../story-point.service'
 import { select, withProps } from '@ngneat/elf'
-import { toObservable } from '@angular/core/rxjs-interop'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { isEqual, negate } from 'lodash-es'
 import { effectAction } from '@metad/ocap-angular/core'
 
@@ -64,6 +64,7 @@ export class NxStoryWidgetService {
   )
 
   readonly linkedAnalysis$ = this.select((state) => state.linkedAnalysis)
+  readonly linkedAnalysis = toSignal(this.linkedAnalysis$)
 
   constructor(
     @Optional()

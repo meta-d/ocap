@@ -1,8 +1,8 @@
-import { IUser } from '@metad/contracts'
+import { ICopilot, ICopilotOrganization, ICopilotUser, IUser } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
-import { WsJWTGuard, WsUser } from '@metad/server-core'
+import { CopilotTokenRecordCommand, WsJWTGuard, WsUser } from '@metad/server-core'
 import { UseGuards } from '@nestjs/common'
-import { QueryBus } from '@nestjs/cqrs'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import {
 	ConnectedSocket,
 	MessageBody,
@@ -27,7 +27,7 @@ export class EventsGateway implements OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server
 
-	constructor(private readonly queryBus: QueryBus) {}
+	constructor(private readonly queryBus: QueryBus, private readonly commandBus: CommandBus) {}
 
 	@UseGuards(WsJWTGuard)
 	@SubscribeMessage('olap')
@@ -57,7 +57,10 @@ export class EventsGateway implements OnGatewayDisconnect {
 				)
 			} else {
 				result = await this.queryBus.execute(
-					new DataSourceOlapQuery({ id, sessionId: client.id, dataSourceId, body, forceRefresh, acceptLanguage }, user)
+					new DataSourceOlapQuery(
+						{ id, sessionId: client.id, dataSourceId, body, forceRefresh, acceptLanguage },
+						user
+					)
 				)
 			}
 			return {
@@ -79,6 +82,20 @@ export class EventsGateway implements OnGatewayDisconnect {
 					data: getErrorMessage(error)
 				}
 			}
+		}
+	}
+
+	@UseGuards(WsJWTGuard)
+	@SubscribeMessage('copilot')
+	async copilot(@MessageBody() data: Partial<{organizationId: string; copilot: ICopilot; tokenUsed: number}>, @WsUser() user: IUser): Promise<void> {
+		try {
+			await this.commandBus.execute(new CopilotTokenRecordCommand({
+				...data, 
+				tenantId: user.tenantId,
+				userId: user.id
+			}))
+		} catch (error) {
+			console.log(error);
 		}
 	}
 

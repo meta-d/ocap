@@ -46,7 +46,7 @@ export class ChatbiChatComponent {
   readonly translate = inject(TranslateService)
   readonly chatbiService = inject(ChatbiService)
 
-  readonly chatContent = viewChild('chartContent', { read: ElementRef<HTMLDivElement> })
+  readonly chatContent = viewChild('chatContent', { read: ElementRef<HTMLDivElement> })
 
   readonly examples = toSignal(
     this.translate
