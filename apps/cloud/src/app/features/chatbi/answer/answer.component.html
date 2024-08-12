@@ -68,9 +68,9 @@
               }
               @case ('chart') {
                 <ngm-analytical-card class="h-[300px] group" 
-                  [dataSettings]="charts()[$index].dataSettings"
+                  [dataSettings]="charts()[$index]?.dataSettings"
                   [chartOptions]="answer.chartOptions"
-                  [chartSettings]="charts()[$index].chartSettings"
+                  [chartSettings]="charts()[$index]?.chartSettings"
                   [options]="answer.options"
                   [slicers]="answer.slicers"
                   (explain)="setExplains($event)"
@@ -121,7 +121,7 @@
               }
               @case ('kpi') {
                 <pac-widget-kpi class="h-[200px] group" displayDensity="compact"
-                  [dataSettings]="charts()[$index].dataSettings"
+                  [dataSettings]="charts()[$index]?.dataSettings"
                   [slicers]="answer.slicers"
                   [options]="{showToolbar: true, shortNumber: true, digitsInfo: '0.1-1'}"
                   (slicersChange)="updateSlicers($event)"

@@ -1,8 +1,9 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, viewChild } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
@@ -30,11 +31,12 @@ import { QuestionAnswer } from './types'
     DragDropModule,
     RouterModule,
     TranslateModule,
+    MatTooltipModule,
     NgmSelectComponent,
     ChatbiModelsComponent,
     ChatbiChatComponent,
 
-    StoryExplorerModule,
+    StoryExplorerModule
   ],
   selector: 'pac-chatbi-home',
   templateUrl: './home.component.html',
@@ -53,7 +55,8 @@ export class ChatbiHomeComponent {
   readonly logger = inject(NGXLogger)
   readonly conversationId = injectQueryParams('id')
 
-  // readonly modelId = model<string>(null)
+  readonly modelTooltip = viewChild('mTooltip', { read: MatTooltip })
+
   get modelId() {
     return this.chatbiService.modelId()
   }
@@ -116,6 +119,12 @@ export class ChatbiHomeComponent {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      if (!this.chatbiService.modelId() && this.models()?.length) {
+        this.modelTooltip().show()
+      }
+    })
   }
 
   async openExplore(message: CopilotChatMessage, answer: QuestionAnswer) {

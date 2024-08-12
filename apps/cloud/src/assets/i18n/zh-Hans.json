@@ -1389,7 +1389,9 @@
       "Chart_Pie": "饼图",
       "NewCalculatedMeasures": "新增计算指标",
       "RenewTokenLimit": "重置 Token 限制",
-      "Save": "保存"
+      "Save": "保存",
+      "SelectSemanticModel": "选择语义模型",
+      "SelectCube": "选择一个数据集"
     },
     "Home": {
       "Insight": {

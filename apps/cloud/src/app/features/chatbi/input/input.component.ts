@@ -64,6 +64,7 @@ export class ChatbiInputComponent {
   readonly #logger = inject(NGXLogger)
   readonly router = inject(Router)
 
+  readonly modelId = this.chatbiService.modelId
   readonly cube = this.chatbiService.entity
 
   readonly prompts = signal([])
