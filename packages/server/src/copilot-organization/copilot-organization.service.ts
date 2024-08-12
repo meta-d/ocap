@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { TenantAwareCrudService } from '../core/crud'
 import { CopilotOrganization } from './copilot-organization.entity'
+import { ICopilotOrganization } from '@metad/contracts'
+import { RequestContext } from '../core'
 
 @Injectable()
 export class CopilotOrganizationService extends TenantAwareCrudService<CopilotOrganization> {
@@ -26,15 +28,27 @@ export class CopilotOrganizationService extends TenantAwareCrudService<CopilotOr
 		})
 		if (existing.success) {
 			await this.update(existing.record.id, {
-				tokenUsed: existing.record.tokenUsed + (input.tokenUsed ?? 0)
+				tokenUsed: (existing.record.tokenUsed ?? 0) + (input.tokenUsed ?? 0),
+				tokenLimit: input.tokenLimit ?? existing.record.tokenLimit
 			})
 		} else {
 			await this.create({
 				tenantId: input.tenantId,
 				organizationId: input.organizationId,
 				provider: input.provider,
-				tokenUsed: input.tokenUsed
+				tokenUsed: input.tokenUsed ?? 0,
+				tokenLimit: input.tokenLimit
 			})
 		}
+	}
+
+	async renew(id: string, entity: Partial<ICopilotOrganization>) {
+		const record = await this.findOne(id, { where: {
+			tenantId: RequestContext.currentTenantId(),
+		}})
+		record.tokenTotalUsed += record.tokenUsed
+		record.tokenUsed = 0
+		record.tokenLimit = entity.tokenLimit
+		return await this.repository.save(record)
 	}
 }

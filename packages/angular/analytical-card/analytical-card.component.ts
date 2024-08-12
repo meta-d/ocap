@@ -494,22 +494,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
         this.echartsEngine.entityType = await this.businessService.getEntityType()
         this.refresh()
       })
-    
   }
-
-  // ngOnChanges({ dataSettings, chartSettings, chartOptions }: SimpleChanges) {
-  //   if (dataSettings || chartSettings || chartOptions) {
-  //     this.error$.next(null)
-  //   }
-
-  //   if (chartSettings) {
-  //     this.echartsEngine.settings = chartSettings.currentValue
-  //   }
-
-  //   if (chartOptions) {
-  //     this.echartsEngine.options = chartOptions.currentValue
-  //   }
-  // }
 
   /**
    * 刷新数据

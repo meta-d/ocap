@@ -1,9 +1,9 @@
-import { ICopilotUser, IPagination } from '@metad/contracts'
-import { Body, Controller, Get, Logger, Param, Post, Query, UseInterceptors } from '@nestjs/common'
+import { ICopilotUser, IPagination, RolesEnum } from '@metad/contracts'
+import { Body, Controller, Get, Logger, Param, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CrudController, PaginationParams, TransformInterceptor } from '../core'
-import { ParseJsonPipe, UseValidationPipe } from '../shared'
+import { ParseJsonPipe, RoleGuard, Roles, UseValidationPipe } from '../shared'
 import { CopilotUser } from './copilot-user.entity'
 import { CopilotUserService } from './copilot-user.service'
 
@@ -20,6 +20,8 @@ export class CopilotUserController extends CrudController<CopilotUser> {
 		super(service)
 	}
 
+	@UseGuards(RoleGuard)
+	@Roles(RolesEnum.ADMIN, RolesEnum.TRIAL)
 	@Get()
 	@UseValidationPipe()
 	async getAll(
@@ -29,6 +31,8 @@ export class CopilotUserController extends CrudController<CopilotUser> {
 		return await this.service.findAll({ where, relations })
 	}
 
+	@UseGuards(RoleGuard)
+	@Roles(RolesEnum.ADMIN, RolesEnum.TRIAL)
 	@Post(':id/renew')
 	async renew(@Param('id') id: string, @Body() entity: Partial<ICopilotUser>) {
 		return await this.service.renew(id, entity)

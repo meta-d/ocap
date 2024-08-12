@@ -1,6 +1,6 @@
 import { ClipboardModule } from '@angular/cdk/clipboard'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal, ViewContainerRef } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal, viewChild, ViewContainerRef } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -11,8 +11,8 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { Router, RouterModule } from '@angular/router'
 import { CopilotChatMessage, JSONValue, nanoid } from '@metad/copilot'
-import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
+import { AnalyticalCardComponent, AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
+import { AnalyticalGridComponent, AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmDisplayBehaviourComponent, NgmInputComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { NgmCalculationEditorComponent, NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
@@ -32,6 +32,7 @@ import { ChatbiLoadingComponent } from '../loading/loading.component'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { ExplainComponent } from '@metad/story/story'
 import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
+import { WidgetService } from '@metad/core'
 
 @Component({
   standalone: true,
@@ -64,7 +65,8 @@ import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
   selector: 'pac-chatbi-answer',
   templateUrl: 'answer.component.html',
   styleUrl: 'answer.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [WidgetService]
 })
 export class ChatbiAnswerComponent {
   SlicersCapacity = SlicersCapacity
@@ -72,6 +74,7 @@ export class ChatbiAnswerComponent {
   OrderDirection = OrderDirection
 
   readonly chatbiService = inject(ChatbiService)
+  readonly widgetService = inject(WidgetService)
   readonly #logger = inject(NGXLogger)
   readonly homeComponent = inject(ChatbiHomeComponent)
   readonly #translate = inject(TranslateService)
@@ -84,6 +87,9 @@ export class ChatbiAnswerComponent {
   TOPS = [5, 10, 20, 100]
 
   readonly message = input<CopilotChatMessage>(null)
+  readonly analyticalCard = viewChild(AnalyticalCardComponent)
+  readonly analyticalGrid = viewChild(AnalyticalGridComponent)
+
   readonly primaryTheme = toSignal(this.#store.primaryTheme$)
   readonly model = this.chatbiService.model
   readonly indicators = computed(() => {
@@ -321,6 +327,12 @@ export class ChatbiAnswerComponent {
 
   setRankTop(top: number) {
     this.chatbiService.updateQuestionAnswer(this.message().id, { top: top ? top : null })
+  }
+
+  refresh(force = false) {
+    this.widgetService.refresh(force)
+    this.analyticalCard()?.refresh(force)
+    this.analyticalGrid()?.refresh(force)
   }
 
   setExplains(items) {

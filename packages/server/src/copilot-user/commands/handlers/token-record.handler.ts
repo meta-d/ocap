@@ -18,13 +18,15 @@ export class CopilotTokenRecordHandler implements ICommandHandler<CopilotTokenRe
 			// 记录该用户所使用组织或全局的 token
 			await this.copilotUserService.upsert({
 				...input,
-				organizationId: copilot.organizationId,
+				organizationId,
+				orgId: copilot.organizationId,
 				provider: input.copilot.provider
 			})
 			// 使用全局 Copilot 时记录该用户所在组织的 token 使用
 			if (!copilot.organizationId) {
 				await this.copilotOrganizationService.upsert({
-					...input,
+					tenantId: input.tenantId,
+					tokenUsed: input.tokenUsed,
 					organizationId,
 					provider: input.copilot.provider
 				})

@@ -95,24 +95,6 @@ export class ChatbiHomeComponent {
     .subscribe((conversation) => this.chatbiService.addConversation(conversation))
 
   constructor() {
-    // effect(
-    //   () => {
-    //     if (this.modelId()) {
-    //       this.chatbiService.setModelId(this.modelId())
-    //     }
-    //   },
-    //   { allowSignalWrites: true }
-    // )
-
-    // effect(
-    //   () => {
-    //     if (this.chatbiService.modelId()) {
-    //       this.modelId.set(this.chatbiService.modelId())
-    //     }
-    //   },
-    //   { allowSignalWrites: true }
-    // )
-
     effect(
       () => {
         const conversationId = this.conversationId()

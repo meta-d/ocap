@@ -1,4 +1,4 @@
-import { CurrenciesEnum, DEFAULT_TENANT, DefaultValueDateTypeEnum, IOrganizationCreateInput, IUser, RolesEnum } from '@metad/contracts'
+import { AiProvider, CurrenciesEnum, DEFAULT_TENANT, DefaultValueDateTypeEnum, IOrganizationCreateInput, IUser, RolesEnum } from '@metad/contracts'
 import { ConflictException, Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs'
 import { EmployeeCreateCommand } from '../../../employee/index'
@@ -8,6 +8,9 @@ import { TenantService } from '../../../tenant/index'
 import { UserService } from '../../../user'
 import { AuthService } from '../../auth.service'
 import { AuthTrialCommand } from '../auth.trial.command'
+import { CopilotOrganizationService } from '../../../copilot-organization/copilot-organization.service'
+
+const COPILOT_OPENAI_TOKEN_LIMIT = 1000000
 
 @CommandHandler(AuthTrialCommand)
 export class AuthRegisterTrialHandler implements ICommandHandler<AuthTrialCommand> {
@@ -19,6 +22,7 @@ export class AuthRegisterTrialHandler implements ICommandHandler<AuthTrialComman
 		private readonly authService: AuthService,
 		private readonly tenantService: TenantService,
 		private readonly roleService: RoleService,
+		private readonly copilotOrganizationService: CopilotOrganizationService
 	) {}
 
 	public async execute(command: AuthTrialCommand): Promise<IUser> {
@@ -55,10 +59,11 @@ export class AuthRegisterTrialHandler implements ICommandHandler<AuthTrialComman
 		if (success) {
 
 			this.logger.debug(`Found TRIAL role and clear recreate user '${record.email}'`)
+			if (record.emailVerification) {
+				await this.userService.deleteEmailVarification(record.emailVerification.id)
 
-			await this.userService.deleteEmailVarification(record.emailVerification.id)
-
-			this.logger.debug(`deleteEmailVarification '${record.emailVerification?.id}'`)
+				this.logger.debug(`deleteEmailVarification '${record.emailVerification.id}'`)
+			}
 
 			return this.authService.signup(
 				{
@@ -101,8 +106,16 @@ export class AuthRegisterTrialHandler implements ICommandHandler<AuthTrialComman
 
 		this.logger.debug(`Signup user '${userId}'`)
 
-		const user = this.publisher.mergeObjectContext(await this.userService.findOne(userId, { relations: ['role'] }))
+		// Init copilot organization token limit
+		this.copilotOrganizationService.upsert({
+			tenantId: tenant.id,
+			organizationId: organization.id,
+			provider: AiProvider.OpenAI,
+			tokenLimit: COPILOT_OPENAI_TOKEN_LIMIT
+		})
 
+		const user = this.publisher.mergeObjectContext(await this.userService.findOne(userId, { relations: ['role'] }))
+		// Init empoyee for trial user
 		const employee = await this.commandBus.execute(
 			new EmployeeCreateCommand(
 				{

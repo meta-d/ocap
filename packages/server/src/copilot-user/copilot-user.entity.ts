@@ -2,11 +2,15 @@ import { AiProvider, ICopilotUser, IOrganization, IUser } from '@metad/contracts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsNumber, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
-import { Organization, TenantBaseEntity, TenantOrganizationBaseEntity, User } from '../core/entities/internal'
+import { Organization, TenantOrganizationBaseEntity, User } from '../core/entities/internal'
 
 @Entity('copilot_user')
-export class CopilotUser extends TenantBaseEntity implements ICopilotUser {
-
+export class CopilotUser extends TenantOrganizationBaseEntity implements ICopilotUser {
+	/*
+    |--------------------------------------------------------------------------
+    | @ManyToOne 
+    |--------------------------------------------------------------------------
+    */
 	@ApiProperty({ type: () => Organization, readOnly: true })
 	@ManyToOne(() => Organization, {
 		nullable: true,
@@ -15,19 +19,15 @@ export class CopilotUser extends TenantBaseEntity implements ICopilotUser {
 	})
 	@JoinColumn()
 	@IsOptional()
-	organization?: IOrganization
+	org?: IOrganization
 
 	@ApiProperty({ type: () => String, readOnly: true })
-	@RelationId((it: TenantOrganizationBaseEntity) => it.organization)
+	@RelationId((it: CopilotUser) => it.org)
 	@IsString()
 	@IsOptional()
 	@Column({ nullable: true })
-	organizationId?: string
-	/*
-    |--------------------------------------------------------------------------
-    | @OneToOne 
-    |--------------------------------------------------------------------------
-    */
+	orgId?: string
+
 	@ApiProperty({ type: () => User })
 	@ManyToOne(() => User, {
 		nullable: true,
@@ -44,7 +44,11 @@ export class CopilotUser extends TenantBaseEntity implements ICopilotUser {
 	@IsOptional()
 	@Column({ nullable: true })
 	userId?: string
-
+	/*
+    |--------------------------------------------------------------------------
+    | Attributes 
+    |--------------------------------------------------------------------------
+    */
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@IsOptional()

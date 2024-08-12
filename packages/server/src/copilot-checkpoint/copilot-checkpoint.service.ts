@@ -30,4 +30,8 @@ export class CopilotCheckpointService extends TenantOrganizationAwareCrudService
 			return await this.create({ ...entity })
 		}
 	}
+
+	async deleteByThreadId(threadId: string): Promise<void> {
+		await this.delete({ thread_id: threadId })
+	}
 }

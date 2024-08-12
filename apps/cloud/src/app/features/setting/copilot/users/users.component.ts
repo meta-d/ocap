@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { DisplayBehaviour } from '@metad/ocap-core'
+import { DisplayBehaviour, isNil } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ICopilotUser } from '../../../../../../../../packages/contracts/src'
 import { CopilotUsageService, ToastrService } from '../../../../@core'
@@ -56,7 +56,7 @@ export class CopilotUsersComponent extends TranslationBaseComponent {
     })
 
   _formatNumber(value: number): string {
-    return formatNumber(value, this.translate.currentLang, '0.0-0')
+    return isNil(value) ? '' : formatNumber(value, this.translate.currentLang, '0.0-0')
   }
   formatNumber = this._formatNumber.bind(this)
 
@@ -75,6 +75,7 @@ export class CopilotUsersComponent extends TranslationBaseComponent {
       },
       error: (error) => {
         this.loading.set(false)
+        this._toastrService.error(error, 'Error')
       }
     })
   }

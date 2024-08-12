@@ -1,14 +1,14 @@
 import { AiProvider } from './ai.model'
-import { IBasePerTenantEntityModel } from './base-entity.model'
+import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
 import { IOrganization } from './organization.model'
 import { IUser } from './user.model'
 
 /**
  * 
  */
-export interface ICopilotUser extends IBasePerTenantEntityModel {
-  organizationId?: string
-  organization?: IOrganization
+export interface ICopilotUser extends IBasePerTenantAndOrganizationEntityModel {
+  orgId?: string
+  org?: IOrganization
   userId?: string
   user?: IUser
   // 关联的ai服务提供商

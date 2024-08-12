@@ -1,15 +1,16 @@
-import { IPagination } from '@metad/contracts'
-import { Controller, Get, Logger, Query, UseInterceptors } from '@nestjs/common'
+import { ICopilotOrganization, IPagination, RolesEnum } from '@metad/contracts'
+import { Body, Controller, Get, Logger, Param, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CrudController, PaginationParams, TransformInterceptor } from '../core'
-import { ParseJsonPipe, UseValidationPipe } from '../shared'
+import { ParseJsonPipe, RoleGuard, Roles, UseValidationPipe } from '../shared'
 import { CopilotOrganization } from './copilot-organization.entity'
 import { CopilotOrganizationService } from './copilot-organization.service'
 
 @ApiTags('CopilotOrganization')
-@ApiBearerAuth()
 @UseInterceptors(TransformInterceptor)
+@UseGuards(RoleGuard) // 目前没有起作用 （RoleGuard on controller scope）只能放在方法上
+@Roles(RolesEnum.SUPER_ADMIN)
 @Controller()
 export class CopilotOrganizationController extends CrudController<CopilotOrganization> {
 	readonly #logger = new Logger(CopilotOrganizationController.name)
@@ -20,6 +21,8 @@ export class CopilotOrganizationController extends CrudController<CopilotOrganiz
 		super(service)
 	}
 
+	@UseGuards(RoleGuard)
+	@Roles(RolesEnum.SUPER_ADMIN)
 	@Get()
 	@UseValidationPipe()
 	async getAll(
@@ -27,5 +30,12 @@ export class CopilotOrganizationController extends CrudController<CopilotOrganiz
 		@Query('$relations', ParseJsonPipe) relations: PaginationParams<CopilotOrganization>['relations']
 	): Promise<IPagination<CopilotOrganization>> {
 		return await this.service.findAll({ where, relations })
+	}
+
+	@UseGuards(RoleGuard)
+	@Roles(RolesEnum.SUPER_ADMIN)
+	@Post(':id/renew')
+	async renew(@Param('id') id: string, @Body() entity: Partial<ICopilotOrganization>) {
+		return await this.service.renew(id, entity)
 	}
 }

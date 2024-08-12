@@ -27,6 +27,11 @@
         caption: 'PAC.KEY_WORDS.TokenTotalUsed' | translate: {Default: 'Token Total Used'},
         pipe: formatNumber
       },
+      {
+        name: 'action',
+        caption: 'PAC.KEY_WORDS.ACTION' | translate: { Default: 'Action' },
+        cellTemplate: actionTempl
+      }
     ]"
 />
 
@@ -37,4 +42,27 @@
       <span class="whitespace-nowrap" [title]="organization.name">{{organization.name}}</span>
     </div>
   }
+</ng-template>
+
+<ng-template #actionTempl let-id="id" >
+  <div class="flex items-center gap-2" displayDensity="compact">
+    @if (editId() === id) {
+      <ngm-input type="number" simple [disabled]="loading()" [(ngModel)]="tokenLimit" />
+      <button mat-icon-button class="text-gray-400"
+        [disabled]="loading()"
+        [matTooltip]="'PAC.ChatBI.Save' | translate: {Default: 'Save'}"
+        (click)="save(id)"
+      >
+        <mat-icon fontSet="material-icons-outlined">save</mat-icon>
+      </button>
+    } @else {
+      <button mat-icon-button class="text-gray-400"
+        [disabled]="loading()"
+        [matTooltip]="'PAC.ChatBI.RenewTokenLimit' | translate: {Default: 'Renew token limit'}"
+        (click)="renewToken(id)"
+      >
+        <mat-icon fontSet="material-icons-outlined">autorenew</mat-icon>
+      </button>
+    }
+  </div>
 </ng-template>

@@ -159,7 +159,7 @@ failed: ${error.message}`)
 		let result = await this.copilotService.findOneByRole(role)
 		if (result?.enabled) {
 			// Check token usage in organizaiton
-			const usage = await this.copilotUserService.findOneOrFail({ where: { userId, organizationId, provider: result.provider }})
+			const usage = await this.copilotUserService.findOneOrFail({ where: { userId, orgId: organizationId, provider: result.provider }})
 			if (usage.success && usage.record.tokenLimit) {
 				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
 					throw new Error('Token usage exceeds limit')

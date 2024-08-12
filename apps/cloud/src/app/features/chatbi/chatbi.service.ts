@@ -98,7 +98,7 @@ export class ChatbiService {
   })
 
   readonly pristineConversation = signal<ChatbiConverstion | null>(null)
-  readonly indicators = computed(() => this.conversation()?.indicators)
+  readonly indicators = computed(() => this.conversation()?.indicators ?? [])
 
   readonly aiMessage = signal<CopilotChatMessage>(null)
 
@@ -110,17 +110,9 @@ export class ChatbiService {
       if (!this.conversationId()) {
         this.setConversation(items[0]?.key)
       }
-      // if (items.length) {
-      //   this.conversations.update((state) => [
-      //     ...state,
-      //     ...items.filter((item) => !state.some((conv) => conv.key === item.key))
-      //   ])
-      //   if (!this.conversationId()) {
-      //     this.setConversation(items[0].key)
-      //   }
-      // } else {
-      //   this.newConversation()
-      // }
+      if (!this.conversationKey()) {
+        this.newConversation()
+      }
     })
 
   private saveSub = toObservable(this.conversation)

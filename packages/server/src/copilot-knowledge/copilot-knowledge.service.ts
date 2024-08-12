@@ -191,15 +191,16 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 	async getVectorStore(
 		role: AiBusinessRole | string,
-		// command: string,
 	) {
 		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
-		const id = (organizationId || tenantId) + `:${role || 'default'}` // ${command ? ':' + command : ''}`
+		const id = (organizationId || tenantId) + `:${role || 'default'}`
 		if (!this.vectorStores.has(id)) {
+			let collectionName = id
 			let primaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Primary)
 			if (!primaryCopilot?.enabled) {
 				primaryCopilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary)
+				collectionName = tenantId + `:${role || 'default'}`
 			}
 			let copilot: ICopilot = null
 			if (primaryCopilot?.enabled) {
@@ -213,7 +214,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 					pool: this.pgPool,
 					tableName: 'copilot_knowledge_vector',
 					collectionTableName: 'copilot_knowledge_collection',
-					collectionName: id,
+					collectionName,
 					columns: {
 						idColumnName: 'id',
 						vectorColumnName: 'vector',

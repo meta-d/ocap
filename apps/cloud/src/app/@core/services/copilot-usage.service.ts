@@ -14,7 +14,7 @@ export class CopilotUsageService {
     return this.httpClient
       .get<{ items: ICopilotOrganization[] }>(API_COPILOT_ORGANIZATION, {
         params: {
-          $relations: JSON.stringify(['organization'])
+          $relations: JSON.stringify(['org'])
         }
       })
       .pipe(map(({ items }) => items))
@@ -24,7 +24,7 @@ export class CopilotUsageService {
     return this.httpClient
       .get<{ items: ICopilotUser[] }>(API_COPILOT_USER, {
         params: {
-          $relations: JSON.stringify(['user', 'organization'])
+          $relations: JSON.stringify(['user', 'org'])
         }
       })
       .pipe(map(({ items }) => items))

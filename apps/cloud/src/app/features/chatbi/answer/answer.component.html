@@ -175,6 +175,11 @@
       <mat-icon fontSet="material-icons-round">arrow_right</mat-icon>
     </button>
 
+    <button cdkMenuItem (click)="refresh(true)">
+      <mat-icon fontSet="material-icons-round">refresh</mat-icon>
+      {{ 'Story.Widget.Refresh' | translate: {Default: "Refresh"} }}
+    </button>
+
     <button cdkMenuItem (click)="explain()">
       <mat-icon fontSet="material-icons-round">code</mat-icon>
       {{ 'Story.Widget.Explain' | translate: {Default: "Explain"} }}
