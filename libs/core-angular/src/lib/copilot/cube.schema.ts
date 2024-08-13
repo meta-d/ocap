@@ -11,15 +11,6 @@ import {
 } from '@metad/ocap-core'
 import { z } from 'zod'
 
-export function makeCubeRulesPrompt() {
-  return `The dimensions consist of three attributes: dimension, hierarchy, and level, each of which is taken from the name of dimension, hierarchy, and level in the cube, respectively.
-Dimension name pattern: [Dimension Name];
-Hierarchy name pattern: [Hierarchy Name];
-Level name pattern: [Hierarchy Name].[Level Name];
-Member key pattern: [MemberKey] (do not includes [Hierarchy Name] and [Level Name] in member key field).
-`
-}
-
 export const DataSettingsSchema = z.object({
   dataSource: z.string().describe('The name of the data source'),
   entitySet: z.string().describe('The name of the cube')

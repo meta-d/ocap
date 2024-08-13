@@ -52,3 +52,5 @@ export function getCommandPrompt(prompt: string) {
 export function referencesCommandName(commandName: string) {
   return `${commandName}/references`
 }
+
+export const AgentRecursionLimit = 20

@@ -1,3 +1,3 @@
-import { ChatBIHandler } from './chatbi.handler'
+import { LarkMessageHandler } from './lark-message.handler'
 
-export const CommandHandlers = [ChatBIHandler]
+export const CommandHandlers = [LarkMessageHandler]

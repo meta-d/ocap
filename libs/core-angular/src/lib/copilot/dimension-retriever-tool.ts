@@ -4,6 +4,9 @@ import { BaseRetriever } from '@langchain/core/retrievers'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { formatDocumentsAsString } from 'langchain/util/document'
 import { z } from 'zod'
+import { MEMBER_RETRIEVER_TOOL_NAME } from '@metad/copilot'
+
+export { MEMBER_RETRIEVER_TOOL_NAME }
 
 export abstract class BaseDimensionMemberRetriever extends BaseRetriever {
   model: Signal<string>
@@ -11,7 +14,6 @@ export abstract class BaseDimensionMemberRetriever extends BaseRetriever {
 }
 
 export const MEMBER_RETRIEVER_TOKEN = new InjectionToken<BaseDimensionMemberRetriever>('DimensionMemberRetriever')
-export const MEMBER_RETRIEVER_TOOL_NAME = 'dimensionMemberKeySearch'
 
 export function createDimensionMemberRetrieverTool(
   retriever: BaseDimensionMemberRetriever,
@@ -58,7 +60,3 @@ export function injectDimensionMemberTool() {
   const memberRetriever = inject(MEMBER_RETRIEVER_TOKEN)
   return createDimensionMemberRetrieverTool(memberRetriever)
 }
-
-export const PROMPT_RETRIEVE_DIMENSION_MEMBER = `Analyze user input to determine whether the sentence involves dimension members.` +
-  ` If it involves dimension members, the "${MEMBER_RETRIEVER_TOOL_NAME}" tool needs to be called to retrieve information about the dimension members.` +
-  ` Otherwise, proceed to the next step directly.`

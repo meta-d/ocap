@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common'
-import { LarkService } from './lark.service'
 import { CqrsModule } from '@nestjs/cqrs'
+import { TenantModule } from '../tenant'
+import { LarkService } from './lark.service'
 
 @Module({
-	imports: [
-		CqrsModule
-	],
+	imports: [CqrsModule, TenantModule],
 	controllers: [],
 	providers: [LarkService],
 	exports: [LarkService]
