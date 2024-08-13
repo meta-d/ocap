@@ -38,6 +38,7 @@ import { VisitModule } from './visit/visit.module'
 import { SemanticModelEntityModule } from './model-entity'
 import { SemanticModelMemberModule } from './model-member'
 import { ChatBIConversationModule } from './chatbi-conversation/conversation.module'
+import { IntegrationLarkModule } from './integration-lark'
 
 @Module({
 	imports: [
@@ -96,7 +97,8 @@ import { ChatBIConversationModule } from './chatbi-conversation/conversation.mod
 		ScreenshotModule,
 		CertificationModule,
 		RedisModule,
-		ChatBIConversationModule
+		ChatBIConversationModule,
+		IntegrationLarkModule
 	],
 	controllers: [AppController],
 	providers: [AnalyticsService, ...EventHandlers, ...CommandHandlers]

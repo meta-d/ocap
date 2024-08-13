@@ -2,7 +2,7 @@ import { Logger, LogLevel } from '@nestjs/common'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AnalyticsModule, AnalyticsService, prepare, seedModule } from '@metad/analytics'
-import { AuthGuard, seedDefault, ServerAppModule, AppService, larkWebhookEventDispatcher } from '@metad/server-core'
+import { AuthGuard, seedDefault, ServerAppModule, AppService, IntegrationLarkModule, LarkService } from '@metad/server-core'
 import { getConfig, setConfig, environment as env } from '@metad/server-config'
 import { json, urlencoded, text } from 'express'
 import * as expressSession from 'express-session';
@@ -54,14 +54,16 @@ async function bootstrap() {
   const globalPrefix = 'api'
   app.setGlobalPrefix(globalPrefix)
 
-  // Webhook for lark
-  app.use('/api/lark/webhook/event', larkWebhookEventDispatcher)
+  
 
   // Seed default values
   const serverService = app.select(ServerAppModule).get(AppService)
   await serverService.seedDBIfEmpty()
   const analyticsService = app.select(AnalyticsModule).get(AnalyticsService)
   await analyticsService.seedDBIfEmpty()
+  // Webhook for lark
+  const larkService = app.select(IntegrationLarkModule).get(LarkService)
+  app.use('/api/lark/webhook/event', larkService.webhookEventDispatcher)
 
   // const subscriptionService = app.select(ServerAppModule).get(SubscriptionService)
   // subscriptionService.setupJobs()

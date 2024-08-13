@@ -46,6 +46,7 @@ import { CopilotRoleModule } from './copilot-role/copilot-role.module'
 import { CopilotUserModule } from './copilot-user/copilot-user.module'
 import { CopilotOrganizationModule } from './copilot-organization/copilot-organization.module'
 import { CopilotCheckpointModule } from './copilot-checkpoint/copilot-checkpoint.module'
+import { IntegrationLarkModule } from './integration-lark/index'
 
 @Module({
   imports: [
@@ -106,7 +107,8 @@ import { CopilotCheckpointModule } from './copilot-checkpoint/copilot-checkpoint
     CopilotOrganizationModule,
     StorageFileModule,
     AIModule,
-    CopilotCheckpointModule
+    CopilotCheckpointModule,
+    IntegrationLarkModule
   ],
   controllers: [AppController],
   providers: [AppService],
