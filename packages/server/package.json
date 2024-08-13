@@ -4,6 +4,7 @@
   "type": "commonjs",
   "dependencies": {
     "@casl/ability": "^5.4.3",
+    "@larksuiteoapi/node-sdk": "^1.30.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/cqrs": "^8.0.0",

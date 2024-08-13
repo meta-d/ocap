@@ -21,3 +21,4 @@ export * from './IUnleashConfig';
 export * from './IFeishuConfig'
 export * from './IDingtalkConfig'
 export * from './IAliyunConfig'
+export * from './ILarkConfig'

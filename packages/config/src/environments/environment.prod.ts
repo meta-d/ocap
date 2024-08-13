@@ -129,6 +129,13 @@ export const environment: IEnvironment = {
 		appType: process.env.FEISHU_APP_TYPE,
 	},
 
+	larkConfig: {
+		appId: process.env.LARK_APP_ID,
+		appSecret: process.env.LARK_APP_SECRET,
+		verificationToken: process.env.LARK_VERIFICATION_TOKEN,
+		encryptKey: process.env.LARK_ENCRYPT_KEY,
+	},
+
 	dingtalkConfig: {
 		clientId: process.env.DINGTALK_CLIENT_ID,
 		clientSecret: process.env.DINGTALK_CLIENT_SECRET,
