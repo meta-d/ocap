@@ -4,11 +4,11 @@ import { nonNullable } from '@metad/copilot'
 import { environment } from '@metad/server-config'
 import { Injectable } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { filter, Observable, Subject, Subscriber, switchMap } from 'rxjs'
+import { filter, Observable, Subject, Subscriber } from 'rxjs'
 import { TenantService } from '../tenant'
 import { client } from './client'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
-import { LarkMessage } from './types'
+import { ChatLarkContext, LarkMessage } from './types'
 
 @Injectable()
 export class LarkService {
@@ -52,38 +52,27 @@ export class LarkService {
 			 */
 
 			const tenant = await this.tenantService.findOne({ name: DEFAULT_TENANT })
+			const organizationId = environment.larkConfig.organizationId
 			const chatId = data.message.chat_id
-			if (!(data.message.chat_type === 'p2p' || data.message.mentions?.some((mention) => mention.id.open_id === environment.larkConfig.appOpenId))) {
+			if (
+				!(
+					data.message.chat_type === 'p2p' ||
+					data.message.mentions?.some((mention) => mention.id.open_id === environment.larkConfig.appOpenId)
+				)
+			) {
 				return true
 			}
-		
+
 			console.log(data)
-			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
+			return await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
 				new LarkMessageCommand({
 					tenant,
+					organizationId,
 					message: data as any,
+					chatId,
 					larkService: this
 				})
 			)
-			result.pipe(switchMap((message) => client.im.message.create(message))).subscribe({
-				next: (result) => {
-					//
-				},
-				error: (err) => {
-					client.im.message.create({
-						params: {
-							receive_id_type: 'chat_id'
-						},
-						data: {
-							receive_id: chatId,
-							content: JSON.stringify({ text: `Error:` + err.message }),
-							msg_type: 'text'
-						}
-					} as LarkMessage)
-				}
-			})
-
-			return true
 		},
 		'application.bot.menu_v6': async (data) => {
 			/**
@@ -169,21 +158,83 @@ export class LarkService {
 
 	action(message: LarkMessage): Observable<string> {
 		return new Observable<string>((subscriber: Subscriber<unknown>) => {
-			client.im.message.create(message).then((res) => {
-				const response = new Subject<any>()
-				this.actions.set(res.data.message_id, response)
-				response.subscribe({
-					next: (message) => {
-						subscriber.next(message.action.option)
-					},
-					error: (err) => {
-						subscriber.error(err)
-					},
-					complete: () => {
-						subscriber.complete()
-					}
+			client.im.message
+				.create(message)
+				.then((res) => {
+					const response = new Subject<any>()
+					this.actions.set(res.data.message_id, response)
+					response.subscribe({
+						next: (message) => {
+							subscriber.next(message.action.option)
+						},
+						error: (err) => {
+							subscriber.error(err)
+						},
+						complete: () => {
+							subscriber.complete()
+						}
+					})
 				})
-			}).catch((err) => subscriber.error(err))
+				.catch((err) => subscriber.error(err))
 		})
+	}
+
+	async errorMessage(context: ChatLarkContext, err: Error) {
+		await client.im.message.create({
+			params: {
+				receive_id_type: 'chat_id'
+			},
+			data: {
+				receive_id: context.chatId,
+				content: JSON.stringify({ text: `Error:` + err.message }),
+				msg_type: 'text'
+			}
+		} as LarkMessage)
+	}
+
+	async textMessage(context: ChatLarkContext, content: string) {
+		await client.im.message.create({
+			params: {
+				receive_id_type: 'chat_id'
+			},
+			data: {
+				receive_id: context.chatId,
+				content: JSON.stringify({ text: content }),
+				msg_type: 'text'
+			}
+		} as LarkMessage)
+	}
+
+	async interactiveMessage(context: ChatLarkContext, data: any) {
+		await client.im.message.create({
+			params: {
+				receive_id_type: 'chat_id'
+			},
+			data: {
+				receive_id: context.chatId,
+				content: JSON.stringify(data),
+				msg_type: 'interactive'
+			}
+		} as LarkMessage)
+	}
+
+	async markdownMessage(context: ChatLarkContext, content: string) {
+		await client.im.message.create({
+			params: {
+				receive_id_type: 'chat_id'
+			},
+			data: {
+				receive_id: context.chatId,
+				content: JSON.stringify({
+					elements: [
+						{
+							tag: 'markdown',
+							content
+						}
+					]
+				}),
+				msg_type: 'interactive'
+			}
+		} as LarkMessage)
 	}
 }

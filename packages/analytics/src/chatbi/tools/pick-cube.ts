@@ -1,15 +1,12 @@
 import { tool } from '@langchain/core/tools'
 import { ISemanticModel } from '@metad/contracts'
 import { markdownModelCube } from '@metad/ocap-core'
-import { firstValueFrom, Subscriber } from 'rxjs'
+import { ChatLarkContext } from '@metad/server-core'
+import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
-import { ChatBILarkMessage, ChatContext } from '../types'
+import { ChatContext } from '../types'
 
-export function createPickCubeTool(
-	context: ChatContext,
-	models: ISemanticModel[],
-	subscriber: Subscriber<ChatBILarkMessage | string>
-) {
+export function createPickCubeTool(context: ChatContext, models: ISemanticModel[], larkContext: ChatLarkContext) {
 	const { logger, chatId, larkService, dsCoreService } = context
 	return tool(
 		async (answer): Promise<string> => {
@@ -22,7 +19,7 @@ export function createPickCubeTool(
 						{
 							tag: 'div',
 							text: {
-								content: '请选择一个数据源：',
+								content: '请选择一个语义模型：',
 								tag: 'lark_md'
 							}
 						},
@@ -33,7 +30,7 @@ export function createPickCubeTool(
 									tag: 'select_static',
 									placeholder: {
 										tag: 'plain_text',
-										content: '选择一个语义模型'
+										content: '选择语义模型'
 									},
 									options: models.map((model) => ({
 										text: {
@@ -129,7 +126,7 @@ export function createPickCubeTool(
 						}
 					}
 				}
-				
+
 				throw new Error(`未找到数据集，请结束对话`)
 			} catch (err) {
 				logger.error(err)

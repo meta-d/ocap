@@ -21,9 +21,9 @@ import {
 	tryFixSlicer,
 	tryFixVariableSlicer
 } from '@metad/ocap-core'
-import { firstValueFrom, Subject, Subscriber, takeUntil } from 'rxjs'
+import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
-import { ChatContext } from '../types'
+import { ChatBILarkContext, ChatContext } from '../types'
 
 type ChatAnswer = {
 	preface: string
@@ -57,14 +57,14 @@ export const ChatAnswerSchema = z.object({
 	conclusion: z.string().optional().describe('conclusion of the answer')
 })
 
-export function createChatAnswerTool(context: ChatContext, subscriber: Subscriber<any>) {
+export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILarkContext) {
 	const { chatId, logger, dsCoreService, larkService } = context
 	return tool(
 		async (answer): Promise<string> => {
 			logger.debug(`Execute copilot action 'answerQuestion':`, answer)
 			try {
 				if (answer.preface) {
-					subscriber.next(answer.preface)
+					await larkService.textMessage(larkContext, answer.preface)
 				}
 				let entityType = null
 				if (answer.dataSettings) {
@@ -78,7 +78,7 @@ export function createChatAnswerTool(context: ChatContext, subscriber: Subscribe
 				if (answer.chartType) {
 					const data = await drawChartMessage(
 						{ ...context, entityType: entityType || context.entityType },
-						subscriber,
+						larkContext,
 						answer as ChatAnswer
 					)
 
@@ -86,7 +86,7 @@ export function createChatAnswerTool(context: ChatContext, subscriber: Subscribe
 				}
 
 				return `图表答案已经回复给用户了，请不要重复回答了。`
-			} catch(err) {
+			} catch (err) {
 				logger.error(err)
 
 				return `出现错误: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
@@ -117,7 +117,11 @@ export function createChatAnswerTool(context: ChatContext, subscriber: Subscribe
 	)
 }
 
-async function drawChartMessage(context: ChatContext, subscriber: Subscriber<any>, answer: ChatAnswer): Promise<any[]> {
+async function drawChartMessage(
+	context: ChatContext,
+	larkContext: ChatBILarkContext,
+	answer: ChatAnswer
+): Promise<any[]> {
 	const { entityType } = context
 	const chartService = new ChartBusinessService(context.dsCoreService)
 	const destroy$ = new Subject<void>()
@@ -135,19 +139,18 @@ async function drawChartMessage(context: ChatContext, subscriber: Subscriber<any
 	if (answer.slicers) {
 		slicers.push(...answer.slicers.map((slicer) => tryFixSlicer(slicer, entityType)))
 	}
-	
+
 	slicers.push(...(answer.timeSlicers ?? []))
 
 	return new Promise((resolve, reject) => {
 		chartService.selectResult().subscribe((result) => {
 			if (result.error) {
-				// subscriber.error(result.error)
 				reject(result.error)
 			} else {
-				subscriber.next({
-					type: 'interactive',
-					data: createLineChart(chartAnnotation, context.entityType, result.data)
-				})
+				larkContext.larkService.interactiveMessage(
+					larkContext,
+					createLineChart(chartAnnotation, context.entityType, result.data)
+				)
 				resolve(result.data)
 			}
 			destroy$.next()
@@ -176,26 +179,74 @@ function createLineChart(chartAnnotation: ChartAnnotation, entityType: EntityTyp
 	const measureName = getPropertyMeasure(measure)
 	const measureProperty = getEntityProperty(entityType, measure)
 
+	let type = 'bar'
+	if (chartAnnotation.chartType.type === 'Line') {
+		type = 'line'
+	} else if (chartAnnotation.chartType.type === 'Pie') {
+		type = 'pie'
+	}
+
 	return {
 		elements: [
 			{
 				tag: 'chart',
 				chart_spec: {
-					type: 'line',
-					title: {
-						text: '折线图'
-					},
+					type,
 					data: {
 						values: data // 此处传入数据。
 					},
 					xField: getChartCategory(chartAnnotation).hierarchy,
-					yField: measureName
+					yField: measureName,
+					label: {
+						visible: true
+					},
+					legends: {
+						visible: true
+					}
 				}
 			}
 		],
 		header: {
-			template: 'purple',
-			title: { content: '卡片标题', tag: 'plain_text' }
+			template: 'blue',
+			title: {
+				// 卡片主标题。必填。
+				tag: 'plain_text', // 固定值 plain_text。
+				content: '示例标题', // 主标题内容。
+				i18n: {
+					// 多语言标题内容。必须配置 content 或 i18n 两个属性的其中一个。如果同时配置仅生效 i18n。
+					zh_cn: '',
+					en_us: '',
+					ja_jp: '',
+					zh_hk: '',
+					zh_tw: ''
+				}
+			},
+			text_tag_list: [
+				{
+					tag: 'text_tag',
+					text: {
+						tag: 'plain_text',
+						content: '后缀标签1'
+					},
+					color: 'turquoise'
+				},
+				{
+					tag: 'text_tag',
+					text: {
+						tag: 'plain_text',
+						content: '后缀标签2'
+					},
+					color: 'orange'
+				},
+				{
+					tag: 'text_tag',
+					text: {
+						tag: 'plain_text',
+						content: '后缀标签3'
+					},
+					color: 'indigo'
+				}
+			]
 		}
 	}
 }

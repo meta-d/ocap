@@ -6,4 +6,5 @@ export interface ILarkConfig {
 	readonly verificationToken?: string
 	readonly encryptKey?: string
 	readonly appOpenId?: string
+	readonly organizationId?: string
 }

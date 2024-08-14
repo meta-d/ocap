@@ -17,15 +17,13 @@ import { isEntityType, markdownModelCube } from '@metad/ocap-core'
 import { CopilotCheckpointSaver, CopilotService } from '@metad/server-core'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { firstValueFrom, Subscriber } from 'rxjs'
+import { firstValueFrom, Subject } from 'rxjs'
 import { SemanticModelService } from '../model'
 import { SemanticModelMemberService } from '../model-member/member.service'
 import { createDimensionMemberRetriever } from '../model-member/retriever'
 import { getSemanticModelKey, NgmDSCoreService } from '../model/ocap'
-import { createChatAnswerTool } from './tools/answer'
-import { createDimensionMemberRetrieverTool } from './tools/member-retriever'
-import { createPickCubeTool } from './tools/pick-cube'
-import { ChatBIAgentState, ChatBILarkContext, ChatBIUserSession, insightAgentState } from './types'
+import { createChatAnswerTool, createEndTool, createDimensionMemberRetrieverTool, createPickCubeTool } from './tools/'
+import { ChatBIConversation, ChatBILarkContext, ChatBIUserSession, IChatBI, insightAgentState } from './types'
 
 export function createLLM<T = ChatOpenAI | BaseChatModel>(
 	copilot: ICopilot,
@@ -82,16 +80,10 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 }
 
 @Injectable()
-export class ChatBIService {
+export class ChatBIService implements IChatBI {
 	private readonly logger = new Logger(ChatBIService.name)
 
-	readonly userConversations = new Map<
-		string,
-		{
-			chatId: string
-			graph: CompiledStateGraph<ChatBIAgentState, Partial<ChatBIAgentState>, '__start__' | 'agent' | 'tools'>
-		}
-	>()
+	readonly userConversations = new Map<string, ChatBIConversation>()
 
 	readonly userSessions: Record<string, ChatBIUserSession> = {}
 
@@ -104,23 +96,23 @@ export class ChatBIService {
 		private readonly commandBus: CommandBus
 	) {}
 
-	async getUserConversation(input: ChatBILarkContext, subscriber: Subscriber<unknown>) {
-		const { chatId, userId } = input
-		if (!this.userConversations.get(userId)) {
+	async getUserConversation(input: ChatBILarkContext) {
+		const { chatId, conversationId, userId, larkService } = input
+		if (!this.userConversations.get(conversationId)) {
 			this.logger.debug(`未找到会话，新建会话为用户：${userId}`)
 			try {
-				const graph = await this.createChatGraph(input, subscriber)
-				this.userConversations.set(userId, { chatId, graph })
+				const graph = await this.createChatGraph(input)
+				this.userConversations.set(conversationId, { chatId, graph, destroy: new Subject<void>() })
 			} catch (err) {
 				console.error(err)
-				subscriber.error(err)
+				larkService.errorMessage(input, err)
 			}
 		}
 
-		return this.userConversations.get(userId)
+		return this.userConversations.get(conversationId)
 	}
 
-	async createChatGraph(input: ChatBILarkContext, subscriber: Subscriber<unknown>) {
+	async createChatGraph(input: ChatBILarkContext) {
 		const { tenant, userId, chatId } = input
 		const tenantId = tenant.id
 		const { items } = await this.copilotService.findAllWithoutOrganization({ where: { tenantId } })
@@ -129,7 +121,7 @@ export class ChatBIService {
 			//
 		})
 
-		const { items: models } = await this.modelService.findAll({ where: { tenantId } })
+		const { items: models } = await this.modelService.findAll({ where: { tenantId, organizationId: input.organizationId } })
 
 		let context = 'Empty'
 		// Get user's session
@@ -153,7 +145,7 @@ export class ChatBIService {
 		const memberRetriever = createDimensionMemberRetriever({ logger: this.logger }, this.semanticModelMemberService)
 		const answerTool = createChatAnswerTool(
 			{ chatId, logger: this.logger, larkService: input.larkService, dsCoreService: this.dsCoreService },
-			subscriber
+			input
 		)
 		const pickCubeTool = createPickCubeTool(
 			{
@@ -163,10 +155,18 @@ export class ChatBIService {
 				dsCoreService: this.dsCoreService
 			},
 			models,
-			subscriber
+			input
 		)
+		const endTool = createEndTool({
+			conversationId: input.conversationId,
+			chatId,
+			logger: this.logger,
+			larkService: input.larkService,
+			dsCoreService: this.dsCoreService,
+			chatBIService: this
+		})
 
-		const tools = [createDimensionMemberRetrieverTool(memberRetriever), answerTool, pickCubeTool]
+		const tools = [createDimensionMemberRetrieverTool(memberRetriever), answerTool, pickCubeTool, endTool]
 		const graph = createReactAgent({
 			state: insightAgentState,
 			llm,
@@ -180,6 +180,7 @@ The cube context is:
 {{context}}
 
 If the cube context is empty, please call 'pickCube' tool to select a cube context firstly.
+如果用户明确要结束对话，请调用 'end' tool to end the conversation.
 ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
 
@@ -201,6 +202,11 @@ ${createAgentStepsInstructions(
 		})
 
 		return graph
+	}
+
+	endConversation(id: string): void {
+		this.userConversations.get(id)?.destroy.next()
+		this.userConversations.set(id, null)
 	}
 
 	upsertUserSession(userId: string, value: Partial<ChatBIUserSession>) {

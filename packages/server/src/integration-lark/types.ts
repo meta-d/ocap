@@ -15,6 +15,8 @@ export type LarkMessage = {
 
 export type ChatLarkContext<T = any> = {
 	tenant: ITenant
+	organizationId: string
 	larkService: LarkService
+	chatId: string
 	message?: T
 }
