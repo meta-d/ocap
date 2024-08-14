@@ -1,7 +1,6 @@
 import { Signal, inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { CalculationSchema, FormulaSchema } from '@metad/core'
-import { C_MEASURES, CalculatedMember } from '@metad/ocap-core'
+import { C_MEASURES, CalculatedMember, CalculationSchema, FormulaSchema } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'

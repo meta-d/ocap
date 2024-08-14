@@ -1,15 +1,19 @@
 import * as lark from '@larksuiteoapi/node-sdk'
 import { DEFAULT_TENANT } from '@metad/contracts'
+import { nonNullable } from '@metad/copilot'
 import { environment } from '@metad/server-config'
 import { Injectable } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { Observable, switchMap } from 'rxjs'
+import { filter, Observable, Subject, Subscriber, switchMap } from 'rxjs'
 import { TenantService } from '../tenant'
 import { client } from './client'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
+import { LarkMessage } from './types'
 
 @Injectable()
 export class LarkService {
+	private actions = new Map<string, Subject<any>>()
+
 	eventDispatcher = new lark.EventDispatcher({
 		verificationToken: environment.larkConfig.verificationToken,
 		encryptKey: environment.larkConfig.encryptKey,
@@ -46,31 +50,38 @@ export class LarkService {
 				[Symbol(event-type)]: 'im.message.receive_v1'
 			  }
 			 */
-			const tenant = await this.tenantService.findOne({ name: DEFAULT_TENANT })
 
-			if (data.message.chat_type !== 'p2p') {
+			const tenant = await this.tenantService.findOne({ name: DEFAULT_TENANT })
+			const chatId = data.message.chat_id
+			if (!(data.message.chat_type === 'p2p' || data.message.mentions?.some((mention) => mention.id.open_id === environment.larkConfig.appOpenId))) {
 				return true
 			}
+		
 			console.log(data)
-
 			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
 				new LarkMessageCommand({
 					tenant,
-					message: data.message as any
+					message: data as any,
+					larkService: this
 				})
 			)
-			result
-				.pipe(
-					switchMap((message) => client.im.message.create(message))
-				)
-				.subscribe({
-					next: (result) => {
-						//
-					},
-					error: (err) => {
-						console.error(err)
-					}
-				})
+			result.pipe(switchMap((message) => client.im.message.create(message))).subscribe({
+				next: (result) => {
+					//
+				},
+				error: (err) => {
+					client.im.message.create({
+						params: {
+							receive_id_type: 'chat_id'
+						},
+						data: {
+							receive_id: chatId,
+							content: JSON.stringify({ text: `Error:` + err.message }),
+							msg_type: 'text'
+						}
+					} as LarkMessage)
+				}
+			})
 
 			return true
 		},
@@ -97,7 +108,7 @@ export class LarkService {
 			  }
 			 * 
 			 */
-			const {event_key} = data
+			const { event_key } = data
 			if (event_key.startsWith('select_cube:')) {
 				const tenant = await this.tenantService.findOne({ name: DEFAULT_TENANT })
 				console.log(data)
@@ -108,12 +119,44 @@ export class LarkService {
 					})
 				)
 
-				result.subscribe((message) => {
-					client.im.message.create(message)
+				result.pipe(filter(nonNullable)).subscribe(async (message) => {
+					await client.im.message.create(message)
 				})
 			}
 
 			return true
+		},
+		'card.action.trigger': async (data) => {
+			/**
+			 * {
+				schema: '2.0',
+				event_id: 'd972d3653c29ef5307e80e9a08cf099f',
+				token: 'c-t',
+				create_time: '1723625509226706',
+				event_type: 'card.action.trigger',
+				tenant_key: '',
+				app_id: '',
+				operator: {
+					tenant_key: '',
+					open_id: '',
+					union_id: ''
+				},
+				action: { tag: 'select_static', option: '1' },
+				host: 'im_message',
+				context: {
+					open_message_id: 'om_dd02538d5ecaf1b861c7d748deb3f189',
+					open_chat_id: 'oc_f1a6cd3129de01656f2e9f4c3083b3a0'
+				},
+				[Symbol(event-type)]: 'card.action.trigger'
+			  }
+			 */
+			console.log(data)
+			const messageId = data.context.open_message_id
+			if (messageId && this.actions.get(messageId)) {
+				this.actions.get(messageId).next(data)
+				return true
+			}
+			return false
 		}
 	})
 
@@ -123,4 +166,24 @@ export class LarkService {
 		private readonly tenantService: TenantService,
 		private readonly commandBus: CommandBus
 	) {}
+
+	action(message: LarkMessage): Observable<string> {
+		return new Observable<string>((subscriber: Subscriber<unknown>) => {
+			client.im.message.create(message).then((res) => {
+				const response = new Subject<any>()
+				this.actions.set(res.data.message_id, response)
+				response.subscribe({
+					next: (message) => {
+						subscriber.next(message.action.option)
+					},
+					error: (err) => {
+						subscriber.error(err)
+					},
+					complete: () => {
+						subscriber.complete()
+					}
+				})
+			}).catch((err) => subscriber.error(err))
+		})
+	}
 }

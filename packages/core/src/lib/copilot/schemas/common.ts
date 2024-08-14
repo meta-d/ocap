@@ -1,15 +1,7 @@
-import {
-  AggregationRole,
-  C_MEASURES,
-  Dimension,
-  EntityType,
-  ISlicer,
-  Measure,
-  OrderDirection,
-  getEntityProperty2,
-  isDimension
-} from '@metad/ocap-core'
 import { z } from 'zod'
+import { OrderDirection } from '../../orderby'
+import { C_MEASURES, Dimension, isDimension, Measure } from '../../types'
+import { AggregationRole, EntityType, getEntityProperty2 } from '../../models'
 
 export const DataSettingsSchema = z.object({
   dataSource: z.string().describe('The name of the data source'),
@@ -57,11 +49,20 @@ export const CalculationSchema = z.object({
   caption: z.string().optional().describe('Caption (short description)'),
   description: z.string().optional().describe('Long description'),
   formula: FormulaSchema,
-  formatting: z.object({
-    unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
-    decimal: z.number().optional().describe('The decimal of value when formatting the measure')
-  }).optional().describe('The formatting config of this measure')
+  formatting: z
+    .object({
+      unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
+      decimal: z.number().optional().describe('The decimal of value when formatting the measure')
+    })
+    .optional()
+    .describe('The formatting config of this measure')
 })
+
+export const OrderBySchema = z.object({
+  by: z.string().describe('Field to order by'),
+  order: z.enum([OrderDirection.ASC, OrderDirection.DESC]).describe('Order direction')
+})
+
 
 /**
  * Due to the instability of the AI's returned results, it is necessary to attempt to fix dimensions for different situations:
@@ -116,12 +117,5 @@ export function tryFixDimension(dimension: Dimension | Measure, entityType: Enti
       }
     default:
       throw new Error(`Can't find dimension for '${dimension.dimension}'`)
-  }
-}
-
-export function tryFixSlicer(slicer: ISlicer, entityType: EntityType) {
-  return {
-    ...slicer,
-    dimension: tryFixDimension(slicer.dimension, entityType)
   }
 }

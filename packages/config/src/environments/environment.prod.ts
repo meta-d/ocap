@@ -134,6 +134,7 @@ export const environment: IEnvironment = {
 		appSecret: process.env.LARK_APP_SECRET,
 		verificationToken: process.env.LARK_VERIFICATION_TOKEN,
 		encryptKey: process.env.LARK_ENCRYPT_KEY,
+		appOpenId: process.env.LARK_APP_OPEN_ID,
 	},
 
 	dingtalkConfig: {

@@ -26,6 +26,6 @@ export class DimensionMemberRetriever extends BaseRetriever {
 	}
 }
 
-export function createDimensionMemberRetriever(service: SemanticModelMemberService) {
+export function createDimensionMemberRetriever(context: {logger: Logger}, service: SemanticModelMemberService) {
 	return new DimensionMemberRetriever(service)
 }

@@ -185,12 +185,12 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
             }
           }),
           catchError((error, caught) => {
-            console.group('MDX Query')
-            console.debug(`MDX EntityType:`, this.entityType)
-            console.debug(`MDX options:`, options)
-            console.debug(`MDX Query:`, mdxQuery)
-            console.error(`MDX:`, mdx, '\nError\n', error)
-            console.groupEnd()
+            // console.group('MDX Query')
+            // console.debug(`MDX EntityType:`, this.entityType)
+            // console.debug(`MDX options:`, options)
+            // console.debug(`MDX Query:`, mdxQuery)
+            // console.error(`MDX:`, mdx, '\nError\n', error)
+            // console.groupEnd()
 
             return of({
               status: 'ERROR' as QueryReturn<T>['status'],

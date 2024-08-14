@@ -2,9 +2,9 @@ import { DynamicStructuredTool } from '@langchain/core/tools'
 import { MEMBER_RETRIEVER_TOOL_NAME } from '@metad/copilot'
 import { formatDocumentsAsString } from 'langchain/util/document'
 import { z } from 'zod'
-import { DimensionMemberRetriever } from '../model-member/retriever'
+import { DimensionMemberRetriever } from '../../model-member/retriever'
 
-export function createDimensionMemberRetrieverTool(subscriber, retriever: DimensionMemberRetriever) {
+export function createDimensionMemberRetrieverTool(retriever: DimensionMemberRetriever) {
 	return new DynamicStructuredTool({
 		name: MEMBER_RETRIEVER_TOOL_NAME,
 		description:

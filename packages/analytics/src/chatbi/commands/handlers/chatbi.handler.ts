@@ -16,12 +16,11 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 
 		return new Observable((subscriber) => {
 			;(async () => {
-				const conversation = await this.chatBIService.getUserConversation(
-					input.tenantId,
-					input.conversationId,
-					subscriber
-				)
-				const streamResults = await conversation.stream(
+				const conversation = await this.chatBIService.getUserConversation(input, subscriber)
+				if (!conversation) {
+					return subscriber.error(`Can't found conversation for user: ${input.userId}`)
+				}
+				const streamResults = await conversation.graph.stream(
 					{
 						messages: [new HumanMessage(input.text)]
 					},
@@ -29,7 +28,8 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 						configurable: {
 							thread_id: input.conversationId
 						},
-						recursionLimit: AgentRecursionLimit
+						recursionLimit: AgentRecursionLimit,
+						// debug: true
 					}
 				)
 

@@ -21,7 +21,7 @@ export const CubeVariablePrompt = `If the cube has variables then all variables 
   dimension: {
     dimension: variable.referenceDimension,
     hierarchy: variable.referenceHierarchy,
-    parameter: variable.name
+    parameter: name of variable
   },
   members: [
     {

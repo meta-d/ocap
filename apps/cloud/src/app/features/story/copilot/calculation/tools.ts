@@ -1,13 +1,15 @@
 import { Signal, inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { CalculationSchema, DataSettingsSchema, tryFixDimension } from '@metad/core'
 import {
   AggregationProperty,
   C_MEASURES,
   CalculatedProperty,
+  CalculationSchema,
   CalculationType,
   CompareToEnum,
   DataSettings,
+  DataSettingsSchema,
+  tryFixDimension,
   VarianceMeasureProperty
 } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
