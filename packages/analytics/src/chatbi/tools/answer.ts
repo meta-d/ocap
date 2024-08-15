@@ -17,6 +17,7 @@ import {
 	getPropertyHierarchy,
 	getPropertyMeasure,
 	ISlicer,
+	isNil,
 	isTimeRangesSlicer,
 	Measure,
 	OrderBy,
@@ -192,15 +193,19 @@ async function drawChartMessage(
 			if (result.error) {
 				reject(result.error)
 			} else {
+				const {card, data} = (answer.visualType === 'Table'
+					? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
+					: chartAnnotation.dimensions?.length > 0
+						? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
+						: createKPI(answer, chartAnnotation, context.entityType, result.data, header))
+				console.log(JSON.stringify(card))
+				console.log(data)
 				larkContext.larkService.interactiveMessage(
 					larkContext,
-					answer.visualType === 'Table'
-						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
-						: chartAnnotation.dimensions?.length > 0
-							? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
-							: createKPI(answer, chartAnnotation, context.entityType, result.data, header)
+					card
 				)
-				resolve(result.data)
+				
+				resolve(data)
 			}
 			destroy$.next()
 			destroy$.complete()
@@ -263,20 +268,27 @@ function createLineChart(
 	const measure = chartAnnotation.measures[0]
 	const measureName = getPropertyMeasure(measure)
 	const measureProperty = getEntityProperty(entityType, measure)
+	// Empty items data
+	const _data = data.map(() => ({}))
 
+	const chartSpec = {} as any
+	let categoryField = 'xField'
+	let valueField = 'yField'
 	let type = 'bar'
 	if (chartAnnotation.chartType?.type === 'Line') {
 		type = 'line'
 	} else if (chartAnnotation.chartType?.type === 'Pie') {
 		type = 'pie'
+		categoryField = 'categoryField'
+		valueField = 'valueField'
+		chartSpec.outerRadius = 0.9
+        chartSpec.innerRadius = 0.3
 	}
 
 	const chart_spec = {
+		...chartSpec,
 		type,
-		data: {
-			values: data // 此处传入数据。
-		},
-		yField: measureName,
+		[valueField]: measureName,
 		label: {
 			visible: true
 		},
@@ -285,22 +297,60 @@ function createLineChart(
 		}
 	} as any
 
+	const fields = []
 	if (chartAnnotation.dimensions?.length > 1) {
 		const series = getChartSeries(chartAnnotation) || chartAnnotation.dimensions[1]
-		chart_spec.seriesField = series.hierarchy
-		chart_spec.xField = chartAnnotation.dimensions.filter((d) => d.dimension !== series.dimension)[0]?.hierarchy
+		const seriesName = getPropertyHierarchy(series)
+		const property = getEntityProperty(entityType, seriesName)
+		const seriesCaption = property.memberCaption
+		chart_spec.seriesField = seriesCaption
+		fields.push(seriesCaption)
+		const categoryProperty = getEntityHierarchy(
+			entityType,
+			chartAnnotation.dimensions.filter((d) => d.dimension !== series.dimension)[0]
+		)
+		const categoryCaption = categoryProperty.memberCaption
+		chart_spec[categoryField] = categoryCaption
+		fields.push(categoryCaption)
 	} else {
-		chart_spec.xField = getChartCategory(chartAnnotation)?.hierarchy
+		const property = getEntityHierarchy(entityType, getChartCategory(chartAnnotation))
+		const categoryCaption = property.memberCaption
+		chart_spec[categoryField] = categoryCaption
+		fields.push(categoryCaption)
 	}
 
-	return {
-		elements: [
-			{
-				tag: 'chart',
-				chart_spec
+	_data.forEach((item, index) => {
+		fields.forEach((field) => (item[field] = data[index][field]))
+	})
+	// Measures
+
+	chartAnnotation.measures?.forEach((measure) => {
+		const property = getEntityProperty<PropertyMeasure>(entityType, measure)
+		_data.forEach((item, index) => {
+			if (property.formatting?.unit === '%') {
+				item[property.name] = isNil(data[index][property.name]) ? null : (data[index][property.name] * 100).toFixed(1)
+			} else {
+				item[property.name] = isNil(data[index][property.name]) ? null : data[index][property.name].toFixed(1)
 			}
-		],
-		header
+		})
+	})
+
+	return {
+		card: {
+			elements: [
+				{
+					tag: 'chart',
+					chart_spec: {
+						...chart_spec,
+						data: {
+							values: _data // 此处传入数据。
+						}
+					}
+				}
+			],
+			header
+		},
+		data: _data
 	}
 }
 
@@ -329,19 +379,22 @@ function createKPI(
 		: `**无数据**`
 
 	return {
-		config: {
-			wide_screen_mode: true
-		},
-		header,
-		elements: [
-			{
-				tag: 'div',
-				text: {
-					content: measures,
-					tag: 'lark_md'
+		card: {
+			config: {
+				wide_screen_mode: true
+			},
+			header,
+			elements: [
+				{
+					tag: 'div',
+					text: {
+						content: measures,
+						tag: 'lark_md'
+					}
 				}
-			}
-		]
+			]
+		},
+		data: data
 	}
 }
 
@@ -352,58 +405,76 @@ function createTableMessage(
 	data: any[],
 	header: any
 ) {
-	return {
-		config: {
-			wide_screen_mode: true
-		},
-		header,
-		elements: [
-			{
-				tag: 'table', // 组件的标签。表格组件的固定取值为 table。
-				page_size: 5, // 每页最大展示的数据行数。支持[1,10]整数。默认值 5。
-				row_height: 'low', // 行高设置。默认值 low。
-				header_style: {
-					// 在此设置表头。
-					text_align: 'left', // 文本对齐方式。默认值 left。
-					text_size: 'normal', // 字号。默认值 normal。
-					background_style: 'none', // 背景色。默认值 none。
-					text_color: 'grey', // 文本颜色。默认值 default。
-					bold: true, // 是否加粗。默认值 true。
-					lines: 1 // 文本行数。默认值 1。
-				},
-				columns: [
-					chartAnnotation.dimensions?.map((dimension) => {
-						const hierarchy = getPropertyHierarchy(dimension)
-						const property = getEntityHierarchy(entityType, hierarchy)
-						return {
-							// 添加列，列的数据类型为不带格式的普通文本。
-							name: hierarchy, // 自定义列的标记。必填。用于唯一指定行数据对象数组中，需要将数据填充至这一行的具体哪个单元格中。
-							display_name: property.caption, // 列名称。为空时不展示列名称。
-							width: 'auto', // 列宽。默认值 auto。
-							data_type: 'text', // 列的数据类型。
-							horizontal_align: 'left' // 列内数据对齐方式。默认值 left。
-						}
-					}),
-					chartAnnotation.measures?.map((measure) => {
-						const measureName = getPropertyMeasure(measure)
-						const property = getEntityProperty<PropertyMeasure>(entityType, measureName)
-						return {
-							// 添加列，列的数据类型为不带格式的普通文本。
-							name: measureName, // 自定义列的标记。必填。用于唯一指定行数据对象数组中，需要将数据填充至这一行的具体哪个单元格中。
-							display_name: property.caption, // 列名称。为空时不展示列名称。
-							width: 'auto', // 列宽。默认值 auto。
-							data_type: 'number', // 列的数据类型。
-							horizontal_align: 'right', // 列内数据对齐方式。默认值 left。
-							format: {
-								// 列的数据类型为 number 时的字段配置。
-								precision: 2, // 数字的小数点位数。支持 [0,10] 的整数。默认不限制小数点位数。
-								separator: true // 是否生效按千分位逗号分割的数字样式。默认值 false。
-							}
-						}
-					})
-				],
-				rows: data
+	const _data = data.map(() => ({}))
+
+	const columns = [
+		chartAnnotation.dimensions?.map((dimension) => {
+			const hierarchy = getPropertyHierarchy(dimension)
+			const property = getEntityHierarchy(entityType, hierarchy)
+			const caption = property.memberCaption
+			_data.forEach((item, index) => {
+				item[caption] = data[index][caption]
+			})
+			return {
+				// 添加列，列的数据类型为不带格式的普通文本。
+				name: caption, // 自定义列的标记。必填。用于唯一指定行数据对象数组中，需要将数据填充至这一行的具体哪个单元格中。
+				display_name: property.caption, // 列名称。为空时不展示列名称。
+				width: 'auto', // 列宽。默认值 auto。
+				data_type: 'text', // 列的数据类型。
+				horizontal_align: 'left' // 列内数据对齐方式。默认值 left。
 			}
-		]
+		}),
+		chartAnnotation.measures?.map((measure) => {
+			const measureName = getPropertyMeasure(measure)
+			const property = getEntityProperty<PropertyMeasure>(entityType, measureName)
+			_data.forEach((item, index) => {
+				if (property.formatting?.unit === '%') {
+					item[property.name] = isNil(data[index][property.name]) ? null : (data[index][property.name] * 100).toFixed(1)
+				} else {
+					item[property.name] = isNil(data[index][property.name]) ? null : data[index][property.name].toFixed(1)
+				}
+			})
+			return {
+				// 添加列，列的数据类型为不带格式的普通文本。
+				name: measureName, // 自定义列的标记。必填。用于唯一指定行数据对象数组中，需要将数据填充至这一行的具体哪个单元格中。
+				display_name: property.caption, // 列名称。为空时不展示列名称。
+				width: 'auto', // 列宽。默认值 auto。
+				data_type: 'number', // 列的数据类型。
+				horizontal_align: 'right', // 列内数据对齐方式。默认值 left。
+				format: {
+					// 列的数据类型为 number 时的字段配置。
+					precision: 2, // 数字的小数点位数。支持 [0,10] 的整数。默认不限制小数点位数。
+					separator: true // 是否生效按千分位逗号分割的数字样式。默认值 false。
+				}
+			}
+		})
+	]
+
+	return {
+		card: {
+			config: {
+				wide_screen_mode: true
+			},
+			header,
+			elements: [
+				{
+					tag: 'table', // 组件的标签。表格组件的固定取值为 table。
+					page_size: 5, // 每页最大展示的数据行数。支持[1,10]整数。默认值 5。
+					row_height: 'low', // 行高设置。默认值 low。
+					header_style: {
+						// 在此设置表头。
+						text_align: 'left', // 文本对齐方式。默认值 left。
+						text_size: 'normal', // 字号。默认值 normal。
+						background_style: 'none', // 背景色。默认值 none。
+						text_color: 'grey', // 文本颜色。默认值 default。
+						bold: true, // 是否加粗。默认值 true。
+						lines: 1 // 文本行数。默认值 1。
+					},
+					columns,
+					rows: _data
+				}
+			]
+		},
+		data: _data
 	}
 }
