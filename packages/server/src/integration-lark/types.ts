@@ -18,5 +18,6 @@ export type ChatLarkContext<T = any> = {
 	organizationId: string
 	larkService: LarkService
 	chatId: string
+	chatType: 'p2p' | 'group' | string
 	message?: T
 }

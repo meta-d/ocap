@@ -8,7 +8,7 @@ export const DataSettingsSchema = z.object({
   entitySet: z.string().describe('The name of the cube')
 })
 
-const baseDimensionSchema = {
+export const baseDimensionSchema = {
   dimension: z.string().describe('The name of the dimension using pattern `[Dimension Name]`'),
   hierarchy: z
     .string()

@@ -63,16 +63,33 @@ export class LarkService {
 				return true
 			}
 
+			// if (data.message.chat_type === 'p2p') {
+			// 	await this.interactiveMessage({chatId} as ChatLarkContext, {
+			// 	  })
+			// 	return true
+			// }
+
 			console.log(data)
-			return await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
+			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
 				new LarkMessageCommand({
 					tenant,
 					organizationId,
 					message: data as any,
 					chatId,
+					chatType: data.message.chat_type,
 					larkService: this
 				})
 			)
+			result.subscribe({
+				next: () => {
+					//
+				},
+				error: () => {
+					//
+				}
+			})
+
+			return true
 		},
 		'application.bot.menu_v6': async (data) => {
 			/**

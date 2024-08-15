@@ -15,7 +15,7 @@ export class LarkMessageHandler implements ICommandHandler<LarkMessageCommand> {
 				...input,
 				userId: input.message.sender.sender_id.open_id,
 				chatId,
-				conversationId: chatId + '/' + input.message.sender.sender_id.open_id,
+				// conversationId: chatId + '/' + input.message.sender.sender_id.open_id,
 				text: JSON.parse(input.message.message.content).text,
 			})
 		)

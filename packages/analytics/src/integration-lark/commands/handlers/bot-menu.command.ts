@@ -24,7 +24,7 @@ export class LarkBotMenuHandler implements ICommandHandler<LarkBotMenuCommand> {
 					organizationId: organizaitonId,
 					modelId,
 					cubeName,
-					userId: operator.operator_id.open_id
+					userId: operator.operator_id.open_id,
 				})
 			)
 

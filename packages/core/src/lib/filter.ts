@@ -175,13 +175,13 @@ export function slicerAsString(slicer: ISlicer) {
   }
 
   if (isFilter(slicer)) {
-    const value = getValueString(slicer.members[0]?.value)
+    const value = getValueString(slicer.members[0]?.key)
     switch (slicer.operator) {
       case FilterOperator.BT:
-        return `${slicer.members[0]?.value}...${slicer.members[1]?.value}`
+        return `${slicer.members[0]?.key}...${slicer.members[1]?.key}`
       case FilterOperator.EQ:
         return slicer.members
-          .map((member) => `${member.caption || member.label || getValueString(member.value)}`)
+          .map((member) => `${member.caption || getValueString(member.key)}`)
           .join(', ')
       case FilterOperator.NE:
         return `≠${value}`

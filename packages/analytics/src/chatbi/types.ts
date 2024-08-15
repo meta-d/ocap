@@ -3,7 +3,6 @@ import { AgentState, createCopilotAgentState } from '@metad/copilot'
 import { DSCoreService, EntityType } from '@metad/ocap-core'
 import { ChatLarkContext, LarkService } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
-import { Subject } from 'rxjs'
 
 export const CHATBI_COMMAND_NAME = 'chatbi'
 export type ChatBIAgentState = AgentState
@@ -12,7 +11,8 @@ export const insightAgentState: StateGraphArgs<ChatBIAgentState>['channels'] = {
 }
 
 export interface IChatBI {
-  endConversation(id: string): void
+  // endConversation(id: string): void
+  getUserConversation(input: ChatBILarkContext): Promise<any>;
 }
 
 export type ChatBIUserSession = {
@@ -24,12 +24,13 @@ export type ChatBIUserSession = {
 
 export type ChatContext = {
   conversationId?: string
-  chatId: string
+  chatId?: string
   logger: Logger,
   dsCoreService?: DSCoreService
   entityType?: EntityType
   larkService?: LarkService
   chatBIService?: IChatBI
+  conversation?: IChatBIConversation
 }
 
 export type ChatBILarkMessage = {
@@ -38,14 +39,15 @@ export type ChatBILarkMessage = {
 }
 
 export type ChatBILarkContext = ChatLarkContext & {
-  chatId: string
+  // chatId: string
   userId: string
-  conversationId: string
+  // conversationId: string
   text: string
 }
 
-export type ChatBIConversation = {
-  chatId: string
+export type IChatBIConversation = {
+  id: string
   graph: CompiledStateGraph<ChatBIAgentState, Partial<ChatBIAgentState>, '__start__' | 'agent' | 'tools'>
-  destroy: Subject<void>
+  newThread(): void
+  destroy(): void
 }

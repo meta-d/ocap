@@ -1,29 +1,17 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessage, SystemMessage } from '@langchain/core/messages'
-import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { CompiledStateGraph } from '@langchain/langgraph/web'
+import { AIMessage } from '@langchain/core/messages'
 import { ChatOllama } from '@langchain/ollama'
 import { ChatOpenAI, ClientOptions } from '@langchain/openai'
 import { AiProviderRole, ICopilot } from '@metad/contracts'
-import {
-	AiProvider,
-	createAgentStepsInstructions,
-	createReactAgent,
-	CubeVariablePrompt,
-	makeCubeRulesPrompt,
-	PROMPT_RETRIEVE_DIMENSION_MEMBER
-} from '@metad/copilot'
-import { isEntityType, markdownModelCube } from '@metad/ocap-core'
+import { AiProvider } from '@metad/copilot'
 import { CopilotCheckpointSaver, CopilotService } from '@metad/server-core'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { firstValueFrom, Subject } from 'rxjs'
 import { SemanticModelService } from '../model'
 import { SemanticModelMemberService } from '../model-member/member.service'
-import { createDimensionMemberRetriever } from '../model-member/retriever'
-import { getSemanticModelKey, NgmDSCoreService } from '../model/ocap'
-import { createChatAnswerTool, createEndTool, createDimensionMemberRetrieverTool, createPickCubeTool } from './tools/'
-import { ChatBIConversation, ChatBILarkContext, ChatBIUserSession, IChatBI, insightAgentState } from './types'
+import { NgmDSCoreService } from '../model/ocap'
+import { ChatBIConversation } from './conversation'
+import { ChatBILarkContext, ChatBIUserSession, IChatBI } from './types'
 
 export function createLLM<T = ChatOpenAI | BaseChatModel>(
 	copilot: ICopilot,
@@ -96,13 +84,13 @@ export class ChatBIService implements IChatBI {
 		private readonly commandBus: CommandBus
 	) {}
 
-	async getUserConversation(input: ChatBILarkContext) {
-		const { chatId, conversationId, userId, larkService } = input
+	async getUserConversation(input: ChatBILarkContext): Promise<ChatBIConversation> {
+		const { chatId, userId, larkService } = input
+		const conversationId = userId + '/' + chatId
 		if (!this.userConversations.get(conversationId)) {
 			this.logger.debug(`未找到会话，新建会话为用户：${userId}`)
 			try {
-				const graph = await this.createChatGraph(input)
-				this.userConversations.set(conversationId, { chatId, graph, destroy: new Subject<void>() })
+				this.userConversations.set(conversationId, await this.createChatConversation(input))
 			} catch (err) {
 				console.error(err)
 				larkService.errorMessage(input, err)
@@ -112,7 +100,7 @@ export class ChatBIService implements IChatBI {
 		return this.userConversations.get(conversationId)
 	}
 
-	async createChatGraph(input: ChatBILarkContext) {
+	async createChatConversation(input: ChatBILarkContext) {
 		const { tenant, userId, chatId } = input
 		const tenantId = tenant.id
 		const { items } = await this.copilotService.findAllWithoutOrganization({ where: { tenantId } })
@@ -121,99 +109,29 @@ export class ChatBIService implements IChatBI {
 			//
 		})
 
-		const { items: models } = await this.modelService.findAll({ where: { tenantId, organizationId: input.organizationId } })
+		const { items: models } = await this.modelService.findAll({
+			where: { tenantId, organizationId: input.organizationId }
+		})
 
-		let context = 'Empty'
-		// Get user's session
-		const session = this.userSessions[userId]
-		if (session) {
-			const organizationId = session.organizationId
-			const modelId = session.modelId
-			const cubeName = session.cubeName
-			const model = await this.modelService.findOne(modelId, { where: { tenantId, organizationId } })
-			// Get Data Source
-			const modelKey = getSemanticModelKey(model)
-			const modelDataSource = await this.dsCoreService._getDataSource(modelKey)
-			// Get entity type context
-			const entityType = await firstValueFrom(modelDataSource.selectEntityType(cubeName))
-			if (!isEntityType(entityType)) {
-				throw entityType
-			}
-			context = markdownModelCube({ modelId, dataSource: modelKey, cube: entityType })
-		}
-
-		const memberRetriever = createDimensionMemberRetriever({ logger: this.logger }, this.semanticModelMemberService)
-		const answerTool = createChatAnswerTool(
-			{ chatId, logger: this.logger, larkService: input.larkService, dsCoreService: this.dsCoreService },
-			input
-		)
-		const pickCubeTool = createPickCubeTool(
-			{
-				chatId,
-				logger: this.logger,
-				larkService: input.larkService,
-				dsCoreService: this.dsCoreService
-			},
+		return new ChatBIConversation(
+			input,
 			models,
-			input
-		)
-		const endTool = createEndTool({
-			conversationId: input.conversationId,
-			chatId,
-			logger: this.logger,
-			larkService: input.larkService,
-			dsCoreService: this.dsCoreService,
-			chatBIService: this
-		})
-
-		const tools = [createDimensionMemberRetrieverTool(memberRetriever), answerTool, pickCubeTool, endTool]
-		const graph = createReactAgent({
-			state: insightAgentState,
 			llm,
-			checkpointSaver: this.copilotCheckpointSaver,
-			// interruptBefore,
-			// interruptAfter,
-			tools: [...tools],
-			messageModifier: async (state) => {
-				const systemTemplate = `You are a professional BI data analyst.
-The cube context is:
-{{context}}
-
-If the cube context is empty, please call 'pickCube' tool to select a cube context firstly.
-如果用户明确要结束对话，请调用 'end' tool to end the conversation.
-${makeCubeRulesPrompt()}
-${PROMPT_RETRIEVE_DIMENSION_MEMBER}
-
-If you add two or more measures to the chart, and the measures have different units, set the role of the measures with different units to different axes.
-
-${createAgentStepsInstructions(
-	`Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
-	`Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a indicator for that. After creating the indicator, you need to call the subsequent steps to re-answer the complete answer.`,
-	CubeVariablePrompt,
-	`Add the time and slicers to slicers in tool, if the measure to be displayed is time-related, add the current period as a filter to the 'timeSlicers'.`,
-	`Final call 'answerQuestion' tool to answer question, use the complete conditions to answer`
-)}
-	  `
-				const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
-					templateFormat: 'mustache'
-				}).format({ ...state, context })
-				return [new SystemMessage(system), ...state.messages]
-			}
-		})
-
-		return graph
-	}
-
-	endConversation(id: string): void {
-		this.userConversations.get(id)?.destroy.next()
-		this.userConversations.set(id, null)
+			this.semanticModelMemberService,
+			this.copilotCheckpointSaver,
+			this.dsCoreService
+		)
 	}
 
 	upsertUserSession(userId: string, value: Partial<ChatBIUserSession>) {
 		const session = this.userSessions[userId]
 		if (session && (session.cubeName !== value.cubeName || session.modelId !== value.modelId)) {
-			// Clear user's conversation
-			this.userConversations.set(userId, null)
+			// Clear user's conversation context
+			for (const key of this.userConversations.keys()) {
+				if (key.startsWith(userId)) {
+					this.userConversations.get(userId).context = null
+				}
+			}
 		}
 		this.userSessions[userId] = {
 			...(session ?? {}),
