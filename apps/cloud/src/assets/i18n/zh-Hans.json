@@ -1391,7 +1391,8 @@
       "RenewTokenLimit": "重置 Token 限制",
       "Save": "保存",
       "SelectSemanticModel": "选择语义模型",
-      "SelectCube": "选择一个数据集"
+      "SelectCube": "选择一个数据集",
+      "SelectACube": "选择一个数据集"
     },
     "Home": {
       "Insight": {

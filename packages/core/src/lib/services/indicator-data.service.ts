@@ -143,7 +143,8 @@ export class SmartIndicatorDataService<
           type: TimeRangeType.Standard,
           granularity: this.currentTime?.timeGranularity,
           formatter: this.calendarLevel.semantics?.formatter,
-          lookBack
+          lookBack,
+          lookAhead: 0
         })
       } else {
         throw new Error(`Can't found calendar level in ${this.calendarHierarchy.name}`)

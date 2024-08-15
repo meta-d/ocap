@@ -20,6 +20,7 @@ import { ChatbiService } from './chatbi.service'
 import { injectInsightCommand } from './copilot'
 import { ChatbiModelsComponent } from './models/models.component'
 import { QuestionAnswer } from './types'
+import { AppService } from '../../app.service'
 
 @Component({
   standalone: true,
@@ -50,6 +51,7 @@ export class ChatbiHomeComponent {
 
   readonly chatbiService = inject(ChatbiService)
   readonly conversationService = inject(ChatBIConversationService)
+  readonly appService = inject(AppService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly logger = inject(NGXLogger)
@@ -64,6 +66,8 @@ export class ChatbiHomeComponent {
     this.chatbiService.setModelId(value)
   }
 
+  readonly isMobile = this.appService.isMobile
+  readonly openCubes = signal(false)
   readonly models = toSignal(
     this.chatbiService.models$.pipe(
       map((models) =>
@@ -77,6 +81,9 @@ export class ChatbiHomeComponent {
   )
   readonly hasModel = computed(() => this.models()?.length > 0)
   readonly _conversationId = computed(() => this.chatbiService.conversation()?.id)
+  readonly cubeName = this.chatbiService.entity
+  readonly cubes = this.chatbiService.cubes
+  readonly cube = computed(() =>  this.cubes()?.find((item) => item.name === this.cubeName()))
 
   // Story explorer
   readonly showExplorer = signal(false)
@@ -139,5 +146,9 @@ export class ChatbiHomeComponent {
     if (event) {
       this.chatbiService.updateQuestionAnswer(this.explore().key, event)
     }
+  }
+
+  openSelectCube() {
+    this.openCubes.set(true)
   }
 }
