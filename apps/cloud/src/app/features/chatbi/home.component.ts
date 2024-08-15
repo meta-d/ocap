@@ -1,8 +1,9 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, viewChild } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
@@ -19,6 +20,7 @@ import { ChatbiService } from './chatbi.service'
 import { injectInsightCommand } from './copilot'
 import { ChatbiModelsComponent } from './models/models.component'
 import { QuestionAnswer } from './types'
+import { AppService } from '../../app.service'
 
 @Component({
   standalone: true,
@@ -30,11 +32,12 @@ import { QuestionAnswer } from './types'
     DragDropModule,
     RouterModule,
     TranslateModule,
+    MatTooltipModule,
     NgmSelectComponent,
     ChatbiModelsComponent,
     ChatbiChatComponent,
 
-    StoryExplorerModule,
+    StoryExplorerModule
   ],
   selector: 'pac-chatbi-home',
   templateUrl: './home.component.html',
@@ -48,12 +51,14 @@ export class ChatbiHomeComponent {
 
   readonly chatbiService = inject(ChatbiService)
   readonly conversationService = inject(ChatBIConversationService)
+  readonly appService = inject(AppService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly logger = inject(NGXLogger)
   readonly conversationId = injectQueryParams('id')
 
-  // readonly modelId = model<string>(null)
+  readonly modelTooltip = viewChild('mTooltip', { read: MatTooltip })
+
   get modelId() {
     return this.chatbiService.modelId()
   }
@@ -61,6 +66,8 @@ export class ChatbiHomeComponent {
     this.chatbiService.setModelId(value)
   }
 
+  readonly isMobile = this.appService.isMobile
+  readonly openCubes = signal(false)
   readonly models = toSignal(
     this.chatbiService.models$.pipe(
       map((models) =>
@@ -74,6 +81,9 @@ export class ChatbiHomeComponent {
   )
   readonly hasModel = computed(() => this.models()?.length > 0)
   readonly _conversationId = computed(() => this.chatbiService.conversation()?.id)
+  readonly cubeName = this.chatbiService.entity
+  readonly cubes = this.chatbiService.cubes
+  readonly cube = computed(() =>  this.cubes()?.find((item) => item.name === this.cubeName()))
 
   // Story explorer
   readonly showExplorer = signal(false)
@@ -116,6 +126,12 @@ export class ChatbiHomeComponent {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      if (!this.chatbiService.modelId() && this.models()?.length) {
+        this.modelTooltip().show()
+      }
+    })
   }
 
   async openExplore(message: CopilotChatMessage, answer: QuestionAnswer) {
@@ -130,5 +146,9 @@ export class ChatbiHomeComponent {
     if (event) {
       this.chatbiService.updateQuestionAnswer(this.explore().key, event)
     }
+  }
+
+  openSelectCube() {
+    this.openCubes.set(true)
   }
 }

@@ -57,6 +57,7 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
   )
   readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
   readonly secondaryModels = computed(() => AI_PROVIDERS[this.secondaryProvider()]?.models || [])
+  readonly organizationId = toSignal(this.#store.selectOrganizationId())
 
   readonly saving = signal(false)
 
@@ -90,7 +91,7 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
     super()
 
     effect(() => {
-      const items = this.copilotService.copilots()?.filter((item) => item.organizationId === this.#store.organizationId)
+      const items = this.copilotService.copilots()?.filter((item) => item.organizationId === this.organizationId())
       this.formGroup.reset()
       if (items) {
         const primary = items.find(({ role }) => role === AiProviderRole.Primary)

@@ -205,7 +205,8 @@ export class IndicatorDetailComponent {
         type: TimeRangeType.Standard,
         granularity: timeGranularity,
         formatter: level?.semantics?.formatter,
-        lookBack: period?.lookBack ?? lookBack
+        lookBack: period?.lookBack ?? lookBack,
+        lookAhead: 0
       })
 
       return {

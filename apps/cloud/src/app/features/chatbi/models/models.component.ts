@@ -11,6 +11,9 @@ import { ChatbiService } from '../chatbi.service'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
+import { AppService } from '../../../app.service'
+import { ChatbiHomeComponent } from '../home.component'
+import { MatButtonModule } from '@angular/material/button'
 
 @Component({
   standalone: true,
@@ -24,6 +27,7 @@ import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
     ScrollingModule,
     MatSelectModule,
     MatIconModule,
+    MatButtonModule,
     MatProgressSpinnerModule,
     DensityDirective,
     NgmSearchComponent,
@@ -39,7 +43,10 @@ export class ChatbiModelsComponent {
   EntityCapacity = EntityCapacity
   
   readonly chatbiService = inject(ChatbiService)
+  readonly appService = inject(AppService)
+  readonly homeComponent = inject(ChatbiHomeComponent)
 
+  readonly isMobile = this.appService.isMobile
   readonly search = model<string>('')
   readonly searchText = computed(() => this.search().trim().toLowerCase())
 
@@ -70,5 +77,9 @@ export class ChatbiModelsComponent {
 
   toggleExpanded(option) {
     option.expanded =!option.expanded
+  }
+
+  close() {
+    this.homeComponent.openCubes.set(false)
   }
 }

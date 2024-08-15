@@ -1,5 +1,12 @@
 :host {
-  flex: 1;
+  @apply max-w-full flex-1;
+}
+
+.ngm-chatbi-cubes__mobile-closed {
+  @apply hidden;
+}
+.ngm-chatbi-cubes__mobile-opened {
+  @apply flex absolute top-0 left-0 w-full h-full z-10;
 }
 
 :host::ng-deep {

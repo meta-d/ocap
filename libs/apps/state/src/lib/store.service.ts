@@ -25,7 +25,6 @@ import { uniqBy } from 'lodash-es';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComponentEnum } from './constants';
 import { ThemesEnum, prefersColorScheme } from '@metad/ocap-angular/core';
-import { BusinessRoleType } from '@metad/copilot';
 
 
 export interface AppState {
