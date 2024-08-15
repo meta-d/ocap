@@ -204,7 +204,7 @@ export function slicerAsString(slicer: ISlicer) {
     }
   }
 
-  return slicer.members?.map((member) => `${member.caption || member.label || getValueString(member.value)}`).join(', ')
+  return slicer.members?.map((member) => `${member.caption || getValueString(member.key)}`).join(', ') ?? ''
 }
 
 function getValueString(value) {

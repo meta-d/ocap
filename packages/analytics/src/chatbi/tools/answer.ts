@@ -12,7 +12,9 @@ import {
 	formatShortNumber,
 	getChartCategory,
 	getChartSeries,
+	getEntityHierarchy,
 	getEntityProperty,
+	getPropertyHierarchy,
 	getPropertyMeasure,
 	ISlicer,
 	isTimeRangesSlicer,
@@ -36,6 +38,7 @@ import { ChatBILarkContext, ChatContext } from '../types'
 
 type ChatAnswer = {
 	preface: string
+	visualType: 'Chart' | 'Table' | 'KPI'
 	dataSettings: DataSettings
 	chartType: {
 		type: string
@@ -51,10 +54,11 @@ type ChatAnswer = {
 
 export const ChatAnswerSchema = z.object({
 	preface: z.string().describe('preface of the answer'),
+	visualType: z.enum(['Chart', 'Table', 'KPI']).describe('Visual type of result'),
 	dataSettings: DataSettingsSchema.optional().describe('The data settings of the widget'),
 	chartType: z
 		.object({
-			type: z.enum(['Column', 'Line', 'Pie', 'Bar', 'Table']).describe('The chart type')
+			type: z.enum(['Column', 'Line', 'Pie', 'Bar']).describe('The type of chart')
 		})
 		.optional()
 		.describe('Chart configuration'),
@@ -170,7 +174,7 @@ async function drawChartMessage(
 			} else {
 				larkContext.larkService.interactiveMessage(
 					larkContext,
-					chartAnnotation.chartType?.type === 'Table'
+					answer.visualType === 'Table'
 						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, title)
 						: chartAnnotation.dimensions?.length > 0
 							? createLineChart(chartAnnotation, context.entityType, result.data, title)
@@ -372,122 +376,37 @@ function createTableMessage(
 					lines: 1 // 文本行数。默认值 1。
 				},
 				columns: [
-					// 在此添加列。最多支持添加 50 列，超出 50 列的内容不展示。
-					{
-						// 添加列，列的数据类型为不带格式的普通文本。
-						name: 'customer_name', // 自定义列的标记。必填。用于唯一指定行数据对象数组中，需要将数据填充至这一行的具体哪个单元格中。
-						display_name: '客户名称', // 列名称。为空时不展示列名称。
-						width: 'auto', // 列宽。默认值 auto。
-						data_type: 'text', // 列的数据类型。
-						horizontal_align: 'left' // 列内数据对齐方式。默认值 left。
-					},
-					{
-						// 添加列，列的数据类型为 lark_md 文本。
-						name: 'customer_link',
-						display_name: '相关链接',
-						data_type: 'lark_md'
-					},
-					{
-						// 添加类型为数字的列。
-						name: 'customer_arr',
-						display_name: 'ARR(万元)',
-						data_type: 'number',
-						format: {
-							// 列的数据类型为 number 时的字段配置。
-							symbol: '¥', // 数字前展示的货币单位。支持 1 个字符的货币单位文本。可选。
-							precision: 2, // 数字的小数点位数。支持 [0,10] 的整数。默认不限制小数点位数。
-							separator: true // 是否生效按千分位逗号分割的数字样式。默认值 false。
-						},
-						width: '120px'
-					},
-					{
-						// 添加类型为选项的列。
-						name: 'customer_scale',
-						display_name: '客户规模',
-						data_type: 'options'
-					},
-					{
-						// 添加类型为人员的列。
-						name: 'customer_poc',
-						display_name: '客户对接人',
-						data_type: 'persons'
-					},
-					{
-						// 添加类型为日期的列。
-						name: 'meeting_date',
-						display_name: '对接时间',
-						data_type: 'date',
-						date_format: 'YYYY/MM/DD'
-					},
-					{
-						// 添加类型为 markdown 文本的列。
-						name: 'company_image',
-						display_name: '企业图片',
-						data_type: 'markdown'
-					}
+					chartAnnotation.dimensions?.map((dimension) => {
+						const hierarchy = getPropertyHierarchy(dimension)
+						const property = getEntityHierarchy(entityType, hierarchy)
+						return {
+							// 添加列，列的数据类型为不带格式的普通文本。
+							name: hierarchy, // 自定义列的标记。必填。用于唯一指定行数据对象数组中，需要将数据填充至这一行的具体哪个单元格中。
+							display_name: property.caption, // 列名称。为空时不展示列名称。
+							width: 'auto', // 列宽。默认值 auto。
+							data_type: 'text', // 列的数据类型。
+							horizontal_align: 'left' // 列内数据对齐方式。默认值 left。
+						}
+					}),
+					chartAnnotation.measures?.map((measure) => {
+						const measureName = getPropertyMeasure(measure)
+						const property = getEntityProperty<PropertyMeasure>(entityType, measureName)
+						return {
+							// 添加列，列的数据类型为不带格式的普通文本。
+							name: measureName, // 自定义列的标记。必填。用于唯一指定行数据对象数组中，需要将数据填充至这一行的具体哪个单元格中。
+							display_name: property.caption, // 列名称。为空时不展示列名称。
+							width: 'auto', // 列宽。默认值 auto。
+							data_type: 'number', // 列的数据类型。
+							horizontal_align: 'right', // 列内数据对齐方式。默认值 left。
+							format: {
+								// 列的数据类型为 number 时的字段配置。
+								precision: 2, // 数字的小数点位数。支持 [0,10] 的整数。默认不限制小数点位数。
+								separator: true // 是否生效按千分位逗号分割的数字样式。默认值 false。
+							}
+						}
+					})
 				],
-				rows: [
-					// 在此添加与列定义对应的行数据。用 "name":VALUE 的形式，定义每一行的数据内容。name 即你自定义的列标记。
-					{
-						customer_name: '飞书科技',
-						customer_date: 1699341315000,
-						customer_scale: [
-							{
-								text: 'S2',
-								color: 'blue'
-							}
-						],
-						customer_arr: 168,
-						customer_poc: ['ou_14a32f1a02e64944cf19207aa43abcef', 'ou_e393cf9c22e6e617a4332210d2aabcef'],
-						customer_link:
-							'[飞书科技](/ssl:ttdoc/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)'
-					},
-					{
-						customer_name: '飞书科技_01',
-						customer_date: 1606101072000,
-						customer_scale: [
-							{
-								text: 'S1',
-								color: 'red'
-							}
-						],
-						customer_arr: 168.23,
-						customer_poc: 'ou_14a32f1a02e64944cf19207aa43abcef',
-						customer_link:
-							'[飞书科技_01](/ssl:ttdoc/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)',
-						company_image: '![image.png](image_key)'
-					},
-					{
-						customer_name: '飞书科技_02',
-						customer_date: 1606101072000,
-						customer_scale: [
-							{
-								text: 'S3',
-								color: 'orange'
-							}
-						],
-						customer_arr: 168.23,
-						customer_poc: 'ou_14a32f1a02e64944cf19207aa43abcef',
-						customer_link:
-							'[飞书科技_02](/ssl:ttdoc/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)',
-						company_image: '![image.png](image_key)'
-					},
-					{
-						customer_name: '飞书科技_03',
-						customer_date: 1606101072000,
-						customer_scale: [
-							{
-								text: 'S2',
-								color: 'blue'
-							}
-						],
-						customer_arr: 168.23,
-						customer_poc: 'ou_14a32f1a02e64944cf19207aa43abcef',
-						customer_link:
-							'[飞书科技_03](/ssl:ttdoc/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)',
-						company_image: '![image.png](image_key)'
-					}
-				]
+				rows: data
 			}
 		]
 	}

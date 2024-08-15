@@ -2,22 +2,15 @@ import { HumanMessage, isAIMessage } from '@langchain/core/messages'
 import { ToolInputParsingException } from '@langchain/core/tools'
 import { END, GraphValueError } from '@langchain/langgraph'
 import { AgentRecursionLimit } from '@metad/copilot'
-import { isEntityType, markdownModelCube } from '@metad/ocap-core'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { firstValueFrom, from, Observable } from 'rxjs'
-import { SemanticModelService } from '../../../model'
-import { getSemanticModelKey, NgmDSCoreService } from '../../../model/ocap'
+import { from, Observable } from 'rxjs'
 import { ChatBIService } from '../../chatbi.service'
-import { ChatBICommand } from '../chatbi.command'
 import { errorWithEndMessage } from '../../tools'
+import { ChatBICommand } from '../chatbi.command'
 
 @CommandHandler(ChatBICommand)
 export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
-	constructor(
-		private readonly chatBIService: ChatBIService,
-		private readonly modelService: SemanticModelService,
-		private readonly dsCoreService: NgmDSCoreService
-	) {}
+	constructor(private readonly chatBIService: ChatBIService) {}
 
 	public async execute(command: ChatBICommand): Promise<Observable<any>> {
 		const { input } = command
@@ -30,24 +23,15 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 			)
 		}
 		// Cube context
-		let context = 'Empty'
+		let context = null
 		const session = this.chatBIService.userSessions[conversation.userId]
 		if (!conversation.context && conversation.chatType === 'p2p' && session.cubeName) {
-			const tenantId = session.tenantId
-			const organizationId = session.organizationId
 			const modelId = session.modelId
 			const cubeName = session.cubeName
-			const model = await this.modelService.findOne(modelId, { where: { tenantId, organizationId } })
-			// Get Data Source
-			const modelKey = getSemanticModelKey(model)
-			const modelDataSource = await this.dsCoreService._getDataSource(modelKey)
-			// Get entity type context
-			const entityType = await firstValueFrom(modelDataSource.selectEntityType(cubeName))
-			if (!isEntityType(entityType)) {
-				throw entityType
-			}
-			context = markdownModelCube({ modelId, dataSource: modelKey, cube: entityType })
+			context = await conversation.switchContext(modelId, cubeName)
 			conversation.context = context
+		} else {
+			context = conversation.context || 'Empty'
 		}
 
 		return new Observable((subscriber) => {

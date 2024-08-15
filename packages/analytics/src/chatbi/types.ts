@@ -1,6 +1,6 @@
 import { CompiledStateGraph, StateGraphArgs } from '@langchain/langgraph'
 import { AgentState, createCopilotAgentState } from '@metad/copilot'
-import { DSCoreService, EntityType } from '@metad/ocap-core'
+import { DSCoreService, EntityType, Indicator } from '@metad/ocap-core'
 import { ChatLarkContext, LarkService } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 
@@ -48,6 +48,7 @@ export type ChatBILarkContext = ChatLarkContext & {
 export type IChatBIConversation = {
   id: string
   graph: CompiledStateGraph<ChatBIAgentState, Partial<ChatBIAgentState>, '__start__' | 'agent' | 'tools'>
+  upsertIndicator(indicator: Indicator): void
   newThread(): void
   destroy(): void
 }

@@ -1,5 +1,6 @@
 import { EntityType, getDimensionHierarchies, getEntityDimensions, getEntityMeasures, getEntityVariables, getHierarchyLevels, RuntimeLevelType, VariableEntryType } from "../models";
 import { nonBlank } from "../utils";
+import { MEMBER_RETRIEVER_TOOL_NAME } from "./constants"
 
 export function prepend(prefix: string, text: string) {
     return text?.split('\n').map(line => prefix + line).join('\n') ?? ''
@@ -82,3 +83,34 @@ export function markdownEntityType(entityType: EntityType) {
     return `The model id is: ${modelId || 'N\\A'}` + `\nThe dataSource is: ${dataSource || 'N\\A'}` +
       `\n` + (cube ? markdownEntityType(cube) : '')
   }
+
+
+export const CubeVariablePrompt = `If the cube has variables then all variables is required are added to the 'variables' parameter of tool, where each variable has the format:
+{
+  dimension: {
+    dimension: variable.referenceDimension,
+    hierarchy: variable.referenceHierarchy,
+    parameter: name of variable
+  },
+  members: [
+    {
+      key: variable.defaultValueKey,
+      caption: variable.defaultValueCaption
+    }
+  ]
+}.`
+
+export const PROMPT_RETRIEVE_DIMENSION_MEMBER = `Analyze user input to determine whether the sentence involves dimension members.` +
+  ` If it involves dimension members, the "${MEMBER_RETRIEVER_TOOL_NAME}" tool needs to be called to retrieve information about the dimension members.` +
+  ` Otherwise, proceed to the next step directly.`
+
+export const PROMPT_TIME_SLICER = `If you want to create a slicer using a time dimension, calculate the key of member in slicer based on the format string 'time_formatter' at the level of specific time granularity.`
+
+export function makeCubeRulesPrompt() {
+  return `The dimensions consist of three attributes: dimension, hierarchy, and level, each of which is taken from the name of dimension, hierarchy, and level in the cube, respectively.
+Dimension name pattern: [Dimension Name];
+Hierarchy name pattern: [Hierarchy Name];
+Level name pattern: [Hierarchy Name].[Level Name];
+Member key pattern: [MemberKey] (do not includes [Hierarchy Name] and [Level Name] in member key field).
+`
+}

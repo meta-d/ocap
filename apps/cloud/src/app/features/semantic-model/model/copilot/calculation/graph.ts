@@ -3,11 +3,10 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { StateGraphArgs } from '@langchain/langgraph/web'
-import { createCopilotAgentState, CreateGraphOptions, createReactAgent } from '@metad/copilot'
+import { createAgentStepsInstructions, createCopilotAgentState, CreateGraphOptions, createReactAgent } from '@metad/copilot'
 import { AgentState } from '@metad/copilot-angular'
 import {
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
-  createAgentStepsInstructions,
   injectDimensionMemberTool,
   makeCubePrompt,
   makeCubeRulesPrompt,

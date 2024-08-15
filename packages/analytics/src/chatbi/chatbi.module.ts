@@ -6,6 +6,7 @@ import { ChatBIService } from './chatbi.service'
 import { SemanticModelMemberModule } from '../model-member/index'
 import { OcapModule } from '../model/ocap'
 import { SemanticModelModule } from '../model'
+import { provideOcap } from '../model/ocap/'
 
 @Module({
 	imports: [
@@ -17,7 +18,7 @@ import { SemanticModelModule } from '../model'
 		CopilotCheckpointModule
 	],
 	controllers: [],
-	providers: [ChatBIService, ...CommandHandlers],
+	providers: [ChatBIService, ...CommandHandlers, ...provideOcap()],
 	exports: []
 })
 export class ChatBIModule {}

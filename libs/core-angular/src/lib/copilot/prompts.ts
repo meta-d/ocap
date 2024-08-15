@@ -1,1 +1,1 @@
-export { makeCubeRulesPrompt, createAgentStepsInstructions, CubeVariablePrompt, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/copilot'
+export { makeCubeRulesPrompt, CubeVariablePrompt, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/ocap-core'

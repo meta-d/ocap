@@ -5,13 +5,14 @@ import { ChatOpenAI, ClientOptions } from '@langchain/openai'
 import { AiProviderRole, ICopilot } from '@metad/contracts'
 import { AiProvider } from '@metad/copilot'
 import { CopilotCheckpointSaver, CopilotService } from '@metad/server-core'
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { SemanticModelService } from '../model'
 import { SemanticModelMemberService } from '../model-member/member.service'
-import { NgmDSCoreService } from '../model/ocap'
+import { NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '../model/ocap'
 import { ChatBIConversation } from './conversation'
 import { ChatBILarkContext, ChatBIUserSession, IChatBI } from './types'
+import { Agent, DataSourceFactory } from '@metad/ocap-core'
 
 export function createLLM<T = ChatOpenAI | BaseChatModel>(
 	copilot: ICopilot,
@@ -80,7 +81,10 @@ export class ChatBIService implements IChatBI {
 		private readonly modelService: SemanticModelService,
 		private readonly semanticModelMemberService: SemanticModelMemberService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
-		private readonly dsCoreService: NgmDSCoreService,
+		@Inject(OCAP_AGENT_TOKEN)
+		private agent: Agent,
+		@Inject(OCAP_DATASOURCE_TOKEN)
+		private dataSourceFactory: { type: string; factory: DataSourceFactory },
 		private readonly commandBus: CommandBus
 	) {}
 
@@ -110,7 +114,8 @@ export class ChatBIService implements IChatBI {
 		})
 
 		const { items: models } = await this.modelService.findAll({
-			where: { tenantId, organizationId: input.organizationId }
+			where: { tenantId, organizationId: input.organizationId },
+			relations: ['dataSource', 'dataSource.type', 'roles']
 		})
 
 		return new ChatBIConversation(
@@ -119,7 +124,8 @@ export class ChatBIService implements IChatBI {
 			llm,
 			this.semanticModelMemberService,
 			this.copilotCheckpointSaver,
-			this.dsCoreService
+			// New Ocap context for every chatbi conversation
+			new NgmDSCoreService(this.agent, this.dataSourceFactory)
 		)
 	}
 
