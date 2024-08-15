@@ -28,7 +28,7 @@ export type ChatContext = {
   logger: Logger,
   dsCoreService?: DSCoreService
   entityType?: EntityType
-  larkService?: LarkService
+  larkService: LarkService
   chatBIService?: IChatBI
   conversation?: IChatBIConversation
 }

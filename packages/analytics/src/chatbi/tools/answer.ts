@@ -78,9 +78,9 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 		async (answer): Promise<string> => {
 			logger.debug(`Execute copilot action 'answerQuestion':`, answer)
 			try {
-				if (answer.preface) {
-					await larkService.textMessage(larkContext, answer.preface)
-				}
+				// if (answer.preface) {
+				// 	await larkService.textMessage(larkContext, answer.preface)
+				// }
 				let entityType = null
 				if (answer.dataSettings) {
 					const entity = await firstValueFrom(
@@ -165,7 +165,27 @@ async function drawChartMessage(
 
 	slicers.push(...(answer.timeSlicers ?? []))
 
-	const title = createSlicersTitle(slicers)
+	const header = {
+		template: 'blue',
+		title: {
+			tag: 'plain_text',
+			content: '分析条件'
+		},
+		subtitle: {
+			// 卡片主标题。必填。
+			tag: 'plain_text', // 固定值 plain_text。
+			content: answer.preface, // 主标题内容。
+			i18n: {
+				// 多语言标题内容。必须配置 content 或 i18n 两个属性的其中一个。如果同时配置仅生效 i18n。
+				zh_cn: '',
+				en_us: '',
+				ja_jp: '',
+				zh_hk: '',
+				zh_tw: ''
+			}
+		},
+		text_tag_list: createSlicersTitle(slicers)
+	}
 
 	return new Promise((resolve, reject) => {
 		chartService.selectResult().subscribe((result) => {
@@ -175,10 +195,10 @@ async function drawChartMessage(
 				larkContext.larkService.interactiveMessage(
 					larkContext,
 					answer.visualType === 'Table'
-						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, title)
+						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
 						: chartAnnotation.dimensions?.length > 0
-							? createLineChart(chartAnnotation, context.entityType, result.data, title)
-							: createKPI(answer, chartAnnotation, context.entityType, result.data, title)
+							? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
+							: createKPI(answer, chartAnnotation, context.entityType, result.data, header)
 				)
 				resolve(result.data)
 			}
@@ -233,7 +253,13 @@ function createSlicersTitle(slicers: ISlicer[]) {
 	})
 }
 
-function createLineChart(chartAnnotation: ChartAnnotation, entityType: EntityType, data: any[], tags: any[]) {
+function createLineChart(
+	answer: ChatAnswer,
+	chartAnnotation: ChartAnnotation,
+	entityType: EntityType,
+	data: any[],
+	header: any
+) {
 	const measure = chartAnnotation.measures[0]
 	const measureName = getPropertyMeasure(measure)
 	const measureProperty = getEntityProperty(entityType, measure)
@@ -274,23 +300,7 @@ function createLineChart(chartAnnotation: ChartAnnotation, entityType: EntityTyp
 				chart_spec
 			}
 		],
-		header: {
-			template: 'blue',
-			title: {
-				// 卡片主标题。必填。
-				tag: 'plain_text', // 固定值 plain_text。
-				content: '分析结果', // 主标题内容。
-				i18n: {
-					// 多语言标题内容。必须配置 content 或 i18n 两个属性的其中一个。如果同时配置仅生效 i18n。
-					zh_cn: '',
-					en_us: '',
-					ja_jp: '',
-					zh_hk: '',
-					zh_tw: ''
-				}
-			},
-			text_tag_list: tags
-		}
+		header
 	}
 }
 
@@ -299,7 +309,7 @@ function createKPI(
 	chartAnnotation: ChartAnnotation,
 	entityType: EntityType,
 	data: any[],
-	tags: any[]
+	header: any
 ) {
 	const row = data[0]
 
@@ -322,14 +332,7 @@ function createKPI(
 		config: {
 			wide_screen_mode: true
 		},
-		header: {
-			title: {
-				tag: 'plain_text',
-				content: answer.preface
-			},
-			template: 'blue',
-			text_tag_list: tags
-		},
+		header,
 		elements: [
 			{
 				tag: 'div',
@@ -347,20 +350,13 @@ function createTableMessage(
 	chartAnnotation: ChartAnnotation,
 	entityType: EntityType,
 	data: any[],
-	tags: any[]
+	header: any
 ) {
 	return {
 		config: {
 			wide_screen_mode: true
 		},
-		header: {
-			title: {
-				tag: 'plain_text',
-				content: answer.preface
-			},
-			template: 'blue',
-			text_tag_list: tags
-		},
+		header,
 		elements: [
 			{
 				tag: 'table', // 组件的标签。表格组件的固定取值为 table。

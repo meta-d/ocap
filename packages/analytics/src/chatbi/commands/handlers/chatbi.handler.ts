@@ -3,6 +3,7 @@ import { ToolInputParsingException } from '@langchain/core/tools'
 import { END, GraphValueError } from '@langchain/langgraph'
 import { AgentRecursionLimit } from '@metad/copilot'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { formatDocumentsAsString } from 'langchain/util/document'
 import { from, Observable } from 'rxjs'
 import { ChatBIService } from '../../chatbi.service'
 import { errorWithEndMessage } from '../../tools'
@@ -10,7 +11,11 @@ import { ChatBICommand } from '../chatbi.command'
 
 @CommandHandler(ChatBICommand)
 export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
-	constructor(private readonly chatBIService: ChatBIService) {}
+	readonly commandName = 'chatbi'
+	
+	constructor(
+		private readonly chatBIService: ChatBIService,
+	) {}
 
 	public async execute(command: ChatBICommand): Promise<Observable<any>> {
 		const { input } = command
@@ -34,12 +39,17 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 			context = conversation.context || 'Empty'
 		}
 
+		const content = await conversation.exampleFewShotPrompt.format({ input: input.text })
+		const references = await conversation.copilotKnowledgeRetriever.pipe(formatDocumentsAsString).invoke(content)
+
 		return new Observable((subscriber) => {
 			;(async () => {
 				const streamResults = await conversation.graph.stream(
 					{
-						messages: [new HumanMessage(input.text)],
-						context
+						input: input.text,
+						messages: [new HumanMessage(content)],
+						context,
+						references
 					},
 					{
 						configurable: {

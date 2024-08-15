@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
-import { CopilotCheckpointModule, CopilotModule } from '@metad/server-core'
+import { CopilotCheckpointModule, CopilotKnowledgeModule, CopilotModule } from '@metad/server-core'
 import { CommandHandlers } from './commands/handlers'
 import { ChatBIService } from './chatbi.service'
 import { SemanticModelMemberModule } from '../model-member/index'
@@ -15,7 +15,8 @@ import { provideOcap } from '../model/ocap/'
 		SemanticModelMemberModule,
 		OcapModule,
 		SemanticModelModule,
-		CopilotCheckpointModule
+		CopilotCheckpointModule,
+		CopilotKnowledgeModule
 	],
 	controllers: [],
 	providers: [ChatBIService, ...CommandHandlers, ...provideOcap()],

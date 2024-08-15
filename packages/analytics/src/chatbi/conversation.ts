@@ -1,21 +1,39 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { SystemMessage } from '@langchain/core/messages'
-import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { FewShotPromptTemplate, SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
 import {
 	AgentState,
 	createAgentStepsInstructions,
 	createReactAgent,
 	nanoid,
+	referencesCommandName
 } from '@metad/copilot'
-import { CubeVariablePrompt, Indicator, isEntityType, makeCubeRulesPrompt, markdownModelCube, PROMPT_RETRIEVE_DIMENSION_MEMBER, PROMPT_TIME_SLICER, Schema } from '@metad/ocap-core'
-import { CopilotCheckpointSaver } from '@metad/server-core'
+import {
+	CubeVariablePrompt,
+	Indicator,
+	isEntityType,
+	makeCubeRulesPrompt,
+	markdownModelCube,
+	PROMPT_RETRIEVE_DIMENSION_MEMBER,
+	PROMPT_TIME_SLICER,
+	Schema
+} from '@metad/ocap-core'
+import {
+	Copilot,
+	CopilotCheckpointSaver,
+	CopilotKnowledgeRetriever,
+	CopilotKnowledgeService,
+	createCopilotKnowledgeRetriever,
+	createExampleFewShotPrompt
+} from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { groupBy } from 'lodash'
 import { BehaviorSubject, firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { SemanticModel } from '../model'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../model-member/index'
 import { getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
+import { createLLM } from './llm'
 import {
 	createChatAnswerTool,
 	createDimensionMemberRetrieverTool,
@@ -27,6 +45,7 @@ import { ChatBILarkContext, IChatBIConversation, insightAgentState } from './typ
 
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
+	readonly commandName = 'chatbi'
 
 	public id: string = nanoid()
 	private destroy$: Subject<void> = new Subject<void>()
@@ -48,29 +67,53 @@ export class ChatBIConversation implements IChatBIConversation {
 	public context: string = null
 
 	private readonly indicators$ = new BehaviorSubject<Indicator[]>([])
+
+	public copilotKnowledgeRetriever: CopilotKnowledgeRetriever
+	public exampleFewShotPrompt: FewShotPromptTemplate
+
 	constructor(
 		private readonly chatContext: ChatBILarkContext,
 		private readonly models: SemanticModel[],
-		private readonly llm: BaseChatModel,
+		private readonly copilot: Copilot,
 		private readonly semanticModelMemberService: SemanticModelMemberService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
-		private readonly dsCoreService: NgmDSCoreService
+		private readonly dsCoreService: NgmDSCoreService,
+		private readonly copilotKnowledgeService: CopilotKnowledgeService
 	) {
+		this.copilotKnowledgeRetriever = createCopilotKnowledgeRetriever(this.copilotKnowledgeService, {
+			tenantId: chatContext.tenant.id,
+			// 知识库跟着 copilot 的配置
+			organizationId: copilot.organizationId,
+			command: [referencesCommandName(this.commandName), referencesCommandName('calculated')],
+			k: 3
+		})
+		this.exampleFewShotPrompt = createExampleFewShotPrompt(this.copilotKnowledgeService, {
+			tenantId: chatContext.tenant.id,
+			// 知识库跟着 copilot 的配置
+			organizationId: copilot.organizationId,
+			command: this.commandName,
+			k: 1
+		})
+
 		// Register all models
 		models.forEach((model) => this.registerModel(model))
 
 		// Indicators
 		this.indicators$.pipe(takeUntil(this.destroy$)).subscribe(async (indicators) => {
+			console.log(`New indicators:`, indicators)
 			const models = groupBy(indicators, 'modelId')
 			for await (const modelId of Object.keys(models)) {
 				const indicators = models[modelId]
 				const modelKey = this.getModelKey(modelId)
-				const dataSource = await this.dsCoreService._getDataSource(modelKey)
+				const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
 				const schema = dataSource.options.schema
 				const _indicators = [...(schema?.indicators ?? [])].filter(
 					(indicator) => !indicators.some((item) => item.id === indicator.id || item.code === indicator.code)
 				)
 				_indicators.push(...indicators)
+
+				console.log(`Set New indicators for dataSource ${dataSource.id}:`, _indicators)
+
 				dataSource.setSchema({
 					...(dataSource.options.schema ?? {}),
 					indicators: _indicators
@@ -92,7 +135,7 @@ export class ChatBIConversation implements IChatBIConversation {
 	upsertIndicator(indicator: any) {
 		this.logger.debug(`New indicator in chatbi:`, indicator)
 		const indicators = [...this.indicators$.value]
-		const index = indicators.findIndex((item) => item.id === indicator.id)
+		const index = indicators.findIndex((item) => item.id === indicator.id || item.code === indicator.code)
 		if (index > -1) {
 			indicators[index] = {
 				...indicators[index],
@@ -120,7 +163,7 @@ export class ChatBIConversation implements IChatBIConversation {
 	async switchContext(modelId: string, cubeName: string) {
 		// Get Data Source
 		const modelKey = this.getModelKey(modelId)
-		const modelDataSource = await this.dsCoreService._getDataSource(modelKey)
+		const modelDataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
 		// Get entity type context
 		const entityType = await firstValueFrom(modelDataSource.selectEntityType(cubeName))
 		if (!isEntityType(entityType)) {
@@ -136,7 +179,12 @@ export class ChatBIConversation implements IChatBIConversation {
 		const chatContext = this.chatContext
 		const memberRetriever = createDimensionMemberRetriever({ logger: this.logger }, this.semanticModelMemberService)
 		const answerTool = createChatAnswerTool(
-			{ chatId, logger: this.logger, larkService: chatContext.larkService, dsCoreService: this.dsCoreService },
+			{
+				chatId,
+				logger: this.logger,
+				larkService: chatContext.larkService,
+				dsCoreService: this.dsCoreService
+			},
 			chatContext
 		)
 		const pickCubeTool = createPickCubeTool(
@@ -151,12 +199,14 @@ export class ChatBIConversation implements IChatBIConversation {
 		)
 		const endTool = createEndTool({
 			logger: this.logger,
-			conversation: this
+			conversation: this,
+			larkService: chatContext.larkService,
 		})
 		const createFormula = createFormulaTool(
 			{
 				logger: this.logger,
-				conversation: this
+				conversation: this,
+				larkService: chatContext.larkService,
 			},
 			chatContext
 		)
@@ -168,9 +218,13 @@ export class ChatBIConversation implements IChatBIConversation {
 			pickCubeTool,
 			endTool
 		]
+
+		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
+			//
+		})
 		return createReactAgent({
 			state: insightAgentState,
-			llm: this.llm,
+			llm,
 			checkpointSaver: this.copilotCheckpointSaver,
 			// interruptBefore,
 			// interruptAfter,
