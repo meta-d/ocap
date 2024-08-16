@@ -6,6 +6,7 @@ import { BaseCheckpointSaver, CompiledStateGraph, StateGraph } from '@langchain/
 import { ChatOpenAI } from '@langchain/openai'
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
+import { AgentState } from './graph'
 
 /**
  * Copilot command, which can execute multiple actions.
@@ -73,8 +74,8 @@ export interface CopilotCommand<T = any> {
   createGraph?: (
     options: CreateGraphOptions
   ) => Promise<
-    | StateGraph<T, Partial<T>, '__start__' | 'tools' | 'agent' | string>
-    | CompiledStateGraph<T, Partial<T>, '__start__' | 'tools' | 'agent' | string>
+    | StateGraph<T, any, any, string>
+    | CompiledStateGraph<T, Partial<T>, string>
   >
 
   // For history management
