@@ -3,7 +3,7 @@ import {
 	Module,
 	NestModule
 } from '@nestjs/common';
-import { RequestContextMiddleware } from './context';
+import { RequestContextMiddleware, TenantDomainMiddleware } from './context';
 import { FileStorageModule } from './file-storage';
 import { DatabaseModule } from '../database/database.module';
 
@@ -43,5 +43,6 @@ import { DatabaseModule } from '../database/database.module';
 export class CoreModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
 		consumer.apply(RequestContextMiddleware).forRoutes('*');
+		consumer.apply(TenantDomainMiddleware).forRoutes('*');
 	}
 }
