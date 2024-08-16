@@ -118,7 +118,7 @@ export class UserService extends TenantAwareCrudService<User> {
 			throw new NotFoundException(`The user was not found`);
 		}
 		
-		if (!(await bcrypt.compare(hash, user.hash))) {
+		if (user.hash && !(await bcrypt.compare(hash, user.hash))) {
 			throw new ForbiddenException(`Current password not match`)
 		}
 

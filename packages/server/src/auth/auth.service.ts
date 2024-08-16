@@ -56,18 +56,21 @@ export class AuthService extends SocialAuthService {
 	/**
 	 * User Login Request
 	 * 
-	 * @param email 
+	 * @param email username or email
 	 * @param password 
 	 * @returns 
 	 */
 	async login(email: string, password: string): Promise<IAuthResponse | null> {
-		const user = await this.userService.findOneByConditions({ email, emailVerified: true }, {
-			relations: ['role', 'role.rolePermissions', 'employee'],
-			order: {
-				createdAt: 'DESC'
+		const user = await this.userService.findOneByOptions(
+			{
+				where: [{ email, emailVerified: true }, {username: email}],
+				relations: ['role', 'role.rolePermissions', 'employee'],
+				order: {
+					createdAt: 'DESC'
+				}
 			}
-		});
-		if (!user || !(await bcrypt.compare(password, user.hash))) {
+		);
+		if (!user?.hash || !(await bcrypt.compare(password, user.hash))) {
 			return null;
 		}
 		const { token, refreshToken } = await this.createToken(user)
