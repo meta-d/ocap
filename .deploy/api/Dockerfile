@@ -27,6 +27,7 @@ WORKDIR /srv/pangolin
 
 COPY --chown=node:node packages/store/package.json ./packages/store/
 COPY --chown=node:node packages/core/package.json ./packages/core/
+COPY --chown=node:node packages/copilot/package.json ./packages/copilot/
 COPY --chown=node:node packages/contracts/package.json ./packages/contracts/
 COPY --chown=node:node packages/common/package.json ./packages/common/
 COPY --chown=node:node packages/config/package.json ./packages/config/
