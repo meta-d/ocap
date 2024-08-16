@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { Store } from '@metad/cloud/state'
 import { CookieService } from 'ngx-cookie-service'
 import { firstValueFrom } from 'rxjs'
-import { PAC_AUTH_OPTIONS } from '../auth.options'
+import { PAC_API_BASE_URL, PAC_AUTH_OPTIONS } from '../auth.options'
 import { getDeepFromObject } from '../helpers'
 import { PacAuthService } from '../services/auth.service'
 
@@ -26,6 +26,7 @@ import { PacAuthService } from '../services/auth.service'
 })
 export class UserLoginComponent implements OnDestroy {
   readonly #store = inject(Store)
+  readonly API_BASE_URL = inject(PAC_API_BASE_URL)
 
   showMessages: any = {}
 
@@ -166,7 +167,7 @@ export class UserLoginComponent implements OnDestroy {
   }
 
   open(type: string, openType = 'href'): void {
-    window.open('DOCKER_API_BASE_URL' + `/api/auth/${type}`, '_self')
+    window.open(this.API_BASE_URL + `/api/auth/${type}`, '_self')
   }
 
   getConfigValue(key: string): any {

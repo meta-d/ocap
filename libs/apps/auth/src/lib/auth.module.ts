@@ -28,7 +28,6 @@ import {
   PAC_AUTH_TOKEN_INTERCEPTOR_FILTER,
   PAC_AUTH_USER_OPTIONS
 } from './auth.options'
-import { PacMenuGroupComponent } from './components/menu-group/menu-group.component'
 import { PacMenuComponent } from './components/menu/menu.component'
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component'
 import { NoAuthGuard } from './guards/no-auth.guard'

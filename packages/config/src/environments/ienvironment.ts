@@ -13,7 +13,6 @@ import {
 	ITwitterConfig,
 	IUnleashConfig,
 	IUpworkConfig,
-	IFeishuConfig,
 	IDingtalkConfig,
 	IAliyunConfig,
 	ILarkConfig
@@ -72,7 +71,6 @@ export interface IEnvironment {
 	fiverrConfig: IFiverrConfig;
 	keycloakConfig: IKeycloakConfig;
 	auth0Config: IAuth0Config;
-	feishuConfig: IFeishuConfig;
 	dingtalkConfig: IDingtalkConfig;
 	larkConfig: ILarkConfig;
 

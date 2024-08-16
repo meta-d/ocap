@@ -1,15 +1,14 @@
 import { AiProviderRole } from '@metad/contracts'
+import { Agent, DataSourceFactory } from '@metad/ocap-core'
 import { CopilotCheckpointSaver, CopilotKnowledgeService, CopilotService } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { Agent, DataSourceFactory } from '@metad/ocap-core'
+import { IsNull } from 'typeorm'
 import { SemanticModelService } from '../model'
 import { SemanticModelMemberService } from '../model-member/member.service'
 import { NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '../model/ocap'
 import { ChatBIConversation } from './conversation'
 import { ChatBILarkContext, ChatBIUserSession, IChatBI } from './types'
-import { IsNull } from 'typeorm'
-
 
 @Injectable()
 export class ChatBIService implements IChatBI {
@@ -50,11 +49,21 @@ export class ChatBIService implements IChatBI {
 	}
 
 	async createChatConversation(input: ChatBILarkContext) {
-		const { tenant, userId, chatId } = input
+		const { tenant, organizationId, chatId } = input
 		const tenantId = tenant.id
-		const { items } = await this.copilotService.findAllWithoutOrganization({ where: { tenantId, organizationId: IsNull() } })
+		const { items } = await this.copilotService.findAllWithoutOrganization({
+			where: {
+				tenantId,
+				organizationId: organizationId ? organizationId : IsNull()
+			}
+		})
 		const copilot = items.find((item) => item.role === AiProviderRole.Primary)
-		
+		if (!copilot) {
+			throw new Error(
+				`No copilot configuration found for tenant: '${tenantId}' and organization: '${organizationId}'`
+			)
+		}
+
 		const { items: models } = await this.modelService.findAll({
 			where: { tenantId, organizationId: input.organizationId },
 			relations: ['dataSource', 'dataSource.type', 'roles']

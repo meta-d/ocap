@@ -2,8 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService, IEnvironment } from '@metad/server-config';
 import * as bcrypt from 'bcrypt';
 
+/**
+ * Base class for social authentication.
+ */
 export abstract class BaseSocialAuth {
+	/**
+	 * Validate OAuth login email.
+	 *
+	 * @param args - Arguments for validating OAuth login email.
+	 * @returns The result of the validation.
+	 */
 	public abstract validateOAuthLoginEmail(args: []): any;
+
+	public abstract validateOAuthLoginMobile(args: string): any;
 }
 
 @Injectable()
@@ -27,6 +38,9 @@ export class SocialAuthService extends BaseSocialAuth {
 		//
 	}
 	public validateOAuthLoginUser(args: any): any {
+		//
+	}
+	public validateOAuthLoginMobile(args: any): any {
 		//
 	}
 

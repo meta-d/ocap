@@ -65,8 +65,8 @@ export class HeaderSettingsComponent {
   readonly preferredTheme$ = toSignal(this.store.preferredTheme$)
   readonly preferredThemeIcon$ = computed(() => THEMES.find((item) => item.key === this.preferredTheme$())?.icon)
 
-  readonly user$ = toSignal(this.store.user$)
-  readonly isAuthenticated$ = computed(() => Boolean(this.store.user))
+  readonly userSignal = toSignal(this.store.user$)
+  // readonly isAuthenticated$ = computed(() => Boolean(this.store.user))
   readonly language$ = toSignal(this.store.preferredLanguage$.pipe(startWith(this.#translate.currentLang)))
 
   readonly themesT$ = toSignal(this.#translate.stream('PAC.Themes'))

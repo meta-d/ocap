@@ -1,6 +1,7 @@
 <mat-sidenav-container #sidenavContainer class="pac-features__sidenav-container flex-1 h-full"
   [ngClass]="{'pac-fullscreen': fullscreenIndex$() > 1}"
-  autosize>
+  autosize
+>
   <mat-sidenav #sidenav class="pac-features__sidenav flex flex-col"
     [mode]="sidenavMode()"
     [(opened)]="sidenavOpened"
@@ -125,16 +126,18 @@
         </button>
       }
       
-      <button mat-icon-button *ngIf="isAuthenticated$ | async as user" class="d-none d-sm-inline"
-        displayDensity="cosy"
-        [popper]="popperContent"
-        [popperTrigger]="NgxPopperjsTriggers.click"
-        [popperHideOnClickOutside]="true"
-        [popperHideOnScroll]="true"
-        [popperPlacement]="NgxPopperjsPlacements.BOTTOMEND"
-      >
-        <img class="avatar w-4/6 h-4/6 m-auto rounded-full" [src]="user?.imageUrl || '/assets/images/avatar-default.svg'" />
-      </button>
+      @if (isAuthenticated$ | async; as user) {
+        <button mat-icon-button class="pac-auth-button"
+          displayDensity="cosy"
+          [popper]="popperContent"
+          [popperTrigger]="NgxPopperjsTriggers.click"
+          [popperHideOnClickOutside]="true"
+          [popperHideOnScroll]="true"
+          [popperPlacement]="NgxPopperjsPlacements.BOTTOMEND"
+        >
+          <img class="avatar w-full h-full rounded-full" [src]="user?.imageUrl || '/assets/images/avatar-default.svg'" />
+        </button>
+      }
     </mat-toolbar>
 
     <ngm-drawer-container class="relative flex-1 z-10" [mode]="isMobile() ? 'over' : 'side'"

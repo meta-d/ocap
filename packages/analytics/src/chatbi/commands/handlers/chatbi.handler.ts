@@ -12,10 +12,8 @@ import { ChatBICommand } from '../chatbi.command'
 @CommandHandler(ChatBICommand)
 export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 	readonly commandName = 'chatbi'
-	
-	constructor(
-		private readonly chatBIService: ChatBIService,
-	) {}
+
+	constructor(private readonly chatBIService: ChatBIService) {}
 
 	public async execute(command: ChatBICommand): Promise<Observable<any>> {
 		const { input } = command
@@ -24,13 +22,13 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 		const conversation = await this.chatBIService.getUserConversation(input)
 		if (!conversation) {
 			return from(
-				larkService.errorMessage(input, new Error(`Can't found conversation for user: ${input.userId}`))
+				larkService.errorMessage(input, new Error(`Failed to create chat conversation for user: ${input.userId}`))
 			)
 		}
 		// Cube context
 		let context = null
 		const session = this.chatBIService.userSessions[conversation.userId]
-		if (!conversation.context && conversation.chatType === 'p2p' && session.cubeName) {
+		if (!conversation.context && conversation.chatType === 'p2p' && session?.cubeName) {
 			const modelId = session.modelId
 			const cubeName = session.cubeName
 			context = await conversation.switchContext(modelId, cubeName)

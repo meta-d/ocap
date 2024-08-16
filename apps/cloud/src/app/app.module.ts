@@ -25,6 +25,8 @@ import {
 } from './@core'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
+import { PAC_API_BASE_URL } from '@metad/cloud/auth'
+import { environment } from '../environments/environment'
 
 const TYPE_KEY = '__subject__'
 function detectSubjectType(subject) {
@@ -105,7 +107,11 @@ function detectSubjectType(subject) {
       multi: true
     },
     { provide: Ability, useValue: new Ability([], { detectSubjectType }) },
-    { provide: PureAbility, useExisting: Ability }
+    { provide: PureAbility, useExisting: Ability },
+    {
+      provide: PAC_API_BASE_URL,
+      useValue: environment.API_BASE_URL
+    }
 
     // {
     //   provide: ErrorHandler,
