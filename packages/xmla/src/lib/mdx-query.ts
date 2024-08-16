@@ -6,6 +6,7 @@ import {
   Dimension,
   Drill,
   EntityType,
+  FilterOperator,
   getEntityDimensions,
   getEntityHierarchy,
   getEntityLevel,
@@ -317,6 +318,9 @@ export function convertFilter2Hierarchy(entityType: EntityType, ftr: ISlicer): M
       // TODO 需要更好的方式
       dim.operator = ftr.operator
     }
+    if (ftr.exclude) {
+      dim.operator = FilterOperator.NE
+    }
   }
 
   // TODO for variables
@@ -326,6 +330,8 @@ export function convertFilter2Hierarchy(entityType: EntityType, ftr: ISlicer): M
   // if (parameter) {
   //   dim.parameter = parameter
   // }
+
+
 
   return omitBy(dim, isNil)
 }

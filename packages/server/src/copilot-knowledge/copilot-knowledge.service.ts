@@ -66,7 +66,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		let vectorStore = await this.getVectorStore(tenentId, organizationId, role)
 		if (vectorStore) {
 
-			console.log(`Got vectorStore for tenentId ${tenentId} organizationId ${organizationId} role ${role}`)
+			// console.log(`Got vectorStore for tenentId ${tenentId} organizationId ${organizationId} role ${role}`)
 
 			let results = []
 			try {
@@ -223,9 +223,9 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		const id = (organizationId || tenantId) + `:${role || 'default'}`
 		if (!this.vectorStores.has(id)) {
 			let collectionName = id
-			let primaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Primary)
+			let primaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Primary, tenantId, organizationId)
 			if (!primaryCopilot?.enabled) {
-				primaryCopilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary)
+				primaryCopilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary, tenantId)
 				collectionName = tenantId + `:${role || 'default'}`
 			}
 			let copilot: ICopilot = null

@@ -8,6 +8,8 @@ export class DimensionMemberRetriever extends BaseRetriever {
 	lc_namespace: string[]
 	readonly #logger = new Logger(DimensionMemberRetriever.name)
 
+	tenantId: string
+	organizationId: string
 	modelId: string
 	cube: string
 
@@ -16,12 +18,14 @@ export class DimensionMemberRetriever extends BaseRetriever {
 	}
 
 	async _getRelevantDocuments(query: string, runManager?: CallbackManagerForRetrieverRun): Promise<Document[]> {
-		this.#logger.debug(`Retrieving documents for query: ${query}`, runManager)
+		this.#logger.debug(`Retrieving dimension members for query: ${query} in cube '${this.cube}'`)
 		const modelId = this.modelId ?? ''
 		const cube = this.cube
 
-		const results = await this.memberService.retrieveMembers(modelId, cube, query, 6)
+		const results = await this.memberService.retrieveMembers(this.tenantId, this.organizationId, modelId, cube, query, 6)
 
+		this.#logger.debug(`Retrieved dimension members: ${results.length}`)
+		
 		return results.map((item) => new Document(item))
 	}
 }

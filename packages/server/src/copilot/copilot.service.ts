@@ -1,9 +1,10 @@
 import { DeepPartial } from '@metad/server-common'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { IsNull, Repository } from 'typeorm'
 import { PaginationParams, TenantOrganizationAwareCrudService } from '../core/crud'
 import { Copilot } from './copilot.entity'
+import { RequestContext } from '../core'
 
 @Injectable()
 export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> {
@@ -23,19 +24,20 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 	}
 
 	/**
-	 * @deprecated 要支持指定 orgId
 	 */
-	async findOneByRole(role: string): Promise<Copilot> {
-		const { success, record } = await this.findOneOrFail({ where: { role } })
-		return success ? record : null
+	async findOneByRole(role: string, tenantId: string, organizationId: string): Promise<Copilot> {
+		tenantId = tenantId || RequestContext.currentTenantId()
+		organizationId = organizationId || RequestContext.getOrganizationId()
+		const items = await this.repository.find({where: {tenantId, organizationId, role}})
+		return items.length ? items[0] : null
 	}
 
 	/**
-	 * @deprecated 要支持指定 tenantId
 	 */
-	async findTenantOneByRole(role: string): Promise<Copilot> {
-		const { success, record } = await this.findOneOrFailWithoutOrg({ where: { role } })
-		return success ? record : null
+	async findTenantOneByRole(role: string, tenantId: string,): Promise<Copilot> {
+		tenantId = tenantId || RequestContext.currentTenantId()
+		const items = await this.repository.find({where: {tenantId, role, organizationId: IsNull()}})
+		return items.length ? items[0] : null
 	}
 
 	/**
@@ -48,7 +50,7 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 		if (entity.id) {
 			await this.update(entity.id, entity)
 		} else {
-			const record = await this.findOneByRole(entity.role)
+			const record = await this.findOneByRole(entity.role, null, null)
 			if (record) {
 				await this.update(record.id, entity)
 				entity.id = record.id

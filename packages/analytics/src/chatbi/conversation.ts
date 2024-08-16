@@ -63,6 +63,12 @@ export class ChatBIConversation implements IChatBIConversation {
 	public get threadId() {
 		return this.chatContext.userId + '/' + this.chatContext.chatId + '/' + this.id
 	}
+	get tenantId() {
+		return this.chatContext.tenant.id
+	}
+	get organizationId() {
+		return this.copilot.organizationId
+	}
 
 	public context: string = null
 
@@ -81,16 +87,16 @@ export class ChatBIConversation implements IChatBIConversation {
 		private readonly copilotKnowledgeService: CopilotKnowledgeService
 	) {
 		this.copilotKnowledgeRetriever = createCopilotKnowledgeRetriever(this.copilotKnowledgeService, {
-			tenantId: chatContext.tenant.id,
+			tenantId: this.tenantId,
 			// 知识库跟着 copilot 的配置
-			organizationId: copilot.organizationId,
+			organizationId: this.organizationId,
 			command: [referencesCommandName(this.commandName), referencesCommandName('calculated')],
 			k: 3
 		})
 		this.exampleFewShotPrompt = createExampleFewShotPrompt(this.copilotKnowledgeService, {
-			tenantId: chatContext.tenant.id,
+			tenantId: this.tenantId,
 			// 知识库跟着 copilot 的配置
-			organizationId: copilot.organizationId,
+			organizationId: this.organizationId,
 			command: this.commandName,
 			k: 1
 		})
@@ -212,7 +218,12 @@ export class ChatBIConversation implements IChatBIConversation {
 		)
 
 		const tools = [
-			createDimensionMemberRetrieverTool(memberRetriever),
+			createDimensionMemberRetrieverTool(
+				this.tenantId,
+				// 知识库跟着 copilot 的配置
+				this.organizationId,
+				memberRetriever
+			),
 			createFormula,
 			answerTool,
 			pickCubeTool,

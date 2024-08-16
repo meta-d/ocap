@@ -96,7 +96,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	 */
 	async storeMembers(model: SemanticModel, cube: string, members: DeepPartial<SemanticModelMember[]>, entityType: EntityType) {
 		const entities = await this.bulkCreate(model, cube, members)
-		const vectorStore = await this.getVectorStore(model.id, entityType.name)
+		const vectorStore = await this.getVectorStore(null, null, model.id, entityType.name)
 		if (vectorStore) {
 			await vectorStore.clear()
 			await vectorStore.addMembers(entities, entityType)
@@ -136,8 +136,8 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		return await this.delete({ id: In(members.map((item) => item.id)) })
 	}
 
-	async retrieveMembers(id: string | null, cube: string, query: string, k = 10) {
-		const { vectorStore } = await this.getVectorStore(id, cube)
+	async retrieveMembers(tenantId: string, organizationId: string, id: string | null, cube: string, query: string, k = 10) {
+		const { vectorStore } = await this.getVectorStore(tenantId, organizationId, id, cube)
 		if (vectorStore) {
 			try {
 				return await vectorStore.similaritySearch(query, k)
@@ -149,10 +149,10 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		return []
 	}
 
-	async getVectorStore(modelId: string, cube: string) {
-		let copilot = await this.copilotService.findOneByRole(AiProviderRole.Primary)
+	async getVectorStore(tenantId: string, organizationId: string, modelId: string, cube: string) {
+		let copilot = await this.copilotService.findOneByRole(AiProviderRole.Primary, tenantId, organizationId)
 		if (!copilot?.enabled) {
-			copilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary)
+			copilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary, tenantId)
 		}
 		if (copilot?.enabled && OpenAIEmbeddingsProviders.includes(copilot.provider)) {
 			const id = modelId ? `${modelId}${cube ? ':' + cube : ''}` : 'default'

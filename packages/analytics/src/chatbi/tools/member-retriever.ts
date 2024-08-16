@@ -4,9 +4,11 @@ import { formatDocumentsAsString } from 'langchain/util/document'
 import { z } from 'zod'
 import { DimensionMemberRetriever } from '../../model-member/retriever'
 
-export function createDimensionMemberRetrieverTool(retriever: DimensionMemberRetriever) {
+export function createDimensionMemberRetrieverTool(tenantId: string, organizationId: string, retriever: DimensionMemberRetriever) {
 	return tool(
 		async ({ modelId, cube, dimension, hierarchy, level, member }) => {
+			retriever.tenantId = tenantId
+			retriever.organizationId = organizationId
 			retriever.modelId = modelId
 			retriever.cube = cube
 			try {

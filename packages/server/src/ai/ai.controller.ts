@@ -156,7 +156,7 @@ failed: ${error.message}`)
 	async getCopilot(role: AiProviderRole) {
 		const userId = RequestContext.currentUserId()
 		const organizationId = RequestContext.getOrganizationId()
-		let result = await this.copilotService.findOneByRole(role)
+		let result = await this.copilotService.findOneByRole(role, null, null)
 		if (result?.enabled) {
 			// Check token usage in organizaiton
 			const usage = await this.copilotUserService.findOneOrFail({ where: { userId, orgId: organizationId, provider: result.provider }})
@@ -166,7 +166,7 @@ failed: ${error.message}`)
 				}
 			}
 		} else {
-			result = await this.copilotService.findTenantOneByRole(role)
+			result = await this.copilotService.findTenantOneByRole(role, null)
 			if (!result?.enabled) {
 				throw new Error('No copilot found')
 			}
