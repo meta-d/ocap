@@ -10,10 +10,10 @@
   },
   "private": true,
   "dependencies": {
+    "@langchain/community": "0.2.20",
     "@langchain/core": "0.2.18",
     "@langchain/langgraph": "0.0.31",
-		"@langchain/community": "0.2.20",
-		"@langchain/ollama": "^0.0.2",
+    "@langchain/ollama": "^0.0.2",
 		"@langchain/openai": "0.2.4",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",

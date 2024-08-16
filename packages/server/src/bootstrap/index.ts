@@ -5,7 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 // import { SentryService } from '@ntegral/nestjs-sentry';
 import * as expressSession from 'express-session';
 import * as helmet from 'helmet';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { urlencoded, json } from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { EntitySubscriberInterface } from 'typeorm';

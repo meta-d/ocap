@@ -25,7 +25,7 @@ import {
 } from '@metad/server-core'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService as NestConfigService } from '@nestjs/config'
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as fs from 'fs'
 import { assign, omit, pick } from 'lodash'
 import * as path from 'path'
