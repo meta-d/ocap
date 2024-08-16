@@ -1,5 +1,4 @@
 import * as lark from '@larksuiteoapi/node-sdk'
-import { DEFAULT_TENANT } from '@metad/contracts'
 import { nonNullable } from '@metad/copilot'
 import { environment } from '@metad/server-config'
 import { Injectable } from '@nestjs/common'
@@ -51,7 +50,7 @@ export class LarkService {
 			  }
 			 */
 
-			const tenant = await this.tenantService.findOne({ name: DEFAULT_TENANT })
+			const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
 			const organizationId = environment.larkConfig.organizationId
 			const chatId = data.message.chat_id
 			if (
@@ -116,7 +115,7 @@ export class LarkService {
 			 */
 			const { event_key } = data
 			if (event_key.startsWith('select_cube:')) {
-				const tenant = await this.tenantService.findOne({ name: DEFAULT_TENANT })
+				const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
 				console.log(data)
 				const result = await this.commandBus.execute<LarkBotMenuCommand, Observable<any>>(
 					new LarkBotMenuCommand({
