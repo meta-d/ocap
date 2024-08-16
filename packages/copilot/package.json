@@ -2,7 +2,8 @@
   "name": "@metad/copilot",
   "version": "2.5.2",
   "peerDependencies": {
-    "@langchain/core": "0.2.5",
+    "@langchain/core": "0.2.18",
+    "@langchain/langgraph": "0.0.31",
     "ai": "^2.2.30",
     "nanoid": "^4.0.2",
     "ollama": "^0.5.6",

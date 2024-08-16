@@ -12,6 +12,7 @@ export const SlicerSchema = z.object({
       parameter: z.string().optional().describe('The name of variable reference to')
     })
     .describe('dimension of the slicer'),
+  exclude: z.boolean().optional().describe('Exclude members'),
   members: z.array(MemberSchema).describe('Members in the slicer')
 })
 export const VariableSchema = z.object({
