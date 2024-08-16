@@ -1,10 +1,13 @@
 import {
   BarVariant,
+  BaseMeasureSchema,
   ChartAnnotation,
   ChartDimensionRoleType,
   ChartMeasureRoleType,
   ChartOrient,
   ChartType,
+  DimensionSchema,
+  MeasureSchema,
   OrderDirection,
   PieVariant,
   pick
@@ -12,7 +15,6 @@ import {
 import { z } from 'zod'
 import { DeepPartial } from '../helpers'
 import { NxChartType } from '../smart-chart'
-import { BaseMeasureSchema, DimensionSchema, MeasureSchema } from './cube.schema'
 
 export function makeChartRulesPrompt() {
   return ``
@@ -776,12 +778,5 @@ export function getChartType(chartType: ChartType | string) {
   throw new Error(`Chart Type ${chartType?.type}/${chartType?.orient}/${chartType?.variant} not found`)
 }
 
-export const ChartMeasureSchema = z.object({
-  ...BaseMeasureSchema,
-  role: z.enum([null, 'Axis1', 'Axis2']).optional().describe('Role of value axis')
-})
 
-export const OrderBySchema = z.object({
-  by: z.string().describe('Field to order by'),
-  order: z.enum([OrderDirection.ASC, OrderDirection.DESC]).describe('Order direction')
-})
+

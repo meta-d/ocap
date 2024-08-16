@@ -7,19 +7,12 @@ import { Observable } from 'rxjs'
 import { filter, takeUntil, tap } from 'rxjs/operators'
 import { ZodType, ZodTypeDef } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
+export { nonBlank, nonNullable } from '@metad/ocap-core'
 
 
 export const filterNil = filter(negate(isNil))
 export const isNotEqual = negate(isEqual)
 export const isNotEmpty = negate(isEmpty)
-
-export function nonNullable<T>(value: T): value is NonNullable<T> {
-  return value != null
-}
-
-export function nonBlank<T>(value: T): value is NonNullable<T> {
-  return !!value
-}
 
 /**
  *@hidden

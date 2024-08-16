@@ -34,6 +34,7 @@
     "start:api": "yarn b:p:all && yarn nx serve api",
     "start:api:dev": "nodemon",
     "start:api:debug": "yarn --cwd ./apps/api start:debug",
+    "start:analytics:debug": "yarn --cwd ./packages/analytics start:debug",
     "storybook": "concurrently \"yarn:w:sb:*\"",
     "w:sb:tw": "npx tailwindcss -c packages/angular/tailwind.config.js -i ./packages/angular/_index.scss -o ./packages/angular/.storybook/index.css -m1 --watch",
     "w:sb:ocap-angular": "npx nx storybook ocap-angular",

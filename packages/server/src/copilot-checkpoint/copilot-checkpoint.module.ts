@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { RouterModule } from 'nest-router'
 import { DatabaseModule } from '../database'
 import { TenantModule } from '../tenant'
+import { CopilotCheckpointSaver } from './checkpoint-saver'
 import { CopilotCheckpointController } from './copilot-checkpoint.controller'
 import { CopilotCheckpoint } from './copilot-checkpoint.entity'
 import { CopilotCheckpointService } from './copilot-checkpoint.service'
@@ -17,7 +18,7 @@ import { CopilotCheckpointService } from './copilot-checkpoint.service'
 		DatabaseModule
 	],
 	controllers: [CopilotCheckpointController],
-	providers: [CopilotCheckpointService],
-	exports: [CopilotCheckpointService]
+	providers: [CopilotCheckpointService, CopilotCheckpointSaver],
+	exports: [CopilotCheckpointService, CopilotCheckpointSaver]
 })
 export class CopilotCheckpointModule {}

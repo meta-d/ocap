@@ -7,10 +7,10 @@ import { UserModule } from './../user/user.module';
 import { CommandHandlers } from './commands/handlers';
 import { EmployeeController } from './employee.controller';
 import { EmployeeService } from './employee.service';
-import { AuthService } from '../auth/auth.service';
 import { EmailService, EmailModule } from '../email';
 import { UserOrganizationModule } from '../user-organization/user-organization.module';
 import { TenantModule } from '../tenant/tenant.module';
+import { AuthModule } from '../auth';
 
 @Module({
 	imports: [
@@ -20,12 +20,12 @@ import { TenantModule } from '../tenant/tenant.module';
 		UserOrganizationModule,
 		CqrsModule,
 		TenantModule,
-		UserModule
+		UserModule,
+		AuthModule
 	],
 	controllers: [EmployeeController],
 	providers: [
 		EmployeeService,
-		AuthService,
 		EmailService,
 		...CommandHandlers
 	],

@@ -4,7 +4,6 @@ import { AIMessage } from '@langchain/core/messages'
 import { BehaviorSubject, catchError, combineLatest, map, of, shareReplay, Subject, switchMap } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { AI_PROVIDERS, AiProvider, BusinessRoleType, ICopilot } from './types'
-import { NgmChatOllama } from './chat_models/chat-ollama'
 
 function modelsUrl(copilot: ICopilot) {
   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -114,7 +113,7 @@ export abstract class CopilotService {
   }
 }
 
-function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOptions: ClientOptions,
+export function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOptions: ClientOptions,
   tokenRecord: (input: {copilot: ICopilot; tokenUsed: number;}) => void): T {
   switch (copilot?.provider) {
     case AiProvider.OpenAI:
@@ -141,27 +140,27 @@ function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOpti
           },
         ],
       }) as T
-    case AiProvider.Ollama:
-      return new NgmChatOllama({
-        baseUrl: copilot.apiHost || null,
-        model: copilot.defaultModel,
-        headers: {
-          ...(clientOptions?.defaultHeaders ?? {})
-        },
-        callbacks: [
-          {
-            handleLLMEnd(output) {
-              let tokenUsed = 0
-              output.generations?.forEach((generation) => {
-                generation.forEach((item) => {
-                  tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
-                })
-              })
-              tokenRecord({ copilot, tokenUsed })
-            },
-          },
-        ],
-      }) as T
+    // case AiProvider.Ollama:
+    //   return new NgmChatOllama({
+    //     baseUrl: copilot.apiHost || null,
+    //     model: copilot.defaultModel,
+    //     headers: {
+    //       ...(clientOptions?.defaultHeaders ?? {})
+    //     },
+    //     callbacks: [
+    //       {
+    //         handleLLMEnd(output) {
+    //           let tokenUsed = 0
+    //           output.generations?.forEach((generation) => {
+    //             generation.forEach((item) => {
+    //               tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
+    //             })
+    //           })
+    //           tokenRecord({ copilot, tokenUsed })
+    //         },
+    //       },
+    //     ],
+    //   }) as T
     default:
       return null
   }

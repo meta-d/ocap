@@ -19,42 +19,73 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
 
   async getTuple(config: RunnableConfig): Promise<CheckpointTuple | undefined> {
     const { thread_id, checkpoint_id } = config.configurable || {}
-    const row = await firstValueFrom(
-      this.#httpClient
-        .get<{ items: ICopilotCheckpoint[] }>(API_COPILOT_CHECKPOINT, {
-          params: {
-            $filter: JSON.stringify({
-              thread_id,
-              checkpoint_id
-            }),
-            $order: JSON.stringify({
-              checkpoint_id: 'DESC'
-            })
-          }
-        })
-        .pipe(map((res) => res.items[0]))
-    )
-
-    if (row) {
-      return {
-        config: {
-          configurable: {
-            thread_id: row.thread_id,
-            checkpoint_id: row.checkpoint_id
-          }
-        },
-        checkpoint: (await this.serde.parse(row.checkpoint)) as Checkpoint,
-        metadata: (await this.serde.parse(row.metadata)) as CheckpointMetadata,
-        parentConfig: row.parent_id
-          ? {
-              configurable: {
-                thread_id: row.thread_id,
-                checkpoint_id: row.parent_id
-              }
+    if (checkpoint_id) {
+      const row = await firstValueFrom(
+        this.#httpClient
+          .get<{ items: ICopilotCheckpoint[] }>(API_COPILOT_CHECKPOINT, {
+            params: {
+              $filter: JSON.stringify({
+                thread_id,
+                checkpoint_id
+              }),
             }
-          : undefined
-      }
+          })
+          .pipe(map((res) => res.items[0]))
+      )
+
+      if (row) {
+				return {
+					config,
+					checkpoint: (await this.serde.parse(row.checkpoint)) as Checkpoint,
+					metadata: (await this.serde.parse(row.metadata)) as CheckpointMetadata,
+					parentConfig: row.parent_id
+						? {
+								configurable: {
+									thread_id,
+									checkpoint_id: row.parent_id
+								}
+							}
+						: undefined
+				}
+			}
+    } else {
+      const row = await firstValueFrom(
+        this.#httpClient
+          .get<{ items: ICopilotCheckpoint[] }>(API_COPILOT_CHECKPOINT, {
+            params: {
+              $filter: JSON.stringify({
+                thread_id,
+                checkpoint_id
+              }),
+              $order: JSON.stringify({
+                checkpoint_id: 'DESC'
+              })
+            }
+          })
+          .pipe(map((res) => res.items[0]))
+      )
+      if (row) {
+				return {
+					config: {
+						configurable: {
+							thread_id: row.thread_id,
+							checkpoint_id: row.checkpoint_id
+						}
+					},
+					checkpoint: (await this.serde.parse(row.checkpoint)) as Checkpoint,
+					metadata: (await this.serde.parse(row.metadata)) as CheckpointMetadata,
+					parentConfig: row.parent_id
+						? {
+								configurable: {
+									thread_id: row.thread_id,
+									checkpoint_id: row.parent_id
+								}
+							}
+						: undefined
+				}
+			}
     }
+
     return undefined
   }
 

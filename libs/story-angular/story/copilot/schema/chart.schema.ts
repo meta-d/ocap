@@ -1,14 +1,9 @@
 import {
-  ChartMeasureSchema,
-  DataSettingsSchema,
   DeepPartial,
-  DimensionSchema,
-  SlicerSchema,
   getChartType,
   makeChartEnum,
-  tryFixDimension
 } from '@metad/core'
-import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, omit } from '@metad/ocap-core'
+import { ChartAnnotation, ChartMeasureSchema, ChartType, DataSettingsSchema, DimensionSchema, EntityType, SlicerSchema, assignDeepOmitBlank, cloneDeep, omit, tryFixDimension } from '@metad/ocap-core'
 import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
 

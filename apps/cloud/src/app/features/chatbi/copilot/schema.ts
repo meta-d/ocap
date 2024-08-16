@@ -1,12 +1,12 @@
+import { makeChartEnum } from '@metad/core'
 import {
   ChartMeasureSchema,
   DataSettingsSchema,
   DimensionSchema,
-  makeChartEnum,
   OrderBySchema,
   SlicerSchema,
   TimeSlicerSchema
-} from '@metad/core'
+} from '@metad/ocap-core'
 import { EChartsOptions } from '@metad/story/story'
 import { z } from 'zod'
 

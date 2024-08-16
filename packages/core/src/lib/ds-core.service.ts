@@ -74,6 +74,8 @@ export class DSCoreService extends ComponentStore<DSState> {
   /**
    * New async method to get DataSource object
    * 
+   * @deprecated 慎用 _dataSources 与 #dataSources 不一致问题
+   * 
    * @param key
    * @returns 
    */

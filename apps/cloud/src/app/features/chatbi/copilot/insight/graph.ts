@@ -1,9 +1,8 @@
 import { inject } from '@angular/core'
 import { SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
+import { createAgentStepsInstructions, CreateGraphOptions, createReactAgent } from '@metad/copilot'
 import {
-  createAgentStepsInstructions,
   CubeVariablePrompt,
   injectDimensionMemberTool,
   makeCubeRulesPrompt,

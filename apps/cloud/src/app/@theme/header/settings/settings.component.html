@@ -1,46 +1,46 @@
 <div role="tooltip" class="z-50 dark:text-white">
-  <div class="px-3 py-2 border-b flex items-center border-gray-200 rounded-t-lg dark:border-gray-600">
+  <div class="p-4 border-b flex items-center border-gray-200 rounded-t-lg dark:border-gray-600">
     <h3 class="mb-0 font-semibold">
       {{ 'PAC.MENU.UserSettings' | translate: { Default: 'User Settings' } }}
     </h3>:
 
     <span class="flex-1 overflow-hidden text-ellipsis">
-      {{ user$() | user }}
+      {{ userSignal() | user }}
     </span>
   </div>
 
-  @if (isAuthenticated$()) {
-  <div class="w-[220px] flex flex-col justify-start items-stretch gap-2 p-4">
-    <ngm-select [label]="'PAC.MENU.GENERAL.LANGUAGE' | translate: { Default: 'Language' }"
-      [placeholder]="'PAC.MENU.GENERAL.LANGUAGE_PLACEHOLDER' | translate: { Default: 'Select Language' }"
-      [displayBehaviour]="DisplayBehaviour.descriptionOnly"
-      [selectOptions]="languages"
-      [ngModel]="language$()"
-      (ngModelChange)="onLanguageSelect($event)"
-    >
-      <mat-icon ngmSuffix>translate</mat-icon>
-    </ngm-select>
+  @if (userSignal()) {
+    <div class="w-[220px] flex flex-col justify-start items-stretch gap-2 p-4">
+      <ngm-select [label]="'PAC.MENU.GENERAL.LANGUAGE' | translate: { Default: 'Language' }"
+        [placeholder]="'PAC.MENU.GENERAL.LANGUAGE_PLACEHOLDER' | translate: { Default: 'Select Language' }"
+        [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+        [selectOptions]="languages"
+        [ngModel]="language$()"
+        (ngModelChange)="onLanguageSelect($event)"
+      >
+        <mat-icon ngmSuffix>translate</mat-icon>
+      </ngm-select>
 
-    <ngm-select [label]="'PAC.MENU.GENERAL.THEME' | translate: { Default: 'Theme' }"
-      [placeholder]="'PAC.MENU.GENERAL.ThemePlaceholder' | translate: { Default: 'Select Theme' }"
-      [displayBehaviour]="DisplayBehaviour.descriptionOnly"
-      [valueKey]="'key'"
-      [selectOptions]="themeOptions$()"
-      [ngModel]="preferredTheme$() ?? ThemesEnum.system"
-      (ngModelChange)="onThemeSelect($event)"
-    >
-      <mat-icon ngmSuffix>{{preferredThemeIcon$()}}</mat-icon>
-    </ngm-select>
+      <ngm-select [label]="'PAC.MENU.GENERAL.THEME' | translate: { Default: 'Theme' }"
+        [placeholder]="'PAC.MENU.GENERAL.ThemePlaceholder' | translate: { Default: 'Select Theme' }"
+        [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+        [valueKey]="'key'"
+        [selectOptions]="themeOptions$()"
+        [ngModel]="preferredTheme$() ?? ThemesEnum.system"
+        (ngModelChange)="onThemeSelect($event)"
+      >
+        <mat-icon ngmSuffix>{{preferredThemeIcon$()}}</mat-icon>
+      </ngm-select>
 
-    <button mat-button (click)="onProfile()">
-      <mat-icon>account_circle</mat-icon>
-      <span>{{ 'PAC.MENU.UserProfile' | translate: {Default: 'User Profile'} }}</span>
-    </button>
+      <button mat-button (click)="onProfile()">
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ 'PAC.MENU.UserProfile' | translate: {Default: 'User Profile'} }}</span>
+      </button>
 
-    <button mat-button (click)="onLogoutClick()">
-      <mat-icon>settings_power</mat-icon>
-      <span>{{ 'PAC.MENU.Logout' | translate: {Default: 'Logout'} }}</span>
-    </button>
-  </div>
+      <button mat-button (click)="onLogoutClick()">
+        <mat-icon>settings_power</mat-icon>
+        <span>{{ 'PAC.MENU.Logout' | translate: {Default: 'Logout'} }}</span>
+      </button>
+    </div>
   }
 </div>

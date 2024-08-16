@@ -22,11 +22,17 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 		return await super.findAllWithoutOrganization()
 	}
 
+	/**
+	 * @deprecated 要支持指定 orgId
+	 */
 	async findOneByRole(role: string): Promise<Copilot> {
 		const { success, record } = await this.findOneOrFail({ where: { role } })
 		return success ? record : null
 	}
 
+	/**
+	 * @deprecated 要支持指定 tenantId
+	 */
 	async findTenantOneByRole(role: string): Promise<Copilot> {
 		const { success, record } = await this.findOneOrFailWithoutOrg({ where: { role } })
 		return success ? record : null

@@ -20,8 +20,9 @@ import { UserOrganizationService } from '../user-organization/user-organization.
 import { User } from '../user/user.entity'
 import { UserService } from '../user/user.service'
 import { ImportRecordUpdateOrCreateCommand } from './../export-import/import-record'
-import { AuthTrialCommand } from './commands/index'
+import { AuthRegisterCommand, AuthTrialCommand } from './commands/index'
 import { PasswordResetCreateCommand, PasswordResetGetCommand } from '../password-reset/commands'
+import { RoleService } from '../role/role.service'
 
 
 @Injectable()
@@ -31,6 +32,7 @@ export class AuthService extends SocialAuthService {
 
 	constructor(
 		private readonly userService: UserService,
+		private readonly roleService: RoleService,
 		private emailService: EmailService,
 		private userOrganizationService: UserOrganizationService,
 		private readonly _configService: ConfigService<IEnvironment>,
@@ -54,18 +56,21 @@ export class AuthService extends SocialAuthService {
 	/**
 	 * User Login Request
 	 * 
-	 * @param email 
+	 * @param email username or email
 	 * @param password 
 	 * @returns 
 	 */
 	async login(email: string, password: string): Promise<IAuthResponse | null> {
-		const user = await this.userService.findOneByConditions({ email, emailVerified: true }, {
-			relations: ['role', 'role.rolePermissions', 'employee'],
-			order: {
-				createdAt: 'DESC'
+		const user = await this.userService.findOneByOptions(
+			{
+				where: [{ email, emailVerified: true }, {username: email}],
+				relations: ['role', 'role.rolePermissions', 'employee'],
+				order: {
+					createdAt: 'DESC'
+				}
 			}
-		});
-		if (!user || !(await bcrypt.compare(password, user.hash))) {
+		);
+		if (!user?.hash || !(await bcrypt.compare(password, user.hash))) {
 			return null;
 		}
 		const { token, refreshToken } = await this.createToken(user)
@@ -441,6 +446,62 @@ export class AuthService extends SocialAuthService {
 				err.message
 			)
 		}
+	}
+
+	async validateOAuthLoginMobile(args: any): Promise<{
+		success: boolean
+		authData: { jwt: string; refreshToken: string; userId: string }
+	}> {
+		this.logger.debug(`validate OAuth login mobile:`, args)
+		let response = {
+			success: false,
+			authData: { jwt: null, refreshToken: null, userId: null },
+		}
+
+		const userExist = await this.userService.getIfExistsUser({
+			email: args.emails?.[0].value,
+			mobile: args.mobile,
+			thirdPartyId: args.thirdPartyId
+		})
+
+		if (userExist) {
+			const { token, refreshToken } = await this.createToken(userExist)
+
+			response = {
+				success: true,
+				authData: { jwt: token, refreshToken, userId: userExist.id },
+			}
+		}
+
+		if (!response.success) {
+			const role = await this.roleService.findOne({where: {tenantId: args.tenantId, name: args.roleName}})
+			// auto create third party user
+			const user = await this.commandBus.execute(
+				new AuthRegisterCommand({
+					user: {
+						username: args.thirdPartyId,
+						firstName: args.name,
+						thirdPartyId: args.thirdPartyId,
+						mobile: args.mobile,
+						email: args.emails?.[0]?.value,
+						imageUrl: args.imageUrl,
+						tenantId: args.tenantId,
+						role
+					},
+					organizationId: args.organizationId,
+					originalUrl: 'oauth'
+				},
+				LanguagesEnum.Chinese
+				)
+			);
+	
+			const { token, refreshToken } = await this.createToken(user)
+			response = {
+				success: true,
+				authData: { jwt: token, refreshToken, userId: user.id },
+			}
+		}
+		return response
 	}
 
 	async refreshTokens(userId: string, refreshToken: string) {

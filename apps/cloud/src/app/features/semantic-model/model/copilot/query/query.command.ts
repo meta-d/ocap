@@ -1,11 +1,10 @@
 import { Signal, WritableSignal, computed, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { CopilotAgentType } from '@metad/copilot'
+import { CopilotAgentType, createAgentStepsInstructions } from '@metad/copilot'
 import { createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
 import {
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
-  createAgentStepsInstructions,
   injectDimensionMemberRetrieverTool,
   makeCubeRulesPrompt,
   markdownEntityType

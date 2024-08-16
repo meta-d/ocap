@@ -16,10 +16,11 @@ export class FeishuStrategy extends PassportStrategy(Strategy, 'feishu') {
 		profile: Profile,
 		done: (err: any, user: any, info?: any) => void
 	): Promise<any> {
+		console.log(`profile:`, profile)
 		try {
-			const { open_id, name, email, mobile, avatar } = profile;
+			const { id, open_id, name, email, mobile, avatar } = profile;
 			const user = {
-				thirdPartyId: open_id,
+				thirdPartyId: id,
 				name,
 				mobile,
 				imageUrl: avatar?.middle,
@@ -37,13 +38,13 @@ export class FeishuStrategy extends PassportStrategy(Strategy, 'feishu') {
 
 export const config = (configService: ConfigService) => {
 	const FEISHU_CONFIG = configService.get(
-		'feishuConfig'
-	) as IEnvironment['feishuConfig']
+		'larkConfig'
+	) as IEnvironment['larkConfig']
 	const { baseUrl } = configService.apiConfigOptions as IApiServerOptions;
 
 	return {
-		clientID: FEISHU_CONFIG.clientId || 'disabled',
-		clientSecret: FEISHU_CONFIG.clientSecret || 'disabled',
+		clientID: FEISHU_CONFIG.appId || 'disabled',
+		clientSecret: FEISHU_CONFIG.appSecret || 'disabled',
 		callbackURL:
 			FEISHU_CONFIG.redirectUrl ||
 			`${baseUrl}/api/auth/feishu/callback`,

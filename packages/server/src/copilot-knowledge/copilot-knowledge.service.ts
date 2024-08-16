@@ -48,13 +48,26 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 	async similaritySearch(
 		query: string,
-		options?: { role?: AiBusinessRole; command: string | string[]; k: number; filter: PGVectorStore['filter']; score?: number }
+		options?: {
+			role?: AiBusinessRole;
+			command: string | string[];
+			k: number;
+			filter: PGVectorStore['filter'];
+			score?: number;
+			tenentId?: string
+			organizationId?: string
+		}
 	) {
 		const { role, command, k, score, filter } = options ?? {}
 		const commands = Array.isArray(command) ? {in: command} : command
 
-		let vectorStore = await this.getVectorStore(role)
+		const tenentId = options?.tenentId ?? RequestContext.currentTenantId()
+		const organizationId = options?.organizationId ?? RequestContext.getOrganizationId()
+		let vectorStore = await this.getVectorStore(tenentId, organizationId, role)
 		if (vectorStore) {
+
+			console.log(`Got vectorStore for tenentId ${tenentId} organizationId ${organizationId} role ${role}`)
+
 			let results = []
 			try {
 				results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, {
@@ -72,7 +85,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 					this.#logger.debug(
 						`Examples does not exist for role: ${role} with command '${command}'. use examples in default instead`
 					)
-					vectorStore = await this.getVectorStore(null)
+					vectorStore = await this.getVectorStore(tenentId, organizationId, null)
 					try {
 						results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, {
 							...(filter ?? {}),
@@ -99,11 +112,15 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 	async maxMarginalRelevanceSearch(
 		query: string,
-		options?: { role?: AiBusinessRole; command?: string; k: number; filter: Record<string, any> }
+		options?: { role?: AiBusinessRole; command?: string | string[]; k: number; filter: Record<string, any>;
+			tenentId?: string
+			organizationId?: string
+		}
 	) {
 		const { role, command, k, filter } = options ?? {}
-
-		const vectorStore = await this.getVectorStore(role)
+		const tenentId = options?.tenentId ?? RequestContext.currentTenantId()
+		const organizationId = options?.organizationId ?? RequestContext.getOrganizationId()
+		const vectorStore = await this.getVectorStore(tenentId, organizationId, role)
 
 		if (vectorStore) {
 			return await vectorStore.vectorStore.maxMarginalRelevanceSearch(
@@ -120,8 +137,11 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 	override async create(partialEntity: Partial<ICopilotKnowledge>, ...options: any[]): Promise<CopilotKnowledge> {
 		const entity = await super.create(partialEntity, ...options)
 
+		const tenentId = RequestContext.currentTenantId()
+		const organizationId = RequestContext.getOrganizationId()
+
 		// Update to vector store
-		const vectorStore = await this.getVectorStore(entity.role)
+		const vectorStore = await this.getVectorStore(tenentId, organizationId, entity.role)
 		if (vectorStore) {
 			await vectorStore.updateExamples([entity])
 			super.update(entity.id, { provider: vectorStore.provider, vector: true })
@@ -138,8 +158,11 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		await super.update(id, partialEntity)
 		const entity = await this.findOneByIdString(id)
 
+		const tenentId = RequestContext.currentTenantId()
+		const organizationId = RequestContext.getOrganizationId()
+
 		// Update to vector store
-		const vectorStore = await this.getVectorStore(entity.role)
+		const vectorStore = await this.getVectorStore(tenentId, organizationId, entity.role)
 		if (vectorStore) {
 			await vectorStore.updateExamples([entity])
 			super.update(entity.id, { provider: vectorStore.provider, vector: true })
@@ -152,8 +175,11 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		const entity = await this.findOne(criteria, options)
 		const result = await super.delete(criteria, options)
 
+		const tenentId = RequestContext.currentTenantId()
+		const organizationId = RequestContext.getOrganizationId()
+
 		// Delete example from vector store
-		const vectorStore = await this.getVectorStore(entity.role)
+		const vectorStore = await this.getVectorStore(tenentId, organizationId, entity.role)
 		if (vectorStore) {
 			await vectorStore.deleteExample(entity)
 		}
@@ -190,10 +216,10 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 	}
 
 	async getVectorStore(
+		tenantId: string,
+		organizationId: string,
 		role: AiBusinessRole | string,
 	) {
-		const tenantId = RequestContext.currentTenantId()
-		const organizationId = RequestContext.getOrganizationId()
 		const id = (organizationId || tenantId) + `:${role || 'default'}`
 		if (!this.vectorStores.has(id)) {
 			let collectionName = id
@@ -229,6 +255,8 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 				return this.vectorStores.get(id)
 			}
 
+			console.error(`can't get copilot for tenantId ${tenantId} organizationId ${organizationId}`)
+
 			return null
 		}
 
@@ -250,6 +278,8 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		roles: ICopilotRole[],
 		options: { createRole: boolean; clearRole: boolean }
 	) {
+		const tenentId = RequestContext.currentTenantId()
+		const organizationId = RequestContext.getOrganizationId()
 		const { createRole, clearRole } = options || {}
 		const roleNames = uniq(entities.map((example) => example.role))
 
@@ -274,7 +304,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 		// Add examples to vector store
 		for (const role of roleNames) {
-			const vectorStore = await this.getVectorStore(role ? role : null)
+			const vectorStore = await this.getVectorStore(tenentId, organizationId, role ? role : null)
 			if (clearRole) {
 				const { items } = await this.findAll({ where: { role: role } })
 				await vectorStore?.vectorStore.delete({ filter: { role: role } })

@@ -1,7 +1,6 @@
 import { Signal, inject } from '@angular/core'
-import { CopilotAgentType } from '@metad/copilot'
+import { CopilotAgentType, createAgentStepsInstructions } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
-import { createAgentStepsInstructions } from '@metad/core'
 import { Property } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
