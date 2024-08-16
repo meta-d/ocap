@@ -39,6 +39,7 @@ COPY --chown=node:node packages/analytics/package.json ./packages/analytics/
 COPY --chown=node:node .deploy/api/package.json ./
 
 RUN yarn install && yarn cache clean
+RUN npm install --legacy-peer-deps
 
 COPY --chown=node:node nx.json ./
 COPY --chown=node:node tsconfig.base.json ./
