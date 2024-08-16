@@ -26,6 +26,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
     "cls-hooked": "^4.2.2",
+    "date-fns": "^3.0.4",
     "email-templates": "^8.0.8",
     "express-session": "^1.17.2",
     "faker": "^5.5.3",
