@@ -1,6 +1,5 @@
-import { IndicatorType } from '@metad/ocap-core'
+import { IndicatorType, SlicerSchema } from '@metad/ocap-core'
 import { z } from 'zod'
-import { SlicerSchema } from './slicer.schema'
 
 /**
  * z.ZodType<Partial<Indicator>>

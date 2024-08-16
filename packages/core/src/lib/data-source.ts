@@ -35,7 +35,7 @@ import {
   Schema,
   SemanticModel
 } from './models'
-import { Dimension } from './types'
+import { Dimension, uuid } from './types'
 import { assign, isEqual, isNil, Type } from './utils/index'
 
 export type DataSourceFactory = () => Promise<Type<DataSource>>
@@ -88,6 +88,7 @@ export interface DataSourceOptions extends SemanticModel {
  * * getAnnotation 获取 annotation
  */
 export interface DataSource {
+  id: string
   options: DataSourceOptions
   agent: Agent
 
@@ -259,6 +260,8 @@ export interface DataSource {
  *
  */
 export abstract class AbstractDataSource<T extends DataSourceOptions> implements DataSource {
+  id = uuid()
+
   // Should be used only in onDestroy.
   protected readonly destroySubject$ = new ReplaySubject<void>(1)
   // Exposed to any extending service to be used for the teardown.

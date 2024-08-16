@@ -70,6 +70,7 @@ export enum PermissionsEnum {
 export const PermissionGroups = {
   //Permissions which can be given to any role
   GENERAL: [
+    PermissionsEnum.PROFILE_EDIT,
     PermissionsEnum.ADMIN_DASHBOARD_VIEW,
     PermissionsEnum.ORG_INVITE_VIEW,
     PermissionsEnum.ORG_INVITE_EDIT,

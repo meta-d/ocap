@@ -86,7 +86,7 @@ export class PACAccountPasswordComponent {
   user: User
   readonly passwordControl = new FormControl(null, [Validators.required, Validators.minLength(8)])
   passwordForm = new FormGroup({
-    hash: new FormControl(null, [Validators.required]),
+    hash: new FormControl(null),
     password: this.passwordControl,
     confirmPassword: new FormControl(null, [Validators.required, matchWithValidator(this.passwordControl)])
   },

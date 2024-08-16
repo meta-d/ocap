@@ -67,9 +67,8 @@ $prefix: (ngm, shell);
   }
 }
 
-.avatar {
-  width: 25px;
-  border-radius: 50%;
+.pac-auth-button.mat-mdc-button-base {
+  --mdc-icon-button-icon-size: 100%;
 }
 
 .pac_sidenav-content {

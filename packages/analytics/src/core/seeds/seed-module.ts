@@ -1,7 +1,7 @@
 import { IPluginConfig } from '@metad/server-common'
 import { registerPluginConfig } from '@metad/server-core'
 import { NestFactory } from '@nestjs/core'
-import * as chalk from 'chalk'
+import chalk from 'chalk'
 import yargs from 'yargs'
 import { prepare } from '../prepare'
 import { SeedDataService } from './seed-data.service'

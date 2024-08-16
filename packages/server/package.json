@@ -1,9 +1,10 @@
 {
   "name": "@metad/server-core",
-  "version": "2.5.2",
+  "version": "2.5.4",
   "type": "commonjs",
   "dependencies": {
     "@casl/ability": "^5.4.3",
+    "@larksuiteoapi/node-sdk": "^1.30.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/cqrs": "^8.0.0",
@@ -21,9 +22,11 @@
     "aws-sdk": "^2.995.0",
     "ali-oss": "6.17.1",
     "bcrypt": "^5.0.1",
+    "chalk": "4.1.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
     "cls-hooked": "^4.2.2",
+    "date-fns": "^3.0.4",
     "email-templates": "^8.0.8",
     "express-session": "^1.17.2",
     "faker": "^5.5.3",

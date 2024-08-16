@@ -2,16 +2,10 @@ import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
 import {
-  DataSettingsSchema,
-  DimensionMemberSchema,
   markdownModelCube,
-  MeasureSchema,
-  SlicerSchema,
-  tryFixSlicer,
-  VariableSchema
 } from '@metad/core'
 import { AnalyticalGridOptions } from '@metad/ocap-angular/analytical-grid'
-import { assignDeepOmitBlank, DataSettings, omit } from '@metad/ocap-core'
+import { assignDeepOmitBlank, DataSettings, DataSettingsSchema, DimensionMemberSchema, MeasureSchema, omit, SlicerSchema, tryFixSlicer, VariableSchema } from '@metad/ocap-core'
 import { FilterControlType, NxStoryService, WidgetComponentType } from '@metad/story/core'
 import {
   chartAnnotationCheck,

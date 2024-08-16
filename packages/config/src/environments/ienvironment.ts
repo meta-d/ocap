@@ -13,9 +13,9 @@ import {
 	ITwitterConfig,
 	IUnleashConfig,
 	IUpworkConfig,
-	IFeishuConfig,
 	IDingtalkConfig,
-	IAliyunConfig
+	IAliyunConfig,
+	ILarkConfig
 } from '@metad/server-common';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -71,8 +71,8 @@ export interface IEnvironment {
 	fiverrConfig: IFiverrConfig;
 	keycloakConfig: IKeycloakConfig;
 	auth0Config: IAuth0Config;
-	feishuConfig: IFeishuConfig;
 	dingtalkConfig: IDingtalkConfig;
+	larkConfig: ILarkConfig;
 
 	sentry?: {
 		dns: string;

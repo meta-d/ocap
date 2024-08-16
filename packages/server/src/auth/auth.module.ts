@@ -17,7 +17,6 @@ import { CommandHandlers } from './commands/handlers'
 import { BasicStrategy, JwtStrategy, WsJwtStrategy, RefreshTokenStrategy } from './strategies'
 import { CopilotOrganizationModule } from '../copilot-organization'
 
-
 const providers = [AuthService, UserService, UserOrganizationService, EmailService]
 
 @Module({

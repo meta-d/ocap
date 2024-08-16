@@ -27,6 +27,7 @@ WORKDIR /srv/pangolin
 
 COPY --chown=node:node packages/store/package.json ./packages/store/
 COPY --chown=node:node packages/core/package.json ./packages/core/
+COPY --chown=node:node packages/copilot/package.json ./packages/copilot/
 COPY --chown=node:node packages/contracts/package.json ./packages/contracts/
 COPY --chown=node:node packages/common/package.json ./packages/common/
 COPY --chown=node:node packages/config/package.json ./packages/config/
@@ -36,8 +37,9 @@ COPY --chown=node:node packages/adapter/package.json ./packages/adapter/
 COPY --chown=node:node packages/analytics/package.json ./packages/analytics/
 
 COPY --chown=node:node .deploy/api/package.json ./
+COPY --chown=node:node ./package-lock.json ./
 
-RUN yarn install && yarn cache clean
+RUN npm install --legacy-peer-deps
 
 COPY --chown=node:node nx.json ./
 COPY --chown=node:node tsconfig.base.json ./
@@ -73,11 +75,11 @@ RUN npm install pm2 -g
 COPY --chown=node:node --from=build /srv/pangolin/dist/packages ./packages
 COPY --chown=node:node --from=build /srv/pangolin/dist/apps/api .
 COPY --chown=node:node --from=build /srv/pangolin/tsconfig.base.json ./
-COPY --chown=node:node --from=build /srv/pangolin/yarn.lock .
+COPY --chown=node:node --from=build /srv/pangolin/package-lock.json .
 COPY --chown=node:node .deploy/api/package-prod.json ./package.json
 
-RUN yarn config set network-timeout 300000
-RUN yarn install --frozen-lockfile && yarn cache clean && \
+# RUN yarn config set network-timeout 300000
+RUN npm install --legacy-peer-deps && \
     touch ormlogs.log && chown -R node:node /srv/pangolin
 
 USER node:node

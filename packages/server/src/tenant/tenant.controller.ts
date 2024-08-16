@@ -12,6 +12,7 @@ import {
 	Param,
 	Post,
 	Put,
+	Req,
 	UseGuards
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
@@ -75,16 +76,26 @@ export class TenantController extends CrudController<Tenant> {
 	@Public()
 	@HttpCode(HttpStatus.OK)
 	@Get('onboard')
-	async getOnboardDefault(): Promise<boolean> {
-		const defaultTenant = await this.tenantService.findOneOrFail({
+	async getOnboardDefault(@Req() request: Request): Promise<boolean> {
+		const name = request['tenant-domain'] || DEFAULT_TENANT
+		let tenant = await this.tenantService.findOneOrFail({
 			where: {
-				name: DEFAULT_TENANT
+				name
 			},
 			relations: [ 'settings' ]
 		})
-		return defaultTenant.success ? {
-			...defaultTenant.record,
-			settings: defaultTenant.record.settings.filter((item) => item.name?.startsWith('tenant'))
+		if (!tenant.success) {
+			tenant = await this.tenantService.findOneOrFail({
+				where: {
+					name: DEFAULT_TENANT
+				},
+				relations: [ 'settings' ]
+			})
+		}
+
+		return tenant.success ? {
+			...tenant.record,
+			settings: tenant.record.settings.filter((item) => item.name?.startsWith('tenant'))
 		} : null
 	}
 

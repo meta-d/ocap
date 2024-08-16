@@ -126,11 +126,24 @@ export const environment: IEnvironment = {
 		domain: process.env.AUTH0_DOMAIN
 	},
 
-	feishuConfig: {
-		clientId: process.env.FEISHU_CLIENT_ID,
-		clientSecret: process.env.FEISHU_CLIENT_SECRET,
-		redirectUrl: process.env.FEISHU_REDIRECT_URL,
-		appType: process.env.FEISHU_APP_TYPE,
+	// feishuConfig: {
+	// 	clientId: process.env.FEISHU_CLIENT_ID,
+	// 	clientSecret: process.env.FEISHU_CLIENT_SECRET,
+	// 	redirectUrl: process.env.FEISHU_REDIRECT_URL,
+	// 	appType: process.env.FEISHU_APP_TYPE,
+	// },
+
+	larkConfig: {
+		appId: process.env.LARK_APP_ID,
+		appSecret: process.env.LARK_APP_SECRET,
+		verificationToken: process.env.LARK_VERIFICATION_TOKEN,
+		encryptKey: process.env.LARK_ENCRYPT_KEY,
+		appOpenId: process.env.LARK_APP_OPEN_ID,
+		tenantId: process.env.LARK_TENANT_ID,
+		organizationId: process.env.LARK_ORGANIZATION_ID,
+		redirectUrl: process.env.LARK_REDIRECT_URL,
+		appType: process.env.LARK_APP_TYPE,
+		roleName: process.env.LARK_ROLE_NAME,
 	},
 
 	dingtalkConfig: {

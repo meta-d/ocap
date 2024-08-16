@@ -1,4 +1,4 @@
-import { getChartType, tryFixDimension } from '@metad/core'
+import { getChartType } from '@metad/core'
 import {
   C_MEASURES,
   ChartAnnotation,
@@ -8,7 +8,8 @@ import {
   EntityType,
   ISlicer,
   assignDeepOmitBlank,
-  omit
+  omit,
+  tryFixDimension
 } from '@metad/ocap-core'
 import { cloneDeep, upperFirst } from 'lodash-es'
 import { z } from 'zod'

@@ -18,6 +18,7 @@ export * from './ISMTPConfig';
 export * from './ITwitterConfig';
 export * from './IUpworkConfig';
 export * from './IUnleashConfig';
-export * from './IFeishuConfig'
+// export * from './IFeishuConfig'
 export * from './IDingtalkConfig'
 export * from './IAliyunConfig'
+export * from './ILarkConfig'

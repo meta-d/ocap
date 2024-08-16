@@ -46,6 +46,6 @@ export class ModelMemberController extends CrudController<SemanticModelMember> {
 		@Body() body: { cube: string; query: string; k: number }
 	): Promise<DocumentInterface<Record<string, any>>[]> {
 		const { cube, query, k } = body
-		return await this.memberService.retrieveMembers(id === 'null' ? null : id, cube, query, k)
+		return await this.memberService.retrieveMembers(null, null, id === 'null' ? null : id, cube, query, k)
 	}
 }
