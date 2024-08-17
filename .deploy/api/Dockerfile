@@ -37,6 +37,7 @@ COPY --chown=node:node packages/adapter/package.json ./packages/adapter/
 COPY --chown=node:node packages/analytics/package.json ./packages/analytics/
 
 COPY --chown=node:node .deploy/api/package.json ./
+COPY --chown=node:node yarn.lock ./
 
 RUN yarn install && yarn cache clean
 

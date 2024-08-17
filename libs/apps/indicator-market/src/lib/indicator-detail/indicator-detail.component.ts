@@ -11,8 +11,12 @@ import {
   signal,
   ViewChild
 } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
+import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
 import { BusinessAreaRole, IBusinessAreaUser, IComment } from '@metad/contracts'
+import { NgmCopilotService } from '@metad/copilot-angular'
+import { convertTableToCSV, nonNullable } from '@metad/core'
 import { DisplayDensity, NgmDSCoreService, NgmLanguageEnum, PERIODS } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
@@ -50,11 +54,10 @@ import {
   TimeRangeType
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
-import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, nonNullable } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { derivedAsync } from 'ngxtension/derived-async'
 import {
   BehaviorSubject,
   combineLatest,
@@ -72,9 +75,6 @@ import {
 import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { NgmCopilotService } from '@metad/copilot-angular'
-import { derivedAsync } from 'ngxtension/derived-async'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -139,12 +139,19 @@ export class IndicatorDetailComponent {
   messages = []
   relative = true
 
-  readonly currentLang$ = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
+  readonly currentLang$ = toSignal(
+    this.#translate.onLangChange.pipe(
+      map((event) => event.lang),
+      startWith(this.#translate.currentLang)
+    )
+  )
   readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
   readonly detailPeriods = this.store.detailPeriods
   readonly period = computed(() => this.PERIODS.find((item) => item.name === this.detailPeriods()))
 
-  readonly globalTimeGranularity = toSignal(this.dsCoreService.currentTime$.pipe(map(({ timeGranularity }) => timeGranularity)))
+  readonly globalTimeGranularity = toSignal(
+    this.dsCoreService.currentTime$.pipe(map(({ timeGranularity }) => timeGranularity))
+  )
   readonly timeGranularity = computed(() => {
     const period = this.period()
     const globalTimeGranularity = this.globalTimeGranularity()
@@ -171,7 +178,11 @@ export class IndicatorDetailComponent {
   public readonly isMobile$ = this.indicatoryMarketComponent.isMobile$
   public readonly notMobile$ = this.indicatoryMarketComponent.notMobile$
 
-  public readonly _dataSettings$ = this.indicator$.pipe(map((indicator) => indicator?.dataSettings), filter(Boolean), distinctUntilChanged())
+  public readonly _dataSettings$ = this.indicator$.pipe(
+    map((indicator) => indicator?.dataSettings),
+    filter(Boolean),
+    distinctUntilChanged()
+  )
 
   public readonly title$ = this.indicator$.pipe(map((indicator) => indicator?.name))
 
@@ -288,7 +299,7 @@ export class IndicatorDetailComponent {
           presentationVariant: {
             groupBy: indicator.dimensions.map((dimension) => ({ dimension, hierarchy: null, level: null }))
           }
-        } as DataSettings
+        } as DataSettings & {id: string}
       ]
     }),
     distinctUntilChanged(isEqual)
@@ -298,7 +309,8 @@ export class IndicatorDetailComponent {
     map((indicator) => indicator.trend),
     distinctUntilChanged(),
     map((indicatorTrend) => {
-      const color = this.currentLang$() === NgmLanguageEnum.SimplifiedChinese
+      const color =
+        this.currentLang$() === NgmLanguageEnum.SimplifiedChinese
           ? TrendReverseColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
           : TrendColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
       return {
@@ -428,145 +440,149 @@ export class IndicatorDetailComponent {
   ]).pipe(
     map(([indicator, timeSlicer, freeSlicers, entityType, primaryTheme]) => {
       const locale = this.store.locale
-      const pieName = this.#translate.instant('IndicatorApp.Pie', {Default: 'Pie'})
-      const barName = this.#translate.instant('IndicatorApp.Bar', {Default: 'Bar'})
+      const pieName = this.#translate.instant('IndicatorApp.Pie', { Default: 'Pie' })
+      const barName = this.#translate.instant('IndicatorApp.Bar', { Default: 'Bar' })
 
-      return indicator.filters?.filter((filter) => !filter.dimension?.parameter).map((filter, index) => {
-        const slicers = [...indicator.filters]
-        slicers.splice(index, 1)
+      return indicator.filters
+        ?.filter((filter) => !filter.dimension?.parameter)
+        .map((filter, index) => {
+          const slicers = [...indicator.filters]
+          slicers.splice(index, 1)
 
-        const property = getEntityProperty(entityType, filter.dimension)
-        const hierarchy = getEntityHierarchy(entityType, filter.dimension)
-        const measure = getIndicatorMeasureName(indicator as Indicator)
-        return {
-          id: `${indicator.code}/${filter.dimension?.dimension}`,
-          title: hierarchy?.caption ?? property?.caption,
-          dataSettings: {
-            ...indicator.dataSettings,
-            chartAnnotation: <ChartAnnotation>{
-              chartType: {
-                name: barName,
-                type: 'Bar',
-                orient: ChartOrient.horizontal,
-                chartOptions: {
-                  seriesStyle: {
-                    barMinHeight: 10,
-                    label: {
-                      align: 'left',
-                    }
-                  }
-                }
-              },
-              dimensions: [
-                {
-                  ...filter.dimension,
-                  zeroSuppression: true,
+          const property = getEntityProperty(entityType, filter.dimension)
+          const hierarchy = getEntityHierarchy(entityType, filter.dimension)
+          const measure = getIndicatorMeasureName(indicator as Indicator)
+          return {
+            id: `${indicator.code}/${filter.dimension?.dimension}`,
+            title: hierarchy?.caption ?? property?.caption,
+            dataSettings: {
+              ...indicator.dataSettings,
+              chartAnnotation: <ChartAnnotation>{
+                chartType: {
+                  name: barName,
+                  type: 'Bar',
+                  orient: ChartOrient.horizontal,
                   chartOptions: {
-                    dataZoom: {
-                      type: 'inside'
+                    seriesStyle: {
+                      barMinHeight: 10,
+                      label: {
+                        align: 'left'
+                      }
                     }
                   }
-                }
-              ],
-              measures: [
-                {
-                  dimension: C_MEASURES,
-                  measure: getIndicatorMeasureName(indicator as Indicator),
-                  formatting: {
-                    shortNumber: true,
-                    unit: indicator.unit
-                  },
-                  order: OrderDirection.DESC,
-                  palette: {
-                    name: 'Greens'
-                  }
-                }
-              ]
-            },
-            selectionVariant: {
-              selectOptions: [
-                ...slicers,
-                {
-                  ...filter,
-                  drill: Drill.Children
                 },
-                timeSlicer,
-                ...freeSlicers
-              ]
-            }
-          },
-          chartSettings: <ChartSettings>{
-            theme: primaryTheme,
-            universalTransition: true,
-            chartTypes: [
-              {
-                name: pieName,
-                type: 'Pie',
-                variant: 'Doughnut',
-                chartOptions: {
-                  seriesStyle: {
-                    radius: ['30%', '70%'],
-                    minShowLabelAngle: 2,
-                    label: {
-                      show: true,
-                      position: this.desktop ? 'outside' : 'inside',
-                      formatter: `{b}\n({d}%)`
+                dimensions: [
+                  {
+                    ...filter.dimension,
+                    zeroSuppression: true,
+                    chartOptions: {
+                      dataZoom: {
+                        type: 'inside'
+                      }
                     }
+                  }
+                ],
+                measures: [
+                  {
+                    dimension: C_MEASURES,
+                    measure: getIndicatorMeasureName(indicator as Indicator),
+                    formatting: {
+                      shortNumber: true,
+                      unit: indicator.unit
+                    },
+                    order: OrderDirection.DESC,
+                    palette: {
+                      name: 'Greens'
+                    }
+                  }
+                ]
+              },
+              selectionVariant: {
+                selectOptions: [
+                  ...slicers,
+                  {
+                    ...filter,
+                    drill: Drill.Children
                   },
-                  tooltip: {
-                    trigger: 'item'
+                  timeSlicer,
+                  ...freeSlicers
+                ]
+              }
+            },
+            chartSettings: <ChartSettings>{
+              theme: primaryTheme,
+              universalTransition: true,
+              chartTypes: [
+                {
+                  name: pieName,
+                  type: 'Pie',
+                  variant: 'Doughnut',
+                  chartOptions: {
+                    seriesStyle: {
+                      radius: ['30%', '70%'],
+                      minShowLabelAngle: 2,
+                      label: {
+                        show: true,
+                        position: this.desktop ? 'outside' : 'inside',
+                        formatter: `{b}\n({d}%)`
+                      }
+                    },
+                    tooltip: {
+                      trigger: 'item'
+                    }
                   }
                 }
-              }
-            ]
-          },
-          chartOptions: <ChartOptions>{
-            aria: {
-              enabled: true,
-              decal: {
-                show: true
-              }
+              ]
             },
-            grid: {
-              right: 20
-            },
-            categoryAxis: {
-              inverse: true
-            },
-            valueAxis: {
-              splitNumber: 3,
-              position: 'right',
-              minorTick: {
-                show: true,
-                splitNumber: 5
-              }
-            },
-            seriesStyle: {
-              colorBy: 'data',
-              label: {
-                show: true,
-                position: 'insideRight',
-                formatter: (params) => {
-                  return indicator.unit === '%' ? formatNumber(params.data[measure] * 100, locale, '0.1-1') + '%' : formatNumber(params.data[measure], locale, '0.1-1')
+            chartOptions: <ChartOptions>{
+              aria: {
+                enabled: true,
+                decal: {
+                  show: true
+                }
+              },
+              grid: {
+                right: 20
+              },
+              categoryAxis: {
+                inverse: true
+              },
+              valueAxis: {
+                splitNumber: 3,
+                position: 'right',
+                minorTick: {
+                  show: true,
+                  splitNumber: 5
+                }
+              },
+              seriesStyle: {
+                colorBy: 'data',
+                label: {
+                  show: true,
+                  position: 'insideRight',
+                  formatter: (params) => {
+                    return indicator.unit === '%'
+                      ? formatNumber(params.data[measure] * 100, locale, '0.1-1') + '%'
+                      : formatNumber(params.data[measure], locale, '0.1-1')
+                  }
+                }
+              },
+              tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'shadow'
+                },
+                position: (pos, params, el, elRect, size) => {
+                  const obj = {}
+                  obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 20
+                  obj[['top', 'bottom'][+(pos[1] < size.viewSize[1] / 2)]] = 20
+                  return obj
                 }
               }
             },
-            tooltip: {
-              trigger: 'axis',
-              axisPointer: {
-                type: 'shadow'
-              },
-              position: (pos, params, el, elRect, size) => {
-                const obj = {}
-                obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 20
-                obj[['top', 'bottom'][+(pos[1] < size.viewSize[1] / 2)]] = 20
-                return obj
-              }
-            }
-          },
-          period: slicerAsString(timeSlicer)
-        }
-      })
+            period: slicerAsString(timeSlicer)
+          }
+        })
     }),
     shareReplay(1)
   )
@@ -599,14 +615,16 @@ export class IndicatorDetailComponent {
     const drillLevels = this.drillLevels()
     return this.drillDimensions$.pipe(
       // Update title from drillLevels (level from explain data)
-      map((drills) => drills?.map((drill) => {
-        const level = drillLevels[drill.id]
-        if (level) {
-          const property = getEntityProperty2(this.entityType(), level)
-          return { ...drill, title: property?.caption ?? drill.title }
-        }
-        return drill
-      }))
+      map((drills) =>
+        drills?.map((drill) => {
+          const level = drillLevels[drill.id]
+          if (level) {
+            const property = getEntityProperty2(this.entityType(), level)
+            return { ...drill, title: property?.caption ?? drill.title }
+          }
+          return drill
+        })
+      )
     )
   })
 
@@ -633,7 +651,7 @@ export class IndicatorDetailComponent {
       this._cdr.detectChanges()
     })
   })
-  
+
   constructor() {
     if (this.data?.id) {
       this.id = this.data.id

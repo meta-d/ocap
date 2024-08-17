@@ -106,7 +106,6 @@ export class ChatBIConversation implements IChatBIConversation {
 
 		// Indicators
 		this.indicators$.pipe(takeUntil(this.destroy$)).subscribe(async (indicators) => {
-			console.log(`New indicators:`, indicators)
 			const models = groupBy(indicators, 'modelId')
 			for await (const modelId of Object.keys(models)) {
 				const indicators = models[modelId]
@@ -118,7 +117,7 @@ export class ChatBIConversation implements IChatBIConversation {
 				)
 				_indicators.push(...indicators)
 
-				console.log(`Set New indicators for dataSource ${dataSource.id}:`, _indicators)
+				this.logger.debug(`Set New indicators for dataSource ${dataSource.id}:`, _indicators)
 
 				dataSource.setSchema({
 					...(dataSource.options.schema ?? {}),
