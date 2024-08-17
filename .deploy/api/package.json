@@ -13,14 +13,13 @@
     "@langchain/community": "0.2.20",
     "@langchain/core": "0.2.18",
     "@langchain/langgraph": "0.0.31",
-    "@langchain/ollama": "^0.0.2",
-		"@langchain/openai": "0.2.4",
+    "@langchain/ollama": "0.0.4",
+    "@langchain/openai": "0.2.4",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@swc/helpers": "~0.5.0",
     "idb-keyval": "^6.0.2",
-    "immer": "^10.0.1",
     "langchain": "0.2.10",
     "money-clip": "^3.0.5",
     "reflect-metadata": "^0.1.13",
@@ -57,5 +56,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "resolutions": {
+    "@langchain/core": "0.2.18"
+  }
 }

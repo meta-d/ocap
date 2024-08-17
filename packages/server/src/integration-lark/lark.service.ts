@@ -1,7 +1,7 @@
 import * as lark from '@larksuiteoapi/node-sdk'
 import { nonNullable } from '@metad/copilot'
 import { environment } from '@metad/server-config'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { filter, Observable, Subject, Subscriber } from 'rxjs'
 import { TenantService } from '../tenant'
@@ -11,6 +11,8 @@ import { ChatLarkContext, LarkMessage } from './types'
 
 @Injectable()
 export class LarkService {
+	private readonly logger = new Logger(LarkService.name)
+
 	private actions = new Map<string, Subject<any>>()
 
 	eventDispatcher = new lark.EventDispatcher({
@@ -172,6 +174,14 @@ export class LarkService {
 		private readonly commandBus: CommandBus
 	) {}
 
+	async createMessage(message: LarkMessage) {
+		try {
+			return await client.im.message.create(message)
+		} catch(err) {
+			this.logger.error(err)
+		}
+	}
+
 	action(message: LarkMessage): Observable<string> {
 		return new Observable<string>((subscriber: Subscriber<unknown>) => {
 			client.im.message
@@ -196,7 +206,7 @@ export class LarkService {
 	}
 
 	async errorMessage(context: ChatLarkContext, err: Error) {
-		await client.im.message.create({
+		await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -209,7 +219,7 @@ export class LarkService {
 	}
 
 	async textMessage(context: ChatLarkContext, content: string) {
-		await client.im.message.create({
+		await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -222,7 +232,7 @@ export class LarkService {
 	}
 
 	async interactiveMessage(context: ChatLarkContext, data: any) {
-		await client.im.message.create({
+		await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -235,7 +245,7 @@ export class LarkService {
 	}
 
 	async markdownMessage(context: ChatLarkContext, content: string) {
-		await client.im.message.create({
+		await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},

@@ -16,7 +16,7 @@ export interface Indicator {
   /**
    * System ID
    */
-  id: string
+  id?: string
   /**
    * Business code
    */

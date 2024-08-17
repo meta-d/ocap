@@ -4,11 +4,8 @@ import { FewShotPromptTemplate, SystemMessagePromptTemplate } from '@langchain/c
 import { CompiledStateGraph, START } from '@langchain/langgraph'
 import {
 	AgentState,
-	createAgentStepsInstructions,
 	createReactAgent,
-	nanoid,
-	referencesCommandName
-} from '@metad/copilot'
+} from '../core/index'
 import {
 	CubeVariablePrompt,
 	Indicator,
@@ -42,6 +39,7 @@ import {
 	createPickCubeTool
 } from './tools'
 import { ChatBILarkContext, IChatBIConversation, insightAgentState } from './types'
+import { createAgentStepsInstructions, nanoid, referencesCommandName } from '@metad/copilot'
 
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
@@ -106,7 +104,6 @@ export class ChatBIConversation implements IChatBIConversation {
 
 		// Indicators
 		this.indicators$.pipe(takeUntil(this.destroy$)).subscribe(async (indicators) => {
-			console.log(`New indicators:`, indicators)
 			const models = groupBy(indicators, 'modelId')
 			for await (const modelId of Object.keys(models)) {
 				const indicators = models[modelId]
@@ -118,7 +115,7 @@ export class ChatBIConversation implements IChatBIConversation {
 				)
 				_indicators.push(...indicators)
 
-				console.log(`Set New indicators for dataSource ${dataSource.id}:`, _indicators)
+				this.logger.debug(`Set New indicators for dataSource ${dataSource.id}:`, _indicators)
 
 				dataSource.setSchema({
 					...(dataSource.options.schema ?? {}),

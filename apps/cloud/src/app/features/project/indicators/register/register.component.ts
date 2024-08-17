@@ -32,7 +32,8 @@ import {
   IFilter,
   isEqual,
   negate,
-  TimeRangeType
+  TimeRangeType,
+  Indicator as OCAPIndicator, 
 } from '@metad/ocap-core'
 import { withProps } from '@ngneat/elf'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -104,7 +105,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
   readonly dirty = this.dirtyCheckResult.dirty
 
-  readonly indicator = toSignal(this.store.pipe(distinctUntilChanged(isEqual)))
+  readonly indicator = toSignal<Indicator>(this.store.pipe(distinctUntilChanged(isEqual)))
 
   readonly loading = signal(false)
   readonly projectSignal = this.projectService.project
@@ -132,7 +133,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     //   } as undefined as DataSettings & { error?: string }
     // }
     const { dimension, hierarchy, level } = getIndicatorEntityCalendar(
-      indicator,
+      indicator as OCAPIndicator,
       entityType,
       timeGranularity
     )

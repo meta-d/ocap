@@ -48,7 +48,7 @@
     "@langchain/community": "0.2.20",
     "@langchain/core": "0.2.18",
     "@langchain/langgraph": "0.0.31",
-    "@langchain/ollama": "^0.0.2",
+    "@langchain/ollama": "0.0.4",
     "@langchain/openai": "0.2.4",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@ng-matero/extensions": "^13.1.0",
@@ -193,6 +193,9 @@
     "libs/*",
     "packages/*"
   ],
+  "resolutions": {
+    "@langchain/core": "0.2.18"
+  },
   "nx": {
     "includedScripts": []
   }
