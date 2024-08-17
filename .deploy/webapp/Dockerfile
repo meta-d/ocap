@@ -38,7 +38,7 @@ RUN yarn config set network-timeout 300000
 
 COPY --chown=node:node .deploy/webapp/package.json ./package.json
 COPY --chown=node:node yarn.lock ./yarn.lock
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 COPY nx.json ./
 COPY tsconfig.base.json ./
