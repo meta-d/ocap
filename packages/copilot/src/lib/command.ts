@@ -74,7 +74,7 @@ export interface CopilotCommand<T = any> {
   createGraph?: (
     options: CreateGraphOptions
   ) => Promise<
-    | StateGraph<T, any, any, string>
+    | StateGraph<T, Partial<T>, string>
     | CompiledStateGraph<T, Partial<T>, string>
   >
 
