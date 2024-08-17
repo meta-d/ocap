@@ -4,7 +4,7 @@ import { AdapterBaseOptions, DBQueryRunner, QUERY_RUNNERS } from '@metad/adapter
 import { ITenant } from '@metad/contracts'
 import { TenantAwareCrudService, TenantService } from '@metad/server-core'
 import { environment as env } from '@metad/server-config'
-import * as chalk from 'chalk'
+import chalk from 'chalk'
 import { Repository } from 'typeorm'
 import { DataSourceType } from './data-source-type.entity'
 
