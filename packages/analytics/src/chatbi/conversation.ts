@@ -4,11 +4,8 @@ import { FewShotPromptTemplate, SystemMessagePromptTemplate } from '@langchain/c
 import { CompiledStateGraph, START } from '@langchain/langgraph'
 import {
 	AgentState,
-	createAgentStepsInstructions,
 	createReactAgent,
-	nanoid,
-	referencesCommandName
-} from '@metad/copilot'
+} from '../core/index'
 import {
 	CubeVariablePrompt,
 	Indicator,
@@ -42,6 +39,7 @@ import {
 	createPickCubeTool
 } from './tools'
 import { ChatBILarkContext, IChatBIConversation, insightAgentState } from './types'
+import { createAgentStepsInstructions, nanoid, referencesCommandName } from '@metad/copilot'
 
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
