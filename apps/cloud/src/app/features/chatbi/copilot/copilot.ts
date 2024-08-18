@@ -3,6 +3,7 @@ import {
   C_MEASURES,
   ChartAnnotation,
   ChartDimension,
+  ChartDimensionRoleType,
   ChartMeasure,
   EntityType,
   KPIType,
@@ -36,13 +37,20 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
   }
 
   // Dimensions
-  const dimensions = (answer.dimension ? [answer.dimension] : answer.dimensions) ?? []
+  const dimensions: ChartDimension[] = (answer.dimension ? [answer.dimension] : answer.dimensions) ?? []
   if (dimensions.length === 0) {
     throw new Error('At least one dimension is required.')
   }
+  // 如果有时间维度则将另外一个维度设置为 series (stacked or group)
+  const hasTime = dimensions.some((dimension) => dimension.role === ChartDimensionRoleType.Time)
+  if (hasTime) {
+    const rest = dimensions.filter((dimension) => dimension.role!== ChartDimensionRoleType.Time)
+    if (rest.length) {
+      rest[0].role ||= ChartDimensionRoleType.Stacked
+    }
+  }
   chartAnnotation.dimensions = dimensions.map((dimension) => {
     return {
-      ...dimension,
       // Determine dimension attr by hierarchy
       ...tryFixDimension(dimension, entityType),
       zeroSuppression: true,

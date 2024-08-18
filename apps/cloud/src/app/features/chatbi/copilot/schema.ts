@@ -1,8 +1,8 @@
 import { makeChartEnum } from '@metad/core'
 import {
+  ChartDimensionSchema,
   ChartMeasureSchema,
   DataSettingsSchema,
-  DimensionSchema,
   OrderBySchema,
   SlicerSchema,
   TimeSlicerSchema
@@ -25,7 +25,7 @@ export const ChatAnswerSchema = z.object({
     })
     .optional()
     .describe('Chart configuration'),
-  dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),
+  dimensions: z.array(ChartDimensionSchema).optional().describe('The dimensions used by the chart'),
   measures: z.array(ChartMeasureSchema).optional().describe('The measures used by the chart'),
   orders: z.array(OrderBySchema).optional().describe('The orders used by the chart'),
   top: z.number().optional().describe('The number of top members'),

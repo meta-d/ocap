@@ -1,6 +1,26 @@
+:host {
+  @apply relative;
+
+  &.full-screen {
+    @apply absolute top-0 left-0 right-0 bottom-0 m-0 z-20;
+
+    .answer-container {
+      @apply items-stretch;
+      .ngm-analytical-card {
+        @apply h-full;
+      }
+    }
+  }
+}
+
 .text-color {
   @apply text-zinc-700 dark:text-zinc-300;
 }
+
+.ngm-fullscreen-button.mat-mdc-icon-button {
+  @apply absolute right-0 top-0;
+}
+
 :host::ng-deep {
   .ngm-analytical-card {
     .ngm-card-header {

@@ -65,6 +65,7 @@ export class ChatbiService {
   readonly conversationKey = signal<string | null>(null)
   readonly conversation = computed(() => this.conversations()?.find((conv) => conv.key === this.conversationKey()))
   readonly answer = computed(() => this.conversation()?.answer)
+  readonly examples = computed(() => this.conversation()?.examples)
 
   readonly entityType = derivedAsync<EntityType>(() => {
     const dataSourceName = this.dataSourceName()
@@ -196,7 +197,7 @@ export class ChatbiService {
 
   setEntity(entity: string) {
     this.error.set(null)
-    this.updateConversation((state) => ({ ...state, entity }))
+    this.updateConversation((state) => ({ ...state, entity, examples: [] }))
   }
 
   setModelId(id: string) {
@@ -386,4 +387,5 @@ export class ChatbiService {
       }
     })
   }
+
 }

@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, viewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal, viewChild } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip'
@@ -88,6 +88,9 @@ export class ChatbiHomeComponent {
   // Story explorer
   readonly showExplorer = signal(false)
   readonly explore = signal<QuestionAnswer>(null)
+  
+  // Fullscreen
+  readonly fullscreen = signal(false)
 
   /**
   |--------------------------------------------------------------------------
@@ -150,5 +153,9 @@ export class ChatbiHomeComponent {
 
   openSelectCube() {
     this.openCubes.set(true)
+  }
+
+  @HostBinding('class.full-screen') get isFullscreen() {
+    return this.fullscreen()
   }
 }
