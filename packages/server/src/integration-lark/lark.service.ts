@@ -64,11 +64,150 @@ export class LarkService {
 				return true
 			}
 
-			// if (data.message.chat_type === 'p2p') {
-			// 	await this.interactiveMessage({chatId} as ChatLarkContext, {
-			// 	  })
-			// 	return true
-			// }
+			if (data.message.chat_type === 'p2p') {
+				const card = {
+					
+					
+						"header": {
+							"template": "blue",
+							"title": {
+								"content": "表格组件（依赖端版本 7.4+)",
+								"tag": "plain_text"
+							}
+						},
+						"elements": [
+							{
+								"tag": "table",
+								"page_size": 5,
+								"row_height": "low",
+								"header_style": {
+									"text_align": "left",
+									"text_size": "normal",
+									"background_style": "none",
+									"text_color": "grey",
+									"bold": true,
+									"lines": 1
+								},
+								"columns": [
+									{
+										"name": "customer_name",
+										"display_name": "客户名称",
+										"data_type": "text",
+										"horizontal_align": "left",
+										"width": "auto"
+									},
+									{
+										"name": "customer_scale",
+										"display_name": "客户规模",
+										"data_type": "options",
+										"horizontal_align": "left",
+										"width": "auto"
+									},
+									{
+										"name": "customer_arr",
+										"display_name": "ARR(万元)",
+										"data_type": "number",
+										"format": {
+											"symbol": "¥",
+											"precision": 2,
+											"seperator": true
+										},
+										"width": "auto"
+									},
+									{
+										"name": "customer_poc",
+										"display_name": "跟进人",
+										"data_type": "persons",
+										"horizontal_align": "left",
+										"width": "auto"
+									},
+									{
+										"name": "customer_date",
+										"display_name": "签约日期",
+										"data_type": "date",
+										"date_format": "YYYY/MM/DD",
+										"width": "auto"
+									},
+									{
+										"name": "customer_link",
+										"display_name": "相关链接",
+										"data_type": "lark_md",
+										"width": "auto"
+									},
+									{
+											"name": "company_image",
+											"display_name": "企业图片",
+											"data_type": "markdown"
+									}
+								],
+								"rows": [
+									{
+										"customer_name": "飞书科技",
+										"customer_date": 1699341315000,
+										"customer_scale": [
+											{
+												"text": "S2",
+												"color": "blue"
+											}
+										],
+										"customer_arr": 168,
+										"customer_poc": [
+											"ou_14a32f1a02e64944cf19207aa43abcef",
+											"ou_e393cf9c22e6e617a4332210d2aabcef"
+										],
+										"customer_link": "[飞书科技](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
+										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
+									},
+									{
+										"customer_name": "飞书科技_01",
+										"customer_date": 1606101072000,
+										"customer_scale": [
+											{
+												"text": "S1",
+												"color": "red"
+											}
+										],
+										"customer_arr": 168.23,
+										"customer_poc": "ou_14a32f1a02e64944cf19207aa43abcef",
+										"customer_link": "[飞书科技_01](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
+										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
+									},
+									{
+										"customer_name": "飞书科技_02",
+										"customer_date": 1606101072000,
+										"customer_scale": [
+											{
+												"text": "S3",
+												"color": "orange"
+											}
+										],
+										"customer_arr": 168.23,
+										"customer_poc": "ou_14a32f1a02e64944cf19207aa43abcef",
+										"customer_link": "[飞书科技_02](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
+										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
+									},
+									{
+										"customer_name": "飞书科技_03",
+										"customer_date": 1606101072000,
+										"customer_scale": [
+											{
+												"text": "S2",
+												"color": "blue"
+											}
+										],
+										"customer_arr": 168.23,
+										"customer_poc": "ou_14a32f1a02e64944cf19207aa43abcef",
+										"customer_link": "[飞书科技_03](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
+										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
+									}
+								]
+							}
+						]
+					}
+					
+				await this.interactiveMessage({ chatId } as ChatLarkContext, card)
+				return true
+			}
 
 			console.log(data)
 			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
