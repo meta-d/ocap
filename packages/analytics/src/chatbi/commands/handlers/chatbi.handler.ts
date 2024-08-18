@@ -25,16 +25,18 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 				larkService.errorMessage(input, new Error(`Failed to create chat conversation for user: ${input.userId}`))
 			)
 		}
+		await conversation.initThread()
+
 		// Cube context
-		let context = null
+		let context = 	null
 		const session = this.chatBIService.userSessions[conversation.userId]
 		if (!conversation.context && conversation.chatType === 'p2p' && session?.cubeName) {
 			const modelId = session.modelId
 			const cubeName = session.cubeName
-			context = await conversation.switchContext(modelId, cubeName)
+			// context = await conversation.switchContext(modelId, cubeName)
 			conversation.context = context
 		} else {
-			context = conversation.context || 'Empty'
+			context = conversation.context
 		}
 
 		const content = await conversation.exampleFewShotPrompt.format({ input: input.text })

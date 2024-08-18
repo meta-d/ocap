@@ -4,7 +4,7 @@ import { CopilotCheckpointSaver, CopilotKnowledgeService, CopilotService } from 
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { IsNull } from 'typeorm'
-import { SemanticModelService } from '../model'
+import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
 import { SemanticModelMemberService } from '../model-member/member.service'
 import { NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '../model/ocap'
 import { ChatBIConversation } from './conversation'
@@ -20,7 +20,8 @@ export class ChatBIService implements IChatBI {
 
 	constructor(
 		private readonly copilotService: CopilotService,
-		private readonly modelService: SemanticModelService,
+		// private readonly modelService: SemanticModelService,
+		private readonly modelService: ChatBIModelService,
 		private readonly semanticModelMemberService: SemanticModelMemberService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly copilotKnowledgeService: CopilotKnowledgeService,
@@ -64,15 +65,10 @@ export class ChatBIService implements IChatBI {
 			)
 		}
 
-		const { items: models } = await this.modelService.findAll({
-			where: { tenantId, organizationId: input.organizationId },
-			relations: ['dataSource', 'dataSource.type', 'roles']
-		})
-
 		return new ChatBIConversation(
 			input,
-			models,
 			copilot,
+			this.modelService,
 			this.semanticModelMemberService,
 			this.copilotCheckpointSaver,
 			// New Ocap context for every chatbi conversation

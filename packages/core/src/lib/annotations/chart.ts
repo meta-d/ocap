@@ -201,20 +201,21 @@ export function getChartCategory2(chartAnnotation: ChartAnnotation): ChartDimens
 
 /**
  * Get series dimension in chart dimensions
- * 1. dimension with role: color, group, stacked, category2
- * 2. dimension with index 1 when chart type variant is color, group or stacked
+ * 1. dimension with role: color, group, stacked, category2 (Must not be time)
+ * 2. dimension with index 1 (or 0 when except time) when chart type variant is color, group or stacked
  * 
  * @param chartAnnotation 
  * @returns 
  */
 export function getChartSeries(chartAnnotation: ChartAnnotation): ChartDimension | null {
-  return chartAnnotation.dimensions.find(
+  const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
+  return dimensions.find(
     (item) =>
       item?.role === ChartDimensionRoleType.Color ||
       item?.role === ChartDimensionRoleType.Group ||
       item?.role === ChartDimensionRoleType.Stacked ||
       item?.role === ChartDimensionRoleType.Category2
   ) || (['color', 'group', 'stacked'].includes(chartAnnotation.chartType.variant) && 
-    chartAnnotation.dimensions[1]
+    (dimensions[1] || dimensions[0])
   )
 }

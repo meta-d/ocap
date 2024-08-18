@@ -40,6 +40,7 @@ import { SemanticModelMemberModule } from './model-member'
 import { ChatBIConversationModule } from './chatbi-conversation/conversation.module'
 import { IntegrationLarkModule } from './integration-lark'
 import { ChatBIModule } from './chatbi'
+import { ChatBIModelModule } from './chatbi-model'
 
 @Module({
 	imports: [
@@ -100,7 +101,8 @@ import { ChatBIModule } from './chatbi'
 		RedisModule,
 		ChatBIConversationModule,
 		IntegrationLarkModule,
-		ChatBIModule
+		ChatBIModule,
+		ChatBIModelModule
 	],
 	controllers: [AppController],
 	providers: [AnalyticsService, ...EventHandlers, ...CommandHandlers]

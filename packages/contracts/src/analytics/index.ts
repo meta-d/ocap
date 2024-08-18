@@ -33,4 +33,5 @@ export * from './story-template.model'
 export * from './screenshot.model'
 export * from './certification.model'
 export * from './chatbi-conversation.model'
+export * from './chatbi-model.model'
 export { MDX }

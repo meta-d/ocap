@@ -1,0 +1,61 @@
+<div class="filter-bar p-2 flex items-center gap-4 z-20">
+  <span class="flex-1"></span>
+
+  <div ngmButtonGroup >
+    <button mat-mini-fab [matTooltip]=" 'PAC.ChatBI.AddModel' | translate: {Default: 'Add new model' }"
+      (click)="addModel()"
+    >
+      <mat-icon fontSet="material-icons-outlined">add</mat-icon>
+    </button>
+  </div>
+</div>
+
+<ngm-table class="w-full max-w-full z-10" displayDensity="cosy"
+  [data]="models()"
+  [columns]="[
+    {
+      name: 'model',
+      caption: 'PAC.ChatBI.Model' | translate: { Default: 'Model' },
+      cellTemplate: modelTempl
+    },
+    {
+      name: 'entityCaption',
+      caption: 'PAC.ChatBI.Entity' | translate: { Default: 'Entity' }
+    },
+    {
+      name: 'entityDescription',
+      caption: 'PAC.ChatBI.Description' | translate: { Default: 'Description' }
+    },
+    {
+      name: 'actions',
+      caption: 'PAC.KEY_WORDS.Actions' | translate: { Default: 'Actions' },
+      cellTemplate: actionTemplate,
+      stickyEnd: true
+    }
+  ]"
+></ngm-table>
+
+<ng-template #modelTempl let-model>
+  <div class="model-temp">
+    <span>{{model.name}}</span>
+  </div>
+</ng-template>
+
+
+<ng-template #actionTemplate let-id="id" let-entityCaption="entityCaption">
+  <div class="flex items-center">
+      <button mat-icon-button [matTooltip]="'PAC.ChatBI.EditModel' | translate: {Default: 'Edit Model'}"
+        (click)="editModel(id)"
+      >
+        <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+      </button>
+      <mat-divider vertical style="height: 20px;"></mat-divider>
+      <button mat-icon-button ngmAppearance="danger" [matTooltip]="'PAC.ChatBI.DeleteModel' | translate: {Default: 'Delete Model'}"
+        (click)="deleteModel(id, entityCaption)"
+      >
+        <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+      </button>
+  </div>
+</ng-template>
+
+<router-outlet #o="outlet"></router-outlet>

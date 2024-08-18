@@ -1392,7 +1392,14 @@
       "Save": "保存",
       "SelectSemanticModel": "选择语义模型",
       "SelectCube": "选择一个数据集",
-      "SelectACube": "选择一个数据集"
+      "SelectACube": "选择一个数据集",
+      "Model": "模型",
+      "Entity": "实体",
+      "Description": "描述",
+      "EditModel": "编辑模型",
+      "DeleteModel": "删除模型",
+      "SemanticModel": "语义模型",
+      "Caption": "简要描述"
     },
     "Home": {
       "Insight": {

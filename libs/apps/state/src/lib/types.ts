@@ -54,7 +54,7 @@ export function convertStoryModel(model: Partial<StoryModel>): ISemanticModel {
   }
 
   if (model.schema) {
-    updateModel.options = pick(model, 'settings', 'schema')
+    updateModel.options = pick(model, 'settings', 'schema') as any
   }
 
   return updateModel

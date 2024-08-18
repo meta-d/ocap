@@ -63,7 +63,7 @@ export interface TimeRange {
 }
 
 export interface TimeRangesSlicer extends ISlicer {
-  currentDate: string
+  currentDate: 'TODAY' | 'SYSTEMTIME'
   ranges: Array<TimeRange>
 }
 

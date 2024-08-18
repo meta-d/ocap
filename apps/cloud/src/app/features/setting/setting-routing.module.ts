@@ -171,6 +171,13 @@ const routes: Routes = [
         data: {
           title: 'settings/copilot',
         }
+      },
+      {
+        path: 'chatbi',
+        loadChildren: () => import('./chatbi/routing').then((m) => m.default),
+        data: {
+          title: 'settings/chatbi',
+        }
       }
     ]
   }

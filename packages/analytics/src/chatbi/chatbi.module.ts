@@ -5,8 +5,8 @@ import { CommandHandlers } from './commands/handlers'
 import { ChatBIService } from './chatbi.service'
 import { SemanticModelMemberModule } from '../model-member/index'
 import { OcapModule } from '../model/ocap'
-import { SemanticModelModule } from '../model'
 import { provideOcap } from '../model/ocap/'
+import { ChatBIModelModule } from '../chatbi-model'
 
 @Module({
 	imports: [
@@ -14,7 +14,7 @@ import { provideOcap } from '../model/ocap/'
 		CopilotModule,
 		SemanticModelMemberModule,
 		OcapModule,
-		SemanticModelModule,
+		ChatBIModelModule,
 		CopilotCheckpointModule,
 		CopilotKnowledgeModule
 	],
