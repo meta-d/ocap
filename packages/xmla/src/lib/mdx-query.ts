@@ -534,8 +534,8 @@ export function allocateAxesFilter(
           // statement = Distinct(MemberSet(...slicers, dimensionStatement))
           statement = MemberSet(...slicers)
         } else {
-          // 下钻时只用下钻成员？
-          statement = MemberSet(...slicers)
+          // 下钻时只用下钻成员？ 下钻到指定层级, 例如：去年每个月的销售额
+          statement = Descendants(MemberSet(...slicers), level)
         }
       } else {
         if (displayHierarchy) {

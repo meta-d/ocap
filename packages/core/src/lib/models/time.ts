@@ -239,7 +239,7 @@ export function timeRangesSlicerAsString(slicer: TimeRangesSlicer, i18nTimeRange
       (range) =>
         `${range.type}|${range.granularity}${
           range.type === TimeRangeType.Offset
-            ? `(${range.current.direction}:${range.current.amount ?? 0}):[${isNil(range.lookBack) ? 1 : -range.lookBack}, ${isNil(range.lookAhead) ? -1 : range.lookAhead}]`
+            ? `(${range.current?.direction ?? ''}:${range.current?.amount ?? 0}):[${isNil(range.lookBack) ? 1 : -range.lookBack}, ${isNil(range.lookAhead) ? -1 : range.lookAhead}]`
             : `:[${isNil(range.lookBack) ? (range.lookAhead ?? 0) : -range.lookBack}, ${isNil(range.lookAhead) ? -(range.lookBack ?? 0) : range.lookAhead}]`
         }`
     )
