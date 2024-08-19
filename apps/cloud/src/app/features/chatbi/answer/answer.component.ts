@@ -191,8 +191,8 @@ export class ChatbiAnswerComponent {
     return {
       ...dataSettings,
       analytics: {
-        rows: dataSettings.chartAnnotation.dimensions,
-        columns: dataSettings.chartAnnotation.measures
+        rows: dataSettings.chartAnnotation?.dimensions,
+        columns: dataSettings.chartAnnotation?.measures
       }
     } as DataSettings
   }
