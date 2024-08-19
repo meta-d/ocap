@@ -1,1 +1,2 @@
-export * from './insight/index'
+export * from './chatbi/index'
+export * from './welcome/agent'

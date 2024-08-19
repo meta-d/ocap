@@ -1,6 +1,6 @@
 import { EmployeeModule, OrganizationModule, RedisModule, TenantModule } from '@metad/server-core'
 import { BullModule } from '@nestjs/bull'
-import { Module, forwardRef } from '@nestjs/common'
+import { Module, forwardRef, CacheModule } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { CqrsModule } from '@nestjs/cqrs'
 import { ScheduleModule } from '@nestjs/schedule'
@@ -40,6 +40,7 @@ import { SemanticModelMemberModule } from './model-member'
 import { ChatBIConversationModule } from './chatbi-conversation/conversation.module'
 import { IntegrationLarkModule } from './integration-lark'
 import { ChatBIModule } from './chatbi'
+import { ChatBIModelModule } from './chatbi-model'
 
 @Module({
 	imports: [
@@ -63,6 +64,7 @@ import { ChatBIModule } from './chatbi'
 			inject: [ConfigService],
 		  }),
 		ScheduleModule.forRoot(),
+		CacheModule.register(),
 		CqrsModule,
 		forwardRef(() => TenantModule),
 		forwardRef(() => EmployeeModule),
@@ -100,7 +102,8 @@ import { ChatBIModule } from './chatbi'
 		RedisModule,
 		ChatBIConversationModule,
 		IntegrationLarkModule,
-		ChatBIModule
+		ChatBIModule,
+		ChatBIModelModule
 	],
 	controllers: [AppController],
 	providers: [AnalyticsService, ...EventHandlers, ...CommandHandlers]

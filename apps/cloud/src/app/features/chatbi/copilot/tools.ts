@@ -1,8 +1,20 @@
 import { inject } from '@angular/core'
-import { DynamicStructuredTool } from '@langchain/core/tools'
+import { DynamicStructuredTool, tool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
 import { NxChartType } from '@metad/core'
-import { ChartOrient, DataSettings, getEntityDimensions, ISlicer, OrderBy, PieVariant, TimeRangesSlicer, tryFixSlicer } from '@metad/ocap-core'
+import {
+  ChartAnnotation,
+  ChartOrient,
+  DataSettings,
+  getEntityDimensions,
+  getDefaultSlicersForVariables,
+  ISlicer,
+  OrderBy,
+  PieVariant,
+  TimeRangesSlicer,
+  tryFixSlicer,
+  VariableEntryType
+} from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
@@ -83,14 +95,10 @@ export function injectCreateChartTool() {
     }
   ]
 
-  const answerTool = new DynamicStructuredTool({
-    name: 'answerQuestion',
-    description: 'Create chart answer for the question',
-    schema: ChatAnswerSchema,
-    func: async (answer) => {
+  return tool(
+    async (answer) => {
       logger.debug(`Execute copilot action 'answerQuestion':`, answer)
       try {
-
         const entityType = chatbiService.entityType()
         const finalAnswer = {} as QuestionAnswer
         if (answer.dataSettings) {
@@ -108,7 +116,12 @@ export function injectCreateChartTool() {
         if (answer.orders) {
           finalAnswer.orders = answer.orders as OrderBy[]
         }
-        
+
+        // Fix sap variables
+        if (!finalAnswer.variables?.length) {
+          finalAnswer.variables = getDefaultSlicersForVariables(entityType, VariableEntryType.Required)
+        }
+
         if (answer.chartType) {
           const { chartAnnotation, chartOptions } = transformCopilotChart(answer, entityType)
           const chartTypes = [...CHART_TYPES]
@@ -125,6 +138,12 @@ export function injectCreateChartTool() {
             universalTransition: true
           }
           finalAnswer.visualType = 'chart'
+        } else if (answer.dimensions?.length) {
+          finalAnswer.visualType = 'table'
+          finalAnswer.chartAnnotation = {
+            dimensions: answer.dimensions,
+            measures: answer.measures
+          } as ChartAnnotation
         } else {
           const { kpi } = transformCopilotKpi(answer, entityType)
           finalAnswer.kpi = kpi
@@ -141,13 +160,16 @@ export function injectCreateChartTool() {
           slicers.push(...chatbiService.answer().slicers)
         }
         if (chatbiService.answer().timeSlicers) {
-          slicers.push(...chatbiService.answer().timeSlicers.map((slicer) => ({
-            ...slicer,
-            currentDate: 'TODAY',
-          })))
+          slicers.push(
+            ...chatbiService.answer().timeSlicers.map((slicer) => ({
+              ...slicer,
+              currentDate: 'TODAY'
+            }))
+          )
         }
 
-        chatbiService.appendAiMessageData([
+        chatbiService.appendAiMessageData(
+          [
             answer.preface,
             {
               key: nanoid(),
@@ -159,7 +181,7 @@ export function injectCreateChartTool() {
                     dimension: property.name,
                     hierarchy: property.defaultHierarchy,
                     level: null
-                  })),
+                  }))
                 }
               } as DataSettings,
               chartOptions: chatbiService.answer().chartOptions,
@@ -168,19 +190,23 @@ export function injectCreateChartTool() {
               slicers: slicers.length ? slicers : null,
               orders: chatbiService.answer().orders,
               top: chatbiService.answer().top,
-              visualType: chatbiService.answer().visualType,
+              visualType: chatbiService.answer().visualType
             } as Partial<QuestionAnswer>,
             answer.conclusion
-          ].filter(Boolean))
+          ].filter(Boolean)
+        )
 
         return `Chart answer is created!`
-      } catch(err: any) {
+      } catch (err: any) {
         return `Error: ${err.message}`
       }
+    },
+    {
+      name: 'answerQuestion',
+      description: 'Create chart answer for the question',
+      schema: ChatAnswerSchema
     }
-  })
-
-  return answerTool
+  )
 }
 
 /**
@@ -195,15 +221,16 @@ export function injectCreateFormulaTool() {
     description: 'Create formula for new measure',
     schema: z.object({
       cube: z.string().describe('The cube name'),
-      name: z.string().describe('The name of calculated measure'),
+      code: z.string().describe('The code of calculated measure'),
+      name: z.string().describe(`The caption of calculated measure in user's language`),
       formula: z.string().describe('The MDX formula for calculated measure'),
       unit: z.string().optional().describe('The unit of measure')
     }),
-    func: async ({ cube, name, formula, unit }) => {
+    func: async ({ cube, code, name, formula, unit }) => {
       logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
       try {
         const key = nanoid()
-        chatbiService.upsertIndicator({ id: key, name, entity: cube, code: name, formula, unit })
+        chatbiService.upsertIndicator({ id: key, entity: cube, code, name, formula, unit })
         const dataSource = chatbiService.dataSourceName()
         chatbiService.appendAiMessageData([
           {
@@ -211,11 +238,11 @@ export function injectCreateFormulaTool() {
               dataSource,
               entitySet: cube
             },
-            indicators: [key], // indicators snapshot
+            indicators: [key] // indicators snapshot
           }
         ])
-        return `The new calculated measure with key '${key}' has been created!`
-      } catch(err: any) {
+        return `The new calculated measure with key '${code}' has been created!`
+      } catch (err: any) {
         return `Error: ${err.message}`
       }
     }

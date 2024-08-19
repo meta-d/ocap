@@ -11,7 +11,8 @@ import {
   NamedSet,
   formatCalculatedMemberName,
   isEmpty,
-  measureFormatter
+  measureFormatter,
+  getMemberKey
 } from '@metad/ocap-core'
 import { addCalculatedMember, sortWithMembers, withCalculationMembers } from './calculation'
 import { MDXHierarchyFilter, MDXProperty } from './filter'
@@ -141,7 +142,7 @@ export function generateAxisStatement(dimensions: Array<MDXProperty>, conditions
     dimensions?.forEach((dimension) => {
       if (dimension.dimension === C_MEASURES) {
         // for Measures
-        const measures = dimension.members?.map(getMemberValue).map(measureFormatter).join(', ') || `[Measures]`
+        const measures = dimension.members?.map(getMemberKey).map(measureFormatter).join(', ') || `[${C_MEASURES}]`
         // console.log(measures, dimension)
         statement = statement ? `${statement}*{${measures}}` : `{${measures}}`
       } else {

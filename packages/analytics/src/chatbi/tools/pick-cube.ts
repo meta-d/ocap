@@ -1,12 +1,11 @@
 import { tool } from '@langchain/core/tools'
-import { ISemanticModel } from '@metad/contracts'
+import { IChatBIModel } from '@metad/contracts'
 import { markdownModelCube } from '@metad/ocap-core'
-import { ChatLarkContext } from '@metad/server-core'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
 import { ChatContext } from '../types'
 
-export function createPickCubeTool(context: ChatContext, models: ISemanticModel[], larkContext: ChatLarkContext) {
+export function createPickCubeTool(context: ChatContext, models: IChatBIModel[]) {
 	const { logger, chatId, larkService, dsCoreService } = context
 	return tool(
 		async (answer): Promise<string> => {
@@ -19,7 +18,7 @@ export function createPickCubeTool(context: ChatContext, models: ISemanticModel[
 						{
 							tag: 'div',
 							text: {
-								content: '请选择一个语义模型：',
+								content: '请选择一个模型：',
 								tag: 'lark_md'
 							}
 						},
@@ -30,14 +29,14 @@ export function createPickCubeTool(context: ChatContext, models: ISemanticModel[
 									tag: 'select_static',
 									placeholder: {
 										tag: 'plain_text',
-										content: '选择语义模型'
+										content: '选择数据模型'
 									},
-									options: models.map((model) => ({
+									options: models.map((item) => ({
 										text: {
 											tag: 'plain_text',
-											content: model.name
+											content: item.entityCaption
 										},
-										value: model.id
+										value: item.id
 									}))
 								}
 							]
@@ -45,81 +44,17 @@ export function createPickCubeTool(context: ChatContext, models: ISemanticModel[
 					]
 				}
 
-				const modelId = await firstValueFrom(
-					larkService.action({
-						data: {
-							receive_id: chatId,
-							content: JSON.stringify(card),
-							msg_type: 'interactive'
-						},
-						params: {
-							receive_id_type: 'chat_id'
-						}
-					})
-				)
+				const chatModelId = await firstValueFrom(larkService.createAction(chatId, card))
 
-				const model = models.find((item) => item.id === modelId)
-				if (model) {
-					const cubes = (<any>model.options.schema).cubes
-					let cubeName = null
-					if (cubes?.length > 1) {
-						const cubeMessage = {
-							config: {
-								wide_screen_mode: true
-							},
-							elements: [
-								{
-									tag: 'div',
-									text: {
-										content: '请选择一个数据集：',
-										tag: 'lark_md'
-									}
-								},
-								{
-									tag: 'action',
-									actions: [
-										{
-											tag: 'select_static',
-											placeholder: {
-												tag: 'plain_text',
-												content: '选择一个数据集'
-											},
-											options: (<any>model.options.schema).cubes.map((cube) => ({
-												text: {
-													tag: 'plain_text',
-													content: cube.caption
-												},
-												value: cube.name
-											}))
-										}
-									]
-								}
-							]
-						}
-						cubeName = await firstValueFrom(
-							larkService.action({
-								data: {
-									receive_id: chatId,
-									content: JSON.stringify(cubeMessage),
-									msg_type: 'interactive'
-								},
-								params: {
-									receive_id_type: 'chat_id'
-								}
-							})
-						)
-					} else {
-						cubeName = cubes[0]?.name
-					}
-					if (!cubeName) {
-						throw new Error(`未找到数据集，请结束对话`)
-					}
+				const chatModel = models.find((item) => item.id === chatModelId)
+				if (chatModel) {
+					const cubeName = chatModel.entity
 
 					logger.debug(`User have picked the cube: ${cubeName}`)
 					if (cubeName) {
-						const entity = await firstValueFrom(dsCoreService.selectEntitySet(modelId, cubeName))
+						const entity = await firstValueFrom(dsCoreService.selectEntitySet(chatModel.modelId, cubeName))
 						if (entity?.entityType) {
-							const prompt = markdownModelCube({ modelId, dataSource: modelId, cube: entity.entityType })
+							const prompt = markdownModelCube({ modelId: chatModel.modelId, dataSource: chatModel.modelId, cube: entity.entityType })
 							return prompt
 						} else {
 							logger.debug(`Can't got the type of entity: ${cubeName}`)

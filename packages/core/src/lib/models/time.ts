@@ -63,7 +63,7 @@ export interface TimeRange {
 }
 
 export interface TimeRangesSlicer extends ISlicer {
-  currentDate: string
+  currentDate: 'TODAY' | 'SYSTEMTIME'
   ranges: Array<TimeRange>
 }
 
@@ -158,8 +158,13 @@ export function formatRangeCurrentPeriod(current: Date, range: TimeRange) {
 }
 
 export function calcRange(current: Date, range: TimeRange) {
+  // 为了支持 AI 不能理解复杂规则， 所以主动适应 AI 的理解
+  let from = range.lookBack ?? -range.lookAhead
+  let to = range.lookAhead ?? -range.lookBack
   if (range.type === TimeRangeType.Offset) {
     current = calcOffset(current, { ...range.current, granularity: range.granularity })
+    from = range.lookBack ?? 1
+    to = range.lookAhead ?? -1
   }
 
   return [
@@ -167,7 +172,7 @@ export function calcRange(current: Date, range: TimeRange) {
       calcOffset(current, {
         direction: OffSetDirection.LookBack,
         granularity: range.granularity,
-        amount: range.lookBack ?? -range.lookAhead
+        amount: from
       }),
       range.granularity,
       range.formatter
@@ -177,7 +182,7 @@ export function calcRange(current: Date, range: TimeRange) {
       calcOffset(current, {
         direction: OffSetDirection.LookAhead,
         granularity: range.granularity,
-        amount: range.lookAhead ?? -range.lookBack
+        amount: to
       }),
       range.granularity,
       range.formatter
@@ -233,8 +238,10 @@ export function timeRangesSlicerAsString(slicer: TimeRangesSlicer, i18nTimeRange
     .map(
       (range) =>
         `${range.type}|${range.granularity}${
-          range.type === TimeRangeType.Offset ? `(${range.current.direction}:${range.current.amount})` : ''
-        }:[${isNil(range.lookBack) ? range.lookAhead ?? 0 : -range.lookBack}, ${isNil(range.lookAhead) ? -(range.lookBack ?? 0) : range.lookAhead}]`
+          range.type === TimeRangeType.Offset
+            ? `(${range.current?.direction ?? ''}:${range.current?.amount ?? 0}):[${isNil(range.lookBack) ? 1 : -range.lookBack}, ${isNil(range.lookAhead) ? -1 : range.lookAhead}]`
+            : `:[${isNil(range.lookBack) ? (range.lookAhead ?? 0) : -range.lookBack}, ${isNil(range.lookAhead) ? -(range.lookBack ?? 0) : range.lookAhead}]`
+        }`
     )
     .join(' & ')}`
 }

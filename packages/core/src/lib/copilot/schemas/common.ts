@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { OrderDirection } from '../../orderby'
-import { C_MEASURES, Dimension, isDimension, Measure } from '../../types'
+import { C_MEASURES, Dimension, isDimension, isMeasure, Measure } from '../../types'
 import { AggregationRole, EntityType, getEntityProperty2 } from '../../models'
+import { omit } from '../../utils'
 
 export const DataSettingsSchema = z.object({
   dataSource: z.string().describe('The name of the data source'),
@@ -90,20 +91,24 @@ export function tryFixDimension(dimension: Dimension | Measure, entityType: Enti
     property = getEntityProperty2(entityType, dimension)
   }
 
+  const _dimension = omit(dimension, 'level', 'hierarchy', 'dimension')
   switch (property?.role) {
     case AggregationRole.dimension:
       return {
+        ..._dimension,
         dimension: property.name,
         zeroSuppression: true
       } as Dimension
     case AggregationRole.hierarchy:
       return {
+        ..._dimension,
         dimension: property.dimension,
         hierarchy: property.name,
         zeroSuppression: true
       }
     case AggregationRole.level:
       return {
+        ..._dimension,
         dimension: property.dimension,
         hierarchy: property.hierarchy,
         level: property.name,
@@ -111,11 +116,12 @@ export function tryFixDimension(dimension: Dimension | Measure, entityType: Enti
       }
     case AggregationRole.measure:
       return {
+        ..._dimension,
         dimension: C_MEASURES,
         measure: property.name,
         zeroSuppression: true
       }
     default:
-      throw new Error(`Can't find dimension for '${dimension.dimension}'`)
+      throw new Error(`Can't find property for '${isMeasure(dimension) ? dimension.measure : dimension.dimension}'`)
   }
 }

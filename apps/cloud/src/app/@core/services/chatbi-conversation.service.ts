@@ -21,6 +21,7 @@ export interface ChatbiConverstion<T = any> {
   messages: CopilotChatMessage[]
   indicators: Indicator[]
   answer: T
+  examples: string[]
 }
 
 @Injectable({ providedIn: 'root' })
@@ -73,21 +74,21 @@ export class ChatBIConversationService extends OrganizationBaseService {
 }
 
 export function convertChatBIConversation(input: Partial<ChatbiConverstion>) {
+  const { messages, indicators, answer, examples, ...rest } = input
   return {
-    ...omit(input, 'messages', 'indicators', 'answer'),
+    ...rest,
     options: {
-      messages: input.messages,
-      indicators: input.indicators,
-      answer: input.answer
+      messages,
+      indicators,
+      answer,
+      examples,
     }
   } as IChatBIConversation
 }
 
 export function convertChatBIConversationResult(result: IChatBIConversation) {
   return {
+    ...(result.options ?? {}),
     ...omit(result, 'options', ...SystemPrivacyFields),
-    messages: result.options?.messages || [],
-    indicators: result.options?.indicators,
-    answer: result.options?.answer
   } as ChatbiConverstion
 }

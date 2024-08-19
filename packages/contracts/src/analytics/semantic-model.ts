@@ -43,7 +43,10 @@ export interface ISemanticModel extends IBasePerTenantAndOrganizationEntityModel
   catalog?: string
   cube?: string
   // 存放语义元数据
-  options?: Record<string, unknown>
+  options?: {
+    schema?: MDX.Schema
+    settings?: any
+  }
   // 存放模型配置
   preferences?: ISemanticModelPreferences
 

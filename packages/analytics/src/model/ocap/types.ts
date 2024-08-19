@@ -1,7 +1,6 @@
 import { AgentType, ISemanticModel } from '@metad/contracts'
 import { DataSourceOptions, Syntax } from '@metad/ocap-core'
 import { isNil, omit } from 'lodash'
-import { SemanticModel } from '../../core/entities/internal'
 import { NgmDSCoreService } from './core.service'
 
 export const OCAP_AGENT_TOKEN = 'OCAP_AGENT_TOKEN'
@@ -12,7 +11,7 @@ export function getSemanticModelKey(model: ISemanticModel) {
 	return model.id
 }
 
-export function registerModel(model: SemanticModel, dsCoreService: NgmDSCoreService) {
+export function registerModel(model: ISemanticModel, dsCoreService: NgmDSCoreService) {
 	const modelKey = getSemanticModelKey(model)
 	const agentType = isNil(model.dataSource)
 		? AgentType.Wasm

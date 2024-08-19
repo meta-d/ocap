@@ -49,7 +49,9 @@ import {
   getEntityLevel,
   getEntityMeasures,
   getEntityProperty,
+  isSlicer,
   isString,
+  isTimeRangesSlicer,
   nonNullable,
   omit,
   pick,
@@ -264,7 +266,7 @@ export class StoryExplorerComponent {
       selectionVariant: {
         selectOptions: Object.values(this.slicers())
           .map((slicer) => slicer)
-          .filter((slicer) => slicer?.members?.length)
+          .filter((slicer) => isTimeRangesSlicer(slicer) || isSlicer(slicer))
       }
     }
   })

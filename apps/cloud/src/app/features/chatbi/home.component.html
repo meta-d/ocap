@@ -1,5 +1,5 @@
-  <div class="mx-auto max-w-7xl p-2 lg:px-8 h-full flex flex-col gap-2">
-    <div class="title container relative mx-auto text-center">
+<div class="container mx-auto max-w-7xl p-2 lg:px-8 h-full flex flex-col gap-2">
+    <div class="title relative mx-auto text-center">
       <h1 class="font-bold text-2xl md:text-3xl pb-2">
         {{ 'PAC.ChatBI.Title' | translate: {Default: 'ChatBI-Data Analysis &amp; Insights with' } }}
         
@@ -29,7 +29,7 @@
       </p>
     </div>
 
-    <div class="w-full flex-1 flex flex-col lg:flex-row-reverse justify-between items-stretch overflow-hidden">
+    <div class="body w-full flex-1 flex flex-col lg:flex-row-reverse justify-between items-stretch overflow-hidden">
       <pac-chatbi-models class="my-4 w-full min-h-[120px] lg:w-80 rounded-lg border
         border-gray-200 bg-white dark:border-zinc-800 dark:bg-neutral-950"
         [ngClass]="isMobile() ? openCubes() ? 'ngm-chatbi-cubes__mobile-opened' : 'ngm-chatbi-cubes__mobile-closed' : ''"
@@ -38,7 +38,7 @@
       <pac-chatbi-chat class="flex-1 lg:m-4 lg:flex-1 rounded-xl lg:shadow-lg shadow-sky-800/10 overflow-hidden grid grid-cols-1
         border-zinc-200 bg-white dark:border-zinc-800 dark:bg-neutral-950"/>
     </div>
-  </div>
+</div>
 
 @if (showExplorer()) {
   <ngm-story-explorer class="absolute top-0 left-0 w-full h-full z-20"

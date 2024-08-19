@@ -2,6 +2,7 @@ import { tool } from '@langchain/core/tools'
 import {
 	ChartAnnotation,
 	ChartBusinessService,
+	ChartDimensionRoleType,
 	ChartDimensionSchema,
 	ChartMeasureSchema,
 	DataSettings,
@@ -23,6 +24,7 @@ import {
 	OrderBy,
 	OrderBySchema,
 	PresentationVariant,
+	PropertyHierarchy,
 	PropertyMeasure,
 	slicerAsString,
 	SlicerSchema,
@@ -35,7 +37,7 @@ import {
 } from '@metad/ocap-core'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
-import { ChatBILarkContext, ChatContext } from '../types'
+import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
 
 type ChatAnswer = {
 	preface: string
@@ -74,16 +76,15 @@ export const ChatAnswerSchema = z.object({
 })
 
 export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILarkContext) {
-	const { chatId, logger, dsCoreService, larkService } = context
+	const { chatId, logger, dsCoreService, conversation } = context
 	return tool(
 		async (answer): Promise<string> => {
-			logger.debug(`Execute copilot action 'answerQuestion':`, answer)
+			logger.debug(`Execute copilot action 'answerQuestion':`, JSON.stringify(answer, null, 2))
 			try {
-				// if (answer.preface) {
-				// 	await larkService.textMessage(larkContext, answer.preface)
-				// }
 				let entityType = null
 				if (answer.dataSettings) {
+					// Make sure datasource exists
+					const _dataSource = await dsCoreService._getDataSource(answer.dataSettings.dataSource)
 					const entity = await firstValueFrom(
 						dsCoreService.selectEntitySet(answer.dataSettings.dataSource, answer.dataSettings.entitySet)
 					)
@@ -92,42 +93,27 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 
 				// Fetch data for chart or table or kpi
 				if (answer.dimensions?.length || answer.measures?.length) {
-					const data = await drawChartMessage(
+					const { data, categoryMembers } = await drawChartMessage(
 						{ ...context, entityType: entityType || context.entityType },
-						larkContext,
+						conversation,
 						answer as ChatAnswer
 					)
+					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers)) : 'Empty'
 
-					return `分析数据已经展示给了用户，以下是分析结果的限100条数据，仅供分析，不要重复输出: ${JSON.stringify(data.slice(0, 100))}`
+					return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
+${members}
+For the current data analysis, give more analysis suggestions, 3 will be enough.`
 				}
 
 				return `图表答案已经回复给用户了，请不要重复回答了。`
 			} catch (err) {
 				logger.error(err)
-
 				return `出现错误: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
-				// try {
-				// 	const result = await firstValueFrom(larkService.action({
-				// 		data: {
-				// 			receive_id: chatId,
-				// 			content: JSON.stringify({text: err}),
-				// 			msg_type: 'text'
-				// 		},
-				// 		params: {
-				// 			receive_id_type: 'chat_id'
-				// 		}
-				// 	}))
-
-				// 	logger.debug(`Error action 有回复:`, result)
-				// } catch(err) {
-				// 	console.error(`绝不应该出现的错误：`, err)
-				// 	return `出现未知错误，请结束对话`
-				// }
 			}
 		},
 		{
 			name: 'answerQuestion',
-			description: 'Create chart answer for the question',
+			description: 'Show chart answer for the question to user',
 			schema: ChatAnswerSchema
 		}
 	)
@@ -135,9 +121,9 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 
 async function drawChartMessage(
 	context: ChatContext,
-	larkContext: ChatBILarkContext,
+	conversation: IChatBIConversation,
 	answer: ChatAnswer
-): Promise<any[]> {
+): Promise<any> {
 	const { entityType } = context
 	const chartService = new ChartBusinessService(context.dsCoreService)
 	const destroy$ = new Subject<void>()
@@ -155,6 +141,7 @@ async function drawChartMessage(
 	if (answer.slicers) {
 		slicers.push(...answer.slicers.map((slicer) => tryFixSlicer(slicer, entityType)))
 	}
+	slicers.push(...(answer.timeSlicers?.map((item) => ({...item, currentDate: 'TODAY'})) ?? []))
 
 	const presentationVariant: PresentationVariant = {}
 	if (answer.top) {
@@ -163,8 +150,6 @@ async function drawChartMessage(
 	if (answer.orders) {
 		presentationVariant.sortOrder = answer.orders
 	}
-
-	slicers.push(...(answer.timeSlicers ?? []))
 
 	const header = {
 		template: 'blue',
@@ -193,19 +178,23 @@ async function drawChartMessage(
 			if (result.error) {
 				reject(result.error)
 			} else {
-				const {card, data} = (answer.visualType === 'Table'
-					? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
-					: chartAnnotation.dimensions?.length > 0
-						? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
-						: createKPI(answer, chartAnnotation, context.entityType, result.data, header))
-				console.log(JSON.stringify(card))
-				console.log(data)
-				larkContext.larkService.interactiveMessage(
-					larkContext,
-					card
-				)
-				
-				resolve(data)
+				const { card, data, categoryMembers } =
+					answer.visualType === 'Table'
+						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
+						: chartAnnotation.dimensions?.length > 0
+							? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
+							: createKPI(answer, chartAnnotation, context.entityType, result.data, header)
+				// console.log(JSON.stringify(card, null, 2))
+
+				if (result.stats?.statements?.[0]) {
+					const stats = createStats(result.stats.statements[0])
+					card.elements.push(stats as any)
+				}
+				// console.log(data)
+				// larkContext.larkService.interactiveMessage(larkContext, card)
+				conversation.answerMessage(card)
+
+				resolve({ data, categoryMembers })
 			}
 			destroy$.next()
 			destroy$.complete()
@@ -282,7 +271,7 @@ function createLineChart(
 		categoryField = 'categoryField'
 		valueField = 'valueField'
 		chartSpec.outerRadius = 0.9
-        chartSpec.innerRadius = 0.3
+		chartSpec.innerRadius = 0.3
 	}
 
 	const chart_spec = {
@@ -297,15 +286,17 @@ function createLineChart(
 		}
 	} as any
 
+	let categoryProperty: PropertyHierarchy = null
 	const fields = []
 	if (chartAnnotation.dimensions?.length > 1) {
-		const series = getChartSeries(chartAnnotation) || chartAnnotation.dimensions[1]
+		const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
+		const series = getChartSeries(chartAnnotation) || dimensions[1] || dimensions[0]
 		const seriesName = getPropertyHierarchy(series)
 		const property = getEntityProperty(entityType, seriesName)
 		const seriesCaption = property.memberCaption
 		chart_spec.seriesField = seriesCaption
 		fields.push(seriesCaption)
-		const categoryProperty = getEntityHierarchy(
+		categoryProperty = getEntityHierarchy(
 			entityType,
 			chartAnnotation.dimensions.filter((d) => d.dimension !== series.dimension)[0]
 		)
@@ -313,22 +304,30 @@ function createLineChart(
 		chart_spec[categoryField] = categoryCaption
 		fields.push(categoryCaption)
 	} else {
-		const property = getEntityHierarchy(entityType, getChartCategory(chartAnnotation))
-		const categoryCaption = property.memberCaption
+		categoryProperty = getEntityHierarchy(entityType, getChartCategory(chartAnnotation))
+		const categoryCaption = categoryProperty.memberCaption
 		chart_spec[categoryField] = categoryCaption
 		fields.push(categoryCaption)
 	}
 
+	const categoryMembers = {}
 	_data.forEach((item, index) => {
 		fields.forEach((field) => (item[field] = data[index][field]))
+		if (!categoryMembers[data[index][categoryProperty.name]]) {
+			categoryMembers[data[index][categoryProperty.name]] = {
+				key: data[index][categoryProperty.name],
+				caption: data[index][categoryProperty.memberCaption]
+			}
+		}
 	})
-	// Measures
 
 	chartAnnotation.measures?.forEach((measure) => {
 		const property = getEntityProperty<PropertyMeasure>(entityType, measure)
 		_data.forEach((item, index) => {
 			if (property.formatting?.unit === '%') {
-				item[property.name] = isNil(data[index][property.name]) ? null : (data[index][property.name] * 100).toFixed(1)
+				item[property.name] = isNil(data[index][property.name])
+					? null
+					: (data[index][property.name] * 100).toFixed(1)
 			} else {
 				item[property.name] = isNil(data[index][property.name]) ? null : data[index][property.name].toFixed(1)
 			}
@@ -350,7 +349,8 @@ function createLineChart(
 			],
 			header
 		},
-		data: _data
+		data: _data,
+		categoryMembers
 	}
 }
 
@@ -394,7 +394,8 @@ function createKPI(
 				}
 			]
 		},
-		data: data
+		data: data,
+		categoryMembers: null
 	}
 }
 
@@ -408,7 +409,7 @@ function createTableMessage(
 	const _data = data.map(() => ({}))
 
 	const columns = [
-		chartAnnotation.dimensions?.map((dimension) => {
+		...(chartAnnotation.dimensions?.map((dimension) => {
 			const hierarchy = getPropertyHierarchy(dimension)
 			const property = getEntityHierarchy(entityType, hierarchy)
 			const caption = property.memberCaption
@@ -423,15 +424,19 @@ function createTableMessage(
 				data_type: 'text', // 列的数据类型。
 				horizontal_align: 'left' // 列内数据对齐方式。默认值 left。
 			}
-		}),
-		chartAnnotation.measures?.map((measure) => {
+		}) ?? []),
+		...(chartAnnotation.measures?.map((measure) => {
 			const measureName = getPropertyMeasure(measure)
 			const property = getEntityProperty<PropertyMeasure>(entityType, measureName)
 			_data.forEach((item, index) => {
 				if (property.formatting?.unit === '%') {
-					item[property.name] = isNil(data[index][property.name]) ? null : (data[index][property.name] * 100).toFixed(1)
+					item[property.name] = isNil(data[index][property.name])
+						? null
+						: (data[index][property.name] * 100).toFixed(1)
 				} else {
-					item[property.name] = isNil(data[index][property.name]) ? null : data[index][property.name].toFixed(1)
+					item[property.name] = isNil(data[index][property.name])
+						? null
+						: data[index][property.name].toFixed(1)
 				}
 			})
 			return {
@@ -447,7 +452,7 @@ function createTableMessage(
 					separator: true // 是否生效按千分位逗号分割的数字样式。默认值 false。
 				}
 			}
-		})
+		}) ?? [])
 	]
 
 	return {
@@ -475,6 +480,40 @@ function createTableMessage(
 				}
 			]
 		},
-		data: _data
+		data: _data,
+		categoryMembers: null
+	}
+}
+
+function createStats(statement: string) {
+	return {
+		tag: 'collapsible_panel',
+		expanded: false,
+		header: {
+			template: 'blue',
+			title: {
+				tag: 'plain_text',
+				content: '查询语句'
+			},
+			vertical_align: 'center',
+			icon: {
+				tag: 'standard_icon',
+				token: 'down-small-ccm_outlined',
+				color: 'white',
+				size: '16px 16px'
+			},
+			icon_position: 'right',
+			icon_expanded_angle: -180
+		},
+		vertical_spacing: '8px',
+		padding: '8px 8px 8px 8px',
+		elements: [
+			{
+				tag: 'markdown',
+				content: `\`\`\`SQL
+${statement}
+\`\`\``
+			}
+		]
 	}
 }

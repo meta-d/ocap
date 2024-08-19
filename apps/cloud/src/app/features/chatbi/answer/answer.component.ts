@@ -1,6 +1,6 @@
 import { ClipboardModule } from '@angular/cdk/clipboard'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal, viewChild, ViewContainerRef } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, model, signal, viewChild, ViewContainerRef } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -33,6 +33,7 @@ import { CdkMenuModule } from '@angular/cdk/menu'
 import { ExplainComponent } from '@metad/story/story'
 import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
 import { WidgetService } from '@metad/core'
+import { ChatbiChatComponent } from '../chat/chat.component'
 
 @Component({
   standalone: true,
@@ -77,6 +78,7 @@ export class ChatbiAnswerComponent {
   readonly widgetService = inject(WidgetService)
   readonly #logger = inject(NGXLogger)
   readonly homeComponent = inject(ChatbiHomeComponent)
+  readonly chatComponent = inject(ChatbiChatComponent)
   readonly #translate = inject(TranslateService)
   readonly #dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
@@ -156,6 +158,7 @@ export class ChatbiAnswerComponent {
   )
 
   readonly explains = signal<any[]>([])
+  readonly fullscreen = signal(false)
 
   toArray(data: JSONValue) {
     return (Array.isArray(data) ? data : []) as Array<string | QuestionAnswer>
@@ -188,8 +191,8 @@ export class ChatbiAnswerComponent {
     return {
       ...dataSettings,
       analytics: {
-        rows: dataSettings.chartAnnotation.dimensions,
-        columns: dataSettings.chartAnnotation.measures
+        rows: dataSettings.chartAnnotation?.dimensions,
+        columns: dataSettings.chartAnnotation?.measures
       }
     } as DataSettings
   }
@@ -347,5 +350,19 @@ export class ChatbiAnswerComponent {
       })
       .afterClosed()
       .subscribe(() => {})
+  }
+
+  toggleFullScreen() {
+    this.fullscreen.update((state) => !state)
+    this.homeComponent.fullscreen.set(this.fullscreen())
+    if (!this.fullscreen()) {
+      setTimeout(() => {
+        this.chatComponent.scrollBottom()
+      })
+    }
+  }
+
+  @HostBinding('class.full-screen') get isFullscreen() {
+    return this.fullscreen()
   }
 }

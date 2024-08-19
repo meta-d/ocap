@@ -65,8 +65,72 @@ export class LarkService {
 			}
 
 			// if (data.message.chat_type === 'p2p') {
-			// 	await this.interactiveMessage({chatId} as ChatLarkContext, {
-			// 	  })
+			// 	const result = await this.interactiveMessage({ chatId } as ChatLarkContext, {
+			// 		header: {
+			// 			title: {
+			// 				tag: 'plain_text',
+			// 				content: '正在思考...'
+			// 			},
+			// 			template: 'blue',
+			// 			ud_icon: {
+			// 				token: 'myai_colorful', // 图标的 token
+			// 				style: {
+			// 					color: 'red' // 图标颜色
+			// 				}
+			// 			}
+			// 		},
+			// 		elements: [
+			// 			{
+			// 				tag: 'action',
+			// 				actions: [
+			// 					{
+			// 						tag: 'button',
+			// 						text: {
+			// 							tag: 'plain_text',
+			// 							content: '结束对话'
+			// 						},
+			// 						type: 'primary_text',
+			// 						complex_interaction: true,
+			// 						width: 'default',
+			// 						size: 'medium'
+			// 					}
+			// 				]
+			// 			}
+			// 		]
+			// 	})
+
+			// 	if (result) {
+			// 		console.log(result)
+			// 		const messageId = result.data.message_id
+			// 		setTimeout(async () => {
+			// 			this.actionMessage(
+			// 				{ chatId, messageId },
+			// 				{
+			// 					elements: [
+			// 						{
+			// 							tag: 'action',
+			// 							actions: [
+			// 								{
+			// 									tag: 'button',
+			// 									text: {
+			// 										tag: 'plain_text',
+			// 										content: '结束对话'
+			// 									},
+			// 									type: 'primary_text',
+			// 									complex_interaction: true,
+			// 									width: 'default',
+			// 									size: 'medium',
+			// 									value: 'chatbi-end-conversation'
+			// 								}
+			// 							]
+			// 						}
+			// 					]
+			// 				}
+			// 			).subscribe((action) => {
+			// 				console.log(action)
+			// 			})
+			// 		}, 3000)
+			// 	}
 			// 	return true
 			// }
 
@@ -177,32 +241,24 @@ export class LarkService {
 	async createMessage(message: LarkMessage) {
 		try {
 			return await client.im.message.create(message)
-		} catch(err) {
+		} catch (err) {
 			this.logger.error(err)
 		}
 	}
 
-	action(message: LarkMessage): Observable<string> {
-		return new Observable<string>((subscriber: Subscriber<unknown>) => {
-			client.im.message
-				.create(message)
-				.then((res) => {
-					const response = new Subject<any>()
-					this.actions.set(res.data.message_id, response)
-					response.subscribe({
-						next: (message) => {
-							subscriber.next(message.action.option)
-						},
-						error: (err) => {
-							subscriber.error(err)
-						},
-						complete: () => {
-							subscriber.complete()
-						}
-					})
-				})
-				.catch((err) => subscriber.error(err))
-		})
+	async patchMessage(payload?: {
+		data: {
+			content: string
+		}
+		path: {
+			message_id: string
+		}
+	}) {
+		try {
+			return await client.im.message.patch(payload)
+		} catch (err) {
+			this.logger.error(err)
+		}
 	}
 
 	async errorMessage(context: ChatLarkContext, err: Error) {
@@ -219,7 +275,7 @@ export class LarkService {
 	}
 
 	async textMessage(context: ChatLarkContext, content: string) {
-		await this.createMessage({
+		return await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -232,7 +288,7 @@ export class LarkService {
 	}
 
 	async interactiveMessage(context: ChatLarkContext, data: any) {
-		await this.createMessage({
+		return await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -262,5 +318,76 @@ export class LarkService {
 				msg_type: 'interactive'
 			}
 		} as LarkMessage)
+	}
+
+	async patchInteractiveMessage(messageId: string, data: any) {
+		return await this.patchMessage({
+			data: {
+				content: JSON.stringify(data)
+			},
+			path: {
+				message_id: messageId
+			}
+		})
+	}
+
+	createAction(chatId: string, content: any) {
+		return new Observable<string>((subscriber: Subscriber<unknown>) => {
+			client.im.message.create({
+				data: {
+					receive_id: chatId,
+					content: JSON.stringify(content),
+					msg_type: 'interactive'
+				},
+				params: {
+					receive_id_type: 'chat_id'
+				}
+			}).then((res) => {
+					const response = new Subject<any>()
+					this.actions.set(res.data.message_id, response)
+					response.subscribe({
+						next: (message) => {
+							subscriber.next(message.action)
+						},
+						error: (err) => {
+							subscriber.error(err)
+						},
+						complete: () => {
+							subscriber.complete()
+						}
+					})
+				})
+				.catch((err) => subscriber.error(err))
+		})
+	}
+
+	patchAction(messageId: string, content: any): Observable<string> {
+		return new Observable<string>((subscriber: Subscriber<unknown>) => {
+			client.im.message
+				.patch({
+					data: {
+						content: JSON.stringify(content)
+					},
+					path: {
+						message_id: messageId
+					}
+				})
+				.then((res) => {
+					const response = new Subject<any>()
+					this.actions.set(messageId, response)
+					response.subscribe({
+						next: (message) => {
+							subscriber.next(message.action)
+						},
+						error: (err) => {
+							subscriber.error(err)
+						},
+						complete: () => {
+							subscriber.complete()
+						}
+					})
+				})
+				.catch((err) => subscriber.error(err))
+		})
 	}
 }

@@ -4,7 +4,7 @@ import { ChartDimensionRoleType } from '../../annotations'
 
 export const ChartDimensionSchema = z.object({
     ...baseDimensionSchema,
-    role: z.enum([null, ChartDimensionRoleType.Stacked, ChartDimensionRoleType.Group]).optional().describe('Role of category axis')
+    role: z.enum([null, ChartDimensionRoleType.Time, ChartDimensionRoleType.Stacked, ChartDimensionRoleType.Group]).optional().describe('Role of category axis')
 })
 
 export const ChartMeasureSchema = z.object({

@@ -64,7 +64,7 @@ $prefix-color: (#{$prefix}, color);
   background-color: var(--mdc-outlined-card-container-color);
 
   .pac-nav__tab {
-    @apply -ml-2 -mr-2 border-2 border-transparent;
+    @apply -ml-2 -mr-2 border-2 border-transparent transition-all;
   }
   .pac-nav__tab:hover {
     @apply bg-slate-100 border-slate-200 rounded-lg dark:bg-bluegray-600 dark:border-bluegray-500;

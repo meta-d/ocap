@@ -11,7 +11,6 @@ import {
   RunnableToolLike,
 } from "@langchain/core/runnables";
 import { DynamicTool, StructuredTool, StructuredToolInterface } from "@langchain/core/tools";
-
 import {
   BaseLanguageModelCallOptions,
   BaseLanguageModelInput,
@@ -40,6 +39,7 @@ export type CreateReactAgentParams = {
   interruptBefore?: N[] | All;
   interruptAfter?: N[] | All;
   state?: StateGraphArgs<AgentState>["channels"]
+  shouldToolContinue?: (state: AgentState) => typeof END | "agent"
 };
 
 /**
@@ -67,7 +67,8 @@ export function createReactAgent(
     checkpointSaver,
     interruptBefore,
     interruptAfter,
-    state
+    state,
+    shouldToolContinue
   } = props;
   const schema: StateGraphArgs<AgentState>["channels"] = createCopilotAgentState()
 
@@ -86,14 +87,16 @@ export function createReactAgent(
   const shouldContinue = (state: AgentState) => {
     const { messages } = state;
     const lastMessage = messages[messages.length - 1];
-    if (
-      isAIMessage(lastMessage) &&
-      (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0)
-    ) {
-      return END;
-    } else {
-      return "continue";
+    if (isAIMessage(lastMessage)) {
+      if (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0) {
+        return END;
+      } else {
+        console.log(`call tools:`, lastMessage.tool_calls.map((tool) => tool.name).join(", "))
+        return "continue";
+      }
     }
+
+    return END;
   };
 
   const callModel = async (state: AgentState) => {
@@ -115,7 +118,7 @@ export function createReactAgent(
       continue: "tools",
       [END]: END,
     })
-    .addEdge("tools", "agent");
+    .addConditionalEdges("tools", shouldToolContinue ?? ((state: AgentState) => "agent"))
 
   return workflow.compile({
     checkpointer: checkpointSaver,

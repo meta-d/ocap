@@ -83,7 +83,7 @@ export class DSCoreService extends ComponentStore<DSState> {
     if (!this.#dataSources.has(key)) {
       const options = this.get((state) => state.dataSources?.find((item) => item.key === key))
       if (!options) {
-        throw new Error(`Can't found dataSource options: '${key}'`)
+        throw new Error(`Can't found dataSource for: '${key}'`)
       }
       
       this.#dataSources.set(key, await this.createDataSource(options))

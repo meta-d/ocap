@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EntityType, getEntityVariables, TimeGranularity, TimeRangeType } from '../../models'
+import { EntityType, getEntityVariables, TimeGranularity, TimeRangeType, VariableEntryType } from '../../models'
 import { ISlicer } from '../../types'
 import { MemberSchema, tryFixDimension } from './common'
 
@@ -71,4 +71,27 @@ export function tryFixVariableSlicer(slicer: ISlicer, entityType: EntityType) {
       parameter
     }
   }
+}
+
+export function getDefaultSlicersForVariables(entityType: EntityType, variableEntryType?: VariableEntryType) {
+  const variables = getEntityVariables(entityType)
+  const slicers = variables
+    .filter((variable) => (variableEntryType ? variable.variableEntryType === variableEntryType : true))
+    .map((variable) => ({
+      dimension: {
+        dimension: variable.referenceDimension,
+        hierarchy: variable.referenceHierarchy,
+        parameter: variable.name
+      },
+      members: variable.defaultLow
+        ? [
+            {
+              key: variable.defaultLow,
+              caption: variable.defaultLowCaption
+            }
+          ]
+        : []
+    }))
+
+  return slicers
 }

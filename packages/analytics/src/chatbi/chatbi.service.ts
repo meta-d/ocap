@@ -1,10 +1,11 @@
 import { AiProviderRole } from '@metad/contracts'
 import { Agent, DataSourceFactory } from '@metad/ocap-core'
 import { CopilotCheckpointSaver, CopilotKnowledgeService, CopilotService } from '@metad/server-core'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common'
+import { Cache } from 'cache-manager'
 import { CommandBus } from '@nestjs/cqrs'
 import { IsNull } from 'typeorm'
-import { SemanticModelService } from '../model'
+import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
 import { SemanticModelMemberService } from '../model-member/member.service'
 import { NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '../model/ocap'
 import { ChatBIConversation } from './conversation'
@@ -20,10 +21,12 @@ export class ChatBIService implements IChatBI {
 
 	constructor(
 		private readonly copilotService: CopilotService,
-		private readonly modelService: SemanticModelService,
+		private readonly modelService: ChatBIModelService,
 		private readonly semanticModelMemberService: SemanticModelMemberService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly copilotKnowledgeService: CopilotKnowledgeService,
+		@Inject(CACHE_MANAGER)
+		public readonly cacheManager: Cache,
 		@Inject(OCAP_AGENT_TOKEN)
 		private agent: Agent,
 		@Inject(OCAP_DATASOURCE_TOKEN)
@@ -64,20 +67,16 @@ export class ChatBIService implements IChatBI {
 			)
 		}
 
-		const { items: models } = await this.modelService.findAll({
-			where: { tenantId, organizationId: input.organizationId },
-			relations: ['dataSource', 'dataSource.type', 'roles']
-		})
-
 		return new ChatBIConversation(
 			input,
-			models,
 			copilot,
+			this.modelService,
 			this.semanticModelMemberService,
 			this.copilotCheckpointSaver,
 			// New Ocap context for every chatbi conversation
 			new NgmDSCoreService(this.agent, this.dataSourceFactory),
-			this.copilotKnowledgeService
+			this.copilotKnowledgeService,
+			this
 		)
 	}
 

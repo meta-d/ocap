@@ -3,7 +3,7 @@ import { ChatLarkContext } from '@metad/server-core'
 import { take } from 'rxjs/operators'
 import { z } from 'zod'
 import { ChatBIConversation } from '../conversation'
-import { ChatContext } from '../types'
+import { C_CHATBI_END_CONVERSATION, ChatContext } from '../types'
 
 export function createEndTool(context: ChatContext) {
 	const { conversation } = context
@@ -50,24 +50,14 @@ export async function errorWithEndMessage(context: ChatLarkContext, error: strin
 							content: '结束对话'
 						},
 						type: 'primary',
-						value: 'chatbi-end-conversation'
+						value: C_CHATBI_END_CONVERSATION
 					}
 				]
 			}
 		]
 	}
 
-	larkService
-		.action({
-			params: {
-				receive_id_type: 'chat_id'
-			},
-			data: {
-				receive_id: context.chatId,
-				content: JSON.stringify(data),
-				msg_type: 'interactive'
-			}
-		})
+	larkService.createAction(context.chatId, data)
 		.pipe(take(1))
 		.subscribe(() => {
 			conversation.newThread()

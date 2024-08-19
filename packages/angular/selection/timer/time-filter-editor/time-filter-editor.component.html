@@ -25,7 +25,7 @@
 
   </div>
 
-  <mat-accordion hideToggle formArrayName="ranges" displayDensity="cosy">
+  <mat-accordion hideToggle formArrayName="ranges" displayDensity="cosy" class="">
     <mat-expansion-panel *ngFor="let range of ranges.controls; let i = index;" [formGroupName]="i">
       <mat-expansion-panel-header class="pr-0">
         <mat-panel-title>
@@ -92,7 +92,7 @@
           </mat-form-field>
         </div>
 
-        <div *ngIf="range.value.type==='Offset'" formGroupName="current" fxLayoutGap=".5rem">
+        <div *ngIf="range.value.type==='Offset'" formGroupName="current" class="flex flex-wrap gap-2">
           <mat-form-field appearance="fill">
             <mat-label>{{ 'Ngm.TimeFilter.OFFSET_DIRECTION' | translate: {Default: "Offset Direction"} }}</mat-label>
             <mat-select formControlName="direction">

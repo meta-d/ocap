@@ -47,6 +47,15 @@ export class PACSettingComponent {
           }
         },
         {
+          link: 'chatbi',
+          label: 'Chat BI',
+          icon: 'try',
+          data: {
+            featureKey: FeatureEnum.FEATURE_COPILOT,
+            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
+          }
+        },
+        {
           link: 'business-area',
           label: 'Business Area',
           icon: 'workspaces',

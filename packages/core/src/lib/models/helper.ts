@@ -521,6 +521,9 @@ export function getEntityCalendarHierarchy(
   { dimension, hierarchy }: Dimension
 ): PropertyHierarchy {
   const dProperty = getEntityProperty(entityType, dimension)
+  if (!dProperty) {
+    throw new Error(`Dimension '${dimension}' not found in '${entityType.caption || entityType.name}'`)
+  }
   if (hierarchy) {
     return dProperty.hierarchies?.find((item) => item.name === hierarchy)
   }
