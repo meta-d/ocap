@@ -64,150 +64,75 @@ export class LarkService {
 				return true
 			}
 
-			if (data.message.chat_type === 'p2p') {
-				const card = {
-					
-					
-						"header": {
-							"template": "blue",
-							"title": {
-								"content": "表格组件（依赖端版本 7.4+)",
-								"tag": "plain_text"
-							}
-						},
-						"elements": [
-							{
-								"tag": "table",
-								"page_size": 5,
-								"row_height": "low",
-								"header_style": {
-									"text_align": "left",
-									"text_size": "normal",
-									"background_style": "none",
-									"text_color": "grey",
-									"bold": true,
-									"lines": 1
-								},
-								"columns": [
-									{
-										"name": "customer_name",
-										"display_name": "客户名称",
-										"data_type": "text",
-										"horizontal_align": "left",
-										"width": "auto"
-									},
-									{
-										"name": "customer_scale",
-										"display_name": "客户规模",
-										"data_type": "options",
-										"horizontal_align": "left",
-										"width": "auto"
-									},
-									{
-										"name": "customer_arr",
-										"display_name": "ARR(万元)",
-										"data_type": "number",
-										"format": {
-											"symbol": "¥",
-											"precision": 2,
-											"seperator": true
-										},
-										"width": "auto"
-									},
-									{
-										"name": "customer_poc",
-										"display_name": "跟进人",
-										"data_type": "persons",
-										"horizontal_align": "left",
-										"width": "auto"
-									},
-									{
-										"name": "customer_date",
-										"display_name": "签约日期",
-										"data_type": "date",
-										"date_format": "YYYY/MM/DD",
-										"width": "auto"
-									},
-									{
-										"name": "customer_link",
-										"display_name": "相关链接",
-										"data_type": "lark_md",
-										"width": "auto"
-									},
-									{
-											"name": "company_image",
-											"display_name": "企业图片",
-											"data_type": "markdown"
-									}
-								],
-								"rows": [
-									{
-										"customer_name": "飞书科技",
-										"customer_date": 1699341315000,
-										"customer_scale": [
-											{
-												"text": "S2",
-												"color": "blue"
-											}
-										],
-										"customer_arr": 168,
-										"customer_poc": [
-											"ou_14a32f1a02e64944cf19207aa43abcef",
-											"ou_e393cf9c22e6e617a4332210d2aabcef"
-										],
-										"customer_link": "[飞书科技](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
-										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
-									},
-									{
-										"customer_name": "飞书科技_01",
-										"customer_date": 1606101072000,
-										"customer_scale": [
-											{
-												"text": "S1",
-												"color": "red"
-											}
-										],
-										"customer_arr": 168.23,
-										"customer_poc": "ou_14a32f1a02e64944cf19207aa43abcef",
-										"customer_link": "[飞书科技_01](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
-										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
-									},
-									{
-										"customer_name": "飞书科技_02",
-										"customer_date": 1606101072000,
-										"customer_scale": [
-											{
-												"text": "S3",
-												"color": "orange"
-											}
-										],
-										"customer_arr": 168.23,
-										"customer_poc": "ou_14a32f1a02e64944cf19207aa43abcef",
-										"customer_link": "[飞书科技_02](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
-										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
-									},
-									{
-										"customer_name": "飞书科技_03",
-										"customer_date": 1606101072000,
-										"customer_scale": [
-											{
-												"text": "S2",
-												"color": "blue"
-											}
-										],
-										"customer_arr": 168.23,
-										"customer_poc": "ou_14a32f1a02e64944cf19207aa43abcef",
-										"customer_link": "[飞书科技_03](/document-mod/index?fullPath=/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message-reaction/emojis-introduce)",
-										"company_image": "![image.png](img_v3_02cc_bf88cdee-6650-4b39-987c-f8e87c3227fg)"
-									}
-								]
-							}
-						]
-					}
-					
-				await this.interactiveMessage({ chatId } as ChatLarkContext, card)
-				return true
-			}
+			// if (data.message.chat_type === 'p2p') {
+			// 	const result = await this.interactiveMessage({ chatId } as ChatLarkContext, {
+			// 		header: {
+			// 			title: {
+			// 				tag: 'plain_text',
+			// 				content: '正在思考...'
+			// 			},
+			// 			template: 'blue',
+			// 			ud_icon: {
+			// 				token: 'myai_colorful', // 图标的 token
+			// 				style: {
+			// 					color: 'red' // 图标颜色
+			// 				}
+			// 			}
+			// 		},
+			// 		elements: [
+			// 			{
+			// 				tag: 'action',
+			// 				actions: [
+			// 					{
+			// 						tag: 'button',
+			// 						text: {
+			// 							tag: 'plain_text',
+			// 							content: '结束对话'
+			// 						},
+			// 						type: 'primary_text',
+			// 						complex_interaction: true,
+			// 						width: 'default',
+			// 						size: 'medium'
+			// 					}
+			// 				]
+			// 			}
+			// 		]
+			// 	})
+
+			// 	if (result) {
+			// 		console.log(result)
+			// 		const messageId = result.data.message_id
+			// 		setTimeout(async () => {
+			// 			this.actionMessage(
+			// 				{ chatId, messageId },
+			// 				{
+			// 					elements: [
+			// 						{
+			// 							tag: 'action',
+			// 							actions: [
+			// 								{
+			// 									tag: 'button',
+			// 									text: {
+			// 										tag: 'plain_text',
+			// 										content: '结束对话'
+			// 									},
+			// 									type: 'primary_text',
+			// 									complex_interaction: true,
+			// 									width: 'default',
+			// 									size: 'medium',
+			// 									value: 'chatbi-end-conversation'
+			// 								}
+			// 							]
+			// 						}
+			// 					]
+			// 				}
+			// 			).subscribe((action) => {
+			// 				console.log(action)
+			// 			})
+			// 		}, 3000)
+			// 	}
+			// 	return true
+			// }
 
 			console.log(data)
 			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
@@ -316,32 +241,24 @@ export class LarkService {
 	async createMessage(message: LarkMessage) {
 		try {
 			return await client.im.message.create(message)
-		} catch(err) {
+		} catch (err) {
 			this.logger.error(err)
 		}
 	}
 
-	action(message: LarkMessage): Observable<string> {
-		return new Observable<string>((subscriber: Subscriber<unknown>) => {
-			client.im.message
-				.create(message)
-				.then((res) => {
-					const response = new Subject<any>()
-					this.actions.set(res.data.message_id, response)
-					response.subscribe({
-						next: (message) => {
-							subscriber.next(message.action.option)
-						},
-						error: (err) => {
-							subscriber.error(err)
-						},
-						complete: () => {
-							subscriber.complete()
-						}
-					})
-				})
-				.catch((err) => subscriber.error(err))
-		})
+	async patchMessage(payload?: {
+		data: {
+			content: string
+		}
+		path: {
+			message_id: string
+		}
+	}) {
+		try {
+			return await client.im.message.patch(payload)
+		} catch (err) {
+			this.logger.error(err)
+		}
 	}
 
 	async errorMessage(context: ChatLarkContext, err: Error) {
@@ -358,7 +275,7 @@ export class LarkService {
 	}
 
 	async textMessage(context: ChatLarkContext, content: string) {
-		await this.createMessage({
+		return await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -371,7 +288,7 @@ export class LarkService {
 	}
 
 	async interactiveMessage(context: ChatLarkContext, data: any) {
-		await this.createMessage({
+		return await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -401,5 +318,76 @@ export class LarkService {
 				msg_type: 'interactive'
 			}
 		} as LarkMessage)
+	}
+
+	async patchInteractiveMessage(messageId: string, data: any) {
+		return await this.patchMessage({
+			data: {
+				content: JSON.stringify(data)
+			},
+			path: {
+				message_id: messageId
+			}
+		})
+	}
+
+	createAction(chatId: string, content: any) {
+		return new Observable<string>((subscriber: Subscriber<unknown>) => {
+			client.im.message.create({
+				data: {
+					receive_id: chatId,
+					content: JSON.stringify(content),
+					msg_type: 'interactive'
+				},
+				params: {
+					receive_id_type: 'chat_id'
+				}
+			}).then((res) => {
+					const response = new Subject<any>()
+					this.actions.set(res.data.message_id, response)
+					response.subscribe({
+						next: (message) => {
+							subscriber.next(message.action)
+						},
+						error: (err) => {
+							subscriber.error(err)
+						},
+						complete: () => {
+							subscriber.complete()
+						}
+					})
+				})
+				.catch((err) => subscriber.error(err))
+		})
+	}
+
+	patchAction(messageId: string, content: any): Observable<string> {
+		return new Observable<string>((subscriber: Subscriber<unknown>) => {
+			client.im.message
+				.patch({
+					data: {
+						content: JSON.stringify(content)
+					},
+					path: {
+						message_id: messageId
+					}
+				})
+				.then((res) => {
+					const response = new Subject<any>()
+					this.actions.set(messageId, response)
+					response.subscribe({
+						next: (message) => {
+							subscriber.next(message.action)
+						},
+						error: (err) => {
+							subscriber.error(err)
+						},
+						complete: () => {
+							subscriber.complete()
+						}
+					})
+				})
+				.catch((err) => subscriber.error(err))
+		})
 	}
 }

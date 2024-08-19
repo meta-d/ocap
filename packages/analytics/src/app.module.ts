@@ -1,6 +1,6 @@
 import { EmployeeModule, OrganizationModule, RedisModule, TenantModule } from '@metad/server-core'
 import { BullModule } from '@nestjs/bull'
-import { Module, forwardRef } from '@nestjs/common'
+import { Module, forwardRef, CacheModule } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { CqrsModule } from '@nestjs/cqrs'
 import { ScheduleModule } from '@nestjs/schedule'
@@ -64,6 +64,7 @@ import { ChatBIModelModule } from './chatbi-model'
 			inject: [ConfigService],
 		  }),
 		ScheduleModule.forRoot(),
+		CacheModule.register(),
 		CqrsModule,
 		forwardRef(() => TenantModule),
 		forwardRef(() => EmployeeModule),

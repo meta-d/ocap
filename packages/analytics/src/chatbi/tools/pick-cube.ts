@@ -44,18 +44,7 @@ export function createPickCubeTool(context: ChatContext, models: IChatBIModel[])
 					]
 				}
 
-				const chatModelId = await firstValueFrom(
-					larkService.action({
-						data: {
-							receive_id: chatId,
-							content: JSON.stringify(card),
-							msg_type: 'interactive'
-						},
-						params: {
-							receive_id_type: 'chat_id'
-						}
-					})
-				)
+				const chatModelId = await firstValueFrom(larkService.createAction(chatId, card))
 
 				const chatModel = models.find((item) => item.id === chatModelId)
 				if (chatModel) {

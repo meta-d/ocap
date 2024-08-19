@@ -37,7 +37,7 @@ import {
 } from '@metad/ocap-core'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
-import { ChatBILarkContext, ChatContext } from '../types'
+import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
 
 type ChatAnswer = {
 	preface: string
@@ -76,17 +76,15 @@ export const ChatAnswerSchema = z.object({
 })
 
 export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILarkContext) {
-	const { chatId, logger, dsCoreService, larkService } = context
+	const { chatId, logger, dsCoreService, conversation } = context
 	return tool(
 		async (answer): Promise<string> => {
 			logger.debug(`Execute copilot action 'answerQuestion':`, JSON.stringify(answer, null, 2))
-			console.debug(`Execute copilot action 'answerQuestion':`, JSON.stringify(answer, null, 2))
 			try {
-				// if (answer.preface) {
-				// 	await larkService.textMessage(larkContext, answer.preface)
-				// }
 				let entityType = null
 				if (answer.dataSettings) {
+					// Make sure datasource exists
+					const _dataSource = await dsCoreService._getDataSource(answer.dataSettings.dataSource)
 					const entity = await firstValueFrom(
 						dsCoreService.selectEntitySet(answer.dataSettings.dataSource, answer.dataSettings.entitySet)
 					)
@@ -97,7 +95,7 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 				if (answer.dimensions?.length || answer.measures?.length) {
 					const { data, categoryMembers } = await drawChartMessage(
 						{ ...context, entityType: entityType || context.entityType },
-						larkContext,
+						conversation,
 						answer as ChatAnswer
 					)
 					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers)) : 'Empty'
@@ -110,25 +108,7 @@ For the current data analysis, give more analysis suggestions, 3 will be enough.
 				return `图表答案已经回复给用户了，请不要重复回答了。`
 			} catch (err) {
 				logger.error(err)
-
 				return `出现错误: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
-				// try {
-				// 	const result = await firstValueFrom(larkService.action({
-				// 		data: {
-				// 			receive_id: chatId,
-				// 			content: JSON.stringify({text: err}),
-				// 			msg_type: 'text'
-				// 		},
-				// 		params: {
-				// 			receive_id_type: 'chat_id'
-				// 		}
-				// 	}))
-
-				// 	logger.debug(`Error action 有回复:`, result)
-				// } catch(err) {
-				// 	console.error(`绝不应该出现的错误：`, err)
-				// 	return `出现未知错误，请结束对话`
-				// }
 			}
 		},
 		{
@@ -141,7 +121,7 @@ For the current data analysis, give more analysis suggestions, 3 will be enough.
 
 async function drawChartMessage(
 	context: ChatContext,
-	larkContext: ChatBILarkContext,
+	conversation: IChatBIConversation,
 	answer: ChatAnswer
 ): Promise<any> {
 	const { entityType } = context
@@ -204,14 +184,15 @@ async function drawChartMessage(
 						: chartAnnotation.dimensions?.length > 0
 							? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
 							: createKPI(answer, chartAnnotation, context.entityType, result.data, header)
-				console.log(JSON.stringify(card, null, 2))
+				// console.log(JSON.stringify(card, null, 2))
 
 				if (result.stats?.statements?.[0]) {
 					const stats = createStats(result.stats.statements[0])
 					card.elements.push(stats as any)
 				}
 				// console.log(data)
-				larkContext.larkService.interactiveMessage(larkContext, card)
+				// larkContext.larkService.interactiveMessage(larkContext, card)
+				conversation.answerMessage(card)
 
 				resolve({ data, categoryMembers })
 			}
@@ -428,7 +409,7 @@ function createTableMessage(
 	const _data = data.map(() => ({}))
 
 	const columns = [
-		chartAnnotation.dimensions?.map((dimension) => {
+		...(chartAnnotation.dimensions?.map((dimension) => {
 			const hierarchy = getPropertyHierarchy(dimension)
 			const property = getEntityHierarchy(entityType, hierarchy)
 			const caption = property.memberCaption
@@ -443,8 +424,8 @@ function createTableMessage(
 				data_type: 'text', // 列的数据类型。
 				horizontal_align: 'left' // 列内数据对齐方式。默认值 left。
 			}
-		}),
-		chartAnnotation.measures?.map((measure) => {
+		}) ?? []),
+		...(chartAnnotation.measures?.map((measure) => {
 			const measureName = getPropertyMeasure(measure)
 			const property = getEntityProperty<PropertyMeasure>(entityType, measureName)
 			_data.forEach((item, index) => {
@@ -471,7 +452,7 @@ function createTableMessage(
 					separator: true // 是否生效按千分位逗号分割的数字样式。默认值 false。
 				}
 			}
-		})
+		}) ?? [])
 	]
 
 	return {
@@ -509,11 +490,11 @@ function createStats(statement: string) {
 		tag: 'collapsible_panel',
 		expanded: false,
 		header: {
+			template: 'blue',
 			title: {
-				tag: 'markdown',
-				content: '**查询语句**'
+				tag: 'plain_text',
+				content: '查询语句'
 			},
-			background_color: 'yellow',
 			vertical_align: 'center',
 			icon: {
 				tag: 'standard_icon',
@@ -523,10 +504,6 @@ function createStats(statement: string) {
 			},
 			icon_position: 'right',
 			icon_expanded_angle: -180
-		},
-		border: {
-			color: 'grey',
-			corner_radius: '5px'
 		},
 		vertical_spacing: '8px',
 		padding: '8px 8px 8px 8px',

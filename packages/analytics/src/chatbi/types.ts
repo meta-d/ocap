@@ -51,4 +51,9 @@ export type IChatBIConversation = {
   upsertIndicator(indicator: Indicator): void
   newThread(): void
   destroy(): void
+  answerMessage(data: any): Promise<any>
+  getCubeCache(modelId: string, cubeName: string): Promise<EntityType>
+  setCubeCache(modelId: string, cubeName: string, data: any): Promise<void>
 }
+
+export const C_CHATBI_END_CONVERSATION = 'chatbi-end-conversation'

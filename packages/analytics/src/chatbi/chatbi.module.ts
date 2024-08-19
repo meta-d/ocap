@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { CacheModule, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { CopilotCheckpointModule, CopilotKnowledgeModule, CopilotModule } from '@metad/server-core'
 import { CommandHandlers } from './commands/handlers'
@@ -10,6 +10,7 @@ import { ChatBIModelModule } from '../chatbi-model'
 
 @Module({
 	imports: [
+		CacheModule.register(),
 		CqrsModule,
 		CopilotModule,
 		SemanticModelMemberModule,
