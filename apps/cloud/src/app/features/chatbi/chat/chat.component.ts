@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, model, signal, viewChild } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  model,
+  signal,
+  viewChild
+} from '@angular/core'
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -82,11 +92,14 @@ export class ChatbiChatComponent {
     .subscribe(() => this.scrollBottom())
 
   constructor() {
-    effect(() => {
-      if (this.chatbiService.entity() && this.examplesEmpty()) {
-        this.refresh()
-      }
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        if (this.chatbiService.entity() && this.examplesEmpty()) {
+          this.refresh()
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   editQuestion(message: CopilotChatMessage) {
@@ -105,13 +118,16 @@ export class ChatbiChatComponent {
     })
   }
 
-  async refresh() {
+  async refresh(prompt?: string) {
     this.examplesLoading.set(true)
     try {
-      const results = await this.examplesAgent()?.invoke({
-        input: `give me 5 examples`,
-        context: this.chatbiService.context()
-      })
+      const results = await this.examplesAgent()?.invoke(
+        {
+          input: prompt ?? `give me 5 examples`,
+          context: this.chatbiService.context()
+        },
+        this.chatbiService.conversationKey()
+      )
 
       this.chatbiService.updateConversation((state) => ({
         ...state,
@@ -120,7 +136,12 @@ export class ChatbiChatComponent {
 
       this.examplesLoading.set(false)
     } catch (err) {
+      console.error(err)
       this.examplesLoading.set(false)
     }
+  }
+
+  async changeBatch() {
+    await this.refresh(`Change to another batch`)
   }
 }
