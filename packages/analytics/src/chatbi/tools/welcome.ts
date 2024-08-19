@@ -6,7 +6,7 @@ export function createWelcomeTool(context: ChatContext) {
 	const { larkService } = context
 	return tool(
 		async ({ models }): Promise<string> => {
-			await larkService.interactiveMessage({})
+			// await larkService.interactiveMessage({})
 			return 'Welcome info has sent to user, waiting for user response...'
 		},
 		{
