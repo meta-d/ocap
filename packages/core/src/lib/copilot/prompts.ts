@@ -19,7 +19,7 @@ export function markdownEntityType(entityType: EntityType) {
   [
     `  - name: "${dimension.name}"`,
     `    caption: "${dimension.caption || ''}"`,
-    dimension.description ?
+    dimension.description && dimension.description !== dimension.caption ?
   `    description: >
   ${prepend('      ', dimension.description)}` : null,
     dimension.semantics?.semantic ? 
@@ -29,7 +29,7 @@ export function markdownEntityType(entityType: EntityType) {
   getDimensionHierarchies(dimension).map((item) =>[
   `      - name: "${item.name}"`,
   `        caption: "${item.caption || ''}"`,
-  item.description ?
+  item.description && item.description !== item.caption ?
   `        description: >
   ${prepend('          ', item.description)}` : null,
   `        levels:
@@ -37,7 +37,7 @@ export function markdownEntityType(entityType: EntityType) {
   [
   `          - name: "${item.name}"`,
   `            caption: "${item.caption || ''}"`,
-  item.description ?
+  item.description && item.description !== item.caption ?
   `            description: >
   ${prepend('              ', item.description)}` : null,
   item.semantics?.semantic ?
@@ -60,7 +60,7 @@ export function markdownEntityType(entityType: EntityType) {
     ].filter(nonBlank).join(`\n`)
   ).join('\n')}
   ` + (variables.length ? 
-  `variables:
+  `sap variables in this cube are:
   ${variables.map((variable) =>
     [
     `  - name: ${variable.name}`,
@@ -85,7 +85,7 @@ export function markdownEntityType(entityType: EntityType) {
   }
 
 
-export const CubeVariablePrompt = `If the cube has variables then all variables is required are added to the 'variables' parameter of tool, where each variable has the format:
+export const CubeVariablePrompt = `If the cube has sap variables then all variables is required are added to the 'variables' parameter of tool, where each variable has the format:
 {
   dimension: {
     dimension: variable.referenceDimension,

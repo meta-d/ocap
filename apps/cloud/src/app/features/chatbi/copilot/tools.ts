@@ -195,15 +195,16 @@ export function injectCreateFormulaTool() {
     description: 'Create formula for new measure',
     schema: z.object({
       cube: z.string().describe('The cube name'),
-      name: z.string().describe('The name of calculated measure'),
+      code: z.string().describe('The code of calculated measure'),
+      name: z.string().describe(`The caption of calculated measure in user's language`),
       formula: z.string().describe('The MDX formula for calculated measure'),
       unit: z.string().optional().describe('The unit of measure')
     }),
-    func: async ({ cube, name, formula, unit }) => {
+    func: async ({ cube, code, name, formula, unit }) => {
       logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
       try {
         const key = nanoid()
-        chatbiService.upsertIndicator({ id: key, name, entity: cube, code: name, formula, unit })
+        chatbiService.upsertIndicator({ id: key, entity: cube, code, name, formula, unit })
         const dataSource = chatbiService.dataSourceName()
         chatbiService.appendAiMessageData([
           {
@@ -214,7 +215,7 @@ export function injectCreateFormulaTool() {
             indicators: [key], // indicators snapshot
           }
         ])
-        return `The new calculated measure with key '${key}' has been created!`
+        return `The new calculated measure with key '${code}' has been created!`
       } catch(err: any) {
         return `Error: ${err.message}`
       }

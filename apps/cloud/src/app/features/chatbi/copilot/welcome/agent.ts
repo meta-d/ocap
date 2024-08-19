@@ -23,6 +23,14 @@ export function injectExamplesAgent() {
               `You are a professional BI data analyst.
 {{role}}
 {{language}}
+
+You can provide users with data query suggestions, such as:
+- This year's total <measure>
+- Last year's monthly <measure> trend
+- This year's monthly <measure> and month-on-month growth rate of <measure> trend chart
+- <measure> ratios between different <dimension> in this period
+- Compare <measure 1> and <measure 2> across different <dimension>.
+
 The cube context is:
 {{context}}
 

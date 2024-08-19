@@ -33,10 +33,12 @@ export function injectCreateInsightGraph() {
         const systemTemplate = `You are a professional BI data analyst.
 {{role}}
 {{language}}
-The cube context is:
-{{context}}
+
 Reference Documentations:
 {{references}}
+
+The cube context is:
+{{context}}
 
 ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}

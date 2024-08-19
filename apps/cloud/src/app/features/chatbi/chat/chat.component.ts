@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, model, signal, viewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, model, signal, viewChild } from '@angular/core'
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -74,6 +74,7 @@ export class ChatbiChatComponent {
   readonly prompt = model<string>(null)
   readonly conversation = this.chatbiService.conversation
 
+  readonly examplesEmpty = computed(() => !this.examples()?.length)
   readonly examplesLoading = signal<boolean>(false)
 
   private scrollSub = toObservable(this.conversation)
@@ -82,7 +83,7 @@ export class ChatbiChatComponent {
 
   constructor() {
     effect(() => {
-      if (this.chatbiService.context() && !this.examples()?.length) {
+      if (this.chatbiService.entity() && this.examplesEmpty()) {
         this.refresh()
       }
     }, { allowSignalWrites: true })

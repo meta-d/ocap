@@ -196,8 +196,10 @@ export class ChatbiService {
   }
 
   setEntity(entity: string) {
-    this.error.set(null)
-    this.updateConversation((state) => ({ ...state, entity, examples: [] }))
+    if (this.conversation()?.entity !== entity) {
+      this.error.set(null)
+      this.updateConversation((state) => ({ ...state, entity, examples: [] }))
+    }
   }
 
   setModelId(id: string) {
@@ -387,5 +389,4 @@ export class ChatbiService {
       }
     })
   }
-
 }
