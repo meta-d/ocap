@@ -104,7 +104,7 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 
 					return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
 ${members}
-For the current data analysis, give more analysis suggestions, 3 will be enough.`
+Please give more analysis suggestions about other dimensions or filter by dimensioin members, 3 will be enough.`
 				}
 
 				return `图表答案已经回复给用户了，请不要重复回答了。`

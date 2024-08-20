@@ -308,13 +308,7 @@ ${markdownCubes(this.models.slice(3))}
 				const systemTemplate = `You are a professional BI data analyst.
 {{language}}
 
-如果没有收到用户明确问题时，请根据 models context 调用 'welcome' tool 针对 top 3 的模型给出用户可能关心的问题，问题参考：
-《查看去年 <measure> 随时间月份的变化情况》
-《按照 <dimension> 展示去年总的 <measure>》
-《比较 过去2年 <dimension> 成员之间 <measure> 比例情况》
-《查看今年 <measure> 按照 <dimension> 的排名，前10名。》
-《按照  <dimension> 展示去年总的 <measure>》
-等
+如果没有收到用户明确问题时，请根据 models context 调用 'welcome' tool 针对 top 3 的模型分别给出用户可能关心的 3 条问题。
 
 The models context is:
 {{context}}
@@ -326,7 +320,7 @@ ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
 ${PROMPT_TIME_SLICER}
 
-If you have any questions about how to analysis data (such as 'how to create a formula of calculated measure', 'how to create a time slicer about relative time'), please call 'referencesRetriever' tool to get the reference documentations.
+If you have any questions about how to analysis data (such as 'how to create a formula of calculated measure', 'how to create some type chart', 'how to create a time slicer about relative time'), please call 'referencesRetriever' tool to get the reference documentations.
 
 ${createAgentStepsInstructions(
 	`Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
@@ -334,7 +328,7 @@ ${createAgentStepsInstructions(
 	CubeVariablePrompt,
 	`If the time condition is a specified fixed time (such as 2023 year, 202202, 2020 Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year), please add it to 'timeSlicers'.`,
 	`Final call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
-	`After answer question, call 'giveMoreQuestions' tool to give more analysis suggestions, 3 will be enough.`
+	`After answer question, call 'giveMoreQuestions' tool to give more analysis suggestions `
 )}
 `
 				const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {

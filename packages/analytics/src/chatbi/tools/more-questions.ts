@@ -48,9 +48,9 @@ export function createMoreQuestionsTool(context: Partial<ChatContext>) {
 		},
 		{
 			name: 'giveMoreQuestions',
-			description: 'Give user more question prompts',
+			description: `Give user more question prompts about how to drilldown other dimensions or one of dimension members, for examples: '分析<某维度1>成员<xxx>在<某维度2>上的<度量>分布'`,
 			schema: z.object({
-				questions: z.array(z.string().describe('The suggestion prompt to analysis the data model'))
+				questions: z.array(z.string().describe('The suggestion prompts, 3 will be enough.'))
 			})
 		}
 	)
