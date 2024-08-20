@@ -293,6 +293,7 @@ export const isBaseProperty = (toBe): toBe is BaseProperty =>
 export const isDimension = (toBe): toBe is Dimension =>
   !isNil((toBe as Dimension)?.dimension) && toBe.dimension !== C_MEASURES
 export const isMeasure = (toBe): toBe is Measure => toBe?.dimension === C_MEASURES
+export const isMeasureName = (toBe): toBe is string => toBe.startsWith(`[${C_MEASURES}].`)
 export const isUnbookedData = (toBe: Dimension | Measure | string): boolean => {
   if (isDimension(toBe)) {
     return !!toBe.unbookedData
@@ -310,7 +311,7 @@ export const isVariableSlicer = (toBe): toBe is ISlicer =>
   isSlicer(toBe) && !!toBe.dimension.parameter
 // Helpers
 export function getPropertyName(path: Dimension | Measure | string) {
-  return isString(path) ? path : isDimension(path) ? path?.dimension : path?.measure
+  return isString(path) ? (isMeasureName(path) ? getMeasureName(path) : path) : (isDimension(path) ? path?.dimension : path?.measure)
 }
 
 export function getPropertyHierarchy(path: Dimension | string) {
@@ -319,6 +320,16 @@ export function getPropertyHierarchy(path: Dimension | string) {
 
 export function getPropertyMeasure(path: Measure | PropertyName) {
   return isString(path) ? path : path?.measure
+}
+
+export function getMeasureName(path: Measure | PropertyName) {
+  if (isString(path)) {
+    if (isMeasureName(path)) {
+      return path.replace(/^\[Measures\]\.\[/g, '').replace(/\]$/g, '')
+    }
+    return path
+  }
+  return path?.measure
 }
 
 /**
