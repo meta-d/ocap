@@ -8,8 +8,7 @@ export class UserSessionCommand implements ICommand {
 			tenantId: string
 			organizationId: string
 			userId: string
-			modelId: string
-			cubeName: string
+			chatModelId: string
 		}
 	) {}
 }

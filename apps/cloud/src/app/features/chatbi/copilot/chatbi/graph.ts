@@ -1,26 +1,36 @@
 import { inject } from '@angular/core'
 import { SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { createAgentStepsInstructions, CreateGraphOptions, createReactAgent } from '@metad/copilot'
+import {
+  createAgentStepsInstructions,
+  CreateGraphOptions,
+  createReactAgent,
+  referencesCommandName
+} from '@metad/copilot'
 import {
   CubeVariablePrompt,
   injectDimensionMemberTool,
   makeCubeRulesPrompt,
   PROMPT_RETRIEVE_DIMENSION_MEMBER
 } from '@metad/core'
+import { injectReferencesRetrieverTool } from 'apps/cloud/src/app/@core/copilot'
 import { ChatbiService } from '../../chatbi.service'
 import { injectCreateChartTool, injectCreateFormulaTool } from '../tools'
-import { insightAgentState } from './types'
+import { CHATBI_COMMAND_NAME, insightAgentState } from './types'
 
 export function injectCreateInsightGraph() {
   const chatbiService = inject(ChatbiService)
   const memberRetrieverTool = injectDimensionMemberTool()
   const createChartTool = injectCreateChartTool()
   const createFormulaTool = injectCreateFormulaTool()
+  const referencesRetrieverTool = injectReferencesRetrieverTool(
+    [referencesCommandName(CHATBI_COMMAND_NAME), referencesCommandName('calculated')],
+    { k: 3 }
+  )
 
   const context = chatbiService.context
 
-  const tools = [memberRetrieverTool, createFormulaTool, createChartTool]
+  const tools = [referencesRetrieverTool, memberRetrieverTool, createFormulaTool, createChartTool]
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     return createReactAgent({
       state: insightAgentState,
@@ -43,7 +53,7 @@ The cube context is:
 ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
 
-If you add two or more measures to the chart, and the measures have different units, set the role of the measures with different units to different axes.
+If you have any questions about how to analysis data (such as 'how to create a formula of calculated measure', 'how to create a time slicer about relative time'), please call 'referencesRetriever' tool to get the reference documentations.
 
 ${createAgentStepsInstructions(
   `Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,

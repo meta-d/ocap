@@ -24,7 +24,11 @@
             </div>
             <div class="text-zinc-700 dark:text-zinc-300">
               <p class="mb-1">{{'PAC.ChatBI.SystemMessage_1' | translate: {value: entityType()?.caption || cube() || '', Default: 'Hello, I am the BI copilot of Metad Analytics Cloud. The current dataset is "'+(entityType()?.caption || cube() || 'Empty')+'". You can click the top to switch.'} }}</p>
-              <p class="mb-1">{{'PAC.ChatBI.SystemMessage_2' | translate: {Default: 'You can also try clicking on the samples'} }}: <a class="cursor-pointer underline" (click)="changeBatch()">换一批</a></p>
+              <p class="mb-1">{{'PAC.ChatBI.SystemMessage_2' | translate: {Default: 'You can also try clicking on the samples'} }}: 
+                @if (examples()?.length > 0) {
+                  <a class="cursor-pointer underline" (click)="changeBatch()">{{ 'PAC.ChatBI.AnotherBatch' | translate: {Default: 'Another batch'} }}</a>
+                }
+              </p>
               @if (examplesLoading()) {
                 <pac-chatbi-loading class="w-10 h-10"/>
               } @else {

@@ -170,7 +170,7 @@ export function getMDXProperty(entityType: EntityType, path: string | Dimension)
     if (property?.role === AggregationRole.measure) {
       return {
         dimension: C_MEASURES,
-        members: [path]
+        members: [property.name]
       }
     } else if (property) {
       return {

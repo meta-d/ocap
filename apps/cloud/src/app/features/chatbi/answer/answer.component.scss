@@ -7,9 +7,9 @@
     .answer-container {
       @apply items-stretch;
       .answer-content {
-        @apply overflow-hidden;
+        @apply overflow-x-hidden overflow-y-auto;
         .answer-component {
-          @apply overflow-hidden;
+          @apply overflow-hidden min-h-[400px];
         }
       }
       .ngm-analytical-card, .ngm-analytical-grid {
@@ -24,7 +24,7 @@
 }
 
 .ngm-fullscreen-button.mat-mdc-icon-button {
-  @apply absolute right-0 top-0;
+  @apply absolute right-4 top-4;
 }
 
 :host::ng-deep {

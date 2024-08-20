@@ -1,4 +1,5 @@
 import { CompiledStateGraph, StateGraphArgs } from '@langchain/langgraph'
+import { IChatBIModel } from '@metad/contracts'
 import { AgentState, createCopilotAgentState } from '@metad/copilot'
 import { DSCoreService, EntityType, Indicator } from '@metad/ocap-core'
 import { ChatLarkContext, LarkService } from '@metad/server-core'
@@ -18,8 +19,7 @@ export interface IChatBI {
 export type ChatBIUserSession = {
   tenantId: string
   organizationId: string
-  modelId: string
-  cubeName: string
+  chatModelId: string
 }
 
 export type ChatContext = {
@@ -48,12 +48,18 @@ export type ChatBILarkContext = ChatLarkContext & {
 export type IChatBIConversation = {
   id: string
   graph: CompiledStateGraph<ChatBIAgentState, Partial<ChatBIAgentState>, '__start__' | 'agent' | 'tools'>
+  models: IChatBIModel[]
+
   upsertIndicator(indicator: Indicator): void
   newThread(): void
   destroy(): void
   answerMessage(data: any): Promise<any>
   getCubeCache(modelId: string, cubeName: string): Promise<EntityType>
   setCubeCache(modelId: string, cubeName: string, data: any): Promise<void>
+  messageWithEndAction(data: any, action?: (action: any) => void): void
+
+  ask(content: string): Promise<void>
+  end(): Promise<void>
 }
 
 export const C_CHATBI_END_CONVERSATION = 'chatbi-end-conversation'

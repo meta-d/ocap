@@ -204,7 +204,8 @@
       "Top": "前",
       "You": "你",
       "ColumnChart": "柱形图",
-      "LineChart": "线图"
+      "LineChart": "线图",
+      "Models": "模型"
     },
     "MENU": {
       "Certification": "认证",
@@ -1399,7 +1400,9 @@
       "EditModel": "编辑模型",
       "DeleteModel": "删除模型",
       "SemanticModel": "语义模型",
-      "Caption": "简要描述"
+      "Caption": "简要描述",
+      "AddModel": "添加模型",
+      "AnotherBatch": "换一批"
     },
     "Home": {
       "Insight": {

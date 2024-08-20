@@ -9,9 +9,9 @@ import {
 	DataSettingsSchema,
 	Dimension,
 	EntityType,
+	FilteringLogic,
 	formatNumber,
 	formatShortNumber,
-	getChartCategory,
 	getChartSeries,
 	getEntityHierarchy,
 	getEntityProperty,
@@ -31,9 +31,11 @@ import {
 	TimeRangesSlicer,
 	timeRangesSlicerAsString,
 	TimeSlicerSchema,
+	toAdvancedFilter,
 	tryFixDimension,
 	tryFixSlicer,
-	tryFixVariableSlicer
+	tryFixVariableSlicer,
+	workOutTimeRangeSlicers
 } from '@metad/ocap-core'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
@@ -98,11 +100,12 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 						conversation,
 						answer as ChatAnswer
 					)
-					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers)) : 'Empty'
+					// Max limit 20 members 
+					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers).slice(0, 20)) : 'Empty'
 
 					return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
 ${members}
-For the current data analysis, give more analysis suggestions, 3 will be enough.`
+Please give more analysis suggestions about other dimensions or filter by dimensioin members, 3 will be enough.`
 				}
 
 				return `图表答案已经回复给用户了，请不要重复回答了。`
@@ -141,7 +144,12 @@ async function drawChartMessage(
 	if (answer.slicers) {
 		slicers.push(...answer.slicers.map((slicer) => tryFixSlicer(slicer, entityType)))
 	}
-	slicers.push(...(answer.timeSlicers?.map((item) => ({...item, currentDate: 'TODAY'})) ?? []))
+	if (answer.timeSlicers) {
+		const timeSlicers = answer.timeSlicers
+			.map((slicer) => workOutTimeRangeSlicers(new Date(), { ...slicer, currentDate: 'TODAY' }, entityType))
+			.map((ranges) => toAdvancedFilter(ranges, FilteringLogic.And))
+		slicers.push(...timeSlicers)
+	}
 
 	const presentationVariant: PresentationVariant = {}
 	if (answer.top) {
@@ -303,8 +311,11 @@ function createLineChart(
 		const categoryCaption = categoryProperty.memberCaption
 		chart_spec[categoryField] = categoryCaption
 		fields.push(categoryCaption)
-	} else {
-		categoryProperty = getEntityHierarchy(entityType, getChartCategory(chartAnnotation))
+	} else if (chartAnnotation.dimensions?.length) {
+		categoryProperty = getEntityHierarchy(entityType, chartAnnotation.dimensions[0])
+		if (!categoryProperty) {
+			throw new Error(`Not found dimension '${chartAnnotation.dimensions[0].dimension}'`)
+		}
 		const categoryCaption = categoryProperty.memberCaption
 		chart_spec[categoryField] = categoryCaption
 		fields.push(categoryCaption)

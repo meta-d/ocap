@@ -50,8 +50,8 @@ export function serializeUniqueName(dimension: string, hierarchy?: string, level
  * 通过字段名或者 dimension 配置获取 dimension property
  */
 export function getEntityProperty<T = Property>(entityType: EntityType, path: Dimension | Measure | string): T {
-  return (entityType?.properties[getPropertyName(path)] ??
-    entityType?.parameters?.[getPropertyName(path)]) as unknown as T
+  const name = getPropertyName(path)
+  return (entityType?.properties[name] ?? entityType?.parameters?.[name]) as unknown as T
 }
 
 /**
@@ -125,13 +125,6 @@ export function getEntityDimensions(entityType: EntityType): Property[] {
     (item) => item.role === AggregationRole.dimension && isVisible(item)
   )
 }
-
-// export function getEntityHierarchies(entityType: EntityType): Property[] {
-//   if (isNil(entityType?.properties)) {
-//     return []
-//   }
-//   return Object.values(entityType?.properties).filter((item) => item.role === AggregationRole.hierarchy)
-// }
 
 export function getEntityDimensionAndHierarchies(entityType: EntityType): Property[] {
   if (isNil(entityType?.properties)) {

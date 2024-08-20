@@ -9,7 +9,7 @@ export function createEndTool(context: ChatContext) {
 	const { conversation } = context
 	return tool(
 		async (answer): Promise<string> => {
-			conversation.newThread()
+			await conversation.end()
 			return 'The conversation is end!'
 		},
 		{
@@ -60,6 +60,6 @@ export async function errorWithEndMessage(context: ChatLarkContext, error: strin
 	larkService.createAction(context.chatId, data)
 		.pipe(take(1))
 		.subscribe(() => {
-			conversation.newThread()
+			conversation.end()
 		})
 }

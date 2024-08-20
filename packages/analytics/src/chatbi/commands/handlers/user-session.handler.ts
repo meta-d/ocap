@@ -1,3 +1,4 @@
+import { IChatBIModel } from '@metad/contracts'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { ChatBIService } from '../../chatbi.service'
 import { UserSessionCommand } from '../user-session.command'
@@ -6,13 +7,12 @@ import { UserSessionCommand } from '../user-session.command'
 export class UserSessionHandler implements ICommandHandler<UserSessionCommand> {
 	constructor(private readonly chatBIService: ChatBIService) {}
 
-	public async execute(command: UserSessionCommand): Promise<any> {
+	public async execute(command: UserSessionCommand): Promise<IChatBIModel> {
 		const { input } = command
-		this.chatBIService.upsertUserSession(input.userId, {
+		return await this.chatBIService.upsertUserSession(input.userId, {
 			tenantId: input.tenantId,
 			organizationId: input.organizationId,
-			modelId: input.modelId,
-			cubeName: input.cubeName,
+			chatModelId: input.chatModelId
 		})
 	}
 }

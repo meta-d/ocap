@@ -31,7 +31,7 @@ export function injectExamplesAgent() {
 You can provide users with data query suggestions, such as:
 - This year's total <measure>
 - Last year's monthly <measure> trend
-- <measure> ratios between different <dimension> in this period
+- <measure> ratios between different <dimension> in this month.
 - Compare <measure 1> and <measure 2> across different <dimension>.
 
 The cube context is:
@@ -64,8 +64,6 @@ Give some example prompts for analysis the data cube.
 
             return chain
               .pipe((result) => {
-                console.log(result)
-
                 chatMessageHistory.addMessages([
                   new HumanMessage(state.input),
                   new AIMessage(result.examples.join('\n'))
