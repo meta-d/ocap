@@ -3,3 +3,4 @@ export * from './copilot-knowledge.service' // 由 index 引用容易造成循�
 export * from './commands/index'
 export * from './retriever'
 export * from './few-shot'
+export * from './references-retriever'

@@ -5,7 +5,6 @@ import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { filter, Observable, Subject, Subscriber } from 'rxjs'
 import { TenantService } from '../tenant'
-import { client } from './client'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
 import { ChatLarkContext, LarkMessage } from './types'
 
@@ -13,7 +12,20 @@ import { ChatLarkContext, LarkMessage } from './types'
 export class LarkService {
 	private readonly logger = new Logger(LarkService.name)
 
+	private client = environment.larkConfig.appId ? new lark.Client({
+		appId: environment.larkConfig.appId,
+		appSecret: environment.larkConfig.appSecret,
+		appType: lark.AppType.SelfBuild,
+		domain: lark.Domain.Feishu
+	}) : null
+
 	private actions = new Map<string, Subject<any>>()
+	private bot: {
+		app_name: string
+		avatar_url: string
+		ip_white_list: string[]
+		open_id: string
+	} = null
 
 	eventDispatcher = new lark.EventDispatcher({
 		verificationToken: environment.larkConfig.verificationToken,
@@ -55,10 +67,11 @@ export class LarkService {
 			const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
 			const organizationId = environment.larkConfig.organizationId
 			const chatId = data.message.chat_id
+			
 			if (
 				!(
 					data.message.chat_type === 'p2p' ||
-					data.message.mentions?.some((mention) => mention.id.open_id === environment.larkConfig.appOpenId)
+					data.message.mentions?.some((mention) => mention.id.open_id === this.bot.open_id)
 				)
 			) {
 				return true
@@ -133,8 +146,8 @@ export class LarkService {
 			// 	}
 			// 	return true
 			// }
-
-			console.log(data)
+			this.logger.debug('im.message.receive_v1:')
+			this.logger.debug(data)
 			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
 				new LarkMessageCommand({
 					tenant,
@@ -180,9 +193,10 @@ export class LarkService {
 			 * 
 			 */
 			const { event_key } = data
+			this.logger.debug('application.bot.menu_v6:')
+			this.logger.debug(data)
 			if (event_key.startsWith('select_cube:')) {
 				const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
-				console.log(data)
 				const result = await this.commandBus.execute<LarkBotMenuCommand, Observable<any>>(
 					new LarkBotMenuCommand({
 						tenant,
@@ -191,7 +205,7 @@ export class LarkService {
 				)
 
 				result.pipe(filter(nonNullable)).subscribe(async (message) => {
-					await client.im.message.create(message)
+					await this.client.im.message.create(message)
 				})
 			}
 
@@ -221,7 +235,8 @@ export class LarkService {
 				[Symbol(event-type)]: 'card.action.trigger'
 			  }
 			 */
-			console.log(data)
+			this.logger.debug('card.action.trigger:')
+			this.logger.debug(data)
 			const messageId = data.context.open_message_id
 			if (messageId && this.actions.get(messageId)) {
 				this.actions.get(messageId).next(data)
@@ -236,11 +251,25 @@ export class LarkService {
 	constructor(
 		private readonly tenantService: TenantService,
 		private readonly commandBus: CommandBus
-	) {}
+	) {
+		if (this.client) {
+			this.getBotInfo()
+		}
+	}
+
+	async getBotInfo() {
+		const res = await this.client.request({
+			method: 'GET',
+			url: 'https://open.feishu.cn/open-apis/bot/v3/info',
+			data: {},
+			params: {}
+		})
+		this.bot = res.bot
+	}
 
 	async createMessage(message: LarkMessage) {
 		try {
-			return await client.im.message.create(message)
+			return await this.client.im.message.create(message)
 		} catch (err) {
 			this.logger.error(err)
 		}
@@ -255,7 +284,7 @@ export class LarkService {
 		}
 	}) {
 		try {
-			return await client.im.message.patch(payload)
+			return await this.client.im.message.patch(payload)
 		} catch (err) {
 			this.logger.error(err)
 		}
@@ -333,16 +362,18 @@ export class LarkService {
 
 	createAction(chatId: string, content: any) {
 		return new Observable<string>((subscriber: Subscriber<unknown>) => {
-			client.im.message.create({
-				data: {
-					receive_id: chatId,
-					content: JSON.stringify(content),
-					msg_type: 'interactive'
-				},
-				params: {
-					receive_id_type: 'chat_id'
-				}
-			}).then((res) => {
+			this.client.im.message
+				.create({
+					data: {
+						receive_id: chatId,
+						content: JSON.stringify(content),
+						msg_type: 'interactive'
+					},
+					params: {
+						receive_id_type: 'chat_id'
+					}
+				})
+				.then((res) => {
 					const response = new Subject<any>()
 					this.actions.set(res.data.message_id, response)
 					response.subscribe({
@@ -363,7 +394,7 @@ export class LarkService {
 
 	patchAction(messageId: string, content: any): Observable<string> {
 		return new Observable<string>((subscriber: Subscriber<unknown>) => {
-			client.im.message
+			this.client.im.message
 				.patch({
 					data: {
 						content: JSON.stringify(content)

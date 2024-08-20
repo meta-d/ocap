@@ -1,7 +1,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { BaseMessage, HumanMessage, isAIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
 import { FewShotPromptTemplate, SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { ToolInputParsingException } from '@langchain/core/tools'
+import { DynamicStructuredTool, ToolInputParsingException } from '@langchain/core/tools'
 import { CompiledStateGraph, END, GraphValueError, START } from '@langchain/langgraph'
 import { IChatBIModel, ISemanticModel, OrderTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, nanoid, referencesCommandName } from '@metad/copilot'
@@ -17,13 +17,11 @@ import {
 import {
 	Copilot,
 	CopilotCheckpointSaver,
-	CopilotKnowledgeRetriever,
 	CopilotKnowledgeService,
-	createCopilotKnowledgeRetriever,
-	createExampleFewShotPrompt
+	createExampleFewShotPrompt,
+	createReferencesRetrieverTool
 } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
-import { formatDocumentsAsString } from 'langchain/util/document'
 import { groupBy } from 'lodash'
 import { BehaviorSubject, firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
@@ -39,10 +37,11 @@ import {
 	createDimensionMemberRetrieverTool,
 	createEndTool,
 	createFormulaTool,
-	createPickCubeTool,
 	errorWithEndMessage
 } from './tools'
 import { C_CHATBI_END_CONVERSATION, ChatBILarkContext, IChatBIConversation, insightAgentState } from './types'
+import { createMoreQuestionsTool } from './tools/more-questions'
+import { createWelcomeTool } from './tools/welcome'
 
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
@@ -67,6 +66,7 @@ export class ChatBIConversation implements IChatBIConversation {
 	get tenantId() {
 		return this.chatContext.tenant.id
 	}
+	// 知识库跟着 copilot 的配置
 	get organizationId() {
 		return this.copilot.organizationId
 	}
@@ -75,10 +75,12 @@ export class ChatBIConversation implements IChatBIConversation {
 
 	private readonly indicators$ = new BehaviorSubject<Indicator[]>([])
 
-	public copilotKnowledgeRetriever: CopilotKnowledgeRetriever
+	// public copilotKnowledgeRetriever: CopilotKnowledgeRetriever
 	public exampleFewShotPrompt: FewShotPromptTemplate
+	private referencesRetrieverTool: DynamicStructuredTool = null
+	private dimensionMemberRetrieverTool: DynamicStructuredTool = null
 
-	private models: IChatBIModel[]
+	public models: IChatBIModel[]
 
 	private readonly status$ = new BehaviorSubject<'init' | 'pending' | 'running'>('init')
 
@@ -94,13 +96,6 @@ export class ChatBIConversation implements IChatBIConversation {
 		private readonly copilotKnowledgeService: CopilotKnowledgeService,
 		private readonly chatBIService: ChatBIService
 	) {
-		this.copilotKnowledgeRetriever = createCopilotKnowledgeRetriever(this.copilotKnowledgeService, {
-			tenantId: this.tenantId,
-			// 知识库跟着 copilot 的配置
-			organizationId: this.organizationId,
-			command: [referencesCommandName(this.commandName), referencesCommandName('calculated')],
-			k: 3
-		})
 		this.exampleFewShotPrompt = createExampleFewShotPrompt(this.copilotKnowledgeService, {
 			tenantId: this.tenantId,
 			// 知识库跟着 copilot 的配置
@@ -108,6 +103,21 @@ export class ChatBIConversation implements IChatBIConversation {
 			command: this.commandName,
 			k: 1
 		})
+
+		this.referencesRetrieverTool = createReferencesRetrieverTool(this.copilotKnowledgeService, {
+			tenantId: this.tenantId,
+			// 知识库跟着 copilot 的配置
+			organizationId: this.organizationId,
+			command: [referencesCommandName(this.commandName), referencesCommandName('calculated')],
+			k: 3
+		})
+
+		this.dimensionMemberRetrieverTool = createDimensionMemberRetrieverTool(
+			this.tenantId,
+			// 知识库跟着 copilot 的配置
+			this.organizationId,
+			createDimensionMemberRetriever({ logger: this.logger }, this.semanticModelMemberService)
+		)
 
 		// Indicators
 		this.indicators$.pipe(takeUntil(this.destroy$)).subscribe(async (indicators) => {
@@ -227,7 +237,6 @@ ${markdownCubes(this.models.slice(3))}
 	createAgentGraph() {
 		const chatId = this.chatId
 		const chatContext = this.chatContext
-		const memberRetriever = createDimensionMemberRetriever({ logger: this.logger }, this.semanticModelMemberService)
 		const answerTool = createChatAnswerTool(
 			{
 				chatId,
@@ -238,15 +247,15 @@ ${markdownCubes(this.models.slice(3))}
 			},
 			chatContext
 		)
-		const pickCubeTool = createPickCubeTool(
-			{
-				chatId,
-				logger: this.logger,
-				larkService: chatContext.larkService,
-				dsCoreService: this.dsCoreService
-			},
-			this.models
-		)
+		// const pickCubeTool = createPickCubeTool(
+		// 	{
+		// 		chatId,
+		// 		logger: this.logger,
+		// 		larkService: chatContext.larkService,
+		// 		dsCoreService: this.dsCoreService
+		// 	},
+		// 	this.models
+		// )
 
 		const getCubeContext = createCubeContextTool(
 			{
@@ -271,17 +280,17 @@ ${markdownCubes(this.models.slice(3))}
 			chatContext
 		)
 
+		const welcomeTool = createWelcomeTool({ conversation: this })
+		const moreQuestionsTool = createMoreQuestionsTool({ conversation: this })
+
 		const tools = [
-			createDimensionMemberRetrieverTool(
-				this.tenantId,
-				// 知识库跟着 copilot 的配置
-				this.organizationId,
-				memberRetriever
-			),
+			this.dimensionMemberRetrieverTool,
+			this.referencesRetrieverTool,
 			getCubeContext,
+			welcomeTool,
 			createFormula,
 			answerTool,
-			// pickCubeTool,
+			moreQuestionsTool,
 			endTool
 		]
 
@@ -298,36 +307,26 @@ ${markdownCubes(this.models.slice(3))}
 			messageModifier: async (state) => {
 				const systemTemplate = `You are a professional BI data analyst.
 {{language}}
-在最开始没有收到用户明确问题时，根据 models context 列出的可选择的 cubes 信息，请使用 'getCubeContext' tool 获取 top 3 cubes 的 info context，然后根据这些 cube 维度 度量和指标信息给出 welcome message。
-Welcome message 格式如下：
 
-Hi, 我是 **ChatBI**, 我可以根据你的问题分析数据、生成图表, 猜你想问：
-- 关于数据集 AAAAA, 您可能关心的问题：
-	《查看去年 <measure> 随时间月份的变化情况》
-	《按照 <dimension> 展示去年总的 <measure>》
-	《比较 过去2年 <dimension> 成员之间 <measure> 比例情况》
-- 关于数据集 BBBBB, 您可能关心的问题：
-	《查看今年 <measure> 按照 <dimension> 的排名，前10名。》
-	《按照  <dimension> 展示去年总的 <measure>》
-  ...
-
-还有更多模型可以询问：
-- 模型信息
-- 模型信息
-
-您也可以对我说“**结束对话**”来结束本轮对话。
+如果没有收到用户明确问题时，请根据 models context 调用 'welcome' tool 针对 top 3 的模型给出用户可能关心的问题，问题参考：
+《查看去年 <measure> 随时间月份的变化情况》
+《按照 <dimension> 展示去年总的 <measure>》
+《比较 过去2年 <dimension> 成员之间 <measure> 比例情况》
+《查看今年 <measure> 按照 <dimension> 的排名，前10名。》
+《按照  <dimension> 展示去年总的 <measure>》
+等
 
 The models context is:
 {{context}}
 
-如果用户询问了更多模型的相关问题，没有相应 cube context 时请调用 'getCubeContext' tool 获取信息。
+对于用户询问的数据模型，请先调用 'getCubeContext' tool 获取详细信息后再回答问题。
 
 If the user explicitly wants to end the conversation, call the 'end' tool to end.
 ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
 ${PROMPT_TIME_SLICER}
 
-If you add two or more measures to the chart, and the measures have different units, set the role of the measures with different units to different axes.
+If you have any questions about how to analysis data (such as 'how to create a formula of calculated measure', 'how to create a time slicer about relative time'), please call 'referencesRetriever' tool to get the reference documentations.
 
 ${createAgentStepsInstructions(
 	`Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
@@ -335,7 +334,7 @@ ${createAgentStepsInstructions(
 	CubeVariablePrompt,
 	`If the time condition is a specified fixed time (such as 2023 year, 202202, 2020 Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year), please add it to 'timeSlicers'.`,
 	`Final call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
-	`For the current data analysis, give more analysis suggestions, 3 will be enough.`
+	`After answer question, call 'giveMoreQuestions' tool to give more analysis suggestions, 3 will be enough.`
 )}
 `
 				const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
@@ -372,14 +371,13 @@ ${createAgentStepsInstructions(
 		}
 
 		const content = await this.exampleFewShotPrompt.format({ input: text })
-		const references = await this.copilotKnowledgeRetriever.pipe(formatDocumentsAsString).invoke(content)
+		// const references = await this.copilotKnowledgeRetriever.pipe(formatDocumentsAsString).invoke(content)
 
 		const streamResults = await this.graph.stream(
 			{
 				input: text,
 				messages: [new HumanMessage(content)],
 				context,
-				references
 			},
 			{
 				configurable: {
@@ -441,10 +439,13 @@ ${createAgentStepsInstructions(
 
 					if (content) {
 						verboseContent = content
-						this.messageWithEndAction({
-							tag: 'markdown',
-							content: verboseContent
-						})
+						this.logger.debug(`[ChatBI] [Graph]: verbose content`, verboseContent)
+						// this.messageWithEndAction([
+						// 	{
+						// 		tag: 'markdown',
+						// 		content: verboseContent
+						// 	}
+						// ])
 					}
 					// if (abort()) {
 					//   break
@@ -500,14 +501,14 @@ ${createAgentStepsInstructions(
 		await this.chatBIService.cacheManager.set(modelId + '/' + cubeName, data)
 	}
 
-	messageWithEndAction(content: any) {
+	messageWithEndAction(contents: any[], callback?: (action: any) => void | Promise<void>) {
 		const thinkingMessageId = this.thinkingMessageId
 		const message = {
 			config: {
 				wide_screen_mode: true
 			},
 			elements: [
-				content,
+				...contents,
 				{
 					tag: 'action',
 					actions: [
@@ -542,6 +543,8 @@ ${createAgentStepsInstructions(
 					this.chatContext,
 					`对话已结束。如果您有其他问题，欢迎随时再来咨询。`
 				)
+			} else {
+				callback?.(action)
 			}
 		})
 	}

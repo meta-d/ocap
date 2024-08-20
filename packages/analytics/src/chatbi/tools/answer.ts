@@ -303,8 +303,11 @@ function createLineChart(
 		const categoryCaption = categoryProperty.memberCaption
 		chart_spec[categoryField] = categoryCaption
 		fields.push(categoryCaption)
-	} else {
-		categoryProperty = getEntityHierarchy(entityType, getChartCategory(chartAnnotation))
+	} else if (chartAnnotation.dimensions?.length) {
+		categoryProperty = getEntityHierarchy(entityType, chartAnnotation.dimensions[0])
+		if (!categoryProperty) {
+			throw new Error(`Not found dimension '${chartAnnotation.dimensions[0].dimension}'`)
+		}
 		const categoryCaption = categoryProperty.memberCaption
 		chart_spec[categoryField] = categoryCaption
 		fields.push(categoryCaption)
