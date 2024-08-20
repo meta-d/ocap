@@ -9,9 +9,9 @@ import {
 	DataSettingsSchema,
 	Dimension,
 	EntityType,
+	FilteringLogic,
 	formatNumber,
 	formatShortNumber,
-	getChartCategory,
 	getChartSeries,
 	getEntityHierarchy,
 	getEntityProperty,
@@ -31,9 +31,11 @@ import {
 	TimeRangesSlicer,
 	timeRangesSlicerAsString,
 	TimeSlicerSchema,
+	toAdvancedFilter,
 	tryFixDimension,
 	tryFixSlicer,
-	tryFixVariableSlicer
+	tryFixVariableSlicer,
+	workOutTimeRangeSlicers
 } from '@metad/ocap-core'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
@@ -141,7 +143,12 @@ async function drawChartMessage(
 	if (answer.slicers) {
 		slicers.push(...answer.slicers.map((slicer) => tryFixSlicer(slicer, entityType)))
 	}
-	slicers.push(...(answer.timeSlicers?.map((item) => ({...item, currentDate: 'TODAY'})) ?? []))
+	if (answer.timeSlicers) {
+		const timeSlicers = answer.timeSlicers
+			.map((slicer) => workOutTimeRangeSlicers(new Date(), { ...slicer, currentDate: 'TODAY' }, entityType))
+			.map((ranges) => toAdvancedFilter(ranges, FilteringLogic.And))
+		slicers.push(...timeSlicers)
+	}
 
 	const presentationVariant: PresentationVariant = {}
 	if (answer.top) {

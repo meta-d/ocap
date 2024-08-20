@@ -6,6 +6,7 @@ import {
   FilteringLogic,
   FilterOperator,
   getPropertyHierarchy,
+  IAdvancedFilter,
   IFilter,
   IMember,
   isAdvancedFilter,
@@ -180,9 +181,7 @@ export function slicerAsString(slicer: ISlicer) {
       case FilterOperator.BT:
         return `${slicer.members[0]?.key}...${slicer.members[1]?.key}`
       case FilterOperator.EQ:
-        return slicer.members
-          .map((member) => `${member.caption || getValueString(member.key)}`)
-          .join(', ')
+        return slicer.members.map((member) => `${member.caption || getValueString(member.key)}`).join(', ')
       case FilterOperator.NE:
         return `≠${value}`
       case FilterOperator.LT:
@@ -204,7 +203,10 @@ export function slicerAsString(slicer: ISlicer) {
     }
   }
 
-  return (slicer.exclude ? '≠' : '') + (slicer.members?.map((member) => `${member.caption || getValueString(member.key)}`).join(', ') ?? '')
+  return (
+    (slicer.exclude ? '≠' : '') +
+    (slicer.members?.map((member) => `${member.caption || getValueString(member.key)}`).join(', ') ?? '')
+  )
 }
 
 function getValueString(value) {
@@ -262,4 +264,13 @@ export function advancedSlicerAsString(slicer: AdvancedSlicer, i18nOnContext?: s
   return `${slicer.operator}(${isArray(slicer.value) ? compact(slicer.value) : slicer.value},${slicer.measure}) ${
     i18nOnContext ?? 'on context'
   }:(${slicer.context.map(({ dimension }) => dimension)})`
+}
+
+export function toAdvancedFilter(slicers: ISlicer[], filteringLogic: FilteringLogic = FilteringLogic.Or): IAdvancedFilter | ISlicer {
+  return slicers.length > 1
+    ? ({
+        filteringLogic,
+        children: slicers
+      } as IAdvancedFilter)
+    : slicers[0]
 }

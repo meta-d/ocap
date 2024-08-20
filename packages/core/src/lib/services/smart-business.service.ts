@@ -1,6 +1,6 @@
 import { catchError, distinctUntilChanged, EMPTY, filter, Observable, shareReplay, switchMap } from 'rxjs'
 import { DSCoreService } from '../ds-core.service'
-import { FilterMergeMode, putFilter } from '../filter'
+import { FilterMergeMode, putFilter, toAdvancedFilter } from '../filter'
 import { getEntityProperty, isTimeRangesSlicer, QueryReturn, workOutTimeRangeSlicers } from '../models'
 import { FilteringLogic, IFilter, isAdvancedSlicer, ISlicer, isSlicer, QueryOptions } from '../types'
 import { isEmpty, isEqual, isString, nonNullable } from '../utils'
@@ -108,15 +108,7 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
           const { today } = this.dsCoreService.getToday()
           const ranges = workOutTimeRangeSlicers(today, v, entityType)
 
-          _filters = putFilter(
-            _filters,
-            (ranges.length > 1
-              ? {
-                  filteringLogic: FilteringLogic.And,
-                  children: ranges
-                }
-              : ranges[0]) as IFilter
-          )
+          _filters = putFilter(_filters, toAdvancedFilter(ranges, FilteringLogic.And))
         } else if (isSlicer(v) && !isEmpty(v.members)) {
           _filters.push(v)
           // _filters = putFilter(_filters, v)
