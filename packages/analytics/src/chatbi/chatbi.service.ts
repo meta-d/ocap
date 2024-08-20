@@ -80,19 +80,21 @@ export class ChatBIService implements IChatBI {
 		)
 	}
 
-	upsertUserSession(userId: string, value: Partial<ChatBIUserSession>) {
+	async upsertUserSession(userId: string, value: Partial<ChatBIUserSession>) {
+		const chatModel = await this.modelService.findOneByConditions({ tenantId: value.tenantId, organizationId: value.organizationId, id: value.chatModelId })
 		const session = this.userSessions[userId]
-		if (session && (session.cubeName !== value.cubeName || session.modelId !== value.modelId)) {
-			// Clear user's conversation context
-			for (const key of this.userConversations.keys()) {
-				if (key.startsWith(userId)) {
-					this.userConversations.get(userId).context = null
-				}
-			}
-		}
+		// if (session && session.chatModelId !== value.chatModelId) {
+		// 	// Clear user's conversation context
+		// 	for (const key of this.userConversations.keys()) {
+		// 		if (key.startsWith(userId)) {
+		// 			this.userConversations.get(userId).context = null
+		// 		}
+		// 	}
+		// }
 		this.userSessions[userId] = {
 			...(session ?? {}),
 			...value
 		} as ChatBIUserSession
+		return chatModel
 	}
 }

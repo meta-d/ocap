@@ -8,72 +8,82 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 	const { conversation } = context
 	return tool(
 		async ({ models, more }): Promise<string> => {
-			logger.debug(`[ChatBI] [Copilot Tool] [Welcome] models: ${JSON.stringify(models, null, 2)}`)
+			logger.debug(
+				`[ChatBI] [Copilot Tool] [Welcome] models: ${JSON.stringify(models, null, 2)} and more: ${JSON.stringify(more, null, 2)}`
+			)
 
-			conversation.messageWithEndAction(
-				[
-					{
-						tag: 'markdown',
-						content: 'Hi, 我是 ChatBI, 我可以根据你的问题分析数据、生成图表, 猜你想问：'
-					},
-					...flatten(
-						models.map(({ modelId, cubeName, prompts }) => {
-							const chatModel = conversation.models.find(
-								(model) => model.modelId === modelId && model.entity === cubeName
-							)
-							return [
+			const elements = []
+			elements.push({
+				tag: 'markdown',
+				content: 'Hi, 我是 ChatBI, 我可以根据你的问题分析数据、生成图表, 猜你想问：'
+			})
+			elements.push(...flatten(
+				models.map(({ modelId, cubeName, prompts }) => {
+					const chatModel = conversation.models.find(
+						(model) => model.modelId === modelId && model.entity === cubeName
+					)
+					return [
+						{
+							tag: 'markdown',
+							content: `- 关于数据集 “${chatModel.entityCaption}”, 您可能关心的问题：`
+						},
+						{
+							tag: 'column_set',
+							columns: [
 								{
-									tag: 'markdown',
-									content: `- 关于数据集 “${chatModel.entityCaption}”, 您可能关心的问题：`
+									tag: 'column',
+									width: '23px',
 								},
-								...prompts.map((prompt) => {
-									return {
-										tag: 'column_set',
-										flex_mode: 'none',
-										background_style: 'default',
-										horizontal_spacing: '0px',
-										horizontal_align: 'left',
-										columns: [
-											{
-												tag: 'column',
-												width: '23px',
-												vertical_align: 'top',
-												vertical_spacing: '28px',
-												elements: []
-											},
-											{
-												tag: 'column',
-												elements: [
-													{
-														tag: 'button',
-														text: {
-															tag: 'plain_text',
-															content: prompt
-														},
-														type: 'primary_text',
-														complex_interaction: true,
-														width: 'default',
-														size: 'small',
-														value: `分析数据集 “${chatModel.entityCaption}”：` + prompt
-													}
-												]
+								{
+									tag: 'column',
+									elements: [
+										...prompts.map((prompt) => {
+											const fullPrompt =
+												`分析数据集 “${chatModel.entityCaption}”：` + prompt
+											return {
+												tag: 'button',
+												text: {
+													tag: 'plain_text',
+													content: prompt
+												},
+												type: 'primary_text',
+												complex_interaction: true,
+												width: 'default',
+												size: 'small',
+												value: fullPrompt,
+												hover_tips: {
+													tag: 'plain_text',
+													content: fullPrompt
+												}
 											}
-										],
-										margin: '16px 0px 0px 0px'
-									}
-								})
-							]
-						})
-					),
-					...(more?.length
-						? [
-								{
-									tag: 'markdown',
-									content: `- 更多数据集：`
-								},
+										})
+									]
+								}
+							],
+						}
+					]
+				})
+			))
+			if (more?.length) {
+				elements.push({
+					tag: 'markdown',
+					content: `- 更多数据集：`
+				})
+
+				elements.push({
+					tag: 'column_set',
+					columns: [
+						{
+							tag: 'column',
+							width: '23px',
+						},
+						{
+							tag: 'column',
+							elements: [
 								...more.map(({ modelId, cubeName }) => {
 									const chatModel = conversation.models.find(
-										(model) => model.modelId === modelId && model.entity === cubeName
+										(model) =>
+											model.modelId === modelId && model.entity === cubeName
 									)
 
 									if (!chatModel) {
@@ -81,35 +91,31 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 									}
 
 									return {
-										tag: 'action',
-										actions: [
-											{
-												tag: 'button',
-												text: {
-													tag: 'plain_text',
-													content: chatModel.entityCaption
-												},
-												type: 'primary_text',
-												complex_interaction: true,
-												width: 'default',
-												size: 'small',
-												value: `重新给出 welcome，将数据集 “${chatModel.entityCaption}” 排在首位`
-											}
-										]
+										tag: 'button',
+										text: {
+											tag: 'plain_text',
+											content: chatModel.entityCaption
+										},
+										type: 'primary_text',
+										complex_interaction: true,
+										width: 'default',
+										size: 'small',
+										value: `重新给出 welcome，将数据集 “${chatModel.entityCaption}” 排在首位`
 									}
 								})
 							]
-						: []),
-					{
-						tag: 'markdown',
-						content: `您也可以对我说 “**结束对话**” 来结束本轮对话。`
-					}
-				],
-				(action) => {
-					console.log(action)
+						}
+					]
+				})
+			}
+			elements.push({
+				tag: 'markdown',
+				content: `您也可以对我说 “**结束对话**” 来结束本轮对话。`
+			})
+
+			conversation.messageWithEndAction(elements, (action) => {
 					conversation.ask(action.value)
-				}
-			)
+				})
 
 			return 'Welcome info has sent to user, waiting for user response...'
 		},
@@ -133,9 +139,9 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 								modelId: z.string(),
 								cubeName: z.string()
 							})
+							.optional()
 							.describe('Model cube')
 					)
-					.optional()
 					.describe('The more models')
 			})
 		}

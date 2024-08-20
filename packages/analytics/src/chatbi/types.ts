@@ -19,8 +19,7 @@ export interface IChatBI {
 export type ChatBIUserSession = {
   tenantId: string
   organizationId: string
-  modelId: string
-  cubeName: string
+  chatModelId: string
 }
 
 export type ChatContext = {
@@ -60,6 +59,7 @@ export type IChatBIConversation = {
   messageWithEndAction(data: any, action?: (action: any) => void): void
 
   ask(content: string): Promise<void>
+  end(): Promise<void>
 }
 
 export const C_CHATBI_END_CONVERSATION = 'chatbi-end-conversation'

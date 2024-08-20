@@ -100,7 +100,8 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 						conversation,
 						answer as ChatAnswer
 					)
-					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers)) : 'Empty'
+					// Max limit 20 members 
+					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers).slice(0, 20)) : 'Empty'
 
 					return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
 ${members}

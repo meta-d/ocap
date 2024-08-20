@@ -7,6 +7,7 @@ export class LarkBotMenuCommand implements ICommand {
 	constructor(
 		public readonly input: {
 			tenant: ITenant
+			organizationId: string
 			message: {
 				schema: '2.0' | '1.0'
 				event_id: string

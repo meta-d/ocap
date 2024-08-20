@@ -12,12 +12,14 @@ import { ChatLarkContext, LarkMessage } from './types'
 export class LarkService {
 	private readonly logger = new Logger(LarkService.name)
 
-	private client = environment.larkConfig.appId ? new lark.Client({
-		appId: environment.larkConfig.appId,
-		appSecret: environment.larkConfig.appSecret,
-		appType: lark.AppType.SelfBuild,
-		domain: lark.Domain.Feishu
-	}) : null
+	private client = environment.larkConfig.appId
+		? new lark.Client({
+				appId: environment.larkConfig.appId,
+				appSecret: environment.larkConfig.appSecret,
+				appType: lark.AppType.SelfBuild,
+				domain: lark.Domain.Feishu
+			})
+		: null
 
 	private actions = new Map<string, Subject<any>>()
 	private bot: {
@@ -67,7 +69,7 @@ export class LarkService {
 			const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
 			const organizationId = environment.larkConfig.organizationId
 			const chatId = data.message.chat_id
-			
+
 			if (
 				!(
 					data.message.chat_type === 'p2p' ||
@@ -79,73 +81,14 @@ export class LarkService {
 
 			// if (data.message.chat_type === 'p2p') {
 			// 	const result = await this.interactiveMessage({ chatId } as ChatLarkContext, {
-			// 		header: {
-			// 			title: {
-			// 				tag: 'plain_text',
-			// 				content: '正在思考...'
-			// 			},
-			// 			template: 'blue',
-			// 			ud_icon: {
-			// 				token: 'myai_colorful', // 图标的 token
-			// 				style: {
-			// 					color: 'red' // 图标颜色
-			// 				}
-			// 			}
-			// 		},
-			// 		elements: [
-			// 			{
-			// 				tag: 'action',
-			// 				actions: [
-			// 					{
-			// 						tag: 'button',
-			// 						text: {
-			// 							tag: 'plain_text',
-			// 							content: '结束对话'
-			// 						},
-			// 						type: 'primary_text',
-			// 						complex_interaction: true,
-			// 						width: 'default',
-			// 						size: 'medium'
-			// 					}
-			// 				]
-			// 			}
+			// 		"config": { "wide_screen_mode": true },
+			// 		"elements": [
 			// 		]
-			// 	})
-
-			// 	if (result) {
-			// 		console.log(result)
-			// 		const messageId = result.data.message_id
-			// 		setTimeout(async () => {
-			// 			this.actionMessage(
-			// 				{ chatId, messageId },
-			// 				{
-			// 					elements: [
-			// 						{
-			// 							tag: 'action',
-			// 							actions: [
-			// 								{
-			// 									tag: 'button',
-			// 									text: {
-			// 										tag: 'plain_text',
-			// 										content: '结束对话'
-			// 									},
-			// 									type: 'primary_text',
-			// 									complex_interaction: true,
-			// 									width: 'default',
-			// 									size: 'medium',
-			// 									value: 'chatbi-end-conversation'
-			// 								}
-			// 							]
-			// 						}
-			// 					]
-			// 				}
-			// 			).subscribe((action) => {
-			// 				console.log(action)
-			// 			})
-			// 		}, 3000)
-			// 	}
+			// 	  }
+			// 	)
 			// 	return true
 			// }
+			
 			this.logger.debug('im.message.receive_v1:')
 			this.logger.debug(data)
 			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
@@ -195,19 +138,19 @@ export class LarkService {
 			const { event_key } = data
 			this.logger.debug('application.bot.menu_v6:')
 			this.logger.debug(data)
-			if (event_key.startsWith('select_cube:')) {
-				const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
-				const result = await this.commandBus.execute<LarkBotMenuCommand, Observable<any>>(
-					new LarkBotMenuCommand({
-						tenant,
-						message: data as any
-					})
-				)
-
-				result.pipe(filter(nonNullable)).subscribe(async (message) => {
-					await this.client.im.message.create(message)
+			const organizationId = environment.larkConfig.organizationId
+			const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
+			const result = await this.commandBus.execute<LarkBotMenuCommand, Observable<any>>(
+				new LarkBotMenuCommand({
+					tenant,
+					organizationId,
+					message: data as any
 				})
-			}
+			)
+
+			result.pipe(filter(nonNullable)).subscribe(async (message) => {
+				await this.client.im.message.create(message)
+			})
 
 			return true
 		},
@@ -303,13 +246,24 @@ export class LarkService {
 		} as LarkMessage)
 	}
 
-	async textMessage(context: ChatLarkContext, content: string) {
+	async textMessage(context: { chatId: string; messageId: string }, content: string) {
+		const { chatId, messageId } = context
+		if (messageId) {
+			return await this.patchMessage({
+				data: {
+					content: JSON.stringify({ text: content })
+				},
+				path: {
+					message_id: messageId
+				}
+			})
+		}
 		return await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
 			data: {
-				receive_id: context.chatId,
+				receive_id: chatId,
 				content: JSON.stringify({ text: content }),
 				msg_type: 'text'
 			}

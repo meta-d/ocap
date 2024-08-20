@@ -81,6 +81,7 @@ export class ChatBIConversation implements IChatBIConversation {
 	private dimensionMemberRetrieverTool: DynamicStructuredTool = null
 
 	public models: IChatBIModel[]
+	public chatModelId: string = null
 
 	private readonly status$ = new BehaviorSubject<'init' | 'pending' | 'running'>('init')
 
@@ -277,7 +278,6 @@ ${markdownCubes(this.models.slice(3))}
 				conversation: this,
 				larkService: chatContext.larkService
 			},
-			chatContext
 		)
 
 		const welcomeTool = createWelcomeTool({ conversation: this })
@@ -313,7 +313,7 @@ ${markdownCubes(this.models.slice(3))}
 The models context is:
 {{context}}
 
-对于用户询问的数据模型，请先调用 'getCubeContext' tool 获取详细信息后再回答问题。
+For data models that users ask about, call the 'getCubeContext' tool to get detailed information about dataSource, dimensions, measures before answering the question.
 
 If the user explicitly wants to end the conversation, call the 'end' tool to end.
 ${makeCubeRulesPrompt()}
@@ -339,7 +339,7 @@ ${createAgentStepsInstructions(
 			shouldToolContinue: (state) => {
 				const lastMessage = state.messages[state.messages.length - 1]
 				this.logger.debug(`[ChatBI] [After tool call] name: ${lastMessage.name}`)
-				if (isToolMessage(lastMessage) && ['giveMoreQuestions', 'welcome'].includes(lastMessage.name)) {
+				if (isToolMessage(lastMessage) && ['giveMoreQuestions', 'welcome', 'end'].includes(lastMessage.name)) {
 					return END
 				}
 				return 'agent'
@@ -352,20 +352,17 @@ ${createAgentStepsInstructions(
 		this.thinkingMessageId = await this.createThinkingMessage()
 
 		await this.initThread()
-		// Cube context
+		// Model context
 		let context = null
 		const session = this.chatBIService.userSessions[this.userId]
-		if (!this.context && this.chatType === 'p2p' && session?.cubeName) {
-			const modelId = session.modelId
-			const cubeName = session.cubeName
-			// context = await conversation.switchContext(modelId, cubeName)
-			this.context = context
+		if (this.chatType === 'p2p' && session?.chatModelId) {
+			const chatModel = this.models.find((item) => item.id === session.chatModelId)
+			context = markdownCubes([chatModel])
 		} else {
 			context = this.context
 		}
 
 		const content = await this.exampleFewShotPrompt.format({ input: text })
-		// const references = await this.copilotKnowledgeRetriever.pipe(formatDocumentsAsString).invoke(content)
 
 		const streamResults = await this.graph.stream(
 			{
@@ -434,12 +431,10 @@ ${createAgentStepsInstructions(
 					if (content) {
 						verboseContent = content
 						this.logger.debug(`[ChatBI] [Graph]: verbose content`, verboseContent)
-						// this.messageWithEndAction([
-						// 	{
-						// 		tag: 'markdown',
-						// 		content: verboseContent
-						// 	}
-						// ])
+						// 对话结束时还有正在思考的消息，则意味着出现错误
+						if (this.thinkingMessageId) {
+							this.messageWithEndAction([{tag: 'markdown', content: `出现内部错误`}])
+						}
 					}
 					// if (abort()) {
 					//   break
@@ -530,17 +525,37 @@ ${createAgentStepsInstructions(
 		} else {
 			action = this.chatContext.larkService.createAction(this.chatContext.chatId, message)
 		}
-		action.subscribe(async (action) => {
-			if (action?.value === C_CHATBI_END_CONVERSATION || action?.value === `"${C_CHATBI_END_CONVERSATION}"`) {
-				await this.newThread()
-				await this.chatContext.larkService.textMessage(
-					this.chatContext,
-					`对话已结束。如果您有其他问题，欢迎随时再来咨询。`
-				)
-			} else {
-				callback?.(action)
+		action.subscribe({
+			next: async (action) => {
+				if (action?.value === C_CHATBI_END_CONVERSATION || action?.value === `"${C_CHATBI_END_CONVERSATION}"`) {
+					await this.end()
+				} else {
+					callback?.(action)
+				}
+			},
+			error: (err) => {
+				console.error(err)
 			}
 		})
+	}
+
+	async textMessage(text: string) {
+		const thinkingMessageId = this.thinkingMessageId
+		this.thinkingMessageId = null
+		return await this.chatContext.larkService.textMessage(
+			{chatId: this.chatContext.chatId, messageId: thinkingMessageId},
+			text
+		)
+	}
+
+	async end() {
+		const session = this.chatBIService.userSessions[this.userId]
+		if (session) {
+			session.chatModelId = null
+		}
+
+		await this.textMessage(`对话已结束。如果您有其他问题，欢迎随时再来咨询。`)
+		await this.newThread()
 	}
 }
 

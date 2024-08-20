@@ -1,28 +1,31 @@
 import { tool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
-import { ChatLarkContext } from '@metad/server-core'
 import { z } from 'zod'
 import { ChatContext } from '../types'
 
-export function createFormulaTool(context: ChatContext, chatContext: ChatLarkContext) {
-	const { logger, conversation, larkService } = context
+
+export function createFormulaTool(context: ChatContext) {
+	const { logger, conversation } = context
 	return tool(
 		async ({ modelId, cube, name, formula, unit }): Promise<string> => {
 			logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
 			try {
 				const key = nanoid()
 				conversation.upsertIndicator({ modelId, id: key, name, entity: cube, code: name, formula, unit })
-
-				await larkService.markdownMessage(
-					chatContext,
-					`新建计算指标：
+				await conversation.answerMessage({
+					elements: [
+						{
+							tag: 'markdown',
+							content: `新建计算指标：
 **名称:** ${name}
 **公式:** 
 \`\`\`SQL
 ${formula}
 \`\`\`
 ${unit ? `**单位:** ${unit}\n` : ''}`
-				)
+						}
+					]
+				})
 
 				return `The new calculated measure with key '${key}' has been created!`
 			} catch (err: any) {

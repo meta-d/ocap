@@ -1,7 +1,9 @@
+import { IChatBIModel } from '@metad/contracts'
 import { LarkBotMenuCommand, LarkMessage } from '@metad/server-core'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { map, Observable, of } from 'rxjs'
 import { UserSessionCommand } from '../../../chatbi'
+import { ChatBIBotMenuPrefix } from '../../types'
 
 @CommandHandler(LarkBotMenuCommand)
 export class LarkBotMenuHandler implements ICommandHandler<LarkBotMenuCommand> {
@@ -12,23 +14,19 @@ export class LarkBotMenuHandler implements ICommandHandler<LarkBotMenuCommand> {
 
 		const { event_key, operator } = input.message
 
-		if (event_key.startsWith('select_cube:')) {
-			// 'select_cube:46ccbc05-68c0-4434-9e03-2fec8a57a631:f38998f9-4c1f-40b3-80c5-2f4cfd48ecbb:Sales'
+		if (event_key.startsWith(ChatBIBotMenuPrefix)) {
 			const parts = event_key.split(':')
-			const organizaitonId = parts[1]
-			const modelId = parts[2]
-			const cubeName = parts[3]
-			await this.commandBus.execute(
+			const chatModelId = parts[1].trim()
+			const chatModel = await this.commandBus.execute<UserSessionCommand, IChatBIModel>(
 				new UserSessionCommand({
 					tenantId: input.tenant.id,
-					organizationId: organizaitonId,
-					modelId,
-					cubeName,
-					userId: operator.operator_id.open_id,
+					organizationId: input.organizationId,
+					chatModelId,
+					userId: operator.operator_id.open_id
 				})
 			)
 
-			return of(`You have select cube: ${cubeName}`).pipe(
+			return of(`你选择了数据集： ${chatModel.entityCaption}`).pipe(
 				map(
 					(content: string) =>
 						({
