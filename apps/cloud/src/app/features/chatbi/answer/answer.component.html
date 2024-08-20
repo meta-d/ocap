@@ -58,7 +58,7 @@
                       
                     </span>
                     
-                    <svg class="w-4 h-4 ms-2 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                    <svg class="w-4 h-4 ms-2 rtl:rotate-180 opacity-20 group-hover:opacity-100" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
                     </svg>
                   </a>
@@ -177,9 +177,9 @@
   (click)="toggleFullScreen()"
   >
   @if (fullscreen()) {
-    <mat-icon fontSet="material-icons-outlined">fullscreen_exit</mat-icon>
+    <mat-icon fontSet="material-icons-round">fullscreen_exit</mat-icon>
   } @else {
-    <mat-icon fontSet="material-icons-outlined">fullscreen</mat-icon>
+    <mat-icon fontSet="material-icons-round">fullscreen</mat-icon>
   }
 </button>
 

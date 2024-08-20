@@ -61,7 +61,7 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
               {
                 props: {
                   label: 'Model Details',
-                  icon: 'view_in_ar'
+                  icon: 'database'
                 },
                 fieldGroup: this.getModelSchema()
               }

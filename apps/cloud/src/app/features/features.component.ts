@@ -107,7 +107,7 @@ export class FeaturesComponent implements OnInit {
         case MenuCatalog.Models:
           catalogName = i18n?.['MODEL'] || 'Model'
           // icon = 'database'
-          icon = 'view_in_ar'
+          icon = 'database'
           break
         case MenuCatalog.Settings:
           catalogName = i18n?.['SETTINGS'] || 'Settings'
@@ -450,7 +450,7 @@ export class FeaturesComponent implements OnInit {
       },
       {
         title: 'Semantic Model',
-        matIcon: 'view_in_ar',
+        matIcon: 'database',
         link: '/models',
         pathMatch: 'prefix',
         data: {
