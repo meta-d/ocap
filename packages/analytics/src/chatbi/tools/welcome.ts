@@ -7,7 +7,7 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 	const logger = new Logger('WelcomeTool')
 	const { conversation } = context
 	return tool(
-		async ({ models }): Promise<string> => {
+		async ({ models, more }): Promise<string> => {
 			logger.debug(`[ChatBI] [Copilot Tool] [Welcome] models: ${JSON.stringify(models, null, 2)}`)
 
 			conversation.messageWithEndAction([
@@ -43,14 +43,47 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 										}
 									]
 								}
-							}),
-							{
-								tag: 'markdown',
-								content: `您也可以对我说 “**结束对话**” 来结束本轮对话。`
-							}
+							})
 						]
 					})
-				)
+				),
+				...(more?.length ? [
+					{
+						tag: 'markdown',
+						content: `- 更多数据集：`
+					},
+					...more.map(({modelId, cubeName}) => {
+						const chatModel = conversation.models.find(
+							(model) => model.modelId === modelId && model.entity === cubeName
+						)
+
+						if (!chatModel) {
+							throw new Error(`No model found for ${modelId} and ${cubeName}`)
+						}
+
+						return {
+							tag: 'action',
+							actions: [
+								{
+									tag: 'button',
+									text: {
+										tag: 'plain_text',
+										content: chatModel.entityCaption
+									},
+									type: 'primary_text',
+									complex_interaction: true,
+									width: 'default',
+									size: 'small',
+									value: `重新给出 welcome，将数据集 “${chatModel.entityCaption}” 排在首位`,
+								}
+							]
+						}
+					})
+				] : []),
+				{
+					tag: 'markdown',
+					content: `您也可以对我说 “**结束对话**” 来结束本轮对话。`
+				}
 			],
 			(action) => {
 				console.log(action)
@@ -69,7 +102,13 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 						cubeName: z.string().describe('The name of cube'),
 						prompts: z.array(z.string().describe('The suggestion prompt to analysis the data model'))
 					})
-				)
+				).describe('Top 3 models'),
+				more: z.array(
+					z.object({
+						modelId: z.string(),
+						cubeName: z.string()
+					}).describe('Model cube')
+				).optional().describe('The more models')
 			})
 		}
 	)

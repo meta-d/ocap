@@ -341,15 +341,15 @@ ${createAgentStepsInstructions(
 					templateFormat: 'mustache'
 				}).format({ ...state })
 				return [new SystemMessage(system), ...state.messages]
+			},
+			shouldToolContinue: (state) => {
+				const lastMessage = state.messages[state.messages.length - 1]
+				this.logger.debug(`[ChatBI] [After tool call] name: ${lastMessage.name}`)
+				if (isToolMessage(lastMessage) && ['giveMoreQuestions', 'welcome'].includes(lastMessage.name)) {
+					return END
+				}
+				return 'agent'
 			}
-			// shouldToolContinue: (state) => {
-			// 	const lastMessage = state.messages[state.messages.length - 1]
-			// 	console.log(lastMessage.name)
-			// 	if (isToolMessage(lastMessage) && lastMessage.name === 'welcome') {
-			// 		return END
-			// 	}
-			// 	return 'agent'
-			// }
 		})
 	}
 
