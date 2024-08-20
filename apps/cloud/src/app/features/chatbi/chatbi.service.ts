@@ -134,8 +134,11 @@ export class ChatbiService {
       takeUntilDestroyed()
     )
     .subscribe((conversation) => {
-      this.pristineConversation.set(structuredClone(conversation))
-      if (this.conversation().id !== conversation.id) {
+      if (this.conversationKey() === conversation.key) {
+        this.pristineConversation.set(structuredClone(conversation))
+      }
+      const _conversation = this.conversations().find((item) =>item.key === conversation.key)
+      if (_conversation && _conversation.id !== conversation.id) {
         this._updateConversation(conversation.key, (state) => ({ ...state, id: conversation.id }))
       }
     })

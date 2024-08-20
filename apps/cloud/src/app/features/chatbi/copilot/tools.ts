@@ -201,6 +201,7 @@ export function injectCreateChartTool() {
 
         return `Chart answer is created!`
       } catch (err: any) {
+        console.log(err)
         return `Error: ${err.message}`
       }
     },
