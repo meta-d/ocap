@@ -7,9 +7,9 @@
     .answer-container {
       @apply items-stretch;
       .answer-content {
-        @apply overflow-hidden;
+        @apply overflow-x-hidden overflow-y-auto;
         .answer-component {
-          @apply overflow-hidden;
+          @apply overflow-hidden min-h-[400px];
         }
       }
       .ngm-analytical-card, .ngm-analytical-grid {

@@ -1,13 +1,13 @@
 import { inject } from '@angular/core'
-import { DynamicStructuredTool, tool } from '@langchain/core/tools'
+import { tool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
 import { NxChartType } from '@metad/core'
 import {
   ChartAnnotation,
   ChartOrient,
   DataSettings,
-  getEntityDimensions,
   getDefaultSlicersForVariables,
+  getEntityDimensions,
   ISlicer,
   OrderBy,
   PieVariant,
@@ -38,7 +38,8 @@ export function injectCreateChartTool() {
           show: true
         },
         tooltip: {
-          appendToBody: true
+          appendToBody: true,
+          trigger: 'axis'
         }
       }
     },
@@ -51,7 +52,8 @@ export function injectCreateChartTool() {
           show: true
         },
         tooltip: {
-          appendToBody: true
+          appendToBody: true,
+          trigger: 'axis'
         }
       }
     },
@@ -64,7 +66,8 @@ export function injectCreateChartTool() {
           show: true
         },
         tooltip: {
-          appendToBody: true
+          appendToBody: true,
+          trigger: 'axis'
         }
       }
     },
@@ -216,17 +219,8 @@ export function injectCreateFormulaTool() {
   const logger = inject(NGXLogger)
   const chatbiService = inject(ChatbiService)
 
-  const createFormulaTool = new DynamicStructuredTool({
-    name: 'createFormula',
-    description: 'Create formula for new measure',
-    schema: z.object({
-      cube: z.string().describe('The cube name'),
-      code: z.string().describe('The code of calculated measure'),
-      name: z.string().describe(`The caption of calculated measure in user's language`),
-      formula: z.string().describe('The MDX formula for calculated measure'),
-      unit: z.string().optional().describe('The unit of measure')
-    }),
-    func: async ({ cube, code, name, formula, unit }) => {
+  return tool(
+    async ({ cube, code, name, formula, unit }) => {
       logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
       try {
         const key = nanoid()
@@ -245,8 +239,17 @@ export function injectCreateFormulaTool() {
       } catch (err: any) {
         return `Error: ${err.message}`
       }
+    },
+    {
+      name: 'createFormula',
+      description: 'Create formula for new measure',
+      schema: z.object({
+        cube: z.string().describe('The cube name'),
+        code: z.string().describe('The code of calculated measure'),
+        name: z.string().describe(`The caption of calculated measure in user's language`),
+        formula: z.string().describe('The MDX formula for calculated measure'),
+        unit: z.string().optional().describe('The unit of measure')
+      })
     }
-  })
-
-  return createFormulaTool
+  )
 }

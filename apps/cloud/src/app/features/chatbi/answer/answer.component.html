@@ -41,7 +41,7 @@
           @case ('object') {
             @if (isAnswer(item); as answer) {
               @if (answer.indicators) {
-                <div class="flex flex-col justify-start items-start gap-2">
+                <div class="flex flex-col justify-start items-stretch gap-2">
                   <p>{{ 'PAC.ChatBI.NewCalculatedMeasures' | translate: {Default: 'New calculated measures'} }}:</p>
                 @for (id of answer.indicators; track id) {
                   @if (indicators()[id]; as indicator) {

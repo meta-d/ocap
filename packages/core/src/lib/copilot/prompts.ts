@@ -52,7 +52,7 @@ export function markdownEntityType(entityType: EntityType) {
     [
       `  - name: "${item.name}"`,
       `    caption: ${item.caption || ''}`,
-      item.description ? 
+      item.description && item.description !== item.caption ? 
       `    description: >
   ${prepend('      ', item.description)}` : null,
       item.formatting?.unit ?

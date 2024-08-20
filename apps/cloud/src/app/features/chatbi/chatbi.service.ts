@@ -168,8 +168,8 @@ export class ChatbiService {
     // Set default cube of model
     effect(
       () => {
-        if (this.model() && !this.entity()) {
-          this.setEntity(this.model().cube)
+        if (!this.entity() && this.model()) {
+          this.setEntity(this.model().cube || this.model().schema?.cubes?.[0]?.name)
         }
       },
       { allowSignalWrites: true }

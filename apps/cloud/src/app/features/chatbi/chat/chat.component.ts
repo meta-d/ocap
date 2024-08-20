@@ -94,7 +94,7 @@ export class ChatbiChatComponent {
   constructor() {
     effect(
       () => {
-        if (this.chatbiService.entity() && this.examplesEmpty()) {
+        if (this.chatbiService.context() && this.examplesEmpty()) {
           this.refresh()
         }
       },
