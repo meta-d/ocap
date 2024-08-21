@@ -10,8 +10,8 @@ export function createMoreQuestionsTool(context: Partial<ChatContext>) {
 		async ({ questions }): Promise<string> => {
 			logger.debug(`more questions tool, questions: ${questions}`)
 
-			conversation?.messageWithEndAction(
-				[
+			conversation?.updateMessage({
+				elements: [
 					{
 						tag: 'markdown',
 						content: '您还可以尝试以下分析：'
@@ -37,12 +37,8 @@ export function createMoreQuestionsTool(context: Partial<ChatContext>) {
 						tag: 'markdown',
 						content: '如果有其他问题，欢迎随时提问！'
 					}
-				],
-				(action) => {
-					console.log(action)
-					conversation.ask(action.value)
-				}
-			)
+				]
+			})
 
 			return 'More questions have sent to user.'
 		},

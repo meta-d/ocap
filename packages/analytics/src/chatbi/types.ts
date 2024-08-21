@@ -43,11 +43,6 @@ export type ChatBILarkContext = ChatLarkContext & {
   text: string
 }
 
-export type ChatStack = {
-  text: string
-  messageId: string
-}
-
 export type IChatBIConversation = {
   id: string
   graph: CompiledStateGraph<ChatBIAgentState, Partial<ChatBIAgentState>, '__start__' | 'agent' | 'tools'>
@@ -56,13 +51,17 @@ export type IChatBIConversation = {
   upsertIndicator(indicator: Indicator): void
   newThread(): void
   destroy(): void
-  answerMessage(data: any): Promise<any>
+  // answerMessage(data: any): Promise<any>
   getCubeCache(modelId: string, cubeName: string): Promise<EntityType>
   setCubeCache(modelId: string, cubeName: string, data: any): Promise<void>
   messageWithEndAction(data: any, action?: (action: any) => void): void
 
   ask(content: string): Promise<void>
   end(): Promise<void>
+
+  continue(elements: any[]): Promise<any>
+  done(card: {elements: any[]; header: any}): Promise<any>
+  updateMessage(card: {elements: any[]; header?: any; action?: (action) => void}): Promise<any>
 }
 
 export const C_CHATBI_END_CONVERSATION = 'chatbi-end-conversation'

@@ -200,7 +200,7 @@ async function drawChartMessage(
 				}
 				// console.log(data)
 				// larkContext.larkService.interactiveMessage(larkContext, card)
-				conversation.answerMessage(card)
+				conversation.done(card)
 
 				resolve({ data, categoryMembers })
 			}

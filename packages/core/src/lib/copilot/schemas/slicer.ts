@@ -1,5 +1,12 @@
 import { z } from 'zod'
-import { EntityType, getEntityVariables, TimeGranularity, TimeRangeType, VariableEntryType, wrapBrackets } from '../../models'
+import {
+  EntityType,
+  getEntityVariables,
+  TimeGranularity,
+  TimeRangeType,
+  VariableEntryType,
+  wrapBrackets
+} from '../../models'
 import { ISlicer } from '../../types'
 import { MemberSchema, tryFixDimension } from './common'
 
@@ -52,8 +59,7 @@ export function tryFixSlicer(slicer: ISlicer, entityType: EntityType) {
 }
 
 export function tryFixVariableSlicer(slicer: ISlicer, entityType: EntityType) {
-  // May not be enclosed in brackets
-  const variable = wrapBrackets(slicer.dimension.parameter)
+  const variable = slicer.dimension.parameter
   let parameter = null
   if (entityType.parameters[variable]) {
     parameter = variable
@@ -63,10 +69,15 @@ export function tryFixVariableSlicer(slicer: ISlicer, entityType: EntityType) {
     if (_parameter) {
       parameter = _parameter.name
     } else {
-      throw new Error(`Can't find variable '${variable}', please confirm you use the name of variable`)
+      // May not be enclosed in brackets
+      parameter = entityType.parameters[wrapBrackets(variable)]?.name
     }
   }
-  
+
+  if (!parameter) {
+    throw new Error(`Can't find variable '${variable}', please confirm you use the name of variable`)
+  }
+
   return {
     ...slicer,
     dimension: {

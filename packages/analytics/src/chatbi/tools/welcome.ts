@@ -113,9 +113,13 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 				content: `您也可以对我说 “**结束对话**” 来结束本轮对话。`
 			})
 
-			conversation.messageWithEndAction(elements, (action) => {
+			conversation.updateMessage({
+				elements,
+				header: {},
+				action: (action) => {
 					conversation.ask(action.value)
-				})
+				}
+			})
 
 			return 'Welcome info has sent to user, waiting for user response...'
 		},

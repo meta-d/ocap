@@ -3,7 +3,7 @@ import { nonNullable } from '@metad/copilot'
 import { environment } from '@metad/server-config'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { filter, Observable, Subject, Subscriber } from 'rxjs'
+import { filter, Observable, Observer, Subject, Subscriber } from 'rxjs'
 import { TenantService } from '../tenant'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
 import { ChatLarkContext, LarkMessage } from './types'
@@ -314,8 +314,32 @@ export class LarkService {
 		})
 	}
 
+	async interactiveActionMessage(context: ChatLarkContext, data: any, subscriber?: Partial<Observer<any>> | ((value: any) => void)) {
+		const message = await this.createMessage({
+			params: {
+				receive_id_type: 'chat_id'
+			},
+			data: {
+				receive_id: context.chatId,
+				content: JSON.stringify(data),
+				msg_type: 'interactive'
+			}
+		} as LarkMessage)
+		
+		const messageId = message.data.message_id
+		const response = new Subject<any>()
+		this.actions.set(messageId, response)
+		// 超时时间 10m
+		setTimeout(() => {
+			response.complete()
+			this.actions.delete(messageId)
+		}, 1000 * 60 * 10)
+		response.subscribe(subscriber)
+		return message
+	}
+
 	createAction(chatId: string, content: any) {
-		return new Observable<string>((subscriber: Subscriber<unknown>) => {
+		return new Observable<any>((subscriber: Subscriber<unknown>) => {
 			this.client.im.message
 				.create({
 					data: {
@@ -328,8 +352,14 @@ export class LarkService {
 					}
 				})
 				.then((res) => {
+					const messageId = res.data.message_id
 					const response = new Subject<any>()
-					this.actions.set(res.data.message_id, response)
+					this.actions.set(messageId, response)
+					// 超时时间 10m
+					setTimeout(() => {
+						response.complete()
+						this.actions.delete(messageId)
+					}, 1000 * 60 * 10)
 					response.subscribe({
 						next: (message) => {
 							subscriber.next(message.action)
@@ -360,6 +390,12 @@ export class LarkService {
 				.then((res) => {
 					const response = new Subject<any>()
 					this.actions.set(messageId, response)
+					// 超时时间 10m
+					setTimeout(() => {
+						response.complete()
+						this.actions.delete(messageId)
+					}, 1000 * 60 * 10)
+
 					response.subscribe({
 						next: (message) => {
 							subscriber.next(message.action)
