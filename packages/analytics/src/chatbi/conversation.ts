@@ -9,6 +9,7 @@ import {
 	CubeVariablePrompt,
 	EntityType,
 	Indicator,
+	isString,
 	makeCubeRulesPrompt,
 	PROMPT_RETRIEVE_DIMENSION_MEMBER,
 	PROMPT_TIME_SLICER,
@@ -340,6 +341,13 @@ ${createAgentStepsInstructions(
 				const lastMessage = state.messages[state.messages.length - 1]
 				this.logger.debug(`[ChatBI] [After tool call] name: ${lastMessage.name}`)
 				if (isToolMessage(lastMessage) && ['giveMoreQuestions', 'welcome', 'end'].includes(lastMessage.name)) {
+					const content = lastMessage.content
+					// 可能是 Received tool input did not match expected schema
+					if (isString(content) && content.startsWith('Error:')) {
+						const toolCallMessage = state.messages[state.messages.length - 2]
+						this.logger.debug((<ToolMessage>toolCallMessage).lc_kwargs)
+						return 'agent'
+					}
 					return END
 				}
 				return 'agent'
@@ -433,7 +441,7 @@ ${createAgentStepsInstructions(
 						this.logger.debug(`[ChatBI] [Graph]: verbose content`, verboseContent)
 						// 对话结束时还有正在思考的消息，则意味着出现错误
 						if (this.thinkingMessageId) {
-							this.messageWithEndAction([{tag: 'markdown', content: `出现内部错误`}])
+							this.messageWithEndAction([{tag: 'markdown', content: `出现内部错误：\n${verboseContent}`}])
 						}
 					}
 					// if (abort()) {
