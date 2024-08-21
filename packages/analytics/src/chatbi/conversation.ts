@@ -16,11 +16,12 @@ import {
 	Schema
 } from '@metad/ocap-core'
 import {
+	ChatLarkContext,
 	Copilot,
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	createExampleFewShotPrompt,
-	createReferencesRetrieverTool
+	createReferencesRetrieverTool,
 } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { groupBy } from 'lodash'
@@ -40,7 +41,7 @@ import {
 	createFormulaTool,
 	errorWithEndMessage
 } from './tools'
-import { C_CHATBI_END_CONVERSATION, ChatBILarkContext, IChatBIConversation, insightAgentState } from './types'
+import { C_CHATBI_END_CONVERSATION, ChatBILarkContext, ChatStack, IChatBIConversation, insightAgentState } from './types'
 import { createMoreQuestionsTool } from './tools/more-questions'
 import { createWelcomeTool } from './tools/welcome'
 
@@ -84,10 +85,12 @@ export class ChatBIConversation implements IChatBIConversation {
 	public models: IChatBIModel[]
 	public chatModelId: string = null
 
-	private readonly status$ = new BehaviorSubject<'init' | 'pending' | 'running'>('init')
+	// private readonly status$ = new BehaviorSubject<'init' | 'pending' | 'running'>('init')
 
 	private thinkingMessageId: string | null = null
 
+	private status: 'init' | 'idle' | 'running' | 'error' = 'init'
+	private chatStack: ChatStack[] = []
 	constructor(
 		private readonly chatContext: ChatBILarkContext,
 		private readonly copilot: Copilot,
@@ -340,25 +343,49 @@ ${createAgentStepsInstructions(
 			shouldToolContinue: (state) => {
 				const lastMessage = state.messages[state.messages.length - 1]
 				this.logger.debug(`[ChatBI] [After tool call] name: ${lastMessage.name}`)
-				if (isToolMessage(lastMessage) && ['giveMoreQuestions', 'welcome', 'end'].includes(lastMessage.name)) {
-					const content = lastMessage.content
-					// 可能是 Received tool input did not match expected schema
-					if (isString(content) && content.startsWith('Error:')) {
-						const toolCallMessage = state.messages[state.messages.length - 2]
-						this.logger.debug((<ToolMessage>toolCallMessage).lc_kwargs)
-						return 'agent'
+				if (isToolMessage(lastMessage)) {
+					if (['giveMoreQuestions', 'welcome', 'end', 'answerQuestion'].includes(lastMessage.name)) {
+						const content = lastMessage.content
+						// 可能是 Received tool input did not match expected schema
+						if (isString(content) && content.startsWith('Error:')) {
+							this.logger.error(content)
+							const toolCallMessage = state.messages[state.messages.length - 2]
+							this.logger.debug((<ToolMessage>toolCallMessage).lc_kwargs)
+							return 'agent'
+						}
+
+						if (['answerQuestion'].includes(lastMessage.name) && !this.chatStack.length) {
+							return 'agent'
+						}
+
+						return END
 					}
-					return END
 				}
+	
 				return 'agent'
 			}
 		})
 	}
 
-	async ask(text: string) {
-		this.status$.next('running')
-		this.thinkingMessageId = await this.createThinkingMessage()
+	/**
+	 * 接收来自客户端的消息文本，进行思考回答
+	 * 
+	 * @param text 
+	 */
+	async ask(text: string, messageId?: string) {
+		// Running, please wait
+		if (this.status === 'running') {
+			const chatStack = {text, messageId: null}
+			chatStack.messageId = await createWaitMessage(this.chatContext, text)
+			this.chatStack.push(chatStack)
+			return
+		}
 
+		// Set running status
+		this.status = 'running'
+		// Send thinking message to user
+		this.thinkingMessageId = messageId ?? await createThinkingMessage(this.chatContext, text)
+		// Init new thread
 		await this.initThread()
 		// Model context
 		let context = null
@@ -370,6 +397,7 @@ ${createAgentStepsInstructions(
 			context = this.context
 		}
 
+		// Few-shot prompt
 		const content = await this.exampleFewShotPrompt.format({ input: text })
 
 		const streamResults = await this.graph.stream(
@@ -449,8 +477,13 @@ ${createAgentStepsInstructions(
 					// }
 				}
 			}
+
+			// Idle: at the end of a conversation
+			this.status = 'idle'
+
 		} catch (err: any) {
 			console.error(err)
+			this.status = 'error'
 			if (err instanceof ToolInputParsingException) {
 				this.chatContext.larkService.errorMessage(this.chatContext, err)
 			} else if (err instanceof GraphValueError) {
@@ -460,25 +493,12 @@ ${createAgentStepsInstructions(
 				errorWithEndMessage(this.chatContext, err.message, this)
 			}
 		}
-	}
 
-	async createThinkingMessage() {
-		const result = await this.chatContext.larkService.interactiveMessage(this.chatContext, {
-			header: {
-				title: {
-					tag: 'plain_text',
-					content: '正在思考...'
-				},
-				template: 'blue',
-				ud_icon: {
-					token: 'myai_colorful', // 图标的 token
-					style: {
-						color: 'red' // 图标颜色
-					}
-				}
-			}
-		})
-		return result.data.message_id
+		if (this.chatStack.length > 0) {
+			const chatStack = this.chatStack.shift()
+			await createThinkingMessage(this.chatContext, chatStack.text, chatStack.messageId)
+			await this.ask(chatStack.text, chatStack.messageId)
+		}
 	}
 
 	async answerMessage(card: any) {
@@ -569,4 +589,54 @@ ${createAgentStepsInstructions(
 
 function isToolMessage(message: BaseMessage): message is ToolMessage {
 	return message instanceof ToolMessage
+}
+
+async function createWaitMessage(chatContext: ChatLarkContext, text: string) {
+	const { larkService } = chatContext
+	const result = await larkService.interactiveMessage(chatContext, {
+		header: {
+			title: {
+				tag: 'plain_text',
+				content: '还在思考，请稍后...'
+			},
+			subtitle: {
+				tag: 'plain_text', // 固定值 plain_text。
+				content: text,
+			},
+			template: 'blue',
+			ud_icon: {
+				token: 'myai_colorful', // 图标的 token
+			}
+		}
+	})
+	return result.data.message_id
+}
+
+async function createThinkingMessage(chatContext: ChatLarkContext, text: string, messageId?: string) {
+	const { larkService } = chatContext
+	const card = {
+		header: {
+			title: {
+				tag: 'plain_text',
+				content: '正在思考...'
+			},
+			subtitle: {
+				tag: 'plain_text', // 固定值 plain_text。
+				content: text,
+			},
+			template: 'blue',
+			ud_icon: {
+				token: 'myai_colorful', // 图标的 token
+				style: {
+					color: 'red' // 图标颜色
+				}
+			}
+		}
+	}
+	if (messageId) {
+		await larkService.patchInteractiveMessage(messageId, card)
+		return messageId
+	}
+	const result = await larkService.interactiveMessage(chatContext, card)
+	return result.data.message_id
 }

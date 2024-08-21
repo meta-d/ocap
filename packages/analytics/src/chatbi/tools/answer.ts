@@ -111,7 +111,7 @@ Please give more analysis suggestions about other dimensions or filter by dimens
 				return `图表答案已经回复给用户了，请不要重复回答了。`
 			} catch (err) {
 				logger.error(err)
-				return `出现错误: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
+				return `Error: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
 			}
 		},
 		{
@@ -299,8 +299,14 @@ function createLineChart(
 	if (chartAnnotation.dimensions?.length > 1) {
 		const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
 		const series = getChartSeries(chartAnnotation) || dimensions[1] || dimensions[0]
+		if (!series) {
+			throw new Error(`Cannot find series dimension in chart dimensions: '${JSON.stringify(chartAnnotation.dimensions)}'`)
+		}
 		const seriesName = getPropertyHierarchy(series)
-		const property = getEntityProperty(entityType, seriesName)
+		const property = getEntityHierarchy(entityType, seriesName)
+		if (!property) {
+			throw new Error(`Cannot find hierarchy for series dimension '${JSON.stringify(series)}'`)
+		}
 		const seriesCaption = property.memberCaption
 		chart_spec.seriesField = seriesCaption
 		fields.push(seriesCaption)

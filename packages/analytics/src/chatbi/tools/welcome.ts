@@ -100,7 +100,7 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 										complex_interaction: true,
 										width: 'default',
 										size: 'small',
-										value: `重新给出 welcome，将数据集 “${chatModel.entityCaption}” 排在首位`
+										value: `针对数据集 “${chatModel.entityCaption}” 给出欢迎信息`
 									}
 								})
 							]
@@ -136,8 +136,8 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 					.array(
 						z
 							.object({
-								modelId: z.string(),
-								cubeName: z.string()
+								modelId: z.string().describe('The model id'),
+								cubeName: z.string().describe('The name of cube'),
 							})
 							.optional()
 							.describe('Model cube')

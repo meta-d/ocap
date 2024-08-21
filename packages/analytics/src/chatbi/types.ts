@@ -39,10 +39,13 @@ export type ChatBILarkMessage = {
 }
 
 export type ChatBILarkContext = ChatLarkContext & {
-  // chatId: string
   userId: string
-  // conversationId: string
   text: string
+}
+
+export type ChatStack = {
+  text: string
+  messageId: string
 }
 
 export type IChatBIConversation = {
