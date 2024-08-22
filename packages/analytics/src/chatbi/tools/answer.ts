@@ -100,8 +100,10 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 						conversation,
 						answer as ChatAnswer
 					)
-					// Max limit 20 members 
-					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers).slice(0, 20)) : 'Empty'
+					// Max limit 20 members
+					const members = categoryMembers
+						? JSON.stringify(Object.values(categoryMembers).slice(0, 20))
+						: 'Empty'
 
 					return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
 ${members}
@@ -269,6 +271,7 @@ function createLineChart(
 	const _data = data.map(() => ({}))
 
 	const chartSpec = {} as any
+	let unit = ''
 	let categoryField = 'xField'
 	let valueField = 'yField'
 	let type = 'bar'
@@ -300,7 +303,9 @@ function createLineChart(
 		const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
 		const series = getChartSeries(chartAnnotation) || dimensions[1] || dimensions[0]
 		if (!series) {
-			throw new Error(`Cannot find series dimension in chart dimensions: '${JSON.stringify(chartAnnotation.dimensions)}'`)
+			throw new Error(
+				`Cannot find series dimension in chart dimensions: '${JSON.stringify(chartAnnotation.dimensions)}'`
+			)
 		}
 		const seriesName = getPropertyHierarchy(series)
 		const property = getEntityHierarchy(entityType, seriesName)
@@ -340,15 +345,19 @@ function createLineChart(
 
 	chartAnnotation.measures?.forEach((measure) => {
 		const property = getEntityProperty<PropertyMeasure>(entityType, measure)
-		_data.forEach((item, index) => {
-			if (property.formatting?.unit === '%') {
+		let _data
+
+		if (property.formatting?.unit !== '%') {
+			const result = formatDataValues(_data, property.name)
+			_data = result.values
+			unit = result.unit
+		} else {
+			_data.forEach((item, index) => {
 				item[property.name] = isNil(data[index][property.name])
 					? null
 					: (data[index][property.name] * 100).toFixed(1)
-			} else {
-				item[property.name] = isNil(data[index][property.name]) ? null : data[index][property.name].toFixed(1)
-			}
-		})
+			})
+		}
 	})
 
 	return {
@@ -358,6 +367,9 @@ function createLineChart(
 					tag: 'chart',
 					chart_spec: {
 						...chart_spec,
+						title: {
+							text: `单位：${unit}`
+						},
 						data: {
 							values: _data // 此处传入数据。
 						}
@@ -499,6 +511,36 @@ function createTableMessage(
 		},
 		data: _data,
 		categoryMembers: null
+	}
+}
+
+function formatDataValues(data: any[], propertyName: string): { values: any[]; unit: string } {
+	if (!Array.isArray(data) || data.length === 0) {
+		return { values: [], unit: '' }
+	}
+
+	const maxValue = Math.max(...data.map((item) => item[propertyName]))
+	let divisor = 1
+	let unit = ''
+
+	if (maxValue >= 100000000) {
+		divisor = 100000000
+		unit = '亿'
+	} else if (maxValue >= 10000) {
+		divisor = 10000
+		unit = '万'
+	}
+
+	const formattedData = data.map((item) => {
+		if (item[propertyName] !== null && item[propertyName] !== undefined) {
+			item[propertyName] = item[propertyName] / divisor
+		}
+		return item
+	})
+
+	return {
+		values: formattedData,
+		unit: unit
 	}
 }
 
