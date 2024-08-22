@@ -37,7 +37,10 @@ export function createMoreQuestionsTool(context: Partial<ChatContext>) {
 						tag: 'markdown',
 						content: '如果有其他问题，欢迎随时提问！'
 					}
-				]
+				],
+				action: (action) => {
+					conversation.ask(action.value)
+				}
 			})
 
 			return 'More questions have sent to user.'

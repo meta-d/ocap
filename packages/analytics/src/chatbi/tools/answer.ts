@@ -268,7 +268,7 @@ function createLineChart(
 	const measureName = getPropertyMeasure(measure)
 	const measureProperty = getEntityProperty(entityType, measure)
 	// Empty items data
-	const _data = data.map(() => ({}))
+	let _data = data.map(() => ({}))
 
 	const chartSpec = {} as any
 	let unit = ''
@@ -345,18 +345,16 @@ function createLineChart(
 
 	chartAnnotation.measures?.forEach((measure) => {
 		const property = getEntityProperty<PropertyMeasure>(entityType, measure)
-		let _data
-
-		if (property.formatting?.unit !== '%') {
-			const result = formatDataValues(_data, property.name)
-			_data = result.values
-			unit = result.unit
-		} else {
+		if (property.formatting?.unit === '%') {
 			_data.forEach((item, index) => {
 				item[property.name] = isNil(data[index][property.name])
-					? null
-					: (data[index][property.name] * 100).toFixed(1)
+						? null
+						: (data[index][property.name] * 100).toFixed(1)
 			})
+		} else {
+			const result = formatDataValues(data, _data, property.name)
+			_data = result.values
+			unit = result.unit
 		}
 	})
 
@@ -368,7 +366,7 @@ function createLineChart(
 					chart_spec: {
 						...chart_spec,
 						title: {
-							text: `单位：${unit}`
+							text: unit ? `单位：${unit}` : ''
 						},
 						data: {
 							values: _data // 此处传入数据。
@@ -514,7 +512,7 @@ function createTableMessage(
 	}
 }
 
-function formatDataValues(data: any[], propertyName: string): { values: any[]; unit: string } {
+function formatDataValues(data: any[], _data: any[], propertyName: string): { values: any[]; unit: string } {
 	if (!Array.isArray(data) || data.length === 0) {
 		return { values: [], unit: '' }
 	}
@@ -531,15 +529,10 @@ function formatDataValues(data: any[], propertyName: string): { values: any[]; u
 		unit = '万'
 	}
 
-	const formattedData = data.map((item) => {
-		if (item[propertyName] !== null && item[propertyName] !== undefined) {
-			item[propertyName] = item[propertyName] / divisor
-		}
-		return item
-	})
+	_data.forEach((item, index) => item[propertyName] = isNil(data[index][propertyName]) ? null : (data[index][propertyName] / divisor).toFixed(1))
 
 	return {
-		values: formattedData,
+		values: _data,
 		unit: unit
 	}
 }

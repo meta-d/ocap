@@ -101,28 +101,17 @@ export class ChatLarkMessage {
 			this.header = options.header
 		}
 		if (this.id) {
-			if (options?.action) {
-				this.larkService
-					.patchAction(this.id, {
-						...this.getCard(),
-						header: this.header ?? this.getHeader(),
-					})
-					.subscribe(async (action) => {
-						if (
-							action?.value === C_CHATBI_END_CONVERSATION ||
-							action?.value === `"${C_CHATBI_END_CONVERSATION}"`
-						) {
-							await this.conversation.end()
-						} else {
-							options?.action?.(action)
-						}
-					})
-			} else {
-				await this.larkService.patchInteractiveMessage(this.id, {
-					...this.getCard(),
-					header: this.header ?? this.getHeader(),
-				})
-			}
+			this.larkService.patchAction(this.id, {
+				...this.getCard(),
+				header: this.header ?? this.getHeader(),
+			}).subscribe({
+				next: (action) => {
+					this.onAction(action, options?.action)
+				},
+				error: (err) => {
+					console.error(err)
+				}
+			})
 		} else {
 			const result = await this.larkService.interactiveActionMessage(
 				this.chatContext,
@@ -132,14 +121,7 @@ export class ChatLarkMessage {
 				},
 				{
 					next: async (action) => {
-						if (
-							action?.value === C_CHATBI_END_CONVERSATION ||
-							action?.value === `"${C_CHATBI_END_CONVERSATION}"`
-						) {
-							await this.conversation.end()
-						} else {
-							options?.action?.(action)
-						}
+						this.onAction(action, options?.action)
 					},
 					error: (err) => {
 						console.error(err)
@@ -150,7 +132,19 @@ export class ChatLarkMessage {
 			this.id = result.data.message_id
 		}
 	}
+
+	async onAction(action, callback?: (action) => void) {
+		if (
+			action?.value === C_CHATBI_END_CONVERSATION ||
+			action?.value === `"${C_CHATBI_END_CONVERSATION}"`
+		) {
+			await this.conversation.end()
+		} else {
+			callback?.(action)
+		}
+	}
 }
+
 export type ChatStack = {
 	text: string
 	message: ChatLarkMessage

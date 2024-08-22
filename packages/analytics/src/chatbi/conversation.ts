@@ -77,7 +77,6 @@ export class ChatBIConversation implements IChatBIConversation {
 
 	private readonly indicators$ = new BehaviorSubject<Indicator[]>([])
 
-	// public copilotKnowledgeRetriever: CopilotKnowledgeRetriever
 	public exampleFewShotPrompt: FewShotPromptTemplate
 	private referencesRetrieverTool: DynamicStructuredTool = null
 	private dimensionMemberRetrieverTool: DynamicStructuredTool = null
@@ -85,9 +84,6 @@ export class ChatBIConversation implements IChatBIConversation {
 	public models: IChatBIModel[]
 	public chatModelId: string = null
 
-	// private readonly status$ = new BehaviorSubject<'init' | 'pending' | 'running'>('init')
-
-	// private thinkingMessageId: string | null = null
 	private message: ChatLarkMessage = null
 
 	private status: 'init' | 'idle' | 'running' | 'error' = 'init'
@@ -323,8 +319,8 @@ ${createAgentStepsInstructions(
 	`Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a indicator for that. After creating the indicator, you need to call the subsequent steps to re-answer the complete answer.`,
 	CubeVariablePrompt,
 	`If the time condition is a specified fixed time (such as 2023 year, 202202, 2020 Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year), please add it to 'timeSlicers'.`,
-	`Final call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
-	`After answer question, call 'giveMoreQuestions' tool to give more analysis suggestions `
+	`Then call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
+	`Finally, ref to the result of 'answerQuestion' tool, call 'giveMoreQuestions' tool to give more analysis suggestions`
 )}
 `
 				const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
@@ -426,24 +422,7 @@ ${createAgentStepsInstructions(
 							}
 						]) => {
 							content += content ? '\n' : ''
-							// Prioritize Routes
-							if (value.next) {
-								if (value.next === 'FINISH' || value.next === END) {
-									end = true
-								} else {
-									content +=
-										`<b>${key}</b>` +
-										'\n\n<b>' +
-										'Invoke' +
-										`</b>: ${value.next}` +
-										'\n\n<b>' +
-										'Instructions' +
-										`</b>: ${value.instructions || ''}` +
-										'\n\n<b>' +
-										'Reasoning' +
-										`</b>: ${value.reasoning || ''}`
-								}
-							} else if (value.messages) {
+							if (value.messages) {
 								const _message = value.messages[0]
 								if (isAIMessage(_message)) {
 									if (_message.tool_calls?.length > 0) {
@@ -470,9 +449,9 @@ ${createAgentStepsInstructions(
 							})
 						}
 					}
-					// if (abort()) {
-					//   break
-					// }
+					if (this.message?.status === 'end') {
+					  break
+					}
 				}
 			}
 
@@ -497,16 +476,6 @@ ${createAgentStepsInstructions(
 			await this.ask(chatStack.text, chatStack.message)
 		}
 	}
-
-	// async answerMessage(card: any) {
-	// 	const thinkingMessageId = this.thinkingMessageId
-	// 	if (thinkingMessageId) {
-	// 		this.thinkingMessageId = null
-	// 		return await this.chatContext.larkService.patchInteractiveMessage(thinkingMessageId, card)
-	// 	} else {
-	// 		return await this.chatContext.larkService.interactiveMessage(this.chatContext, card)
-	// 	}
-	// }
 
 	async getCubeCache(modelId: string, cubeName: string) {
 		return await this.chatBIService.cacheManager.get<EntityType>(modelId + '/' + cubeName)
@@ -586,53 +555,3 @@ ${createAgentStepsInstructions(
 function isToolMessage(message: BaseMessage): message is ToolMessage {
 	return message instanceof ToolMessage
 }
-
-// async function createWaitMessage(chatContext: ChatLarkContext, text: string) {
-// 	const { larkService } = chatContext
-// 	const result = await larkService.interactiveMessage(chatContext, {
-// 		header: {
-// 			title: {
-// 				tag: 'plain_text',
-// 				content: '还在思考，请稍后...'
-// 			},
-// 			subtitle: {
-// 				tag: 'plain_text', // 固定值 plain_text。
-// 				content: text,
-// 			},
-// 			template: 'blue',
-// 			ud_icon: {
-// 				token: 'myai_colorful', // 图标的 token
-// 			}
-// 		}
-// 	})
-// 	return result.data.message_id
-// }
-
-// async function createThinkingMessage(chatContext: ChatLarkContext, text: string, messageId?: string) {
-// 	const { larkService } = chatContext
-// 	const card = {
-// 		header: {
-// 			title: {
-// 				tag: 'plain_text',
-// 				content: '正在思考...'
-// 			},
-// 			subtitle: {
-// 				tag: 'plain_text', // 固定值 plain_text。
-// 				content: text,
-// 			},
-// 			template: 'blue',
-// 			ud_icon: {
-// 				token: 'myai_colorful', // 图标的 token
-// 				style: {
-// 					color: 'red' // 图标颜色
-// 				}
-// 			}
-// 		}
-// 	}
-// 	if (messageId) {
-// 		await larkService.patchInteractiveMessage(messageId, card)
-// 		return messageId
-// 	}
-// 	const result = await larkService.interactiveMessage(chatContext, card)
-// 	return result.data.message_id
-// }
