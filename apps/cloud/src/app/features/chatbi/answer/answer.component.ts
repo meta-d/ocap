@@ -34,6 +34,7 @@ import { ExplainComponent } from '@metad/story/story'
 import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
 import { WidgetService } from '@metad/core'
 import { ChatbiChatComponent } from '../chat/chat.component'
+import { ChatbiInputComponent } from '../input/input.component'
 
 @Component({
   standalone: true,
@@ -89,6 +90,7 @@ export class ChatbiAnswerComponent {
   TOPS = [5, 10, 20, 100]
 
   readonly message = input<CopilotChatMessage>(null)
+  readonly chatInput = input<ChatbiInputComponent>(null)
   readonly analyticalCard = viewChild(AnalyticalCardComponent)
   readonly analyticalGrid = viewChild(AnalyticalGridComponent)
 
@@ -181,6 +183,10 @@ export class ChatbiAnswerComponent {
 
   isAnswer(value: string | QuestionAnswer): QuestionAnswer {
     return value as unknown as QuestionAnswer
+  }
+
+  isQuestions(value: string | any) {
+    return typeof value === 'object' && Array.isArray(value['questions']) ? value as { questions: string[] } : null
   }
 
   openExplore(item: string | QuestionAnswer) {
@@ -360,6 +366,10 @@ export class ChatbiAnswerComponent {
         this.chatComponent.scrollBottom()
       })
     }
+  }
+
+  edit(text: string) {
+    this.chatInput().prompt.set(text)
   }
 
   @HostBinding('class.full-screen') get isFullscreen() {

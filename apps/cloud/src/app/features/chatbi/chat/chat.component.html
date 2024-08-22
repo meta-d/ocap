@@ -52,7 +52,10 @@
     @for (message of conversation()?.messages; track $index) {
       @switch (message.role) {
         @case ('assistant') {
-          <pac-chatbi-answer class="group w-full p-4 md:p-6 mb-4 flex rounded-xl bg-gray-50 dark:bg-neutral-900" [message]="message" />
+          <pac-chatbi-answer class="group w-full p-4 md:p-6 mb-4 flex rounded-xl bg-gray-50 dark:bg-neutral-900"
+            [message]="message"
+            [chatInput]="chatInput"
+          />
         }
         @case ('user') {
           <div class="w-full p-4 md:p-6 flex rounded-xl">
@@ -110,6 +113,6 @@
   </div>
 </div>
 
-<pac-chatbi-input class="w-full py-2 md:pb-4 lg:px-2 flex flex-col sticky bottom-0 left-0"
+<pac-chatbi-input #chatInput class="w-full py-2 md:pb-4 lg:px-2 flex flex-col sticky bottom-0 left-0"
   [(prompt)]="prompt"
 />

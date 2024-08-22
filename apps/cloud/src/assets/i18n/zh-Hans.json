@@ -1402,7 +1402,8 @@
       "SemanticModel": "语义模型",
       "Caption": "简要描述",
       "AddModel": "添加模型",
-      "AnotherBatch": "换一批"
+      "AnotherBatch": "换一批",
+      "TryFollowing": "您还可以尝试以下分析"
     },
     "Home": {
       "Insight": {
