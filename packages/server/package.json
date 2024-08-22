@@ -1,6 +1,6 @@
 {
   "name": "@metad/server-core",
-  "version": "2.5.7",
+  "version": "2.5.8",
   "type": "commonjs",
   "dependencies": {
     "@casl/ability": "^5.4.3",

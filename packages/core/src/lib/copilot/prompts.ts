@@ -112,5 +112,6 @@ Dimension name pattern: [Dimension Name];
 Hierarchy name pattern: [Hierarchy Name];
 Level name pattern: [Hierarchy Name].[Level Name];
 Member key pattern: [MemberKey] (do not includes [Hierarchy Name] and [Level Name] in member key field).
+Use the code of indicator as measure name.
 `
 }

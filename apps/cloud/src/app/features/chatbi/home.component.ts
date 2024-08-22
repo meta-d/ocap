@@ -1,6 +1,15 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal, viewChild } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip'
@@ -11,16 +20,17 @@ import { nonBlank, provideOcapCore } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { StoryExplorerModule } from '@metad/story'
 import { TranslateModule } from '@ngx-translate/core'
+import { groupBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { filter, map, switchMap } from 'rxjs'
+import { filter, map, switchMap, tap } from 'rxjs'
 import { ChatBIConversationService, routeAnimations } from '../../@core'
+import { AppService } from '../../app.service'
 import { ChatbiChatComponent } from './chat/chat.component'
 import { ChatbiService } from './chatbi.service'
 import { injectInsightCommand } from './copilot'
 import { ChatbiModelsComponent } from './models/models.component'
 import { QuestionAnswer } from './types'
-import { AppService } from '../../app.service'
 
 @Component({
   standalone: true,
@@ -80,17 +90,34 @@ export class ChatbiHomeComponent {
     )
   )
   readonly hasModel = computed(() => this.models()?.length > 0)
+
+  readonly sortedModels = computed(() => {
+    const conversations = this.chatbiService.conversations()
+    const convCounts = groupBy(conversations, 'modelId')
+
+    const models = this.models()?.map((model) => {
+      const items = convCounts[model.key] || []
+      return {
+        ...model,
+        count: items.length
+      }
+    })
+
+    return models?.sort((a, b) => b.count - a.count)
+  })
   readonly _conversationId = computed(() => this.chatbiService.conversation()?.id)
   readonly cubeName = this.chatbiService.entity
   readonly cubes = this.chatbiService.cubes
-  readonly cube = computed(() =>  this.cubes()?.find((item) => item.name === this.cubeName()))
+  readonly cube = computed(() => this.cubes()?.find((item) => item.name === this.cubeName()))
 
   // Story explorer
   readonly showExplorer = signal(false)
   readonly explore = signal<QuestionAnswer>(null)
-  
+
   // Fullscreen
   readonly fullscreen = signal(false)
+  // Loading conversation
+  readonly loading = signal<boolean>(false)
 
   /**
   |--------------------------------------------------------------------------
@@ -102,10 +129,14 @@ export class ChatbiHomeComponent {
   private conversationSub = toObservable(this.conversationId)
     .pipe(
       filter(nonBlank),
+      tap(() => this.loading.set(true)),
       switchMap((id) => this.conversationService.getById(id)),
       takeUntilDestroyed()
     )
-    .subscribe((conversation) => this.chatbiService.addConversation(conversation))
+    .subscribe((conversation) => {
+      this.loading.set(false)
+      this.chatbiService.addConversation(conversation)
+    })
 
   constructor() {
     effect(
@@ -120,12 +151,14 @@ export class ChatbiHomeComponent {
 
     effect(
       () => {
-        this.router.navigate(['.'], {
-          relativeTo: this.route,
-          queryParams: {
-            id: this._conversationId() || null
-          }
-        })
+        if (!this.loading()) {
+          this.router.navigate(['.'], {
+            relativeTo: this.route,
+            queryParams: {
+              id: this._conversationId() || null
+            }
+          })
+        }
       },
       { allowSignalWrites: true }
     )

@@ -3,31 +3,37 @@ import { nanoid } from '@metad/copilot'
 import { z } from 'zod'
 import { ChatContext } from '../types'
 
-
 export function createFormulaTool(context: ChatContext) {
 	const { logger, conversation } = context
 	return tool(
-		async ({ modelId, cube, name, formula, unit }): Promise<string> => {
-			logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
+		async (indicator): Promise<string> => {
+			logger.debug(`[ChatBI] [Copilot Tool] [createFormula]: ${JSON.stringify(indicator)}`)
 			try {
 				const key = nanoid()
-				conversation.upsertIndicator({ modelId, id: key, name, entity: cube, code: name, formula, unit })
-				await conversation.answerMessage({
-					elements: [
-						{
-							tag: 'markdown',
-							content: `新建计算指标：
-**名称:** ${name}
+				conversation.upsertIndicator({
+					modelId: indicator.modelId,
+					id: key,
+					name: indicator.name,
+					entity: indicator.cube,
+					code: indicator.code,
+					formula: indicator.formula,
+					unit: indicator.unit
+				})
+				await conversation.continue([
+					{
+						tag: 'markdown',
+						content: `新建计算指标：
+**名称:** ${indicator.name}
+**编码:** ${indicator.code}
 **公式:** 
 \`\`\`SQL
-${formula}
+${indicator.formula}
 \`\`\`
-${unit ? `**单位:** ${unit}\n` : ''}`
-						}
-					]
-				})
+${indicator.unit ? `**单位:** ${indicator.unit}\n` : ''}`
+					}
+				])
 
-				return `The new calculated measure with key '${key}' has been created!`
+				return `The new calculated measure with code '${indicator.code}' has been created!`
 			} catch (err: any) {
 				logger.error(err)
 				return `Error: ${err.message}`
@@ -39,7 +45,8 @@ ${unit ? `**单位:** ${unit}\n` : ''}`
 			schema: z.object({
 				modelId: z.string().describe('The id of model'),
 				cube: z.string().describe('The cube name'),
-				name: z.string().describe('The name of calculated measure'),
+				code: z.string().describe('The code of calculated measure'),
+				name: z.string().describe(`The caption of calculated measure in user's language`),
 				formula: z.string().describe('The MDX formula for calculated measure'),
 				unit: z.string().optional().describe('The unit of measure')
 			})

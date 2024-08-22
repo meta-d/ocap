@@ -34,14 +34,16 @@ export class ChatBIConversationService extends OrganizationBaseService {
   getMy() {
     return this.selectOrganizationId().pipe(
       switchMap(() =>
-        this.httpClient.get<{ items: IChatBIConversation[] }>(API_CHATBI_CONVERSATION + '/my', {
+        this.httpClient.get<{ items: IChatBIConversation[]; total: number; }>(API_CHATBI_CONVERSATION + '/my', {
           params: {
             data: JSON.stringify({
+              take: 20,
+              skip: 0,
               order: {
                 createdAt: OrderTypeEnum.DESC
               }
             })
-          }
+          } as any
         })
       ),
       map(({ items }) => items.map(convertChatBIConversationResult))

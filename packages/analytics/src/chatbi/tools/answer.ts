@@ -17,6 +17,7 @@ import {
 	getEntityProperty,
 	getPropertyHierarchy,
 	getPropertyMeasure,
+	isBlank,
 	ISlicer,
 	isNil,
 	isTimeRangesSlicer,
@@ -40,6 +41,8 @@ import {
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
 import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
+
+const TABLE_PAGE_SIZE = 10
 
 type ChatAnswer = {
 	preface: string
@@ -100,8 +103,10 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 						conversation,
 						answer as ChatAnswer
 					)
-					// Max limit 20 members 
-					const members = categoryMembers ? JSON.stringify(Object.values(categoryMembers).slice(0, 20)) : 'Empty'
+					// Max limit 20 members
+					const members = categoryMembers
+						? JSON.stringify(Object.values(categoryMembers).slice(0, 20))
+						: 'Empty'
 
 					return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
 ${members}
@@ -111,7 +116,7 @@ Please give more analysis suggestions about other dimensions or filter by dimens
 				return `图表答案已经回复给用户了，请不要重复回答了。`
 			} catch (err) {
 				logger.error(err)
-				return `出现错误: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
+				return `Error: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
 			}
 		},
 		{
@@ -134,7 +139,7 @@ async function drawChartMessage(
 	const chartAnnotation = {
 		chartType: answer.chartType,
 		dimensions: answer.dimensions?.map((dimension) => tryFixDimension(dimension, context.entityType)),
-		measures: answer.measures
+		measures: answer.measures?.map((measure) => tryFixDimension(measure, context.entityType))
 	}
 
 	const slicers = []
@@ -191,7 +196,7 @@ async function drawChartMessage(
 						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
 						: chartAnnotation.dimensions?.length > 0
 							? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
-							: createKPI(answer, chartAnnotation, context.entityType, result.data, header)
+							: createKPI(chartAnnotation, context.entityType, result.data, header)
 				// console.log(JSON.stringify(card, null, 2))
 
 				if (result.stats?.statements?.[0]) {
@@ -200,7 +205,7 @@ async function drawChartMessage(
 				}
 				// console.log(data)
 				// larkContext.larkService.interactiveMessage(larkContext, card)
-				conversation.answerMessage(card)
+				conversation.done(card)
 
 				resolve({ data, categoryMembers })
 			}
@@ -266,9 +271,10 @@ function createLineChart(
 	const measureName = getPropertyMeasure(measure)
 	const measureProperty = getEntityProperty(entityType, measure)
 	// Empty items data
-	const _data = data.map(() => ({}))
+	let _data = data.map(() => ({}))
 
 	const chartSpec = {} as any
+	let unit = ''
 	let categoryField = 'xField'
 	let valueField = 'yField'
 	let type = 'bar'
@@ -299,8 +305,16 @@ function createLineChart(
 	if (chartAnnotation.dimensions?.length > 1) {
 		const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
 		const series = getChartSeries(chartAnnotation) || dimensions[1] || dimensions[0]
+		if (!series) {
+			throw new Error(
+				`Cannot find series dimension in chart dimensions: '${JSON.stringify(chartAnnotation.dimensions)}'`
+			)
+		}
 		const seriesName = getPropertyHierarchy(series)
-		const property = getEntityProperty(entityType, seriesName)
+		const property = getEntityHierarchy(entityType, seriesName)
+		if (!property) {
+			throw new Error(`Cannot find hierarchy for series dimension '${JSON.stringify(series)}'`)
+		}
 		const seriesCaption = property.memberCaption
 		chart_spec.seriesField = seriesCaption
 		fields.push(seriesCaption)
@@ -334,15 +348,17 @@ function createLineChart(
 
 	chartAnnotation.measures?.forEach((measure) => {
 		const property = getEntityProperty<PropertyMeasure>(entityType, measure)
-		_data.forEach((item, index) => {
-			if (property.formatting?.unit === '%') {
+		if (property.formatting?.unit === '%') {
+			_data.forEach((item, index) => {
 				item[property.name] = isNil(data[index][property.name])
-					? null
-					: (data[index][property.name] * 100).toFixed(1)
-			} else {
-				item[property.name] = isNil(data[index][property.name]) ? null : data[index][property.name].toFixed(1)
-			}
-		})
+						? null
+						: (data[index][property.name] * 100).toFixed(1)
+			})
+		} else {
+			const result = formatDataValues(data, _data, property.name)
+			_data = result.values
+			unit = result.unit
+		}
 	})
 
 	return {
@@ -352,6 +368,9 @@ function createLineChart(
 					tag: 'chart',
 					chart_spec: {
 						...chart_spec,
+						title: {
+							text: unit ? `单位：${unit}` : ''
+						},
 						data: {
 							values: _data // 此处传入数据。
 						}
@@ -366,7 +385,6 @@ function createLineChart(
 }
 
 function createKPI(
-	answer: ChatAnswer,
 	chartAnnotation: ChartAnnotation,
 	entityType: EntityType,
 	data: any[],
@@ -378,12 +396,21 @@ function createKPI(
 		? chartAnnotation.measures
 				.map((measure) => {
 					const measureProperty = getEntityProperty<PropertyMeasure>(entityType, measure)
-					const [value, unit] = formatShortNumber(row[measureProperty.name], 'zh-Hans')
-					const result = formatNumber(value, 'zh-Hans', '0.0-2') + unit
-					return {
-						name: measureProperty.caption || measureProperty.name,
-						value: measureProperty.formatting?.unit ? result + measureProperty.formatting.unit : result
+					const rawValue = row[measureProperty.name]
+					if (isBlank(rawValue)) {
+						return {
+							name: measureProperty.caption || measureProperty.name,
+							value: 'N/A'
+						}
+					} else {
+						const [value, unit] = formatShortNumber(rawValue, 'zh-Hans')
+						const result = formatNumber(value, 'zh-Hans', '0.0-2') + unit
+						return {
+							name: measureProperty.caption || measureProperty.name,
+							value: measureProperty.formatting?.unit ? result + measureProperty.formatting.unit : result
+						}
 					}
+
 				})
 				.map(({ name, value }) => `**${name}:** ${value}`)
 				.join('\n')
@@ -475,7 +502,7 @@ function createTableMessage(
 			elements: [
 				{
 					tag: 'table', // 组件的标签。表格组件的固定取值为 table。
-					page_size: 5, // 每页最大展示的数据行数。支持[1,10]整数。默认值 5。
+					page_size: TABLE_PAGE_SIZE, // 每页最大展示的数据行数。支持[1,10]整数。默认值 5。
 					row_height: 'low', // 行高设置。默认值 low。
 					header_style: {
 						// 在此设置表头。
@@ -493,6 +520,31 @@ function createTableMessage(
 		},
 		data: _data,
 		categoryMembers: null
+	}
+}
+
+function formatDataValues(data: any[], _data: any[], propertyName: string): { values: any[]; unit: string } {
+	if (!Array.isArray(data) || data.length === 0) {
+		return { values: [], unit: '' }
+	}
+
+	const maxValue = Math.max(...data.map((item) => item[propertyName]))
+	let divisor = 1
+	let unit = ''
+
+	if (maxValue >= 100000000) {
+		divisor = 100000000
+		unit = '亿'
+	} else if (maxValue >= 10000) {
+		divisor = 10000
+		unit = '万'
+	}
+
+	_data.forEach((item, index) => item[propertyName] = isNil(data[index][propertyName]) ? null : (data[index][propertyName] / divisor).toFixed(1))
+
+	return {
+		values: _data,
+		unit: unit
 	}
 }
 

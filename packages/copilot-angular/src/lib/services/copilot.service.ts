@@ -44,7 +44,7 @@ export abstract class NgmCopilotService extends CopilotService {
     return role ? `Your role is '${role.title}', and your responsibility is ${role.description}.` : ''
   })
 
-  readonly languagePrompt = computed(() => `Please answer in language ${this.lang()}`)
+  readonly languagePrompt = computed(() => `Please answer in language ${Object.entries(NgmLanguageEnum).find((item) => item[1] === this.lang())?.[0] ?? 'English'}`)
 
   constructor() {
     super()

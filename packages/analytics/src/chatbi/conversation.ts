@@ -9,6 +9,8 @@ import {
 	CubeVariablePrompt,
 	EntityType,
 	Indicator,
+	isEntitySet,
+	isString,
 	makeCubeRulesPrompt,
 	PROMPT_RETRIEVE_DIMENSION_MEMBER,
 	PROMPT_TIME_SLICER,
@@ -19,15 +21,15 @@ import {
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	createExampleFewShotPrompt,
-	createReferencesRetrieverTool
+	createReferencesRetrieverTool,
 } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { groupBy } from 'lodash'
-import { BehaviorSubject, firstValueFrom, Subject, takeUntil } from 'rxjs'
+import { BehaviorSubject, firstValueFrom, Subject, switchMap, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
 import { AgentState, createReactAgent } from '../core/index'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../model-member/index'
-import { getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
+import { convertOcapSemanticModel, getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
 import { ChatBIService } from './chatbi.service'
 import { markdownCubes } from './graph/index'
 import { createLLM } from './llm'
@@ -36,12 +38,13 @@ import {
 	createCubeContextTool,
 	createDimensionMemberRetrieverTool,
 	createEndTool,
-	createFormulaTool,
 	errorWithEndMessage
 } from './tools'
 import { C_CHATBI_END_CONVERSATION, ChatBILarkContext, IChatBIConversation, insightAgentState } from './types'
 import { createMoreQuestionsTool } from './tools/more-questions'
 import { createWelcomeTool } from './tools/welcome'
+import { ChatLarkMessage, ChatStack } from './message'
+import { createIndicatorTool } from './tools/indicator'
 
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
@@ -75,7 +78,6 @@ export class ChatBIConversation implements IChatBIConversation {
 
 	private readonly indicators$ = new BehaviorSubject<Indicator[]>([])
 
-	// public copilotKnowledgeRetriever: CopilotKnowledgeRetriever
 	public exampleFewShotPrompt: FewShotPromptTemplate
 	private referencesRetrieverTool: DynamicStructuredTool = null
 	private dimensionMemberRetrieverTool: DynamicStructuredTool = null
@@ -83,10 +85,10 @@ export class ChatBIConversation implements IChatBIConversation {
 	public models: IChatBIModel[]
 	public chatModelId: string = null
 
-	private readonly status$ = new BehaviorSubject<'init' | 'pending' | 'running'>('init')
+	private message: ChatLarkMessage = null
 
-	private thinkingMessageId: string | null = null
-
+	private status: 'init' | 'idle' | 'running' | 'error' = 'init'
+	private chatStack: ChatStack[] = []
 	constructor(
 		private readonly chatContext: ChatBILarkContext,
 		private readonly copilot: Copilot,
@@ -129,11 +131,11 @@ export class ChatBIConversation implements IChatBIConversation {
 				const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
 				const schema = dataSource.options.schema
 				const _indicators = [...(schema?.indicators ?? [])].filter(
-					(indicator) => !indicators.some((item) => item.id === indicator.id || item.code === indicator.code)
+					(indicator) => !indicators.some((item) => item.id === indicator.id && item.code === indicator.code)
 				)
 				_indicators.push(...indicators)
 
-				this.logger.debug(`Set New indicators for dataSource ${dataSource.id}:`, _indicators)
+				this.logger.debug(`Set New indicators for dataSource ${dataSource.id}: ${JSON.stringify(_indicators.map((indicator) => indicator.code))}`, )
 
 				dataSource.setSchema({
 					...(dataSource.options.schema ?? {}),
@@ -162,7 +164,7 @@ export class ChatBIConversation implements IChatBIConversation {
 	upsertIndicator(indicator: any) {
 		this.logger.debug(`New indicator in chatbi:`, indicator)
 		const indicators = [...this.indicators$.value]
-		const index = indicators.findIndex((item) => item.id === indicator.id || item.code === indicator.code)
+		const index = indicators.findIndex((item) => item.id === indicator.id && item.code === indicator.code)
 		if (index > -1) {
 			indicators[index] = {
 				...indicators[index],
@@ -178,13 +180,15 @@ export class ChatBIConversation implements IChatBIConversation {
 	async newThread() {
 		this.id = nanoid()
 
-		const { items: models } = await this.modelService.findAll({
+		const { items } = await this.modelService.findAll({
 			where: { tenantId: this.chatContext.tenant.id, organizationId: this.chatContext.organizationId },
 			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators'],
 			order: {
 				visits: OrderTypeEnum.DESC
 			}
 		})
+
+		const models = items.map((item) => ({...item, model: convertOcapSemanticModel(item.model)}))
 
 		this.logger.debug(`Chat models visits:`, models.map(({ visits }) => visits).join(', '))
 
@@ -248,15 +252,6 @@ ${markdownCubes(this.models.slice(3))}
 			},
 			chatContext
 		)
-		// const pickCubeTool = createPickCubeTool(
-		// 	{
-		// 		chatId,
-		// 		logger: this.logger,
-		// 		larkService: chatContext.larkService,
-		// 		dsCoreService: this.dsCoreService
-		// 	},
-		// 	this.models
-		// )
 
 		const getCubeContext = createCubeContextTool(
 			{
@@ -272,31 +267,36 @@ ${markdownCubes(this.models.slice(3))}
 			conversation: this,
 			larkService: chatContext.larkService
 		})
-		const createFormula = createFormulaTool(
-			{
-				logger: this.logger,
-				conversation: this,
-				larkService: chatContext.larkService
-			},
-		)
+		// const createFormula = createFormulaTool(
+		// 	{
+		// 		logger: this.logger,
+		// 		conversation: this,
+		// 		larkService: chatContext.larkService
+		// 	},
+		// )
 
 		const welcomeTool = createWelcomeTool({ conversation: this })
 		const moreQuestionsTool = createMoreQuestionsTool({ conversation: this })
 
+		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
+			//
+		})
+		const indicatorTool = createIndicatorTool(llm, this.referencesRetrieverTool, {
+			logger: this.logger,
+			conversation: this,
+			larkService: chatContext.larkService
+		},)
 		const tools = [
 			this.dimensionMemberRetrieverTool,
 			this.referencesRetrieverTool,
 			getCubeContext,
 			welcomeTool,
-			createFormula,
+			indicatorTool,
 			answerTool,
 			moreQuestionsTool,
 			endTool
 		]
-
-		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
-			//
-		})
+		
 		return createReactAgent({
 			state: insightAgentState,
 			llm,
@@ -324,11 +324,11 @@ If you have any questions about how to analysis data (such as 'how to create a f
 
 ${createAgentStepsInstructions(
 	`Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
-	`Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a indicator for that. After creating the indicator, you need to call the subsequent steps to re-answer the complete answer.`,
+	`For every measure, determine whether it exists in the cube context, if it does, proceed directly to the next step, if not found, call the 'createIndicator' tool to create new calculated measure for it. After creating the measure, you need to call the subsequent steps to re-answer the complete answer.`,
 	CubeVariablePrompt,
 	`If the time condition is a specified fixed time (such as 2023 year, 202202, 2020 Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year), please add it to 'timeSlicers'.`,
-	`Final call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
-	`After answer question, call 'giveMoreQuestions' tool to give more analysis suggestions `
+	`Then call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
+	`Finally, ref to the result of 'answerQuestion' tool, call 'giveMoreQuestions' tool to give more analysis suggestions`
 )}
 `
 				const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
@@ -339,18 +339,52 @@ ${createAgentStepsInstructions(
 			shouldToolContinue: (state) => {
 				const lastMessage = state.messages[state.messages.length - 1]
 				this.logger.debug(`[ChatBI] [After tool call] name: ${lastMessage.name}`)
-				if (isToolMessage(lastMessage) && ['giveMoreQuestions', 'welcome', 'end'].includes(lastMessage.name)) {
-					return END
+				if (isToolMessage(lastMessage)) {
+					if (['giveMoreQuestions', 'welcome', 'end', 'answerQuestion'].includes(lastMessage.name)) {
+						const content = lastMessage.content
+						// 可能是 Received tool input did not match expected schema
+						if (isString(content) && content.startsWith('Error:')) {
+							this.logger.error(content)
+							const toolCallMessage = state.messages[state.messages.length - 2]
+							this.logger.debug((<ToolMessage>toolCallMessage).lc_kwargs)
+							return 'agent'
+						}
+
+						if (['answerQuestion'].includes(lastMessage.name) && !this.chatStack.length) {
+							return 'agent'
+						}
+
+						return END
+					}
 				}
+	
 				return 'agent'
 			}
 		})
 	}
 
-	async ask(text: string) {
-		this.status$.next('running')
-		this.thinkingMessageId = await this.createThinkingMessage()
+	/**
+	 * 接收来自客户端的消息文本，进行思考回答
+	 * 
+	 * @param text 
+	 */
+	async ask(text: string, message?: ChatLarkMessage) {
+		// Running, please wait
+		if (this.status === 'running') {
+			const chatStack = {text, message: new ChatLarkMessage(this.chatContext, text, this)}
+			await chatStack.message.update({status: 'waiting'})
+			this.chatStack.push(chatStack)
+			return
+		}
 
+		// Set running status
+		this.status = 'running'
+		// Send thinking message to user
+		// this.thinkingMessageId = messageId ?? await createThinkingMessage(this.chatContext, text)
+		this.message = message ?? new ChatLarkMessage(this.chatContext, text, this)
+		await this.message.update({status: 'thinking'})
+
+		// Init new thread
 		await this.initThread()
 		// Model context
 		let context = null
@@ -362,6 +396,7 @@ ${createAgentStepsInstructions(
 			context = this.context
 		}
 
+		// Few-shot prompt
 		const content = await this.exampleFewShotPrompt.format({ input: text })
 
 		const streamResults = await this.graph.stream(
@@ -395,24 +430,7 @@ ${createAgentStepsInstructions(
 							}
 						]) => {
 							content += content ? '\n' : ''
-							// Prioritize Routes
-							if (value.next) {
-								if (value.next === 'FINISH' || value.next === END) {
-									end = true
-								} else {
-									content +=
-										`<b>${key}</b>` +
-										'\n\n<b>' +
-										'Invoke' +
-										`</b>: ${value.next}` +
-										'\n\n<b>' +
-										'Instructions' +
-										`</b>: ${value.instructions || ''}` +
-										'\n\n<b>' +
-										'Reasoning' +
-										`</b>: ${value.reasoning || ''}`
-								}
-							} else if (value.messages) {
+							if (value.messages) {
 								const _message = value.messages[0]
 								if (isAIMessage(_message)) {
 									if (_message.tool_calls?.length > 0) {
@@ -432,17 +450,25 @@ ${createAgentStepsInstructions(
 						verboseContent = content
 						this.logger.debug(`[ChatBI] [Graph]: verbose content`, verboseContent)
 						// 对话结束时还有正在思考的消息，则意味着出现错误
-						if (this.thinkingMessageId) {
-							this.messageWithEndAction([{tag: 'markdown', content: `出现内部错误`}])
+						if (['thinking', 'continuing', 'waiting'].includes(this.message?.status)) {
+							this.message.update({
+								status: 'error',
+								elements: [{tag: 'markdown', content: `出现内部错误：\n${verboseContent}`}]
+							})
 						}
 					}
-					// if (abort()) {
-					//   break
-					// }
+					if (this.message?.status === 'end') {
+					  break
+					}
 				}
 			}
+
+			// Idle: at the end of a conversation
+			this.status = 'idle'
+
 		} catch (err: any) {
 			console.error(err)
+			this.status = 'error'
 			if (err instanceof ToolInputParsingException) {
 				this.chatContext.larkService.errorMessage(this.chatContext, err)
 			} else if (err instanceof GraphValueError) {
@@ -452,37 +478,28 @@ ${createAgentStepsInstructions(
 				errorWithEndMessage(this.chatContext, err.message, this)
 			}
 		}
-	}
 
-	async createThinkingMessage() {
-		const result = await this.chatContext.larkService.interactiveMessage(this.chatContext, {
-			header: {
-				title: {
-					tag: 'plain_text',
-					content: '正在思考...'
-				},
-				template: 'blue',
-				ud_icon: {
-					token: 'myai_colorful', // 图标的 token
-					style: {
-						color: 'red' // 图标颜色
-					}
-				}
-			}
-		})
-		return result.data.message_id
-	}
-
-	async answerMessage(card: any) {
-		const thinkingMessageId = this.thinkingMessageId
-		if (thinkingMessageId) {
-			this.thinkingMessageId = null
-			return await this.chatContext.larkService.patchInteractiveMessage(thinkingMessageId, card)
-		} else {
-			return await this.chatContext.larkService.interactiveMessage(this.chatContext, card)
+		if (this.chatStack.length > 0) {
+			const chatStack = this.chatStack.shift()
+			await this.ask(chatStack.text, chatStack.message)
 		}
 	}
 
+	async getCube(modelId: string, cubeName: string) {
+		const entitySet = await firstValueFrom(
+			this.dsCoreService.getDataSource(modelId).pipe(
+				switchMap((dataSource) => dataSource.selectEntitySet(cubeName)),
+			)
+		)
+		if (isEntitySet(entitySet)) {
+			const entityType = entitySet.entityType
+			await this.setCubeCache(modelId, cubeName, entityType)
+			return entityType
+		} else {
+			this.logger.error(`Get cube '${cubeName}' context error: `, entitySet.message)
+			return null
+		}
+	}
 	async getCubeCache(modelId: string, cubeName: string) {
 		return await this.chatBIService.cacheManager.get<EntityType>(modelId + '/' + cubeName)
 	}
@@ -491,7 +508,6 @@ ${createAgentStepsInstructions(
 	}
 
 	messageWithEndAction(contents: any[], callback?: (action: any) => void | Promise<void>) {
-		const thinkingMessageId = this.thinkingMessageId
 		const message = {
 			config: {
 				wide_screen_mode: true
@@ -518,14 +534,7 @@ ${createAgentStepsInstructions(
 			]
 		}
 
-		let action = null
-		if (thinkingMessageId) {
-			this.thinkingMessageId = null
-			action = this.chatContext.larkService.patchAction(thinkingMessageId, message)
-		} else {
-			action = this.chatContext.larkService.createAction(this.chatContext.chatId, message)
-		}
-		action.subscribe({
+		this.chatContext.larkService.createAction(this.chatContext.chatId, message).subscribe({
 			next: async (action) => {
 				if (action?.value === C_CHATBI_END_CONVERSATION || action?.value === `"${C_CHATBI_END_CONVERSATION}"`) {
 					await this.end()
@@ -539,23 +548,30 @@ ${createAgentStepsInstructions(
 		})
 	}
 
-	async textMessage(text: string) {
-		const thinkingMessageId = this.thinkingMessageId
-		this.thinkingMessageId = null
-		return await this.chatContext.larkService.textMessage(
-			{chatId: this.chatContext.chatId, messageId: thinkingMessageId},
-			text
-		)
-	}
-
 	async end() {
 		const session = this.chatBIService.userSessions[this.userId]
 		if (session) {
 			session.chatModelId = null
 		}
 
-		await this.textMessage(`对话已结束。如果您有其他问题，欢迎随时再来咨询。`)
+		await this.message.update({status: 'end', elements: [
+			{
+				tag: 'markdown',
+				content: `对话已结束。如果您有其他问题，欢迎随时再来咨询。`
+			}
+		]})
+
 		await this.newThread()
+	}
+
+	async continue(elements: any[]) {
+		await this.message.update({status: 'continuing', elements})
+	}
+	async done(card: {elements: any[]; header: any}) {
+		await this.message.update({...card, status: 'done'})
+	}
+	async updateMessage(card: {elements: any[]; header: any; action: (action) => void}) {
+		await this.message.update(card)
 	}
 }
 

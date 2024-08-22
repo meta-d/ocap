@@ -23,6 +23,7 @@ import { MessagesState } from "@langchain/langgraph/dist/graph/message";
 import { All } from "@langchain/langgraph/dist/pregel/types";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AgentState, createCopilotAgentState } from "./types";
+import { ChatOpenAI } from "@langchain/openai";
 
 
 export type N = typeof START | "agent" | "tools";
@@ -40,6 +41,8 @@ export type CreateReactAgentParams = {
   interruptBefore?: N[] | All;
   interruptAfter?: N[] | All;
   state?: StateGraphArgs<AgentState>["channels"]
+  agentRouter?: (state: AgentState) => string
+  toolsRouter?: (state: AgentState) => string
 };
 
 /**
@@ -67,7 +70,9 @@ export function createReactAgent(
     checkpointSaver,
     interruptBefore,
     interruptAfter,
-    state
+    state,
+    agentRouter,
+    toolsRouter
   } = props;
   const schema: StateGraphArgs<AgentState>["channels"] = createCopilotAgentState()
 
@@ -80,7 +85,7 @@ export function createReactAgent(
   if (!("bindTools" in llm) || typeof llm.bindTools !== "function") {
     throw new Error(`llm ${llm} must define bindTools method.`);
   }
-  const modelWithTools = llm.bindTools(toolClasses);
+  const modelWithTools = llm instanceof ChatOpenAI ? llm.bindTools(toolClasses, { parallel_tool_calls: false }) : llm.bindTools(toolClasses)
   const modelRunnable = _createModelWrapper(modelWithTools, messageModifier);
 
   const shouldContinue = (state: AgentState) => {
@@ -92,7 +97,7 @@ export function createReactAgent(
     ) {
       return END;
     } else {
-      return "continue";
+      return "tools";
     }
   };
 
@@ -111,11 +116,11 @@ export function createReactAgent(
     )
     .addNode("tools", new ToolNode<AgentState>(toolClasses))
     .addEdge(START, "agent")
-    .addConditionalEdges("agent", shouldContinue, {
-      continue: "tools",
+    .addConditionalEdges("agent", agentRouter ?? shouldContinue, {
+      tools: "tools",
       [END]: END,
     })
-    .addEdge("tools", "agent");
+    .addConditionalEdges("tools", toolsRouter ?? (() => "agent"))
 
   return workflow.compile({
     checkpointer: checkpointSaver,

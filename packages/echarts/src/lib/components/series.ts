@@ -120,8 +120,8 @@ export function serializeSeriesComponent(
 
   const visualMap = {
     text: seriesComponent.property?.caption ? [seriesComponent.property?.caption] : null,
-    min: Number(seriesComponent.domain?.[0] ?? seriesComponent.dataMin),
-    max: Number(seriesComponent.domain?.[1] ?? seriesComponent.dataMax)
+    min: Number(seriesComponent.domain?.[0] ?? seriesComponent.dataMin ?? seriesComponent.dataMax ?? 0),
+    max: Number(seriesComponent.domain?.[1] ?? seriesComponent.dataMax ?? seriesComponent.dataMin ?? 0)
   }
   if (seriesComponent.palette?.name || seriesComponent.palette?.colors) {
     const inRange: any = {}
