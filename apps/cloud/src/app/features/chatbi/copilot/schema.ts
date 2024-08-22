@@ -32,5 +32,5 @@ export const ChatAnswerSchema = z.object({
   slicers: z.array(SlicerSchema).optional().describe('The slicers to filter data'),
   timeSlicers: z.array(TimeSlicerSchema).optional().describe('The time slicers to filter data'),
   variables: z.array(SlicerSchema).optional().describe('The variables to the query of cube'),
-  conclusion: z.string().optional().describe('conclusion of the answer')
+  questions: z.array(z.string().describe('More suggestion prompts, 3 will be enough.')).describe(`Give user more question prompts about how to drilldown other dimensions or one of dimension members, for examples: '分析<某维度1>成员<xxx>在<某维度2>上的<度量>分布'`)
 })

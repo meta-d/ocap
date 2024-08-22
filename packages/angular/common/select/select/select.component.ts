@@ -129,6 +129,7 @@ export class NgmSelectComponent implements ControlValueAccessor
     .pipe(
       filter(() => !this.multiple()),
       distinctUntilChanged(),
+      filter((value) => this.value() !== value),
       takeUntilDestroyed()
     )
     .subscribe((value) => {
@@ -162,8 +163,8 @@ export class NgmSelectComponent implements ControlValueAccessor
 
   writeValue(obj: any): void {
     // this.formControl.setValue(obj, {emitEvent: false}) // 不发出去会导致 formControl.valueChanges distinctUntilChanged 检测不到本次变化
-    this.formControl.setValue(obj)
     this.value.set(obj)
+    this.formControl.setValue(obj)
   }
   registerOnChange(fn: any): void {
     this.onChange = fn

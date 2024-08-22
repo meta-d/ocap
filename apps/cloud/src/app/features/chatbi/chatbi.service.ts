@@ -5,7 +5,7 @@ import { CopilotChatMessage, nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { EntityType, Indicator, isEntityType, isEqual, isString, omitBlank, Schema } from '@metad/ocap-core'
+import { EntityType, Indicator, isEntityType, isEqual, isString, nonNullable, omit, omitBlank, Schema } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import {
@@ -22,6 +22,7 @@ import {
 } from 'rxjs'
 import { ChatBIConversationService, ChatbiConverstion, registerModel } from '../../@core'
 import { QuestionAnswer } from './types'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 
 @Injectable()
 export class ChatbiService {
@@ -29,6 +30,7 @@ export class ChatbiService {
   readonly #dsCoreService = inject(NgmDSCoreService)
   readonly #wasmAgent = inject(WasmAgentService)
   readonly conversationService = inject(ChatBIConversationService)
+  readonly paramId = injectQueryParams('id')
 
   readonly models$ = this.#modelsService.getMy()
   readonly detailModels = signal<Record<string, NgmSemanticModel>>({})
@@ -70,9 +72,8 @@ export class ChatbiService {
   readonly entityType = derivedAsync<EntityType>(() => {
     const dataSourceName = this.dataSourceName()
     const cube = this.entity()
-    if (dataSourceName && cube) {
-      return this.#dsCoreService.getDataSource(dataSourceName).pipe(
-        switchMap((dataSource) => dataSource.selectEntityType(cube)),
+    if (dataSourceName && this.dataSource() && cube) {
+      return this.dataSource().selectEntityType(cube).pipe(
         filter((entityType) => isEntityType(entityType))
       ) as Observable<EntityType>
     }
@@ -100,6 +101,7 @@ export class ChatbiService {
 
   readonly pristineConversation = signal<ChatbiConverstion | null>(null)
   readonly indicators = computed(() => this.conversation()?.indicators ?? [])
+  readonly modelIndicators = computed(() => this.model()?.indicators)
 
   readonly aiMessage = signal<CopilotChatMessage>(null)
 
@@ -108,10 +110,10 @@ export class ChatbiService {
     .pipe(takeUntilDestroyed())
     .subscribe((items) => {
       this.conversations.set(items)
-      if (!this.conversationId()) {
-        this.setConversation(items[0]?.key)
-      }
-      if (!this.conversationKey()) {
+      // if (!this.conversationId()) {
+      //   this.setConversation(items[0]?.key)
+      // }
+      if (!this.paramId() && !this.conversationKey()) {
         this.newConversation()
       }
     })
@@ -143,6 +145,14 @@ export class ChatbiService {
       }
     })
 
+  private modelSub = toObservable(this.model).pipe(filter(nonNullable), takeUntilDestroyed())
+    .subscribe((model) => {
+      this.registerModel(model)
+      if (!this.entity() && model.cube) {
+        this.setEntity(model.cube)
+      }
+    })
+
   constructor() {
     effect(
       async () => {
@@ -159,10 +169,10 @@ export class ChatbiService {
             )
           )
           this.detailModels.update((state) => ({ ...state, [model.id]: model }))
-          this.registerModel(model)
-          if (!this.entity() && model.cube) {
-            this.setEntity(model.cube)
-          }
+          // this.registerModel(model)
+          // if (!this.entity() && model.cube) {
+          //   this.setEntity(model.cube)
+          // }
         }
       },
       { allowSignalWrites: true }
@@ -183,8 +193,8 @@ export class ChatbiService {
         const dataSource = this.dataSource()
         const indicators = this.indicators()
         if (dataSource && indicators) {
-          const schema = dataSource.options.schema
-          const _indicators = [...(schema?.indicators ?? [])].filter(
+          // const schema = dataSource.options.schema
+          const _indicators = [...(this.modelIndicators() ?? [])].filter(
             (indicator) => !indicators.some((item) => item.id === indicator.id || item.code === indicator.code)
           )
           _indicators.push(...indicators)
@@ -210,7 +220,7 @@ export class ChatbiService {
   }
 
   private registerModel(model: NgmSemanticModel) {
-    registerModel(model, this.#dsCoreService, this.#wasmAgent)
+    registerModel(omit(model, 'indicators'), this.#dsCoreService, this.#wasmAgent)
   }
 
   newConversation() {

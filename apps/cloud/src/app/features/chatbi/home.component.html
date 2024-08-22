@@ -6,7 +6,7 @@
         <ngm-select class="inline-block border border-dashed rounded-lg" displayDensity="cosy" #mTooltip="matTooltip"
           [placeholder]="hasModel() ? ('PAC.KEY_WORDS.SelectSemanticModel' | translate: {Default: 'Select Semantic Model'}) : ('PAC.ChatBI.NoSemanticModel' | translate: {Default: 'No Semantic Model'})"
           [displayBehaviour]="DisplayBehaviour.descriptionOnly"
-          [selectOptions]="models()"
+          [selectOptions]="sortedModels()"
           [panelWidth]="360"
           valueKey="key"
           [(ngModel)]="modelId"
