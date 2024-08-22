@@ -17,6 +17,7 @@ import {
 	getEntityProperty,
 	getPropertyHierarchy,
 	getPropertyMeasure,
+	isBlank,
 	ISlicer,
 	isNil,
 	isTimeRangesSlicer,
@@ -40,6 +41,8 @@ import {
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
 import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
+
+const TABLE_PAGE_SIZE = 10
 
 type ChatAnswer = {
 	preface: string
@@ -136,7 +139,7 @@ async function drawChartMessage(
 	const chartAnnotation = {
 		chartType: answer.chartType,
 		dimensions: answer.dimensions?.map((dimension) => tryFixDimension(dimension, context.entityType)),
-		measures: answer.measures
+		measures: answer.measures?.map((measure) => tryFixDimension(measure, context.entityType))
 	}
 
 	const slicers = []
@@ -193,7 +196,7 @@ async function drawChartMessage(
 						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
 						: chartAnnotation.dimensions?.length > 0
 							? createLineChart(answer, chartAnnotation, context.entityType, result.data, header)
-							: createKPI(answer, chartAnnotation, context.entityType, result.data, header)
+							: createKPI(chartAnnotation, context.entityType, result.data, header)
 				// console.log(JSON.stringify(card, null, 2))
 
 				if (result.stats?.statements?.[0]) {
@@ -382,7 +385,6 @@ function createLineChart(
 }
 
 function createKPI(
-	answer: ChatAnswer,
 	chartAnnotation: ChartAnnotation,
 	entityType: EntityType,
 	data: any[],
@@ -394,12 +396,21 @@ function createKPI(
 		? chartAnnotation.measures
 				.map((measure) => {
 					const measureProperty = getEntityProperty<PropertyMeasure>(entityType, measure)
-					const [value, unit] = formatShortNumber(row[measureProperty.name], 'zh-Hans')
-					const result = formatNumber(value, 'zh-Hans', '0.0-2') + unit
-					return {
-						name: measureProperty.caption || measureProperty.name,
-						value: measureProperty.formatting?.unit ? result + measureProperty.formatting.unit : result
+					const rawValue = row[measureProperty.name]
+					if (isBlank(rawValue)) {
+						return {
+							name: measureProperty.caption || measureProperty.name,
+							value: 'N/A'
+						}
+					} else {
+						const [value, unit] = formatShortNumber(rawValue, 'zh-Hans')
+						const result = formatNumber(value, 'zh-Hans', '0.0-2') + unit
+						return {
+							name: measureProperty.caption || measureProperty.name,
+							value: measureProperty.formatting?.unit ? result + measureProperty.formatting.unit : result
+						}
 					}
+
 				})
 				.map(({ name, value }) => `**${name}:** ${value}`)
 				.join('\n')
@@ -491,7 +502,7 @@ function createTableMessage(
 			elements: [
 				{
 					tag: 'table', // 组件的标签。表格组件的固定取值为 table。
-					page_size: 5, // 每页最大展示的数据行数。支持[1,10]整数。默认值 5。
+					page_size: TABLE_PAGE_SIZE, // 每页最大展示的数据行数。支持[1,10]整数。默认值 5。
 					row_height: 'low', // 行高设置。默认值 low。
 					header_style: {
 						// 在此设置表头。

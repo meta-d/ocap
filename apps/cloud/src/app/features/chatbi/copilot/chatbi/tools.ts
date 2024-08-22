@@ -20,6 +20,25 @@ export const createIndicatorSchema = z.object({
     )
 })
 
+const prompt = ChatPromptTemplate.fromMessages(
+  [
+    [
+      'system',
+      `You are a professional BI data analyst and are using Microsoft's mdx for indicator management.
+Please create calculation formula for indicator based on reference documents and cube context.
+
+Reference Documentations:
+{{references}}
+
+The cube context is:
+{{context}}
+`
+    ],
+    ['human', '{{input}}']
+  ],
+  { templateFormat: 'mustache' }
+)
+
 /**
  * Create indicator (calculated measure) with formula
  */
@@ -31,24 +50,6 @@ export function injectCreateIndicatorTool() {
   const context = chatbiService.context
 
   return (model: BaseChatModel) => {
-    const prompt = ChatPromptTemplate.fromMessages(
-      [
-        [
-          'system',
-          `You are a professional BI data analyst and are using Microsoft's mdx for indicator management.
-Please create calculation formula for indicator based on reference documents and cube context.
-
-Reference Documentations:
-{{references}}
-
-The cube context is:
-{{context}}
-`
-        ],
-        ['human', '{{input}}']
-      ],
-      { templateFormat: 'mustache' }
-    )
 
     const llmWithStructuredOutput = model.withStructuredOutput(
       z.object({
@@ -63,7 +64,7 @@ The cube context is:
         logger.debug(`Execute copilot action 'createFormula':`, dataSource, cube, name, code, description)
 
         const references = await referencesRetrieverTool.invoke({
-          questions: [`calculated measure name: '${name}', code: '${code}'`]
+          questions: [`calculated measure name: '${name}', code: '${code}', description: ${description}`]
         })
 
         const result = await chain.invoke({

@@ -52,6 +52,7 @@ export type IChatBIConversation = {
   newThread(): void
   destroy(): void
   // answerMessage(data: any): Promise<any>
+  getCube(modelId: string, cubeName: string): Promise<EntityType>
   getCubeCache(modelId: string, cubeName: string): Promise<EntityType>
   setCubeCache(modelId: string, cubeName: string, data: any): Promise<void>
   messageWithEndAction(data: any, action?: (action: any) => void): void

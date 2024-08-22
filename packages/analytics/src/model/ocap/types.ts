@@ -1,5 +1,5 @@
-import { AgentType, ISemanticModel } from '@metad/contracts'
-import { DataSourceOptions, Syntax } from '@metad/ocap-core'
+import { AgentType, IIndicator, ISemanticModel } from '@metad/contracts'
+import { DataSourceOptions, Indicator, SemanticModel, Syntax } from '@metad/ocap-core'
 import { isNil, omit } from 'lodash'
 import { NgmDSCoreService } from './core.service'
 
@@ -92,4 +92,21 @@ export function registerModel(model: ISemanticModel, dsCoreService: NgmDSCoreSer
 	}
 
 	return semanticModel
+}
+
+
+export function convertOcapIndicatorResult(result: IIndicator): Indicator {
+	return {
+	  ...omit(result, 'options'),
+	  ...(result.options ?? {})
+	} as Indicator
+}
+
+
+export function convertOcapSemanticModel(result: ISemanticModel): SemanticModel {
+	return {
+	  ...result.options,
+	  ...omit(result, 'options'),
+	  indicators: result.indicators?.map(convertOcapIndicatorResult)
+	} as SemanticModel
 }

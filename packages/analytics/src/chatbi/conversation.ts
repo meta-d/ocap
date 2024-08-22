@@ -9,6 +9,7 @@ import {
 	CubeVariablePrompt,
 	EntityType,
 	Indicator,
+	isEntitySet,
 	isString,
 	makeCubeRulesPrompt,
 	PROMPT_RETRIEVE_DIMENSION_MEMBER,
@@ -24,11 +25,11 @@ import {
 } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { groupBy } from 'lodash'
-import { BehaviorSubject, firstValueFrom, Subject, takeUntil } from 'rxjs'
+import { BehaviorSubject, firstValueFrom, Subject, switchMap, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
 import { AgentState, createReactAgent } from '../core/index'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../model-member/index'
-import { getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
+import { convertOcapSemanticModel, getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
 import { ChatBIService } from './chatbi.service'
 import { markdownCubes } from './graph/index'
 import { createLLM } from './llm'
@@ -37,13 +38,13 @@ import {
 	createCubeContextTool,
 	createDimensionMemberRetrieverTool,
 	createEndTool,
-	createFormulaTool,
 	errorWithEndMessage
 } from './tools'
 import { C_CHATBI_END_CONVERSATION, ChatBILarkContext, IChatBIConversation, insightAgentState } from './types'
 import { createMoreQuestionsTool } from './tools/more-questions'
 import { createWelcomeTool } from './tools/welcome'
 import { ChatLarkMessage, ChatStack } from './message'
+import { createIndicatorTool } from './tools/indicator'
 
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
@@ -179,13 +180,15 @@ export class ChatBIConversation implements IChatBIConversation {
 	async newThread() {
 		this.id = nanoid()
 
-		const { items: models } = await this.modelService.findAll({
+		const { items } = await this.modelService.findAll({
 			where: { tenantId: this.chatContext.tenant.id, organizationId: this.chatContext.organizationId },
 			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators'],
 			order: {
 				visits: OrderTypeEnum.DESC
 			}
 		})
+
+		const models = items.map((item) => ({...item, model: convertOcapSemanticModel(item.model)}))
 
 		this.logger.debug(`Chat models visits:`, models.map(({ visits }) => visits).join(', '))
 
@@ -264,31 +267,36 @@ ${markdownCubes(this.models.slice(3))}
 			conversation: this,
 			larkService: chatContext.larkService
 		})
-		const createFormula = createFormulaTool(
-			{
-				logger: this.logger,
-				conversation: this,
-				larkService: chatContext.larkService
-			},
-		)
+		// const createFormula = createFormulaTool(
+		// 	{
+		// 		logger: this.logger,
+		// 		conversation: this,
+		// 		larkService: chatContext.larkService
+		// 	},
+		// )
 
 		const welcomeTool = createWelcomeTool({ conversation: this })
 		const moreQuestionsTool = createMoreQuestionsTool({ conversation: this })
 
+		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
+			//
+		})
+		const indicatorTool = createIndicatorTool(llm, this.referencesRetrieverTool, {
+			logger: this.logger,
+			conversation: this,
+			larkService: chatContext.larkService
+		},)
 		const tools = [
 			this.dimensionMemberRetrieverTool,
 			this.referencesRetrieverTool,
 			getCubeContext,
 			welcomeTool,
-			createFormula,
+			indicatorTool,
 			answerTool,
 			moreQuestionsTool,
 			endTool
 		]
-
-		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
-			//
-		})
+		
 		return createReactAgent({
 			state: insightAgentState,
 			llm,
@@ -316,7 +324,7 @@ If you have any questions about how to analysis data (such as 'how to create a f
 
 ${createAgentStepsInstructions(
 	`Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
-	`Determine whether measure exists in the Cube information. If it does, proceed directly to the next step. If not found, call the 'createFormula' tool to create a indicator for that. After creating the indicator, you need to call the subsequent steps to re-answer the complete answer.`,
+	`For every measure, determine whether it exists in the cube context, if it does, proceed directly to the next step, if not found, call the 'createIndicator' tool to create new calculated measure for it. After creating the measure, you need to call the subsequent steps to re-answer the complete answer.`,
 	CubeVariablePrompt,
 	`If the time condition is a specified fixed time (such as 2023 year, 202202, 2020 Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year), please add it to 'timeSlicers'.`,
 	`Then call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
@@ -477,6 +485,21 @@ ${createAgentStepsInstructions(
 		}
 	}
 
+	async getCube(modelId: string, cubeName: string) {
+		const entitySet = await firstValueFrom(
+			this.dsCoreService.getDataSource(modelId).pipe(
+				switchMap((dataSource) => dataSource.selectEntitySet(cubeName)),
+			)
+		)
+		if (isEntitySet(entitySet)) {
+			const entityType = entitySet.entityType
+			await this.setCubeCache(modelId, cubeName, entityType)
+			return entityType
+		} else {
+			this.logger.error(`Get cube '${cubeName}' context error: `, entitySet.message)
+			return null
+		}
+	}
 	async getCubeCache(modelId: string, cubeName: string) {
 		return await this.chatBIService.cacheManager.get<EntityType>(modelId + '/' + cubeName)
 	}
