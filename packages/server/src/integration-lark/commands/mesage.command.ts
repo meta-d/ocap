@@ -21,6 +21,16 @@ export class LarkMessageCommand implements ICommand {
 				message_id: string
 				message_type: 'text' | 'image'
 				update_time: string
+				mentions?: {
+					id: {
+						open_id: string
+						union_id: string
+						user_id: string
+					}
+					key: string
+					name: string
+					tenant_key: string
+				}[]
 			}
 			sender: {
 				sender_id: {

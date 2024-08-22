@@ -39,9 +39,7 @@ export type ChatBILarkMessage = {
 }
 
 export type ChatBILarkContext = ChatLarkContext & {
-  // chatId: string
   userId: string
-  // conversationId: string
   text: string
 }
 
@@ -53,13 +51,18 @@ export type IChatBIConversation = {
   upsertIndicator(indicator: Indicator): void
   newThread(): void
   destroy(): void
-  answerMessage(data: any): Promise<any>
+  // answerMessage(data: any): Promise<any>
+  getCube(modelId: string, cubeName: string): Promise<EntityType>
   getCubeCache(modelId: string, cubeName: string): Promise<EntityType>
   setCubeCache(modelId: string, cubeName: string, data: any): Promise<void>
   messageWithEndAction(data: any, action?: (action: any) => void): void
 
   ask(content: string): Promise<void>
   end(): Promise<void>
+
+  continue(elements: any[]): Promise<any>
+  done(card: {elements: any[]; header: any}): Promise<any>
+  updateMessage(card: {elements: any[]; header?: any; action?: (action) => void}): Promise<any>
 }
 
 export const C_CHATBI_END_CONVERSATION = 'chatbi-end-conversation'

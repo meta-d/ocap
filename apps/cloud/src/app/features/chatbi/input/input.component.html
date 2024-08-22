@@ -92,14 +92,16 @@
     @for (item of conversations(); track item.key) {
       <button
         cdkMenuItemCheckbox
-        class="ngm-chatbi__conversations-menu-item w-full"
+        class="ngm-chatbi__conversations-menu-item w-full group"
         [cdkMenuItemChecked]="item.key === conversation()?.key"
         (click)="setConversation(item.key)"
         >
         <div class="flex justify-start items-center text-left min-w-[100px] max-w-[600px] overflow-hidden text-ellipsis">
           @if (conversations().length > 1) {
-            <mat-icon class="cursor-pointer mr-2 rounded-full hover:bg-neutral-300 dark:hover:bg-neutral-600" ngmAppearance="danger" displayDensity="cosy"
-              (click)="deleteConversation(item.key)">close</mat-icon>
+            <mat-icon class="cursor-pointer mr-2 rounded-full opacity-10 group-hover:opacity-100 hover:bg-neutral-300 dark:hover:bg-neutral-600"
+              ngmAppearance="danger" displayDensity="cosy"
+              (click)="deleteConversation($event, item.key)"
+            >close</mat-icon>
           }
           <span class="flex-1 text-ellipsis overflow-hidden"
             [title]="item.name">{{item.name || ('PAC.ChatBI.Empty' | translate: {Default: 'Empty'}) }}</span>

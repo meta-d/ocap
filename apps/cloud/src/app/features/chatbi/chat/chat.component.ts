@@ -23,7 +23,7 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 import { nonNullable } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
-import { debounceTime, filter } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs'
 import { ChatbiAnswerComponent } from '../answer/answer.component'
 import { ChatbiService } from '../chatbi.service'
 import { injectExamplesAgent } from '../copilot'
@@ -64,20 +64,6 @@ export class ChatbiChatComponent {
 
   readonly examples = this.chatbiService.examples
 
-  // readonly examples = toSignal(
-  //   this.translate
-  //     .stream('PAC.ChatBI.SystemMessage_Samples', {
-  //       Default: [
-  //         'Monthly sales trends of Canadian customers in 2023',
-  //         'Top 10 users in terms of spending in 2024',
-  //         'What is the spending amount in each month of 2023',
-  //         'Spending amount distribution of users in each channel in 2023',
-  //         'How many users are there in each channel in 2023'
-  //       ]
-  //     })
-  //     .pipe(map((examples) => examples))
-  // )
-
   readonly cube = this.chatbiService.entity
   readonly entityType = this.chatbiService.entityType
 
@@ -91,16 +77,14 @@ export class ChatbiChatComponent {
     .pipe(filter(nonNullable), debounceTime(1000), takeUntilDestroyed())
     .subscribe(() => this.scrollBottom())
 
-  constructor() {
-    effect(
-      () => {
-        if (this.chatbiService.context() && this.examplesEmpty()) {
-          this.refresh()
-        }
-      },
-      { allowSignalWrites: true }
-    )
-  }
+  private examplesSub = toObservable(this.chatbiService.context).pipe(
+      filter(nonNullable), debounceTime(1000), distinctUntilChanged(), takeUntilDestroyed()
+    ).subscribe(() => {
+      if (this.examplesEmpty()) {
+        this.refresh()
+      }
+    })
+
 
   editQuestion(message: CopilotChatMessage) {
     this.prompt.set(message.content)

@@ -94,12 +94,15 @@ export class ChatbiInputComponent {
     this.chatbiService.setConversation(id)
   }
 
-  deleteConversation(id: string) {
+  deleteConversation(event: Event, id: string) {
+    event.preventDefault()
+    event.stopPropagation()
+    event.stopImmediatePropagation()
     this.chatbiService.deleteConversation(id)
   }
 
-  async ask() {
-    const prompt = this.prompt().trim()
+  async ask(text?: string) {
+    const prompt = text ?? this.prompt().trim()
     try {
       this.answering.set(true)
       this.prompt.set('')

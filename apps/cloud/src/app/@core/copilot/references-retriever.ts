@@ -16,7 +16,7 @@ export function injectReferencesRetrieverTool(command: string | string[], option
     },
     {
       name: 'referencesRetriever',
-      description: 'Retrieve references for a list of questions',
+      description: `Retrieve references docs for a list of questions, such as: how to create a formula for calculated measure, how to create a time slicer for relative time`,
       schema: z.object({
         questions: z.array(z.string().describe('The question to retrieve references'))
       })

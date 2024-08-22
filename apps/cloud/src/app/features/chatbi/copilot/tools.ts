@@ -17,7 +17,6 @@ import {
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { z } from 'zod'
 import { ChatbiService } from '../chatbi.service'
 import { QuestionAnswer } from '../types'
 import { transformCopilotChart, transformCopilotKpi } from './copilot'
@@ -195,11 +194,13 @@ export function injectCreateChartTool() {
               top: chatbiService.answer().top,
               visualType: chatbiService.answer().visualType
             } as Partial<QuestionAnswer>,
-            answer.conclusion
+            answer.questions ? {
+              questions: answer.questions
+            } : null
           ].filter(Boolean)
         )
 
-        return `Chart answer is created!`
+        return `The answer is created!`
       } catch (err: any) {
         console.log(err)
         return `Error: ${err.message}`
@@ -209,48 +210,6 @@ export function injectCreateChartTool() {
       name: 'answerQuestion',
       description: 'Create chart answer for the question',
       schema: ChatAnswerSchema
-    }
-  )
-}
-
-/**
- * Create calculated measure with formula
- */
-export function injectCreateFormulaTool() {
-  const logger = inject(NGXLogger)
-  const chatbiService = inject(ChatbiService)
-
-  return tool(
-    async ({ cube, code, name, formula, unit }) => {
-      logger.debug(`Execute copilot action 'createFormula':`, cube, name, formula, unit)
-      try {
-        const key = nanoid()
-        chatbiService.upsertIndicator({ id: key, entity: cube, code, name, formula, unit })
-        const dataSource = chatbiService.dataSourceName()
-        chatbiService.appendAiMessageData([
-          {
-            dataSettings: {
-              dataSource,
-              entitySet: cube
-            },
-            indicators: [key] // indicators snapshot
-          }
-        ])
-        return `The new calculated measure with key '${code}' has been created!`
-      } catch (err: any) {
-        return `Error: ${err.message}`
-      }
-    },
-    {
-      name: 'createFormula',
-      description: 'Create formula for new measure',
-      schema: z.object({
-        cube: z.string().describe('The cube name'),
-        code: z.string().describe('The code of calculated measure'),
-        name: z.string().describe(`The caption of calculated measure in user's language`),
-        formula: z.string().describe('The MDX formula for calculated measure'),
-        unit: z.string().optional().describe('The unit of measure')
-      })
     }
   )
 }
