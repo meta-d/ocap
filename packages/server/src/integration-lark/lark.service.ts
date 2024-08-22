@@ -339,7 +339,7 @@ export class LarkService {
 	}
 
 	createAction(chatId: string, content: any) {
-		return new Observable<any>((subscriber: Subscriber<unknown>) => {
+		return new Observable<{value: any}>((subscriber: Subscriber<unknown>) => {
 			this.client.im.message
 				.create({
 					data: {
@@ -376,8 +376,8 @@ export class LarkService {
 		})
 	}
 
-	patchAction(messageId: string, content: any): Observable<string> {
-		return new Observable<string>((subscriber: Subscriber<unknown>) => {
+	patchAction(messageId: string, content: any) {
+		return new Observable<{value: any}>((subscriber: Subscriber<unknown>) => {
 			this.client.im.message
 				.patch({
 					data: {

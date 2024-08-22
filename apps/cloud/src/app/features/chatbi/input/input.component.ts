@@ -94,7 +94,10 @@ export class ChatbiInputComponent {
     this.chatbiService.setConversation(id)
   }
 
-  deleteConversation(id: string) {
+  deleteConversation(event: Event, id: string) {
+    event.preventDefault()
+    event.stopPropagation()
+    event.stopImmediatePropagation()
     this.chatbiService.deleteConversation(id)
   }
 

@@ -107,8 +107,15 @@ export class ChatLarkMessage {
 						...this.getCard(),
 						header: this.header ?? this.getHeader(),
 					})
-					.subscribe((action) => {
-						options.action(action)
+					.subscribe(async (action) => {
+						if (
+							action?.value === C_CHATBI_END_CONVERSATION ||
+							action?.value === `"${C_CHATBI_END_CONVERSATION}"`
+						) {
+							await this.conversation.end()
+						} else {
+							options?.action?.(action)
+						}
 					})
 			} else {
 				await this.larkService.patchInteractiveMessage(this.id, {
@@ -131,7 +138,7 @@ export class ChatLarkMessage {
 						) {
 							await this.conversation.end()
 						} else {
-							// callback?.(action)
+							options?.action?.(action)
 						}
 					},
 					error: (err) => {
