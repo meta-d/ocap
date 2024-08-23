@@ -5,13 +5,33 @@ import {
   ChartDimension,
   ChartDimensionRoleType,
   ChartMeasure,
+  Dimension,
   EntityType,
   KPIType,
+  Measure,
   assignDeepOmitBlank,
   omit,
   tryFixDimension
 } from '@metad/ocap-core'
 import { cloneDeep, upperFirst } from 'lodash-es'
+
+export function completeTableDimension(dimension: Dimension, entityType: EntityType) {
+  return {
+    // Determine dimension attr by hierarchy
+    ...tryFixDimension(dimension, entityType),
+    zeroSuppression: true,
+  }
+}
+
+export function completeTableMeasure(measure: Measure, entityType: EntityType) {
+  return {
+    ...measure,
+    dimension: C_MEASURES,
+    formatting: {
+      shortNumber: true
+    },
+  }
+}
 
 /**
  * Transform copilot answer to chart annotation or kpi

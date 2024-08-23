@@ -2,6 +2,7 @@ import { tool } from '@langchain/core/tools'
 import { flatten, Logger } from '@nestjs/common'
 import { z } from 'zod'
 import { ChatContext } from '../types'
+import { ChatLarkMessage } from '../message'
 
 export function createWelcomeTool(context: Partial<ChatContext>) {
 	const logger = new Logger('WelcomeTool')
@@ -111,9 +112,6 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 			elements.push({
 				tag: 'markdown',
 				content: `您也可以对我说 “**结束对话**” 来结束本轮对话。`
-			},
-			{
-				tag: 'hr', // 添加分割线
 			})
 
 			conversation.updateMessage({
@@ -127,11 +125,8 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 						tag: 'plain_text',
 						content: ''
 					},
-					template: 'indigo',
-					icon: {
-						tag: 'custom_icon',
-						img_key: 'img_v3_02e1_a8d74bc6-3c8a-4f66-b44f-c4cc837e285g'
-					}
+					template: ChatLarkMessage.headerTemplate,
+					icon: ChatLarkMessage.logoIcon
 				},
 				action: (action) => {
 					conversation.ask(action.value)

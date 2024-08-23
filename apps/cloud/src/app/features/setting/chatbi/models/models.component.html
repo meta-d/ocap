@@ -46,14 +46,17 @@
 
 
 <ng-template #actionTemplate let-id="id" let-entityCaption="entityCaption">
-  <div class="flex items-center">
-      <button mat-icon-button [matTooltip]="'PAC.ChatBI.EditModel' | translate: {Default: 'Edit Model'}"
+  <div class="flex items-center group">
+      <button mat-icon-button class="opacity-50 group-hover:opacity-100"
+        [matTooltip]="'PAC.ChatBI.EditModel' | translate: {Default: 'Edit Model'}"
         (click)="editModel(id)"
       >
         <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
       </button>
-      <mat-divider vertical style="height: 20px;"></mat-divider>
-      <button mat-icon-button ngmAppearance="danger" [matTooltip]="'PAC.ChatBI.DeleteModel' | translate: {Default: 'Delete Model'}"
+      <mat-divider vertical style="height: 20px; margin: 0 10px;"></mat-divider>
+      <button mat-icon-button class="opacity-50 group-hover:opacity-100"
+        ngmAppearance="danger"
+        [matTooltip]="'PAC.ChatBI.DeleteModel' | translate: {Default: 'Delete Model'}"
         (click)="deleteModel(id, entityCaption)"
       >
         <mat-icon fontSet="material-icons-outlined">delete</mat-icon>

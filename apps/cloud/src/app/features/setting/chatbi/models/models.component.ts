@@ -1,22 +1,23 @@
+import { CommonModule } from '@angular/common'
 import { Component, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { ModelsService } from '@metad/cloud/state'
+import { NgmConfirmDeleteComponent, NgmTableComponent, TableColumn } from '@metad/ocap-angular/common'
+import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
+import { EMPTY } from 'rxjs'
+import { switchMap } from 'rxjs/operators'
 import { ChatBIModelService, Store, ToastrService, getErrorMessage, routeAnimations } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
-import { AsyncPipe, CommonModule } from '@angular/common'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { NgmConfirmDeleteComponent, NgmTableComponent, TableColumn } from '@metad/ocap-angular/common'
-import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { MatDialog } from '@angular/material/dialog'
-import { switchMap } from 'rxjs/operators'
-import { EMPTY } from 'rxjs'
 
 @Component({
   standalone: true,
   selector: 'pac-settings-chatbi-models',
   templateUrl: './models.component.html',
   styleUrls: ['./models.component.scss'],
-  imports: [CommonModule, RouterModule, TranslateModule, MaterialModule, NgmTableComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, MaterialModule, AppearanceDirective, NgmTableComponent],
   animations: [routeAnimations]
 })
 export class ChatBIModelsComponent extends TranslationBaseComponent {
@@ -36,7 +37,7 @@ export class ChatBIModelsComponent extends TranslationBaseComponent {
   readonly columns = signal<TableColumn[]>([
     {
       name: 'model',
-      caption: 'Model',
+      caption: 'Model'
     }
   ])
 
