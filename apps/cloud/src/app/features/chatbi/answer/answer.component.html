@@ -41,7 +41,7 @@
           @case ('object') {
             @if (isQuestions(item); as q) {
               <h3 class="my-2">{{'PAC.ChatBI.TryFollowing' | translate: {Default: 'You can also try the following'} }}:</h3>
-              <ul class="list-decimal pl-4">
+              <ul class="list-disc pl-4">
                 @for (question of q.questions; track question) {
                   <li class="my-2 text-sm"><a class="cursor-pointer" (click)="edit(question)">{{question}}</a></li>
                 }

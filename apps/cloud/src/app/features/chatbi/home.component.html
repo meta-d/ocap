@@ -1,7 +1,7 @@
 <div class="container mx-auto max-w-7xl p-2 lg:px-8 h-full flex flex-col gap-2">
     <div class="title relative mx-auto text-center">
       <h1 class="font-bold text-2xl md:text-3xl pb-2">
-        {{ 'PAC.ChatBI.Title' | translate: {Default: 'ChatBI-Data Analysis &amp; Insights with' } }}
+        <span>{{ 'PAC.ChatBI.Title' | translate: {Default: 'ChatBI-Data Analysis &amp; Insights with' } }}</span>
         
         <ngm-select class="inline-block border border-dashed rounded-lg" displayDensity="cosy" #mTooltip="matTooltip"
           [placeholder]="hasModel() ? ('PAC.KEY_WORDS.SelectSemanticModel' | translate: {Default: 'Select Semantic Model'}) : ('PAC.ChatBI.NoSemanticModel' | translate: {Default: 'No Semantic Model'})"
@@ -15,8 +15,8 @@
           [ngClass]="modelId ? 'border-transparent' : 'border-neutral-500'"
         />
 
-        @if (isMobile()) {
-          <a class="cursor-pointer overflow-hidden text-ellipsis mx-2"
+        @if (isMobile() && modelId) {
+          <a class="cursor-pointer overflow-hidden text-ellipsis mx-2 whitespace-nowrap"
             [ngClass]="cube() ? '' : 'p-2 rounded-lg border border-dashed border-neutral-500 opacity-50'"
             [matTooltip]=" 'PAC.ChatBI.SelectACube' | translate: {Default: 'Select a Cube'} "
             matTooltipPosition="right"
@@ -24,7 +24,7 @@
             {{cube() ? cube().caption || cube().name : ('PAC.ChatBI.SelectCube' | translate: {Default: 'Select Cube' })}}</a>
         }
       </h1>
-      <p class="text-zinc-500 text-xs md:text-sm">
+      <p class="text-xs md:text-sm text-zinc-500 dark:text-zinc-300">
         {{ 'PAC.ChatBI.TransformData' | translate: {Default: 'Transform data into insights with AI.' } }}
       </p>
     </div>

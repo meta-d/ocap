@@ -3,14 +3,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
   model,
   signal,
   viewChild
 } from '@angular/core'
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDividerModule } from '@angular/material/divider'
@@ -20,15 +19,16 @@ import { RouterModule } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
 import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
-import { nonNullable } from '@metad/ocap-core'
+import { nonBlank, nonNullable } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
-import { debounceTime, distinctUntilChanged, filter } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter, map, startWith } from 'rxjs'
 import { ChatbiAnswerComponent } from '../answer/answer.component'
 import { ChatbiService } from '../chatbi.service'
 import { injectExamplesAgent } from '../copilot'
 import { ChatbiInputComponent } from '../input/input.component'
 import { ChatbiLoadingComponent } from '../loading/loading.component'
+import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,
@@ -58,10 +58,12 @@ import { ChatbiLoadingComponent } from '../loading/loading.component'
 export class ChatbiChatComponent {
   readonly translate = inject(TranslateService)
   readonly chatbiService = inject(ChatbiService)
+  readonly appService = inject(AppService)
   readonly examplesAgent = injectExamplesAgent()
 
   readonly chatContent = viewChild('chatContent', { read: ElementRef<HTMLDivElement> })
 
+  readonly lang = this.appService.lang
   readonly examples = this.chatbiService.examples
 
   readonly cube = this.chatbiService.entity
@@ -77,14 +79,13 @@ export class ChatbiChatComponent {
     .pipe(filter(nonNullable), debounceTime(1000), takeUntilDestroyed())
     .subscribe(() => this.scrollBottom())
 
-  private examplesSub = toObservable(this.chatbiService.context).pipe(
-      filter(nonNullable), debounceTime(1000), distinctUntilChanged(), takeUntilDestroyed()
-    ).subscribe(() => {
+  private examplesSub = toObservable(this.chatbiService.context)
+    .pipe(distinctUntilChanged(), filter(nonBlank), debounceTime(100), takeUntilDestroyed())
+    .subscribe(() => {
       if (this.examplesEmpty()) {
         this.refresh()
       }
     })
-
 
   editQuestion(message: CopilotChatMessage) {
     this.prompt.set(message.content)

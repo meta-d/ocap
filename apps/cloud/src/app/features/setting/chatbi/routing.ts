@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
-import { PermissionsEnum } from '../../../@core'
+import { DirtyCheckGuard, PermissionsEnum } from '../../../@core'
 import { ChatBIComponent } from './chatbi.component'
 
 export default [
@@ -31,7 +31,8 @@ export default [
           },
           {
             path: ':id',
-            loadComponent: () => import('./model/model.component').then((m) => m.ChatBIModelComponent)
+            loadComponent: () => import('./model/model.component').then((m) => m.ChatBIModelComponent),
+            canDeactivate: [ DirtyCheckGuard ],
           }
         ]
       },

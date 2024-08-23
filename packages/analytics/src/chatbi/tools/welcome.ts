@@ -2,6 +2,7 @@ import { tool } from '@langchain/core/tools'
 import { flatten, Logger } from '@nestjs/common'
 import { z } from 'zod'
 import { ChatContext } from '../types'
+import { ChatLarkMessage } from '../message'
 
 export function createWelcomeTool(context: Partial<ChatContext>) {
 	const logger = new Logger('WelcomeTool')
@@ -15,55 +16,56 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 			const elements = []
 			elements.push({
 				tag: 'markdown',
-				content: 'Hi, 我是 ChatBI, 我可以根据你的问题分析数据、生成图表, 猜你想问：'
+				content: '猜你想问：'
 			})
-			elements.push(...flatten(
-				models.map(({ modelId, cubeName, prompts }) => {
-					const chatModel = conversation.models.find(
-						(model) => model.modelId === modelId && model.entity === cubeName
-					)
-					return [
-						{
-							tag: 'markdown',
-							content: `- 关于数据集 “${chatModel.entityCaption}”, 您可能关心的问题：`
-						},
-						{
-							tag: 'column_set',
-							columns: [
-								{
-									tag: 'column',
-									width: '23px',
-								},
-								{
-									tag: 'column',
-									elements: [
-										...prompts.map((prompt) => {
-											const fullPrompt =
-												`分析数据集 “${chatModel.entityCaption}”：` + prompt
-											return {
-												tag: 'button',
-												text: {
-													tag: 'plain_text',
-													content: prompt
-												},
-												type: 'primary_text',
-												complex_interaction: true,
-												width: 'default',
-												size: 'small',
-												value: fullPrompt,
-												hover_tips: {
-													tag: 'plain_text',
-													content: fullPrompt
+			elements.push(
+				...flatten(
+					models.map(({ modelId, cubeName, prompts }) => {
+						const chatModel = conversation.models.find(
+							(model) => model.modelId === modelId && model.entity === cubeName
+						)
+						return [
+							{
+								tag: 'markdown',
+								content: `- 关于数据集 “${chatModel.entityCaption}”, 您可能关心的问题：`
+							},
+							{
+								tag: 'column_set',
+								columns: [
+									{
+										tag: 'column',
+										width: '23px'
+									},
+									{
+										tag: 'column',
+										elements: [
+											...prompts.map((prompt) => {
+												const fullPrompt = `分析数据集 “${chatModel.entityCaption}”：` + prompt
+												return {
+													tag: 'button',
+													text: {
+														tag: 'plain_text',
+														content: prompt
+													},
+													type: 'primary_text',
+													complex_interaction: true,
+													width: 'default',
+													size: 'small',
+													value: fullPrompt,
+													hover_tips: {
+														tag: 'plain_text',
+														content: fullPrompt
+													}
 												}
-											}
-										})
-									]
-								}
-							],
-						}
-					]
-				})
-			))
+											})
+										]
+									}
+								]
+							}
+						]
+					})
+				)
+			)
 			if (more?.length) {
 				elements.push({
 					tag: 'markdown',
@@ -75,15 +77,14 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 					columns: [
 						{
 							tag: 'column',
-							width: '23px',
+							width: '23px'
 						},
 						{
 							tag: 'column',
 							elements: [
 								...more.map(({ modelId, cubeName }) => {
 									const chatModel = conversation.models.find(
-										(model) =>
-											model.modelId === modelId && model.entity === cubeName
+										(model) => model.modelId === modelId && model.entity === cubeName
 									)
 
 									if (!chatModel) {
@@ -115,7 +116,18 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 
 			conversation.updateMessage({
 				elements,
-				header: {},
+				header: {
+					title: {
+						tag: 'plain_text',
+						content: 'Hi, 我是 ChatBI, 我可以根据你的问题分析数据、生成图表'
+					},
+					subtitle: {
+						tag: 'plain_text',
+						content: ''
+					},
+					template: ChatLarkMessage.headerTemplate,
+					icon: ChatLarkMessage.logoIcon
+				},
 				action: (action) => {
 					conversation.ask(action.value)
 				}
@@ -141,7 +153,7 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 						z
 							.object({
 								modelId: z.string().describe('The model id'),
-								cubeName: z.string().describe('The name of cube'),
+								cubeName: z.string().describe('The name of cube')
 							})
 							.optional()
 							.describe('Model cube')

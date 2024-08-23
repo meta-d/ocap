@@ -41,6 +41,7 @@ import {
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
 import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
+import { ChatLarkMessage } from '../message'
 
 const TABLE_PAGE_SIZE = 10
 
@@ -165,7 +166,8 @@ async function drawChartMessage(
 	}
 
 	const header = {
-		template: 'blue',
+		template: ChatLarkMessage.headerTemplate,
+		icon: ChatLarkMessage.logoIcon,
 		title: {
 			tag: 'plain_text',
 			content: '分析条件'
@@ -174,16 +176,8 @@ async function drawChartMessage(
 			// 卡片主标题。必填。
 			tag: 'plain_text', // 固定值 plain_text。
 			content: answer.preface, // 主标题内容。
-			i18n: {
-				// 多语言标题内容。必须配置 content 或 i18n 两个属性的其中一个。如果同时配置仅生效 i18n。
-				zh_cn: '',
-				en_us: '',
-				ja_jp: '',
-				zh_hk: '',
-				zh_tw: ''
-			}
 		},
-		text_tag_list: createSlicersTitle(slicers)
+		text_tag_list: createSlicersTitle(slicers),
 	}
 
 	return new Promise((resolve, reject) => {

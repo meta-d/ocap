@@ -4,13 +4,14 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { FormBuilder, FormControl, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { ModelsService } from '@metad/cloud/state'
+import { IsDirty } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { EMPTY, map, pipe, startWith, switchMap } from 'rxjs'
-import { ChatBIModelService, IChatBIModel, ToastrService, routeAnimations } from '../../../../@core'
+import { ChatBIModelService, IChatBIModel, ToastrService, getErrorMessage, routeAnimations } from '../../../../@core'
 import { MaterialModule, UpsertEntityComponent } from '../../../../@shared'
 import { ChatBIModelsComponent } from '../models/models.component'
 
@@ -22,7 +23,7 @@ import { ChatBIModelsComponent } from '../models/models.component'
   imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, MaterialModule, NgmCommonModule],
   animations: [routeAnimations]
 })
-export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> {
+export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> implements IsDirty {
   DisplayBehaviour = DisplayBehaviour
 
   readonly modelsService = inject(ModelsService)
@@ -100,12 +101,22 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> {
     )
   }
 
+  isDirty(): boolean {
+    return this.formGroup.dirty
+  }
+
   upsert() {
-    ;(this.paramId() ? this.update(this.paramId(), this.formGroup.value) : this.save(this.formGroup.value)).subscribe(
-      () => {
+    this.loading.set(true)
+    ;(this.paramId() ? this.update(this.paramId(), this.formGroup.value) : this.save(this.formGroup.value)).subscribe({
+      next: () => {
+        this.formGroup.markAsPristine()
         this.close()
+      },
+      error: (error) => {
+        this.loading.set(false)
+        this._toastrService.error(getErrorMessage(error))
       }
-    )
+    })
   }
 
   close(refresh = false) {

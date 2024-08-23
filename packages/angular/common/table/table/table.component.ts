@@ -191,7 +191,7 @@ export class NgmTableComponent {
       this.dataSource.sort = this.sort()
       // If the user changes the sort order, reset back to the first page.
       this.sort()?.sortChange.subscribe((sort) => {
-        if (this.paginator) {
+        if (this.paginator()) {
           this.paginator().pageIndex = 0
         }
       })

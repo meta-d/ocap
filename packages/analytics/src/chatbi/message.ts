@@ -3,6 +3,14 @@ import { C_CHATBI_END_CONVERSATION, IChatBIConversation } from './types'
 
 export type ChatLarkMessageStatus = 'thinking' | 'continuing' | 'waiting' | 'done' | 'end' | 'error'
 export class ChatLarkMessage {
+	static readonly headerTemplate = 'indigo'
+	static readonly logoImgKey = 'img_v3_02e1_a8d74bc6-3c8a-4f66-b44f-c4cc837e285g'
+	static readonly logoIcon = {
+		tag: 'custom_icon',
+		img_key: ChatLarkMessage.logoImgKey
+	}
+	static readonly helpUrl = 'https://mtda.cloud/docs/chatbi/'
+
 	private id: string = null
 	public status: ChatLarkMessageStatus = 'thinking'
 
@@ -12,6 +20,7 @@ export class ChatLarkMessage {
 
 	private header = null
 	private elements = []
+
 	constructor(
 		private chatContext: ChatLarkContext,
 		private text: string,
@@ -45,7 +54,7 @@ export class ChatLarkMessage {
 				tag: 'plain_text', // 固定值 plain_text。
 				content: this.getSubtitle()
 			},
-			template: 'blue',
+			template: ChatLarkMessage.headerTemplate,
 			ud_icon: {
 				token: 'myai_colorful', // 图标的 token
 				style: {
@@ -58,6 +67,7 @@ export class ChatLarkMessage {
 	getCard() {
 		const elements = [...this.elements]
 		if (!['end'].includes(this.status)) {
+			elements.push({ tag: 'hr' })
 			elements.push(this.getEndAction())
 		}
 		return {
@@ -68,6 +78,7 @@ export class ChatLarkMessage {
 	getEndAction() {
 		return {
 			tag: 'action',
+			layout: 'default',
 			actions: [
 				{
 					tag: 'button',
@@ -75,11 +86,24 @@ export class ChatLarkMessage {
 						tag: 'plain_text',
 						content: '结束对话'
 					},
-					type: 'primary_text',
+					type: 'text',
+					complex_interaction: true,
+					width: 'default',
+					size: 'medium'
+				},
+				{
+					tag: 'button',
+					text: {
+						tag: 'plain_text',
+						content: '帮助文档'
+					},
+					type: 'text',
 					complex_interaction: true,
 					width: 'default',
 					size: 'medium',
-					value: C_CHATBI_END_CONVERSATION
+					multi_url: {
+						url: ChatLarkMessage.helpUrl,
+					}
 				}
 			]
 		}
@@ -101,23 +125,25 @@ export class ChatLarkMessage {
 			this.header = options.header
 		}
 		if (this.id) {
-			this.larkService.patchAction(this.id, {
-				...this.getCard(),
-				header: this.header ?? this.getHeader(),
-			}).subscribe({
-				next: (action) => {
-					this.onAction(action, options?.action)
-				},
-				error: (err) => {
-					console.error(err)
-				}
-			})
+			this.larkService
+				.patchAction(this.id, {
+					...this.getCard(),
+					header: this.header ?? this.getHeader()
+				})
+				.subscribe({
+					next: (action) => {
+						this.onAction(action, options?.action)
+					},
+					error: (err) => {
+						console.error(err)
+					}
+				})
 		} else {
 			const result = await this.larkService.interactiveActionMessage(
 				this.chatContext,
 				{
 					...this.getCard(),
-					header: this.header ?? this.getHeader(),
+					header: this.header ?? this.getHeader()
 				},
 				{
 					next: async (action) => {
@@ -134,10 +160,7 @@ export class ChatLarkMessage {
 	}
 
 	async onAction(action, callback?: (action) => void) {
-		if (
-			action?.value === C_CHATBI_END_CONVERSATION ||
-			action?.value === `"${C_CHATBI_END_CONVERSATION}"`
-		) {
+		if (action?.value === C_CHATBI_END_CONVERSATION || action?.value === `"${C_CHATBI_END_CONVERSATION}"`) {
 			await this.conversation.end()
 		} else {
 			callback?.(action)

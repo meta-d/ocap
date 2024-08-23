@@ -9,6 +9,7 @@ import {
   getDefaultSlicersForVariables,
   getEntityDimensions,
   ISlicer,
+  Measure,
   OrderBy,
   PieVariant,
   TimeRangesSlicer,
@@ -19,7 +20,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { ChatbiService } from '../chatbi.service'
 import { QuestionAnswer } from '../types'
-import { transformCopilotChart, transformCopilotKpi } from './copilot'
+import { completeTableDimension, completeTableMeasure, transformCopilotChart, transformCopilotKpi } from './copilot'
 import { ChatAnswerSchema } from './schema'
 
 export function injectCreateChartTool() {
@@ -143,8 +144,8 @@ export function injectCreateChartTool() {
         } else if (answer.dimensions?.length) {
           finalAnswer.visualType = 'table'
           finalAnswer.chartAnnotation = {
-            dimensions: answer.dimensions,
-            measures: answer.measures
+            dimensions: answer.dimensions?.map((d) => completeTableDimension(d, entityType)),
+            measures: answer.measures?.map((m) => completeTableMeasure(m as Measure, entityType)),
           } as ChartAnnotation
         } else {
           const { kpi } = transformCopilotKpi(answer, entityType)
