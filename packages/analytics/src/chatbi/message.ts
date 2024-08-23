@@ -68,6 +68,7 @@ export class ChatLarkMessage {
 	getEndAction() {
 		return {
 			tag: 'action',
+			layout: 'default',
 			actions: [
 				{
 					tag: 'button',
@@ -78,8 +79,24 @@ export class ChatLarkMessage {
 					type: 'primary_text',
 					complex_interaction: true,
 					width: 'default',
+					size: 'medium'
+				},
+				{
+					tag: 'button',
+					text: {
+						tag: 'plain_text',
+						content: '帮助文档'
+					},
+					type: 'primary_text',
+					complex_interaction: true,
+					width: 'default',
 					size: 'medium',
-					value: C_CHATBI_END_CONVERSATION
+					multi_url: {
+						url: 'https://mtda.cloud/docs/chatbi/',
+						pc_url: 'https://mtda.cloud/docs/chatbi/',
+						ios_url: 'https://mtda.cloud/docs/chatbi/',
+						android_url: 'https://mtda.cloud/docs/chatbi/'
+					}
 				}
 			]
 		}
@@ -101,23 +118,25 @@ export class ChatLarkMessage {
 			this.header = options.header
 		}
 		if (this.id) {
-			this.larkService.patchAction(this.id, {
-				...this.getCard(),
-				header: this.header ?? this.getHeader(),
-			}).subscribe({
-				next: (action) => {
-					this.onAction(action, options?.action)
-				},
-				error: (err) => {
-					console.error(err)
-				}
-			})
+			this.larkService
+				.patchAction(this.id, {
+					...this.getCard(),
+					header: this.header ?? this.getHeader()
+				})
+				.subscribe({
+					next: (action) => {
+						this.onAction(action, options?.action)
+					},
+					error: (err) => {
+						console.error(err)
+					}
+				})
 		} else {
 			const result = await this.larkService.interactiveActionMessage(
 				this.chatContext,
 				{
 					...this.getCard(),
-					header: this.header ?? this.getHeader(),
+					header: this.header ?? this.getHeader()
 				},
 				{
 					next: async (action) => {
@@ -134,10 +153,7 @@ export class ChatLarkMessage {
 	}
 
 	async onAction(action, callback?: (action) => void) {
-		if (
-			action?.value === C_CHATBI_END_CONVERSATION ||
-			action?.value === `"${C_CHATBI_END_CONVERSATION}"`
-		) {
+		if (action?.value === C_CHATBI_END_CONVERSATION || action?.value === `"${C_CHATBI_END_CONVERSATION}"`) {
 			await this.conversation.end()
 		} else {
 			callback?.(action)
