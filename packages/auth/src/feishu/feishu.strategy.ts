@@ -20,7 +20,8 @@ export class FeishuStrategy extends PassportStrategy(Strategy, 'feishu') {
 		try {
 			const { id, open_id, name, email, mobile, avatar } = profile;
 			const user = {
-				thirdPartyId: id,
+				username: id,
+				thirdPartyId: open_id,
 				name,
 				mobile,
 				imageUrl: avatar?.middle,

@@ -81,14 +81,11 @@ export class LarkService {
 
 			// if (data.message.chat_type === 'p2p') {
 			// 	const result = await this.interactiveMessage({ chatId } as ChatLarkContext, {
-			// 		"config": { "wide_screen_mode": true },
-			// 		"elements": [
-			// 		]
-			// 	  }
-			// 	)
+			// 		elements: []
+			// 	})
 			// 	return true
 			// }
-			
+
 			this.logger.debug('im.message.receive_v1:')
 			this.logger.debug(data)
 			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
@@ -181,9 +178,13 @@ export class LarkService {
 			this.logger.debug('card.action.trigger:')
 			this.logger.debug(data)
 			const messageId = data.context.open_message_id
-			if (messageId && this.actions.get(messageId)) {
-				this.actions.get(messageId).next(data)
-				return true
+			if (messageId) {
+				if (this.actions.get(messageId)) {
+					this.actions.get(messageId).next(data)
+					return true
+				} else {
+					this.errorMessage({ chatId: data.context.open_chat_id }, new Error(`响应动作不存在或已超时！`))
+				}
 			}
 			return false
 		}
@@ -233,13 +234,13 @@ export class LarkService {
 		}
 	}
 
-	async errorMessage(context: ChatLarkContext, err: Error) {
+	async errorMessage({ chatId }: { chatId: string }, err: Error) {
 		await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
 			},
 			data: {
-				receive_id: context.chatId,
+				receive_id: chatId,
 				content: JSON.stringify({ text: `Error:` + err.message }),
 				msg_type: 'text'
 			}
@@ -314,7 +315,11 @@ export class LarkService {
 		})
 	}
 
-	async interactiveActionMessage(context: ChatLarkContext, data: any, subscriber?: Partial<Observer<any>> | ((value: any) => void)) {
+	async interactiveActionMessage(
+		context: ChatLarkContext,
+		data: any,
+		subscriber?: Partial<Observer<any>> | ((value: any) => void)
+	) {
 		const message = await this.createMessage({
 			params: {
 				receive_id_type: 'chat_id'
@@ -325,21 +330,24 @@ export class LarkService {
 				msg_type: 'interactive'
 			}
 		} as LarkMessage)
-		
+
 		const messageId = message.data.message_id
 		const response = new Subject<any>()
 		this.actions.set(messageId, response)
 		// 超时时间 10m
-		setTimeout(() => {
-			response.complete()
-			this.actions.delete(messageId)
-		}, 1000 * 60 * 10)
+		setTimeout(
+			() => {
+				response.complete()
+				this.actions.delete(messageId)
+			},
+			1000 * 60 * 10
+		)
 		response.subscribe(subscriber)
 		return message
 	}
 
 	createAction(chatId: string, content: any) {
-		return new Observable<{value: any}>((subscriber: Subscriber<unknown>) => {
+		return new Observable<{ value: any }>((subscriber: Subscriber<unknown>) => {
 			this.client.im.message
 				.create({
 					data: {
@@ -356,10 +364,13 @@ export class LarkService {
 					const response = new Subject<any>()
 					this.actions.set(messageId, response)
 					// 超时时间 10m
-					setTimeout(() => {
-						response.complete()
-						this.actions.delete(messageId)
-					}, 1000 * 60 * 10)
+					setTimeout(
+						() => {
+							response.complete()
+							this.actions.delete(messageId)
+						},
+						1000 * 60 * 10
+					)
 					response.subscribe({
 						next: (message) => {
 							subscriber.next(message.action)
@@ -377,7 +388,7 @@ export class LarkService {
 	}
 
 	patchAction(messageId: string, content: any) {
-		return new Observable<{value: any}>((subscriber: Subscriber<unknown>) => {
+		return new Observable<{ value: any }>((subscriber: Subscriber<unknown>) => {
 			this.client.im.message
 				.patch({
 					data: {
@@ -391,10 +402,13 @@ export class LarkService {
 					const response = new Subject<any>()
 					this.actions.set(messageId, response)
 					// 超时时间 10m
-					setTimeout(() => {
-						response.complete()
-						this.actions.delete(messageId)
-					}, 1000 * 60 * 10)
+					setTimeout(
+						() => {
+							response.complete()
+							this.actions.delete(messageId)
+						},
+						1000 * 60 * 10
+					)
 
 					response.subscribe({
 						next: (message) => {

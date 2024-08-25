@@ -3,7 +3,7 @@
 @import './features/_features.component';
 
 .pac-page-header {
-  @apply flex flex-col justify-start items-start gap-2 px-4 pt-4;
+  @apply flex flex-col justify-start items-stretch gap-2 px-4 pt-4;
 }
 .pac-page-title {
   @apply text-2xl font-bold;

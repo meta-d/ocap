@@ -36,7 +36,7 @@ export function registerModel(model: ISemanticModel, dsCoreService: NgmDSCoreSer
 		} as any,
 		schema: {
 			...(model.options?.schema ?? {}),
-			indicators: model.indicators
+			indicators: model.indicators?.map(convertOcapIndicatorResult)
 		}
 	} as DataSourceOptions
 

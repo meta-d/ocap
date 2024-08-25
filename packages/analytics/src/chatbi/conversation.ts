@@ -29,7 +29,7 @@ import { BehaviorSubject, firstValueFrom, Subject, switchMap, takeUntil } from '
 import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
 import { AgentState, createReactAgent } from '../core/index'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../model-member/index'
-import { convertOcapSemanticModel, getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
+import { getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
 import { ChatBIService } from './chatbi.service'
 import { markdownCubes } from './graph/index'
 import { createLLM } from './llm'
@@ -188,7 +188,7 @@ export class ChatBIConversation implements IChatBIConversation {
 			}
 		})
 
-		const models = items.map((item) => ({...item, model: convertOcapSemanticModel(item.model)}))
+		const models = items
 
 		this.logger.debug(`Chat models visits:`, models.map(({ visits }) => visits).join(', '))
 
@@ -320,13 +320,13 @@ ${makeCubeRulesPrompt()}
 ${PROMPT_RETRIEVE_DIMENSION_MEMBER}
 ${PROMPT_TIME_SLICER}
 
-If you have any questions about how to analysis data (such as 'how to create a formula of calculated measure', 'how to create some type chart', 'how to create a time slicer about relative time'), please call 'referencesRetriever' tool to get the reference documentations.
+If you have any questions about how to analysis data (such as 'how to create some type chart', 'how to create a time slicer about relative time'), please call 'referencesRetriever' tool to get the reference documentations.
 
 ${createAgentStepsInstructions(
 	`Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
 	`For every measure, determine whether it exists in the cube context, if it does, proceed directly to the next step, if not found, call the 'createIndicator' tool to create new calculated measure for it. After creating the measure, you need to call the subsequent steps to re-answer the complete answer.`,
 	CubeVariablePrompt,
-	`If the time condition is a specified fixed time (such as 2023 year, 202202, 2020 Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year), please add it to 'timeSlicers'.`,
+	`If the time condition is a specified fixed time (such as xxxx year, yyyyMM, yyyy Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year, this year), please add it to 'timeSlicers'.`,
 	`Then call 'answerQuestion' tool to show complete answer to user, don't create image for answer`,
 	`Finally, ref to the result of 'answerQuestion' tool, call 'giveMoreQuestions' tool to give more analysis suggestions`
 )}
@@ -453,7 +453,7 @@ ${createAgentStepsInstructions(
 						if (['thinking', 'continuing', 'waiting'].includes(this.message?.status)) {
 							this.message.update({
 								status: 'error',
-								elements: [{tag: 'markdown', content: `出现内部错误：\n${verboseContent}`}]
+								elements: [{tag: 'markdown', content: verboseContent}]
 							})
 						}
 					}
