@@ -589,15 +589,15 @@ export class NgmCopilotChatComponent {
           conversationId
         })
 
-        if (typeof message === 'string') {
-          this.copilotEngine.upsertMessage({
-            id: nanoid(),
-            role: 'info',
-            content: message
-          })
-        } else if (message) {
-          this.copilotEngine.upsertMessage(message)
-        }
+        // if (typeof message === 'string') {
+        //   this.copilotEngine.upsertMessage({
+        //     id: nanoid(),
+        //     role: 'info',
+        //     content: message
+        //   })
+        // } else if (message) {
+        //   this.copilotEngine.upsertMessage(message)
+        // }
 
         this.scrollBottom()
       } catch (err) {
