@@ -21,6 +21,7 @@ import {
   isNil,
   isString,
   Measure,
+  nonNullable,
   omitBy,
   OrderBy,
   parameterFormatter,
@@ -491,10 +492,9 @@ export function allocateAxesFilter(
 
     // 有指定层级的情况
     if (level) {
-      const slicers = []
-      filters
+      const slicers = filters
         .filter((ftr) => ftr?.hierarchy === hierarchy)
-        .forEach((item) => {
+        .map((item) => {
           if (!isNil(item.drill)) {
             mdxProperty.properties = [
               ...mdxProperty.properties,
@@ -504,16 +504,19 @@ export function allocateAxesFilter(
           // TODO: 有没有除了 members 之外其他情况 ???
           if (!isEmpty(item.members)) {
             // Slicer as drill down parent member in flat mode
-            if (isNil(item.drill)) {
-              item = {
-                ...item,
-                drill: displayHierarchy ? Drill.SelfAndDescendants : Drill.Children,
-                distance: item.distance ?? level
-              }
-            }
-            slicers.push(mapMDXFilterToStatement(item, entityType.cube, withMembers, dialect))
+            // if (isNil(item.drill)) {
+            //   item = {
+            //     ...item,
+            //     drill: displayHierarchy ? Drill.SelfAndDescendants : Drill.Children,
+            //     distance: item.distance ?? level
+            //   }
+            // }
+            return item
+            // slicers.push(mapMDXFilterToStatement(item, entityType.cube, withMembers, dialect))
           }
-        })
+          return null
+        }).filter(nonNullable)
+        
 
       let dimensionStatement = ''
       if (isEmpty(_filters)) {
@@ -532,10 +535,14 @@ export function allocateAxesFilter(
         if (displayHierarchy) {
           // Hierarchy data union drill down data then distinct
           // statement = Distinct(MemberSet(...slicers, dimensionStatement))
-          statement = MemberSet(...slicers)
+          statement = MemberSet(...slicers.map((item) => mapMDXFilterToStatement({...item, drill: Drill.SelfAndDescendants}, entityType.cube, withMembers, dialect)))
         } else {
           // 下钻时只用下钻成员？ 下钻到指定层级, 例如：去年每个月的销售额
-          statement = Descendants(MemberSet(...slicers), level)
+          if (isNil(slicers[0].drill)) {
+            statement = Descendants(MemberSet(...slicers.map((item) => mapMDXFilterToStatement(item, entityType.cube, withMembers, dialect))), level)
+          } else {
+            statement = MemberSet(...slicers.map((item) => mapMDXFilterToStatement(item, entityType.cube, withMembers, dialect)))
+          }
         }
       } else {
         if (displayHierarchy) {

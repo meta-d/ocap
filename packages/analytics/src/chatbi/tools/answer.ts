@@ -25,7 +25,6 @@ import {
 	OrderBy,
 	OrderBySchema,
 	PresentationVariant,
-	PropertyHierarchy,
 	PropertyMeasure,
 	slicerAsString,
 	SlicerSchema,
@@ -40,8 +39,10 @@ import {
 } from '@metad/ocap-core'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { z } from 'zod'
-import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
 import { ChatLarkMessage } from '../message'
+import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
+import { createBaseChart } from './charts/chart'
+import { createDualAxisChart, createSeriesChart } from './charts/combination'
 
 const TABLE_PAGE_SIZE = 10
 
@@ -99,7 +100,7 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 
 				// Fetch data for chart or table or kpi
 				if (answer.dimensions?.length || answer.measures?.length) {
-					const { data, categoryMembers } = await drawChartMessage(
+					const { categoryMembers } = await drawChartMessage(
 						{ ...context, entityType: entityType || context.entityType },
 						conversation,
 						answer as ChatAnswer
@@ -175,9 +176,9 @@ async function drawChartMessage(
 		subtitle: {
 			// 卡片主标题。必填。
 			tag: 'plain_text', // 固定值 plain_text。
-			content: answer.preface, // 主标题内容。
+			content: answer.preface // 主标题内容。
 		},
-		text_tag_list: createSlicersTitle(slicers),
+		text_tag_list: createSlicersTitle(slicers)
 	}
 
 	return new Promise((resolve, reject) => {
@@ -185,7 +186,7 @@ async function drawChartMessage(
 			if (result.error) {
 				reject(result.error)
 			} else {
-				const { card, data, categoryMembers } =
+				const { card, categoryMembers } =
 					answer.visualType === 'Table'
 						? createTableMessage(answer, chartAnnotation, context.entityType, result.data, header)
 						: chartAnnotation.dimensions?.length > 0
@@ -201,7 +202,7 @@ async function drawChartMessage(
 				// larkContext.larkService.interactiveMessage(larkContext, card)
 				conversation.done(card)
 
-				resolve({ data, categoryMembers })
+				resolve({ categoryMembers })
 			}
 			destroy$.next()
 			destroy$.complete()
@@ -263,26 +264,26 @@ function createLineChart(
 ) {
 	const measure = chartAnnotation.measures[0]
 	const measureName = getPropertyMeasure(measure)
-	const measureProperty = getEntityProperty(entityType, measure)
+	// const measureProperty = getEntityProperty(entityType, measure)
 	// Empty items data
-	let _data = data.map(() => ({}))
+	// let _data = data.map(() => ({}))
 
 	const chartSpec = {} as any
 	let unit = ''
-	let categoryField = 'xField'
+	// let categoryField = 'xField'
 	let valueField = 'yField'
 	let type = 'bar'
 	if (chartAnnotation.chartType?.type === 'Line') {
 		type = 'line'
 	} else if (chartAnnotation.chartType?.type === 'Pie') {
 		type = 'pie'
-		categoryField = 'categoryField'
+		// categoryField = 'categoryField'
 		valueField = 'valueField'
 		chartSpec.outerRadius = 0.9
 		chartSpec.innerRadius = 0.3
 	}
 
-	const chart_spec = {
+	let chart_spec = {
 		...chartSpec,
 		type,
 		[valueField]: measureName,
@@ -293,65 +294,136 @@ function createLineChart(
 			visible: true
 		}
 	} as any
+	let categoryMembers = {}
 
-	let categoryProperty: PropertyHierarchy = null
-	const fields = []
-	if (chartAnnotation.dimensions?.length > 1) {
-		const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
-		const series = getChartSeries(chartAnnotation) || dimensions[1] || dimensions[0]
+	// const dimensions = chartAnnotation.dimensions.map((d) => getEntityProperty(entityType, d))
+	const nonTimeDimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
+	let categoryProperty = null
+	let seriesProperty = null
+	if (chartAnnotation.dimensions.length > 1) {
+		const series = getChartSeries(chartAnnotation) || nonTimeDimensions[1] || nonTimeDimensions[0]
 		if (!series) {
 			throw new Error(
 				`Cannot find series dimension in chart dimensions: '${JSON.stringify(chartAnnotation.dimensions)}'`
 			)
 		}
 		const seriesName = getPropertyHierarchy(series)
-		const property = getEntityHierarchy(entityType, seriesName)
-		if (!property) {
+		seriesProperty = getEntityHierarchy(entityType, seriesName)
+		if (!seriesProperty) {
 			throw new Error(`Cannot find hierarchy for series dimension '${JSON.stringify(series)}'`)
 		}
-		const seriesCaption = property.memberCaption
-		chart_spec.seriesField = seriesCaption
-		fields.push(seriesCaption)
+
 		categoryProperty = getEntityHierarchy(
 			entityType,
 			chartAnnotation.dimensions.filter((d) => d.dimension !== series.dimension)[0]
 		)
-		const categoryCaption = categoryProperty.memberCaption
-		chart_spec[categoryField] = categoryCaption
-		fields.push(categoryCaption)
-	} else if (chartAnnotation.dimensions?.length) {
+	} else {
 		categoryProperty = getEntityHierarchy(entityType, chartAnnotation.dimensions[0])
 		if (!categoryProperty) {
 			throw new Error(`Not found dimension '${chartAnnotation.dimensions[0].dimension}'`)
 		}
-		const categoryCaption = categoryProperty.memberCaption
-		chart_spec[categoryField] = categoryCaption
-		fields.push(categoryCaption)
+	}
+	const measures = chartAnnotation.measures.map((m) => getEntityProperty<PropertyMeasure>(entityType, m))
+	const baseMeasure = measures.find((m) => m.formatting?.unit !== '%')
+	const percentMeasure = measures.find((m) => m.formatting?.unit === '%')
+
+	if (baseMeasure && percentMeasure) {
+		const { chartSpec, shortUnit } = createDualAxisChart(
+			type,
+			categoryProperty.memberCaption || categoryProperty.name,
+			baseMeasure,
+			percentMeasure,
+			data
+		)
+		chart_spec = chartSpec
+		unit = shortUnit
+	} else if ((baseMeasure || percentMeasure) && seriesProperty) {
+		const { chartSpec, shortUnit } = createSeriesChart(
+			type,
+			categoryProperty.memberCaption || categoryProperty.name,
+			seriesProperty.memberCaption || seriesProperty.name,
+			baseMeasure || percentMeasure,
+			data
+		)
+		chart_spec = chartSpec
+		unit = shortUnit
+	} else if (categoryProperty) {
+		const { chartSpec, shortUnit } = createBaseChart(
+			type,
+			categoryProperty.memberCaption || categoryProperty.name,
+			measures,
+			data
+		)
+		chart_spec = chartSpec
+		unit = shortUnit
+	} else {
+		throw Error(`图形配置错误`)
+		// let categoryProperty: PropertyHierarchy = null
+		// const fields = []
+		// if (chartAnnotation.dimensions?.length > 1) {
+		// 	const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
+		// 	const series = getChartSeries(chartAnnotation) || dimensions[1] || dimensions[0]
+		// 	if (!series) {
+		// 		throw new Error(
+		// 			`Cannot find series dimension in chart dimensions: '${JSON.stringify(chartAnnotation.dimensions)}'`
+		// 		)
+		// 	}
+		// 	const seriesName = getPropertyHierarchy(series)
+		// 	const property = getEntityHierarchy(entityType, seriesName)
+		// 	if (!property) {
+		// 		throw new Error(`Cannot find hierarchy for series dimension '${JSON.stringify(series)}'`)
+		// 	}
+		// 	const seriesCaption = property.memberCaption
+		// 	chart_spec.seriesField = seriesCaption
+		// 	fields.push(seriesCaption)
+		// 	categoryProperty = getEntityHierarchy(
+		// 		entityType,
+		// 		chartAnnotation.dimensions.filter((d) => d.dimension !== series.dimension)[0]
+		// 	)
+		// 	const categoryCaption = categoryProperty.memberCaption
+		// 	chart_spec[categoryField] = categoryCaption
+		// 	fields.push(categoryCaption)
+		// } else if (chartAnnotation.dimensions?.length) {
+		// 	categoryProperty = getEntityHierarchy(entityType, chartAnnotation.dimensions[0])
+		// 	if (!categoryProperty) {
+		// 		throw new Error(`Not found dimension '${chartAnnotation.dimensions[0].dimension}'`)
+		// 	}
+		// 	const categoryCaption = categoryProperty.memberCaption
+		// 	chart_spec[categoryField] = categoryCaption
+		// 	fields.push(categoryCaption)
+		// }
+
+		// chartAnnotation.measures?.forEach((measure) => {
+		// 	const property = getEntityProperty<PropertyMeasure>(entityType, measure)
+		// 	// // Type: measure
+		// 	// _data.forEach((item, index) => {
+		// 	// 	item['type'] = property.caption || property.name
+		// 	// })
+		// 	if (property.formatting?.unit === '%') {
+		// 		_data.forEach((item, index) => {
+		// 			item[property.name] = isNil(data[index][property.name])
+		// 					? null
+		// 					: (data[index][property.name] * 100).toFixed(1)
+		// 		})
+		// 	} else {
+		// 		const result = formatDataValues(data, _data, property.name)
+		// 		_data = result.values
+		// 		unit = result.unit
+		// 	}
+		// })
+
+		// chart_spec.data = {
+		// 	values: _data // 此处传入数据。
+		// }
 	}
 
-	const categoryMembers = {}
-	_data.forEach((item, index) => {
-		fields.forEach((field) => (item[field] = data[index][field]))
-		if (!categoryMembers[data[index][categoryProperty.name]]) {
-			categoryMembers[data[index][categoryProperty.name]] = {
-				key: data[index][categoryProperty.name],
-				caption: data[index][categoryProperty.memberCaption]
+	categoryMembers = {}
+	data.forEach((item, index) => {
+		if (!categoryMembers[item[categoryProperty.name]]) {
+			categoryMembers[item[categoryProperty.name]] = {
+				key: item[categoryProperty.name],
+				caption: item[categoryProperty.memberCaption]
 			}
-		}
-	})
-
-	chartAnnotation.measures?.forEach((measure) => {
-		const property = getEntityProperty<PropertyMeasure>(entityType, measure)
-		if (property.formatting?.unit === '%') {
-			_data.forEach((item, index) => {
-				item[property.name] = isNil(data[index][property.name])
-						? null
-						: (data[index][property.name] * 100).toFixed(1)
-			})
-		} else {
-			const result = formatDataValues(data, _data, property.name)
-			_data = result.values
-			unit = result.unit
 		}
 	})
 
@@ -364,27 +436,21 @@ function createLineChart(
 						...chart_spec,
 						title: {
 							text: unit ? `单位：${unit}` : ''
-						},
-						data: {
-							values: _data // 此处传入数据。
 						}
 					}
 				}
 			],
 			header
 		},
-		data: _data,
+		// data: _data,
 		categoryMembers
 	}
 }
 
-function createKPI(
-	chartAnnotation: ChartAnnotation,
-	entityType: EntityType,
-	data: any[],
-	header: any
-) {
+function createKPI(chartAnnotation: ChartAnnotation, entityType: EntityType, data: any[], header: any) {
 	const row = data[0]
+
+	const elements = []
 
 	const measures = row
 		? chartAnnotation.measures
@@ -398,16 +464,27 @@ function createKPI(
 						}
 					} else {
 						const [value, unit] = formatShortNumber(rawValue, 'zh-Hans')
-						const result = formatNumber(value, 'zh-Hans', '0.0-2') + unit
+						const result = formatNumber(value, 'zh-Hans', '0.0-2')
 						return {
 							name: measureProperty.caption || measureProperty.name,
-							value: measureProperty.formatting?.unit ? result + measureProperty.formatting.unit : result
+							value: result,
+							unit: measureProperty.formatting?.unit,
+							shortUnit: unit
 						}
 					}
-
 				})
-				.map(({ name, value }) => `**${name}:** ${value}`)
-				.join('\n')
+				.forEach(({ name, value, unit, shortUnit }) => {
+					elements.push({
+						tag: 'markdown',
+						content: `**${name}:**`
+					})
+
+					elements.push({
+						tag: 'markdown',
+						content: `**${value}** ${shortUnit || ''}${unit || ''}`,
+						text_size: 'heading-1'
+					})
+				})
 		: `**无数据**`
 
 	return {
@@ -416,15 +493,7 @@ function createKPI(
 				wide_screen_mode: true
 			},
 			header,
-			elements: [
-				{
-					tag: 'div',
-					text: {
-						content: measures,
-						tag: 'lark_md'
-					}
-				}
-			]
+			elements: elements
 		},
 		data: data,
 		categoryMembers: null
@@ -514,31 +583,6 @@ function createTableMessage(
 		},
 		data: _data,
 		categoryMembers: null
-	}
-}
-
-function formatDataValues(data: any[], _data: any[], propertyName: string): { values: any[]; unit: string } {
-	if (!Array.isArray(data) || data.length === 0) {
-		return { values: [], unit: '' }
-	}
-
-	const maxValue = Math.max(...data.map((item) => item[propertyName]))
-	let divisor = 1
-	let unit = ''
-
-	if (maxValue >= 100000000) {
-		divisor = 100000000
-		unit = '亿'
-	} else if (maxValue >= 10000) {
-		divisor = 10000
-		unit = '万'
-	}
-
-	_data.forEach((item, index) => item[propertyName] = isNil(data[index][propertyName]) ? null : (data[index][propertyName] / divisor).toFixed(1))
-
-	return {
-		values: _data,
-		unit: unit
 	}
 }
 

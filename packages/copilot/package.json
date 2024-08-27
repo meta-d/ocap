@@ -1,6 +1,6 @@
 {
   "name": "@metad/copilot",
-  "version": "2.5.9",
+  "version": "2.6.0",
   "peerDependencies": {
     "nanoid": "^4.0.2",
     "ollama": "^0.5.6",

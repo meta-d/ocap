@@ -479,7 +479,7 @@ export class AuthService extends SocialAuthService {
 			const user = await this.commandBus.execute(
 				new AuthRegisterCommand({
 					user: {
-						username: args.thirdPartyId,
+						username: args.username,
 						firstName: args.name,
 						thirdPartyId: args.thirdPartyId,
 						mobile: args.mobile,

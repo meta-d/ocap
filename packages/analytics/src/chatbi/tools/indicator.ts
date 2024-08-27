@@ -44,7 +44,7 @@ export function createIndicatorTool(
 		async (indicator): Promise<string> => {
 			logger.debug(`[ChatBI] [Copilot Tool] [createFormula]: ${JSON.stringify(indicator)}`)
 
-			const entityType = await conversation.getCubeCache(indicator.modelId, indicator.cube)
+			const entityType = await conversation.getCube(indicator.modelId, indicator.cube)
 
 			if (!entityType) {
 				return `Error: can't found type for cube '${indicator.cube}'`

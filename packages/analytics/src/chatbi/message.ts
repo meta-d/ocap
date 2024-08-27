@@ -89,7 +89,8 @@ export class ChatLarkMessage {
 					type: 'text',
 					complex_interaction: true,
 					width: 'default',
-					size: 'medium'
+					size: 'medium',
+					value: C_CHATBI_END_CONVERSATION
 				},
 				{
 					tag: 'button',
