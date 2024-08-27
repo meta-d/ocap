@@ -29,7 +29,7 @@ export class CopilotCheckpointController extends CrudController<CopilotCheckpoin
 		@Query('$relations', ParseJsonPipe) relations: PaginationParams<CopilotCheckpoint>['relations'],
 		@Query('$order', ParseJsonPipe) order: PaginationParams<CopilotCheckpoint>['order'],
 	): Promise<CheckpointTuple | null> {
-		return this.service.getTuple(where)
+		return await this.service.getTuple(where)
 	}
 
 	@ApiOperation({ summary: 'Create new record' })

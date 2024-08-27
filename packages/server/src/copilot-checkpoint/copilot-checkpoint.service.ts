@@ -1,5 +1,4 @@
-import { Checkpoint, CheckpointMetadata, SerializerProtocol } from '@langchain/langgraph-checkpoint'
-import { JsonPlusSerializer } from './serde/jsonplus'
+import { SerializerProtocol } from '@langchain/langgraph-checkpoint'
 import { ICopilotCheckpoint, OrderTypeEnum } from '@metad/contracts'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -7,6 +6,7 @@ import { DeepPartial, Repository } from 'typeorm'
 import { RequestContext } from '../core/context'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
 import { CopilotCheckpoint } from './copilot-checkpoint.entity'
+import { JsonPlusSerializer, toUint8Array } from './serde/'
 import { CopilotCheckpointWritesService } from './writes/writes.service'
 
 @Injectable()
@@ -22,7 +22,7 @@ export class CopilotCheckpointService extends TenantOrganizationAwareCrudService
 	}
 
 	async getTuple(options: Partial<ICopilotCheckpoint>) {
-		const { thread_id, checkpoint_ns, checkpoint_id } = options
+		const { thread_id, checkpoint_ns = '', checkpoint_id } = options
 		let row = null
 		if (checkpoint_id) {
 			row = await this.repository.findOne({
@@ -77,14 +77,8 @@ export class CopilotCheckpointService extends TenantOrganizationAwareCrudService
 						checkpoint_id: row.checkpoint_id
 					}
 				},
-				checkpoint: (await this.serde.loadsTyped(
-					row.type ?? "json",
-					row.checkpoint
-				  )) as Checkpoint,
-							metadata: (await this.serde.loadsTyped(
-					row.type ?? "json",
-					row.metadata
-				  )) as CheckpointMetadata,
+				checkpoint: row.checkpoint,
+				metadata: row.metadata,
 				parentConfig: row.parent_id
 					? {
 							configurable: {
@@ -96,20 +90,18 @@ export class CopilotCheckpointService extends TenantOrganizationAwareCrudService
 				pendingWrites
 			}
 		}
+
+		return undefined
 	}
 
 	async upsert(entity: DeepPartial<ICopilotCheckpoint>) {
 		const { checkpoint, metadata } = entity
 
-		const [type1, serializedCheckpoint] = this.serde.dumpsTyped(checkpoint)
-		const [type2, serializedMetadata] = this.serde.dumpsTyped(metadata)
-
 		const result = await this.repository.upsert(
 			{
 				...entity,
-				type: type1,
-				checkpoint: serializedCheckpoint,
-				metadata: serializedMetadata,
+				checkpoint: toUint8Array(checkpoint),
+				metadata: toUint8Array(metadata),
 				tenantId: RequestContext.currentTenantId(),
 				organizationId: RequestContext.getOrganizationId()
 			},

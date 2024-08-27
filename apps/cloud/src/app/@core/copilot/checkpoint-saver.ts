@@ -34,7 +34,9 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
     if (row) {
       return {
         config,
-        ...row
+        ...row,
+        checkpoint: (await this.serde.loadsTyped('json', this.fromJSON(row.checkpoint))) as Checkpoint,
+        metadata: (await this.serde.loadsTyped('json', this.fromJSON(row.metadata))) as CheckpointMetadata
       }
     }
 
@@ -46,14 +48,18 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
   }
 
   async put(config: RunnableConfig, checkpoint: Checkpoint, metadata: CheckpointMetadata): Promise<RunnableConfig> {
+    const [type1, serializedCheckpoint] = this.serde.dumpsTyped(checkpoint)
+    const [type2, serializedMetadata] = this.serde.dumpsTyped(metadata)
+
     await firstValueFrom(
       this.#httpClient.post(API_COPILOT_CHECKPOINT, {
         thread_id: config.configurable?.thread_id,
         checkpoint_ns: config.configurable?.checkpoint_ns,
         checkpoint_id: checkpoint.id,
         parent_id: config.configurable?.checkpoint_id,
-        checkpoint: checkpoint,
-        metadata: metadata
+        type: type1,
+        checkpoint: this.toJSON(serializedCheckpoint),
+        metadata: this.toJSON(serializedMetadata),
       })
     )
 
@@ -82,6 +88,21 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
     })
 
     await firstValueFrom(this.#httpClient.post(API_COPILOT_CHECKPOINT + '/writes', rows))
+  }
+
+  toJSON(data: Uint8Array) {
+    return {
+      type: "Buffer",
+      data: Array.from(data)
+    }
+  }
+  
+  fromJSON(value: object | string) {
+    if (typeof value === 'object' && value['type'] === 'Buffer') {
+      return new Uint8Array(value['data'])
+    }
+  
+    return new TextEncoder().encode(value as string)
   }
 }
 

@@ -73,7 +73,7 @@ import {
   tap,
   throttleTime
 } from 'rxjs'
-import { UserAvatarComponent } from '../avatar/avatar.component'
+import { UserAvatarComponent } from '../common/avatar/avatar.component'
 import { NgmScrollBackComponent } from '../common/scroll'
 import { NgmSearchComponent } from '../common/search/search.component'
 import { provideFadeAnimation } from '../core/animations'

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { Component, input } from '@angular/core'
-import { IUser } from '../types'
+import { IUser } from '../../types'
 
 @Component({
   standalone: true,
