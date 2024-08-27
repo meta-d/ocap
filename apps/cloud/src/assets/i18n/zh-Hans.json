@@ -1551,6 +1551,12 @@
       "SorryAboutThat": "很抱歉！请访问我们的主页以找到您需要的信息。",
       "TakeMeThere": "带我去！"
     },
+    "Knowledgebase": {
+      "Documents": "文档",
+      "Test": "测试",
+      "Configuration": "配置",
+      "NewFiles": "新增文件"
+    },
     "title": {
       "short": "分析云"
     },

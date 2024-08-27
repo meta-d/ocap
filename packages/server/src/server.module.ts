@@ -47,6 +47,8 @@ import { CopilotUserModule } from './copilot-user/copilot-user.module'
 import { CopilotOrganizationModule } from './copilot-organization/copilot-organization.module'
 import { CopilotCheckpointModule } from './copilot-checkpoint/copilot-checkpoint.module'
 import { IntegrationLarkModule } from './integration-lark/index'
+import { KnowledgebaseModule } from './knowledgebase/knowledgebase.module'
+import { KnowledgeDocumentModule } from './knowledge-document/document.module'
 
 @Module({
   imports: [
@@ -108,7 +110,9 @@ import { IntegrationLarkModule } from './integration-lark/index'
     StorageFileModule,
     AIModule,
     CopilotCheckpointModule,
-    IntegrationLarkModule
+    IntegrationLarkModule,
+    KnowledgebaseModule,
+    KnowledgeDocumentModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -47,6 +47,15 @@ export class PACSettingComponent {
           }
         },
         {
+          link: 'knowledgebase',
+          label: 'Knowledgebase',
+          icon: 'school',
+          data: {
+            featureKey: FeatureEnum.FEATURE_COPILOT,
+            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
+          }
+        },
+        {
           link: 'chatbi',
           label: 'Chat BI',
           icon: 'try',
@@ -58,7 +67,7 @@ export class PACSettingComponent {
         {
           link: 'business-area',
           label: 'Business Area',
-          icon: 'workspaces',
+          icon: 'business_center',
           data: {
             permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
           }
@@ -125,7 +134,7 @@ export class PACSettingComponent {
         {
           link: 'tenant',
           label: 'Tenant',
-          icon: 'storage',
+          icon: 'tenancy',
           data: {
             permissionKeys: [RolesEnum.SUPER_ADMIN]
           }

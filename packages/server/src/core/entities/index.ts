@@ -33,7 +33,9 @@ import {
 	CopilotUser,
 	CopilotOrganization,
 	CopilotCheckpoint,
-	CopilotCheckpointWrites
+	CopilotCheckpointWrites,
+	Knowledgebase,
+	KnowledgeDocument
 } from './internal';
 
 export const coreEntities = [
@@ -71,5 +73,7 @@ export const coreEntities = [
 	CopilotCheckpoint,
 	CopilotCheckpointWrites,
 	StorageFile,
-	SecretToken
+	SecretToken,
+	Knowledgebase,
+	KnowledgeDocument
 ];
