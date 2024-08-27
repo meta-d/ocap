@@ -1,7 +1,6 @@
 import { Signal } from '@angular/core'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { ChatOpenAI } from '@langchain/openai'
 import { Team } from '@metad/copilot'
 import { PropertyDimension } from '@metad/ocap-core'
 import { CUBE_MODELER_NAME } from '../cube'
@@ -10,6 +9,7 @@ import { getTablesFromDimension } from '../types'
 import { ModelerState } from './types'
 import { formatDocumentsAsString } from 'langchain/util/document'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
 export async function createSupervisorAgent({
   llm,
@@ -17,7 +17,7 @@ export async function createSupervisorAgent({
   tools,
   referencesRetriever
 }: {
-  llm: ChatOpenAI
+  llm: BaseChatModel
   dimensions: Signal<PropertyDimension[]>
   tools: DynamicStructuredTool[]
   referencesRetriever: VectorStoreRetriever

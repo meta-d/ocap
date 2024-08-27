@@ -1,11 +1,12 @@
-import { IPagination } from '@metad/contracts'
 import { Body, Controller, Get, HttpCode, HttpStatus, Logger, Post, Query, UseInterceptors } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { DeepPartial } from 'typeorm'
-import { CrudController, PaginationParams, TransformInterceptor } from '../core'
+import { CopilotCheckpointWrites, CrudController, PaginationParams, TransformInterceptor } from '../core'
 import { ParseJsonPipe, UseValidationPipe } from '../shared'
 import { CopilotCheckpoint } from './copilot-checkpoint.entity'
 import { CopilotCheckpointService } from './copilot-checkpoint.service'
+import { CopilotCheckpointWritesService } from './writes/writes.service'
+import { CheckpointTuple } from '@langchain/langgraph'
 
 @ApiTags('CopilotCheckpoint')
 @ApiBearerAuth()
@@ -14,18 +15,21 @@ import { CopilotCheckpointService } from './copilot-checkpoint.service'
 export class CopilotCheckpointController extends CrudController<CopilotCheckpoint> {
 	readonly #logger = new Logger(CopilotCheckpointController.name)
 
-	constructor(private readonly service: CopilotCheckpointService) {
+	constructor(
+		private readonly service: CopilotCheckpointService,
+		private readonly writesService: CopilotCheckpointWritesService
+	) {
 		super(service)
 	}
 
 	@Get()
 	@UseValidationPipe()
-	async getAll(
+	async getTuple(
 		@Query('$filter', ParseJsonPipe) where: PaginationParams<CopilotCheckpoint>['where'],
 		@Query('$relations', ParseJsonPipe) relations: PaginationParams<CopilotCheckpoint>['relations'],
 		@Query('$order', ParseJsonPipe) order: PaginationParams<CopilotCheckpoint>['order'],
-	): Promise<IPagination<CopilotCheckpoint>> {
-		return await this.service.findAll({ where, relations, order })
+	): Promise<CheckpointTuple | null> {
+		return this.service.getTuple(where)
 	}
 
 	@ApiOperation({ summary: 'Create new record' })
@@ -40,6 +44,12 @@ export class CopilotCheckpointController extends CrudController<CopilotCheckpoin
 	@HttpCode(HttpStatus.CREATED)
 	@Post()
 	async create(@Body() entity: DeepPartial<CopilotCheckpoint>, ...options: any[]): Promise<CopilotCheckpoint> {
-		return this.service.upsert(entity)
+		return await this.service.upsert(entity)
+	}
+
+	@HttpCode(HttpStatus.CREATED)
+	@Post('writes')
+	async createWrites(@Body() entities: Partial<CopilotCheckpointWrites>[], ...options: any[]): Promise<void> {
+		await this.writesService.upsert(entities)
 	}
 }

@@ -16,9 +16,8 @@ import {
   BaseLanguageModelInput,
 } from "@langchain/core/language_models/base";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { BaseCheckpointSaver, CompiledStateGraph, END, START, StateGraph, StateGraphArgs } from "@langchain/langgraph";
+import { BaseCheckpointSaver, CompiledStateGraph, END, MessagesAnnotation, START, StateGraph, StateGraphArgs } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
-import { MessagesState } from "@langchain/langgraph/dist/graph/message";
 import { All } from "@langchain/langgraph/dist/pregel/types";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AgentState, createCopilotAgentState } from "./types";
@@ -28,7 +27,9 @@ export type N = typeof START | "agent" | "tools";
 
 export type CreateReactAgentParams = {
   llm: BaseChatModel;
-  tools: ToolNode<MessagesState> | StructuredTool[];
+  tools:
+  | ToolNode<typeof MessagesAnnotation.State>
+  | (StructuredToolInterface | RunnableToolLike)[];
   messageModifier?:
     | SystemMessage
     | string

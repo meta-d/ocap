@@ -120,6 +120,14 @@ const routes: Routes = [
         }
       },
       {
+        path: 'data',
+        loadChildren: () => import('./data-factory/routes').then(m => m.routes),
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Data-Factory',
+        }
+      },
+      {
         path: '404',
         component: NotFoundComponent
       }

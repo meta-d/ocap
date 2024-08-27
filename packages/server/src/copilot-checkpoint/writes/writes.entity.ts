@@ -1,12 +1,12 @@
-import { ICopilotCheckpoint } from '@metad/contracts'
+import { ICopilotCheckpointWrites } from '@metad/contracts'
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { IsString } from 'class-validator'
+import { IsNumber, IsString } from 'class-validator'
 import { Column, Entity, Index } from 'typeorm'
-import { TenantOrganizationBaseEntity } from '../core/entities/internal'
+import { TenantOrganizationBaseEntity } from '../../core/entities/internal'
 
-@Entity('copilot_checkpoint')
-@Index(['organizationId', 'thread_id', 'checkpoint_ns', 'checkpoint_id'], {unique: true})
-export class CopilotCheckpoint extends TenantOrganizationBaseEntity implements ICopilotCheckpoint {
+@Entity('copilot_checkpoint_writes')
+@Index(['organizationId', 'thread_id', 'checkpoint_ns', 'checkpoint_id', 'task_id', 'idx'], {unique: true})
+export class CopilotCheckpointWrites extends TenantOrganizationBaseEntity implements ICopilotCheckpointWrites {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@Column({ length: 100 })
@@ -25,7 +25,17 @@ export class CopilotCheckpoint extends TenantOrganizationBaseEntity implements I
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@Column({ nullable: true, length: 100 })
-	parent_id?: string
+	task_id?: string
+
+	@ApiPropertyOptional({ type: () => Number })
+	@IsNumber()
+	@Column({ nullable: true })
+	idx?: number
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@Column({ nullable: true, length: 100 })
+	channel?: string
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -41,12 +51,5 @@ export class CopilotCheckpoint extends TenantOrganizationBaseEntity implements I
 		// 	from: (value?: Buffer) => (Buffer.isBuffer(value) ? value.toString('utf-8') : value)
 		// }
 	})
-	checkpoint: Uint8Array
-
-	@ApiPropertyOptional({ type: () => String })
-	@IsString()
-	@Column({
-		type: 'bytea',
-	})
-	metadata: Uint8Array
+	value: Uint8Array
 }

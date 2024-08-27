@@ -449,6 +449,16 @@ export class FeaturesComponent implements OnInit {
         }
       },
       {
+        title: 'Data Factory',
+        matIcon: 'data_table',
+        link: '/data',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'DataFactory',
+          featureKey: AnalyticsFeatures.FEATURE_MODEL,
+        }
+      },
+      {
         title: 'Semantic Model',
         matIcon: 'database',
         link: '/models',

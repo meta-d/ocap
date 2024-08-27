@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable, Provider } from '@angular/core'
 import { RunnableConfig } from '@langchain/core/runnables'
-import { Checkpoint, CheckpointMetadata, CheckpointTuple } from '@langchain/langgraph/dist/checkpoint/base'
-import { BaseCheckpointSaver } from '@langchain/langgraph/web'
-import { ICopilotCheckpoint } from '@metad/contracts'
-import { firstValueFrom, map } from 'rxjs'
+import { PendingWrite, type CheckpointListOptions } from '@langchain/langgraph-checkpoint'
+import { BaseCheckpointSaver, Checkpoint, CheckpointMetadata, CheckpointTuple } from '@langchain/langgraph/web'
+import { firstValueFrom } from 'rxjs'
 import { API_COPILOT_CHECKPOINT } from '../constants/app.constants'
 
 @Injectable({
@@ -18,98 +17,71 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
   }
 
   async getTuple(config: RunnableConfig): Promise<CheckpointTuple | undefined> {
-    const { thread_id, checkpoint_id } = config.configurable || {}
-    if (checkpoint_id) {
-      const row = await firstValueFrom(
-        this.#httpClient
-          .get<{ items: ICopilotCheckpoint[] }>(API_COPILOT_CHECKPOINT, {
-            params: {
-              $filter: JSON.stringify({
-                thread_id,
-                checkpoint_id
-              }),
-            }
-          })
-          .pipe(map((res) => res.items[0]))
-      )
+    const { thread_id, checkpoint_ns, checkpoint_id } = config.configurable || {}
 
-      if (row) {
-				return {
-					config,
-					checkpoint: (await this.serde.parse(row.checkpoint)) as Checkpoint,
-					metadata: (await this.serde.parse(row.metadata)) as CheckpointMetadata,
-					parentConfig: row.parent_id
-						? {
-								configurable: {
-									thread_id,
-									checkpoint_id: row.parent_id
-								}
-							}
-						: undefined
-				}
-			}
-    } else {
-      const row = await firstValueFrom(
-        this.#httpClient
-          .get<{ items: ICopilotCheckpoint[] }>(API_COPILOT_CHECKPOINT, {
-            params: {
-              $filter: JSON.stringify({
-                thread_id,
-                checkpoint_id
-              }),
-              $order: JSON.stringify({
-                checkpoint_id: 'DESC'
-              })
-            }
+    const row = await firstValueFrom(
+      this.#httpClient.get<CheckpointTuple | null>(API_COPILOT_CHECKPOINT, {
+        params: {
+          $filter: JSON.stringify({
+            thread_id,
+            checkpoint_ns,
+            checkpoint_id
           })
-          .pipe(map((res) => res.items[0]))
-      )
-      if (row) {
-				return {
-					config: {
-						configurable: {
-							thread_id: row.thread_id,
-							checkpoint_id: row.checkpoint_id
-						}
-					},
-					checkpoint: (await this.serde.parse(row.checkpoint)) as Checkpoint,
-					metadata: (await this.serde.parse(row.metadata)) as CheckpointMetadata,
-					parentConfig: row.parent_id
-						? {
-								configurable: {
-									thread_id: row.thread_id,
-									checkpoint_id: row.parent_id
-								}
-							}
-						: undefined
-				}
-			}
+        }
+      })
+    )
+
+    if (row) {
+      return {
+        config,
+        ...row
+      }
     }
 
     return undefined
   }
 
-  async *list(config: RunnableConfig, limit?: number, before?: RunnableConfig): AsyncGenerator<CheckpointTuple> {
-    console.log(`list checkpoints:`, config, limit, before)
+  async *list(config: RunnableConfig, options?: CheckpointListOptions): AsyncGenerator<CheckpointTuple> {
+    console.log(`list checkpoints:`, config, options)
   }
 
   async put(config: RunnableConfig, checkpoint: Checkpoint, metadata: CheckpointMetadata): Promise<RunnableConfig> {
     await firstValueFrom(
       this.#httpClient.post(API_COPILOT_CHECKPOINT, {
         thread_id: config.configurable?.thread_id,
+        checkpoint_ns: config.configurable?.checkpoint_ns,
         checkpoint_id: checkpoint.id,
         parent_id: config.configurable?.checkpoint_id,
-        checkpoint: this.serde.stringify(checkpoint),
-        metadata: this.serde.stringify(metadata)
+        checkpoint: checkpoint,
+        metadata: metadata
       })
     )
 
     return {
       configurable: {
         thread_id: config.configurable?.thread_id,
+        checkpoint_ns: config.configurable?.checkpoint_ns,
         checkpoint_id: checkpoint.id
       }
     }
+  }
+
+  async putWrites(config: RunnableConfig, writes: PendingWrite[], taskId: string): Promise<void> {
+    const rows = writes.map((write, idx) => {
+      // const [type, serializedWrite] = this.serde.dumpsTyped(write[1])
+      return {
+        thread_id: config.configurable?.thread_id,
+        checkpoint_ns: config.configurable?.checkpoint_ns,
+        checkpoint_id: config.configurable?.checkpoint_id,
+        task_id: taskId,
+        idx,
+        channel: write[0],
+        // type,
+        value: write[1]
+      }
+    })
+
+    await firstValueFrom(this.#httpClient.post(API_COPILOT_CHECKPOINT + '/writes', rows))
   }
 }
 
