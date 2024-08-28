@@ -1,5 +1,6 @@
 import { AiProvider } from './ai.model'
 import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
+import { IStorageFile } from './storage-file.model'
 
 /**
  * Knowledgebase
@@ -48,9 +49,20 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
   status: string
 }
 
+export type DocumentParserConfig = {
+  pages?: number[][]
+  delimiter: string
+  chunkSize: number | null
+  chunkOverlap: number | null
+}
+
 export interface IKnowledgeDocument extends IBasePerTenantAndOrganizationEntityModel {
   knowledgebaseId?: string
   knowledgebase?: IKnowledgebase
+
+  storageFileId?: string
+  storageFile?: IStorageFile
+
   /**
    * thumbnail base64 string
    */
@@ -60,9 +72,7 @@ export interface IKnowledgeDocument extends IBasePerTenantAndOrganizationEntityM
    * default parser ID
    */
   parserId: string
-  parserConfig: {
-    pages: number[][]
-  }
+  parserConfig: DocumentParserConfig
   /**
    * where dose this document come from
    */
@@ -94,12 +104,13 @@ export interface IKnowledgeDocument extends IBasePerTenantAndOrganizationEntityM
   processBeginAt?: Date | null
 
   processDuation?: number | null
+
   /**
-   * start to run processing or cancel.(1: run it; 2: cancel)
+   * is it validate (0: wasted，1: validate)
    */
-  run?: string
+  status?: 'wasted' | 'validate' | 'running' | 'cancel' | 'finish' | 'error'
   /**
-   * is it validate(0: wasted，1: validate)
+   * The background job id
    */
-  status?: 'wasted' | 'validate'
+  jobId?: string
 }

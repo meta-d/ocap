@@ -1,9 +1,9 @@
-import { IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
+import { DocumentParserConfig, IKnowledgebase, IKnowledgeDocument, IStorageFile } from '@metad/contracts'
 import { Optional } from '@nestjs/common'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsDate, IsJSON, IsNumber, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
-import { Knowledgebase, TenantOrganizationBaseEntity } from '../core/entities/internal'
+import { Knowledgebase, StorageFile, TenantOrganizationBaseEntity } from '../core/entities/internal'
 
 @Entity('knowledge_document')
 export class KnowledgeDocument extends TenantOrganizationBaseEntity implements IKnowledgeDocument {
@@ -24,6 +24,23 @@ export class KnowledgeDocument extends TenantOrganizationBaseEntity implements I
 	@Column({ nullable: true })
 	knowledgebaseId?: string
 
+	@ApiProperty({ type: () => StorageFile, readOnly: true })
+	@ManyToOne(() => StorageFile, {
+		nullable: true,
+		onUpdate: 'CASCADE',
+		onDelete: 'CASCADE'
+	})
+	@JoinColumn()
+	@IsOptional()
+	storageFile?: IStorageFile
+
+	@ApiProperty({ type: () => String, readOnly: true })
+	@RelationId((it: KnowledgeDocument) => it.storageFile)
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	storageFileId?: string
+
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@Optional()
@@ -40,7 +57,7 @@ export class KnowledgeDocument extends TenantOrganizationBaseEntity implements I
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	parserConfig: { pages: number[][] }
+	parserConfig: DocumentParserConfig
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -99,7 +116,7 @@ export class KnowledgeDocument extends TenantOrganizationBaseEntity implements I
 	@ApiPropertyOptional({ type: () => Date })
 	@IsDate()
 	@Optional()
-	@Column({ type: 'date' })
+	@Column({ type: 'date', nullable: true })
 	processBeginAt?: Date
 
 	@ApiPropertyOptional({ type: () => Number })
@@ -118,5 +135,11 @@ export class KnowledgeDocument extends TenantOrganizationBaseEntity implements I
 	@IsString()
 	@Optional()
 	@Column({ nullable: true })
-	status?: 'wasted' | 'validate'
+	status?: 'wasted' | 'validate' | 'running' | 'cancel' | 'finish' | 'error'
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@Optional()
+	@Column({ nullable: true })
+	jobId?: string
 }

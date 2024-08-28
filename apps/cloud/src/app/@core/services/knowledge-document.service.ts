@@ -14,4 +14,14 @@ export class KnowledgeDocumentService extends OrganizationBaseCrudService<IKnowl
   constructor() {
     super(API_KNOWLEDGE_DOCUMENT)
   }
+
+  createBulk(entites: Partial<IKnowledgeDocument>[]) {
+    return this.httpClient.post<IKnowledgeDocument[]>(this.apiBaseUrl + '/bulk', entites)
+  }
+
+  startParsing(id: string) {
+    return this.httpClient.post<IKnowledgeDocument[]>(this.apiBaseUrl + '/process', {
+      ids: [ id ],
+    })
+  }
 }

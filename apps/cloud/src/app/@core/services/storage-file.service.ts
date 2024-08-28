@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core'
 import { IStorageFile } from '@metad/contracts'
-import { API_PREFIX } from '@metad/cloud/state'
+import { API_PREFIX, OrganizationBaseCrudService } from '@metad/cloud/state'
 
 export const C_API_STORAGEFILE = API_PREFIX + '/storage-file'
 
@@ -16,6 +16,15 @@ export class StorageFileService {
     reportProgress: true
   }) {
     return this.httpClient.post<IStorageFile>(C_API_STORAGEFILE, input, options)
+  }
+
+  uploadFile(file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return this.httpClient.post<IStorageFile>(C_API_STORAGEFILE, formData, {
+      observe: 'events',
+      reportProgress: true
+    })
   }
 
   update(id: string, input) {

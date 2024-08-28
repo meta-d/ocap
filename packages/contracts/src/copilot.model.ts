@@ -19,5 +19,6 @@ export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
 
 export enum AiProviderRole {
   Primary = 'primary',
-  Secondary ='secondary'
+  Secondary ='secondary',
+  Embedding = 'Embedding'
 }

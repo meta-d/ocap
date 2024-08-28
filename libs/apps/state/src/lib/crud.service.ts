@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http'
 import { inject } from '@angular/core'
 import { map } from 'rxjs'
 
@@ -7,8 +7,13 @@ export class CrudService<T> {
 
   constructor(protected apiBaseUrl: string) {}
 
-  getAll() {
-    return this.httpClient.get<{ items: T[]; total: number }>(this.apiBaseUrl).pipe(map(({ items }) => items))
+  getAll(options?: {relations?: string[];}) {
+    const { relations } = options ?? {}
+    let params = new HttpParams()
+    if (relations?.length > 0) {
+      params = params.append('$relations', JSON.stringify(relations))
+    }
+    return this.httpClient.get<{ items: T[]; total: number }>(this.apiBaseUrl, { params }).pipe(map(({ items }) => items))
   }
 
   create(entity: Partial<T>) {

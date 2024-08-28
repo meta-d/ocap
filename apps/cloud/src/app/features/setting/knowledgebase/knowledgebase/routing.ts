@@ -3,6 +3,7 @@ import { KnowledgeDocumentsComponent } from './documents/documents.component'
 import { KnowledgebaseComponent } from './knowledgebase.component'
 import { KnowledgeConfigurationComponent } from './configuration/configuration.component'
 import { KnowledgeTestComponent } from './test/test.component'
+import { KnowledgeDocumentChunkComponent } from './documents/chunk/chunk.component'
 
 export default [
   {
@@ -19,7 +20,13 @@ export default [
       },
       {
         path: 'documents',
-        component: KnowledgeDocumentsComponent
+        component: KnowledgeDocumentsComponent,
+        children: [
+          {
+            path: ':id',
+            component: KnowledgeDocumentChunkComponent,
+          }
+        ]
       },
       {
         path: 'configuration',
