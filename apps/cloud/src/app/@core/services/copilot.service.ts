@@ -27,7 +27,7 @@ export class PACCopilotService extends NgmCopilotService {
   readonly router = inject(Router)
   readonly #agentService = inject(AgentService)
 
-  readonly copilots = signal<(ICopilot & {organizationId: string})[]>(null)
+  readonly copilots = signal<ICopilot[]>(null)
 
   // Init copilot config
   private _userSub = this.#store.user$
@@ -37,7 +37,7 @@ export class PACCopilotService extends NgmCopilotService {
       distinctUntilChanged(),
       filter(Boolean),
       switchMap(() => this.#store.selectOrganizationId()),
-      switchMap(() => this.httpClient.get<{ total: number; items: (ICopilot & {organizationId: string})[] }>(API_PREFIX + '/copilot')),
+      switchMap(() => this.httpClient.get<{ total: number; items: ICopilot[] }>(API_PREFIX + '/copilot')),
       takeUntilDestroyed()
     )
     .subscribe((result) => {
@@ -151,7 +151,7 @@ export class PACCopilotService extends NgmCopilotService {
       )
     )
 
-    this.copilots.set(items as (ICopilot & {organizationId: string})[])
+    this.copilots.set(items as ICopilot[])
   }
 
   enableCopilot(): void {

@@ -1,5 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { inject } from '@angular/core'
+import { OrderTypeEnum } from '@metad/contracts'
 import { map } from 'rxjs'
 
 export class CrudService<T> {
@@ -7,13 +8,32 @@ export class CrudService<T> {
 
   constructor(protected apiBaseUrl: string) {}
 
-  getAll(options?: {relations?: string[];}) {
-    const { relations } = options ?? {}
+  getAll(options?: {
+    where?: Record<string, string>
+    relations?: string[]
+    order?: Partial<{ [P in keyof T]: OrderTypeEnum }>
+    take?: number
+    skip?: number
+  }) {
+    const { where, relations, order, take, skip } = options ?? {}
     let params = new HttpParams()
+    if (where) {
+      params = params.append('$where', JSON.stringify(where))
+    }
     if (relations?.length > 0) {
       params = params.append('$relations', JSON.stringify(relations))
     }
-    return this.httpClient.get<{ items: T[]; total: number }>(this.apiBaseUrl, { params }).pipe(map(({ items }) => items))
+    if (order) {
+      params = params.append('$order', JSON.stringify(order))
+    }
+    if (take != null) {
+      params = params.append('$take', take)
+    }
+    if (skip != null) {
+      params = params.append('$skip', skip)
+    }
+    return this.httpClient
+      .get<{ items: T[]; total: number }>(this.apiBaseUrl, { params })
   }
 
   create(entity: Partial<T>) {

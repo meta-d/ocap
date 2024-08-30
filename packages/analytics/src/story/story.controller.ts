@@ -64,7 +64,7 @@ export class StoryController extends CrudController<Story> {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@Get()
-	async findAll(
+	async findAllStory(
 		@Query('$query', ParseJsonPipe) data: FindManyOptions,
 		@Query('project') projectId: string,
 		@CurrentUser() user: User

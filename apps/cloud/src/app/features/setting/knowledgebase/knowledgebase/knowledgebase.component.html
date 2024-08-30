@@ -1,5 +1,12 @@
 <div class="pac-page-header">
-  <h2 class="pac-page-title">知识库:{{ knowledgebase()?.name }}</h2>
+
+  <div class="flex justify-start items-center gap-4">
+    <pac-avatar class="w-16 h-16 rounded-full overflow-hidden" [imageUrl]="knowledgebase()?.avatar"></pac-avatar>
+
+    <div>
+      <h2 class="pac-page-title">知识库:{{ knowledgebase()?.name }}</h2>
+    </div>
+  </div>
 
   <nav
     mat-tab-nav-bar
@@ -19,7 +26,7 @@
       [routerLinkActiveOptions]="{ exact: true }"
       [active]="rla1.isActive"
     >
-      <mat-icon fontSet="material-icons-outlined">document_scanner</mat-icon>
+      <mat-icon fontSet="material-icons-round">document_scanner</mat-icon>
       {{ 'PAC.Knowledgebase.Documents' | translate: { Default: 'Documents' } }}
     </span>
     <span

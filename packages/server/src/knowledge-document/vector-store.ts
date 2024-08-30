@@ -4,19 +4,17 @@ import { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
 import { Pool } from 'pg'
 
-export class KnowledgeDocumentVectorStore {
-	vectorStore: PGVectorStore
-
+export class KnowledgeDocumentVectorStore extends PGVectorStore {
 	constructor(
 		public knowledgebase: IKnowledgebase,
 		public embeddings: EmbeddingsInterface,
 		public pgPool: Pool
 	) {
-		this.vectorStore = new PGVectorStore(embeddings, {
-			pool: this.pgPool,
+		super(embeddings, {
+			pool: pgPool,
 			tableName: 'knowledge_document_vector',
 			collectionTableName: 'knowledge_document_collection',
-			collectionName: this.knowledgebase.id,
+			collectionName: knowledgebase.id,
 			columns: {
 				idColumnName: 'id',
 				vectorColumnName: 'vector',
@@ -26,52 +24,49 @@ export class KnowledgeDocumentVectorStore {
 		})
 	}
 
+	async getChunks(knowledgeId: string) {
+		const filter = { knowledgeId }
+		let collectionId;
+		if (this.collectionTableName) {
+		  collectionId = await this.getOrCreateCollection();
+		}
+	
+		// Set parameters of dynamically generated query
+		const params = collectionId ? [filter, collectionId] : [filter];
+	
+		const queryString = `
+		  SELECT * FROM ${this.computedTableName}
+		  WHERE ${collectionId ? "collection_id = $2 AND " : ""}${
+		  this.metadataColumnName
+		}::jsonb @> $1
+		`;
+		return (await this.pool.query(queryString, params)).rows
+	}
+
 	async addKnowledgeDocument(knowledgeDocument: IKnowledgeDocument, documents: Document<Record<string, any>>[]): Promise<void> {
 		documents.forEach((item) => {
 			item.metadata.knowledgeId = knowledgeDocument.id
 		})
-		return await this.vectorStore.addDocuments(documents)
+		return await this.addDocuments(documents)
 	}
 
-	async addKnowledgeDocuments(KnowledgeDocuments: IKnowledgeDocument[]): Promise<void> {
-		if (!KnowledgeDocuments.length) return
-
-		const documents = KnowledgeDocuments.map(
-			(example) =>
-				new Document({
-					metadata: {
-						id: example.id
-					},
-					pageContent: ''
-				})
-		)
-
-		return await this.vectorStore.addDocuments(documents, {
-			ids: KnowledgeDocuments.map((example) => example.id)
-		})
+	async deleteKnowledgeDocument(item: IKnowledgeDocument) {
+		return await this.delete({ filter: { knowledgeId: item.id } })
 	}
 
-	async updateKnowledgeDocuments(KnowledgeDocuments: IKnowledgeDocument[]): Promise<void> {
-		// Delete old example vectors
-		await this.vectorStore.delete({ ids: KnowledgeDocuments.map((example) => example.id) })
-
-		// Add new example vectors
-		await this.addKnowledgeDocuments(KnowledgeDocuments)
-	}
-
-	async deleteIKnowledgeDocument(item: IKnowledgeDocument) {
-		return await this.vectorStore.delete({ ids: [item.id] })
+	async deleteChunk(id: string) {
+		return await this.delete({ ids: [id] })
 	}
 
 	async clear() {
-		return await this.vectorStore.delete({ filter: {} })
+		return await this.delete({ filter: {} })
 	}
 
 	/**
 	 * Create table for vector store if not exist
 	 */
 	async ensureTableInDatabase() {
-		await this.vectorStore.ensureTableInDatabase()
-		await this.vectorStore.ensureCollectionTableInDatabase()
+		await super.ensureTableInDatabase()
+		await super.ensureCollectionTableInDatabase()
 	}
 }

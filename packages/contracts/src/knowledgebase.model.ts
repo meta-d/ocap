@@ -1,11 +1,13 @@
 import { AiProvider } from './ai.model'
 import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
+import { ICopilot } from './copilot.model'
 import { IStorageFile } from './storage-file.model'
 
 /**
  * Knowledgebase
  */
 export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel {
+
   /**
    * KB name
    */
@@ -47,6 +49,9 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
   }
 
   status: string
+
+  copilotId?: string
+  copilot?: ICopilot
 }
 
 export type DocumentParserConfig = {
@@ -114,3 +119,15 @@ export interface IKnowledgeDocument extends IBasePerTenantAndOrganizationEntityM
    */
   jobId?: string
 }
+
+export interface IDocumentChunk {
+  id: string
+  content: string
+  metadata: {
+    knowledgeId?: string
+    [key: string]: any | null
+  }
+  collection_id: string
+}
+
+export type Metadata = Record<string, unknown>

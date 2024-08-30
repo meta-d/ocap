@@ -8,7 +8,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { NgmConfirmDeleteComponent, NgmTableComponent, TableColumn } from '@metad/ocap-angular/common'
 import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { MatDialog } from '@angular/material/dialog'
-import { switchMap } from 'rxjs/operators'
+import { map, switchMap } from 'rxjs/operators'
 import { EMPTY } from 'rxjs'
 
 @Component({
@@ -30,7 +30,7 @@ export class ChatBIModelsComponent extends TranslationBaseComponent {
 
   readonly organizationId$ = this.#store.selectOrganizationId()
 
-  readonly models = toSignal(this.chatbiModelsService.getAll())
+  readonly models = toSignal(this.chatbiModelsService.getAll({ relations: ['model'] }).pipe(map(({items}) => items)))
   readonly allModels = toSignal(this.modelsService.getMy())
 
   readonly columns = signal<TableColumn[]>([

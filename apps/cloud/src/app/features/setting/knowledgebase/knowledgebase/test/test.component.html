@@ -1,1 +1,41 @@
-CCC
+<div class="max-w-full lg:w-[400px] lg:max-w-[400px] rounded-lg flex flex-col gap-4 m-4 p-4 bg-zinc-50">
+    <h2>检索测试</h2>
+
+    <mat-divider></mat-divider>
+
+    <ngm-slider-input [label]="'相似度阈值'" [min]="0" [max]="1" [step]="0.01">
+        <label>AAA</label>
+    </ngm-slider-input>
+    <ngm-slider-input [label]="'关键字相似度权重'" [min]="0" [max]="1" [step]="0.01"></ngm-slider-input>
+
+    <mat-divider></mat-divider>
+
+    <div class="flex flex-col items-end gap-4">
+        <div class="flex-1 min-w-full flex flex-col">
+            <label class="ngm-input-label shrink-0">{{'PAC.Copilot.Examples.Input' | translate: {Default: 'Input'} }}</label>
+            <textarea class="ngm-input-element" matInput [(ngModel)]="query" [disabled]="loading()"
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="1"
+                cdkAutosizeMaxRows="5">
+            </textarea>
+        </div>
+
+        <button mat-flat-button color="primary" [disabled]="loading() || !query()" (click)="test()">测试</button>
+    </div>
+</div>
+
+<div class="flex-1 overflow-y-auto">
+    <mat-list class="m-4">
+      @for (item of results(); track item[0].id) {
+        <mat-list-item lines="5" class="p-4 rounded-lg hover:bg-black/5 dark:hover:bg-white/10">
+            <span matListItemTitle>
+              <div class="flex justify-between items-center" >
+                <span></span>
+                <ngm-tags [tags]="[{caption: 'Score: '+(1 - item[1]).toFixed(2)}]" color="green"></ngm-tags>
+              </div>
+            </span>
+            <span>{{item[0].pageContent}}</span>
+        </mat-list-item>
+      }
+    </mat-list>
+</div>

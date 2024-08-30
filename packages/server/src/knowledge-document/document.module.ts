@@ -12,6 +12,7 @@ import { KnowledgeDocumentConsumer } from './document.job'
 import { StorageFileModule } from '../storage-file'
 import { CopilotModule } from '../copilot'
 import { KnowledgebaseModule } from '../knowledgebase/knowledgebase.module'
+import { QueryHandlers } from './queries/handlers'
 
 @Module({
 	imports: [
@@ -29,7 +30,7 @@ import { KnowledgebaseModule } from '../knowledgebase/knowledgebase.module'
 		  })
 	],
 	controllers: [KnowledgeDocumentController],
-	providers: [KnowledgeDocumentService, KnowledgeDocumentConsumer],
+	providers: [KnowledgeDocumentService, KnowledgeDocumentConsumer, ...QueryHandlers],
 	exports: [KnowledgeDocumentService]
 })
 export class KnowledgeDocumentModule {}

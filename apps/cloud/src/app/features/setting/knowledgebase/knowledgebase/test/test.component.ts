@@ -1,25 +1,46 @@
 import { AsyncPipe } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, inject, model, signal } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
+import { DocumentInterface } from '@langchain/core/documents'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
-import { of, pipe, switchMap } from 'rxjs'
-import { KnowledgebaseService, Store, ToastrService, routeAnimations } from '../../../../../@core'
+import { KnowledgebaseService, Store, ToastrService, getErrorMessage, routeAnimations } from '../../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
+import { KnowledgebaseComponent } from '../knowledgebase.component'
 
 @Component({
   standalone: true,
   selector: 'pac-settings-knowledgebase-test',
   templateUrl: './test.component.html',
   styleUrls: ['./test.component.scss'],
-  imports: [AsyncPipe, RouterModule, TranslateModule, MaterialModule],
+  imports: [AsyncPipe, RouterModule, FormsModule, TranslateModule, MaterialModule, NgmCommonModule],
   animations: [routeAnimations]
 })
 export class KnowledgeTestComponent extends TranslationBaseComponent {
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)
   readonly #store = inject(Store)
-  readonly paramId = injectParams('id')
+  readonly knowledgebaseComponent = inject(KnowledgebaseComponent)
 
+  readonly knowledgebase = this.knowledgebaseComponent.knowledgebase
+  readonly query = model<string>('')
+  readonly results = signal<[DocumentInterface, number][]>([])
+
+  readonly loading = signal<boolean>(false)
+
+  test() {
+    this.loading.set(true)
+    this.knowledgebaseService.test(this.knowledgebase().id, { query: this.query(), k: 10 }).subscribe({
+      next: (results) => {
+        this.results.set(results)
+        this.loading.set(false)
+      },
+      error: (err) => {
+        this._toastrService.error(getErrorMessage(err))
+        this.loading.set(false)
+      }
+    })
+  }
 }

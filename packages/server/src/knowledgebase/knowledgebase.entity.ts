@@ -1,9 +1,9 @@
-import { AiProvider, IKnowledgebase } from '@metad/contracts'
+import { AiProvider, ICopilot, IKnowledgebase } from '@metad/contracts'
 import { Optional } from '@nestjs/common'
-import { ApiPropertyOptional } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNumber, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, Index } from 'typeorm'
-import { TenantOrganizationBaseEntity } from '../core/entities/internal'
+import { Column, Entity, Index, JoinColumn, ManyToOne, RelationId } from 'typeorm'
+import { Copilot, TenantOrganizationBaseEntity } from '../core/entities/internal'
 
 @Entity('knowledgebase')
 @Index(['tenantId', 'organizationId', 'name'], { unique: true })
@@ -90,4 +90,19 @@ export class Knowledgebase extends TenantOrganizationBaseEntity implements IKnow
 	@Optional()
 	@Column({ nullable: true })
 	status: string
+
+	@ApiProperty({ type: () => Copilot, readOnly: true })
+	@ManyToOne(() => Copilot, {
+		nullable: true,
+	})
+	@JoinColumn()
+	@IsOptional()
+	copilot?: ICopilot
+
+	@ApiProperty({ type: () => String, readOnly: true })
+	@RelationId((it: Knowledgebase) => it.copilot)
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	copilotId?: string
 }

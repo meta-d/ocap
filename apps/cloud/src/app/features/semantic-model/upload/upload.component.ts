@@ -14,7 +14,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { groupBy } from 'lodash-es'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { CreationTable, getErrorMessage } from '../../../@core'
-import { MaterialModule, UploadComponent, createTimer } from '../../../@shared'
+import { MaterialModule, UploadComponent, UploadFile, createTimer } from '../../../@shared'
 import { UploadSheetType, convertExcelDate2ISO, readExcelJson } from '../types'
 
 @Component({
@@ -72,7 +72,7 @@ export class ModelUploadComponent {
     this.error = null
   }
 
-  removeFiles(files: File[]) {
+  removeFiles(files: UploadFile[]) {
     for (const file of files) {
       this.removeFile(this.fileList.indexOf(file))
     }

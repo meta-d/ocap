@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatestWith, EMPTY, switchMap } from 'rxjs'
+import { BehaviorSubject, combineLatestWith, EMPTY, map, switchMap } from 'rxjs'
 import { KnowledgebaseService, routeAnimations, Store, ToastrService } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 
@@ -31,7 +31,8 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
   readonly knowledgebases = toSignal(
     this.knowledgebaseService.selectOrganizationId().pipe(
       combineLatestWith(this.refresh$),
-      switchMap(() => this.knowledgebaseService.getAll())
+      switchMap(() => this.knowledgebaseService.getAll()),
+      map(({items}) => items)
     )
   )
 

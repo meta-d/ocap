@@ -9,86 +9,109 @@
     </div>
 </div>
 
-<table mat-table class=""
-       [dataSource]="items()" multiTemplateDataRows>
-  @for (column of columnsToDisplay; track column.name) {
-    <ng-container matColumnDef="{{column.name}}">
-      <th mat-header-cell *matHeaderCellDef> {{column.caption}} </th>
-      <td mat-cell *matCellDef="let element">
-        @if (column.name === 'name') {
-          <a [routerLink]="['.', element.id]">{{element.storageFile.originalName}}</a>
-        } @else {
-          {{getValue(element, column.name)}}
-        }</td>
-    </ng-container>
-  }
-  <ng-container matColumnDef="expand">
-    <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
-    <td mat-cell *matCellDef="let element">
-      <div class="flex items-center" displayDensity="cosy" >
-        <button mat-icon-button aria-label="expand row" (click)="(expandedElement = expandedElement === element ? null : element); $event.stopPropagation()">
-          @if (expandedElement === element) {
-            <mat-icon>keyboard_arrow_up</mat-icon>
+<div class="flex-1 overflow-y-auto">
+  <table mat-table class="flex-1"
+    [dataSource]="data()" multiTemplateDataRows matSort matSortActive="createdAt" matSortDisableClear matSortDirection="desc">
+    @for (column of columnsToDisplay; track column.name) {
+      <ng-container matColumnDef="{{column.name}}">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> {{'PAC.KEY_WORDS.' + column.caption | translate: {Default: column.caption} }} </th>
+        <td mat-cell *matCellDef="let element">
+          @if (column.name === 'name') {
+            <a [routerLink]="['.', element.id]">{{element.storageFile.originalName}}</a>
           } @else {
-            <mat-icon>keyboard_arrow_down</mat-icon>
-          }
-        </button>
-        <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.StartParsing' | translate: {Default: 'Start parsing'}" matTooltipPosition="above"
-          (click)="startParsing(element.id)"
-        >
-          <mat-icon fontSet="material-icons-outlined">play_circle</mat-icon>
-        </button>
-    
-        <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.EditKnowledgeDocument' | translate: {Default: 'Edit Knowledge Document'}" matTooltipPosition="above"
-        >
-          <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
-        </button>
-        <mat-divider vertical style="height: 20px;" />
-        <button mat-icon-button ngmAppearance="danger" [matTooltip]="'PAC.Knowledgebase.DeleteKnowledgeDocument' | translate: {Default: 'Delete Knowledge Document'}" matTooltipPosition="above"
-          (click)="deleteDocument(element.id, element.storageFile)"
-        >
-          <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
-        </button>
-      </div>
-    </td>
-  </ng-container>
+            {{getValue(element, column.name)}}
+          }</td>
+      </ng-container>
+    }
 
-  <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
-  <ng-container matColumnDef="expandedDetail">
-    <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
-      <div class="example-element-detail"
-           [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
-        <div class="example-element-diagram">
-          <div class="example-element-position"> {{element.position}} </div>
-          <div class="example-element-symbol"> {{element.symbol}} </div>
-          <div class="example-element-name"> {{element.name}} </div>
-          <div class="example-element-weight"> {{element.weight}} </div>
+    <ng-container matColumnDef="progress">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> {{'PAC.KEY_WORDS.Progress' | translate: {Default: 'Progress'} }} </th>
+      <td mat-cell *matCellDef="let element">
+        @if (element.status === 'running') {
+          <div class="flex items-center gap-1">
+            <mat-progress-spinner
+              class="example-margin"
+              mode="determinate" diameter="24" color="accent"
+              [value]="element.progress">
+            </mat-progress-spinner>
+
+            <span>{{element.progress}}%</span>
+          </div>
+        } @else if (element.status === 'finish') {
+          <ngm-tags [tags]="[{caption: '完成'}]" color="green" />
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="expand">
+      <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+      <td mat-cell *matCellDef="let element">
+        <div class="flex items-center" displayDensity="cosy" >
+          <button mat-icon-button aria-label="expand row" (click)="(expandedElement = expandedElement?.id === element.id ? null : element); $event.stopPropagation()">
+            @if (expandedElement?.id === element.id) {
+              <mat-icon>keyboard_arrow_up</mat-icon>
+            } @else {
+              <mat-icon>keyboard_arrow_down</mat-icon>
+            }
+          </button>
+          <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.StartParsing' | translate: {Default: 'Start parsing'}" matTooltipPosition="above"
+            (click)="startParsing(element.id)"
+          >
+            <mat-icon fontSet="material-icons-outlined">play_circle</mat-icon>
+          </button>
+      
+          <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.EditKnowledgeDocument' | translate: {Default: 'Edit Knowledge Document'}" matTooltipPosition="above"
+          >
+            <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+          </button>
+          <mat-divider vertical style="height: 20px;" />
+          <button mat-icon-button ngmAppearance="danger" [matTooltip]="'PAC.Knowledgebase.DeleteKnowledgeDocument' | translate: {Default: 'Delete Knowledge Document'}" matTooltipPosition="above"
+            (click)="deleteDocument(element.id, element.storageFile)"
+          >
+            <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+          </button>
         </div>
-        <div class="example-element-description flex-1 flex gap-2">
-          <ngm-slider-input [label]=" 'PAC.Knowledgebase.ChunkTokenNum' | translate: {Default: 'Number of Chunk Token'} "
-            class="w-[300px]"
-            [ngModel]="element.parserConfig.chunkSize"
-            (ngModelChange)="element.parserConfig.chunkSize = $event"
-            (changeEnd)="updateParserConfig(element, {chunkSize: element.parserConfig.chunkSize})"
-            [min]="0"
-            [max]="1000"
-          />
+      </td>
+    </ng-container>
 
-          <ngm-input [label]="'PAC.Knowledgebase.Delimiter' | translate: {Default: 'Delimiter'}"
-            class="w-[200px]"
-            [ngModel]="element.parserConfig.delimiter" (ngModelChange)="updateParserConfig(element, {delimiter: $event})" />
+    <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+    <ng-container matColumnDef="expandedDetail">
+      <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
+        <div class="example-element-detail"
+            [@detailExpand]="element.id === expandedElement?.id ? 'expanded' : 'collapsed'">
+          <div class="example-element-diagram">
+            <div class="example-element-position"> {{element.position}} </div>
+            <div class="example-element-symbol"> {{element.symbol}} </div>
+            <div class="example-element-name"> {{element.name}} </div>
+            <div class="example-element-weight"> {{element.weight}} </div>
+          </div>
+          <div class="example-element-description flex-1 flex gap-2">
+            <ngm-slider-input [label]=" 'PAC.Knowledgebase.ChunkTokenNum' | translate: {Default: 'Number of Chunk Token'} "
+              class="w-[300px]"
+              [ngModel]="element.parserConfig.chunkSize"
+              (ngModelChange)="element.parserConfig.chunkSize = $event"
+              (changeEnd)="updateParserConfig(element, {chunkSize: element.parserConfig.chunkSize})"
+              [min]="0"
+              [max]="1000"
+            />
+
+            <ngm-input [label]="'PAC.Knowledgebase.Delimiter' | translate: {Default: 'Delimiter'}"
+              class="w-[200px]"
+              [ngModel]="element.parserConfig.delimiter" (ngModelChange)="updateParserConfig(element, {delimiter: $event})" />
+          </div>
         </div>
-      </div>
-    </td>
-  </ng-container>
+      </td>
+    </ng-container>
 
-  <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
-  <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;"
-      class="example-element-row"
-      [class.example-expanded-row]="expandedElement === element"
-    >
-  </tr>
-  <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
-</table>
+    <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+    <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;"
+        class="example-element-row"
+        [class.example-expanded-row]="expandedElement?.id === element.id"
+      >
+    </tr>
+    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+  </table>
+</div>
+<mat-paginator [length]="total()" [pageSize]="pageSize()" [pageSizeOptions]="[10, 20, 50, 100]" />
 
 <router-outlet #o="outlet"></router-outlet>

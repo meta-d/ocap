@@ -205,7 +205,10 @@
       "You": "你",
       "ColumnChart": "柱形图",
       "LineChart": "线图",
-      "Models": "模型"
+      "Models": "模型",
+      "Status": "状态",
+      "Message": "消息",
+      "Created At": "创建于"
     },
     "MENU": {
       "Certification": "认证",
@@ -1555,7 +1558,10 @@
       "Documents": "文档",
       "Test": "测试",
       "Configuration": "配置",
-      "NewFiles": "新增文件"
+      "NewFiles": "新增文件",
+      "EmbeddingModel": "嵌入模型",
+      "Chunks": "分块",
+      "DeleteChunk": "删除块"
     },
     "title": {
       "short": "分析云"

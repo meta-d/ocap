@@ -63,10 +63,20 @@ export abstract class CrudController<T extends BaseEntity> {
 	@Get()
 	async findAll(
 		filter: PaginationParams<T>,
-		@Query('$relations', ParseJsonPipe) relations: PaginationParams<T>['relations'],
+		@Query('$filter', ParseJsonPipe) where?: PaginationParams<T>['where'],
+		@Query('$relations', ParseJsonPipe) relations?: PaginationParams<T>['relations'],
+		@Query('$order', ParseJsonPipe) order?: PaginationParams<T>['order'],
+		@Query('$take') take?: PaginationParams<T>['take'],
+		@Query('$skip') skip?: PaginationParams<T>['skip'],
 		...options: any[]
 	): Promise<IPagination<T>> {
-		return this.crudService.findAll({...(filter ?? {}), relations });
+		return this.crudService.findAll({...(filter ?? {}),
+			where: where ?? filter?.where,
+			relations: relations ?? filter.relations,
+			order: order ?? filter?.order,
+			take: take ?? filter?.take,
+			skip: skip ?? filter?.skip,
+		});
 	}
 	
 	@ApiOperation({ summary: 'Find by id' })

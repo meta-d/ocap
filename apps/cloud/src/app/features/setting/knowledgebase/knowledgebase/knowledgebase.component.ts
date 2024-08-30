@@ -6,14 +6,14 @@ import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { of, pipe, switchMap } from 'rxjs'
 import { KnowledgebaseService, Store, ToastrService, routeAnimations } from '../../../../@core'
-import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
+import { AvatarComponent, MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 
 @Component({
   standalone: true,
   selector: 'pac-settings-knowledgebase',
   templateUrl: './knowledgebase.component.html',
   styleUrls: ['./knowledgebase.component.scss'],
-  imports: [AsyncPipe, RouterModule, TranslateModule, MaterialModule],
+  imports: [AsyncPipe, RouterModule, TranslateModule, MaterialModule, AvatarComponent],
   animations: [routeAnimations]
 })
 export class KnowledgebaseComponent extends TranslationBaseComponent {

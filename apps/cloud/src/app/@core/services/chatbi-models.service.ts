@@ -18,14 +18,14 @@ export class ChatBIModelService extends OrganizationBaseCrudService<IChatBIModel
     super(API_CHATBI_MODELS)
   }
 
-  getAll() {
-    return combineLatest([this.#refresh, this.selectOrganizationId()]).pipe(
-      switchMap(() => this.httpClient.get<{ items: IChatBIModel[]; total: number }>(API_CHATBI_MODELS, { params: {
-        $relations: JSON.stringify(['model'])
-      } })),
-      map(({ items }) => items)
-    )
-  }
+  // getAll() {
+  //   return combineLatest([this.#refresh, this.selectOrganizationId()]).pipe(
+  //     switchMap(() => this.httpClient.get<{ items: IChatBIModel[]; total: number }>(API_CHATBI_MODELS, { params: {
+  //       $relations: JSON.stringify(['model'])
+  //     } })),
+  //     map(({ items }) => items)
+  //   )
+  // }
 
   refresh() {
     this.#refresh.next()

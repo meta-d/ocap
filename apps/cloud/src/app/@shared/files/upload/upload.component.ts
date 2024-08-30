@@ -2,9 +2,16 @@ import { CommonModule } from '@angular/common'
 import { Component, booleanAttribute, input, output } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { NgmDndDirective } from '@metad/core'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
+
+export type UploadFile = {
+  file: File
+  progress?: number
+  error?: string | null
+}
 
 @Component({
   standalone: true,
@@ -13,6 +20,7 @@ import { TranslateModule } from '@ngx-translate/core'
     TranslateModule,
     MatButtonModule,
     MatIconModule,
+    MatProgressBarModule,
     AppearanceDirective,
     DensityDirective,
     NgmDndDirective
@@ -22,13 +30,14 @@ import { TranslateModule } from '@ngx-translate/core'
   styleUrls: ['./upload.component.scss']
 })
 export class UploadComponent {
-  readonly files = input<File[]>([])
+  readonly files = input<UploadFile[]>([])
+
   readonly multiple = input<boolean, boolean | string>(false, {
     transform: booleanAttribute
   })
 
   readonly filesChange = output<FileList>()
-  readonly removeFileChange = output<File[]>()
+  readonly removeFileChange = output<UploadFile[]>()
 
   /**
    * on file drop handler
@@ -48,7 +57,7 @@ export class UploadComponent {
     this.filesChange.emit(files)
   }
 
-  removeFile(file: File) {
+  removeFile(file: UploadFile) {
     this.removeFileChange.emit([file])
   }
 }

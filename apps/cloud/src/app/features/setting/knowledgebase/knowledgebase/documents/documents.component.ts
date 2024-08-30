@@ -1,15 +1,35 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { AsyncPipe } from '@angular/common'
-import { Component, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { afterNextRender, Component, effect, inject, model, signal, viewChild } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
+import { MatSort, MatSortModule } from '@angular/material/sort'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { get } from 'lodash-es'
-import { BehaviorSubject, combineLatestWith, EMPTY, map, switchMap } from 'rxjs'
-import { IKnowledgeDocument, IStorageFile, KnowledgeDocumentService, Store, ToastrService } from '../../../../../@core'
+import {
+  BehaviorSubject,
+  catchError,
+  debounceTime,
+  EMPTY,
+  map,
+  merge,
+  of as observableOf,
+  startWith,
+  Subject,
+  switchMap
+} from 'rxjs'
+import {
+  IKnowledgeDocument,
+  IStorageFile,
+  KnowledgeDocumentService,
+  OrderTypeEnum,
+  Store,
+  ToastrService
+} from '../../../../../@core'
 import { FilesUploadDialogComponent, MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { KnowledgebaseComponent } from '../knowledgebase.component'
 
@@ -18,7 +38,16 @@ import { KnowledgebaseComponent } from '../knowledgebase.component'
   selector: 'pac-settings-knowledgebase-documents',
   templateUrl: './documents.component.html',
   styleUrls: ['./documents.component.scss'],
-  imports: [AsyncPipe, RouterModule, FormsModule, TranslateModule, MaterialModule, NgmCommonModule],
+  imports: [
+    AsyncPipe,
+    RouterModule,
+    FormsModule,
+    TranslateModule,
+    MaterialModule,
+    MatSortModule,
+    MatPaginatorModule,
+    NgmCommonModule
+  ],
   animations: [
     trigger('detailExpand', [
       state('collapsed,void', style({ height: '0px', minHeight: '0' })),
@@ -36,16 +65,14 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
   readonly #route = inject(ActivatedRoute)
   readonly knowledgebaseComponent = inject(KnowledgebaseComponent)
 
+  readonly paginator = viewChild(MatPaginator)
+  readonly sort = viewChild(MatSort)
+
+  readonly pageSize = model(10)
   readonly knowledgebase = this.knowledgebaseComponent.knowledgebase
 
   readonly refresh$ = new BehaviorSubject<boolean>(true)
-  readonly items = toSignal(
-    this.knowledgeDocumentService.selectOrganizationId().pipe(
-      combineLatestWith(this.refresh$),
-      switchMap(() => this.knowledgeDocumentService.getAll({ relations: ['storageFile'] })),
-      map((items) => items.map((item) => ({...item, parserConfig: item.parserConfig ?? {} })))
-    )
-  )
+  readonly delayRefresh$ = new Subject<boolean>()
 
   columnsToDisplay = [
     {
@@ -57,16 +84,72 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
       caption: 'Type'
     },
     {
-      name: 'status',
-      caption: 'Status'
+      name: 'createdAt',
+      caption: 'Created At'
     },
     {
       name: 'processMsg',
       caption: 'Message'
-    }
+    },
   ]
-  columnsToDisplayWithExpand = [...this.columnsToDisplay.map(({ name }) => name), 'expand']
+  columnsToDisplayWithExpand = [...this.columnsToDisplay.map(({ name }) => name), 'progress', 'expand']
   expandedElement: any | null
+
+  readonly isLoading = signal(false)
+  isRateLimitReached = false
+  readonly data = signal<IKnowledgeDocument[]>([])
+  readonly total = signal<number>(0)
+
+  constructor() {
+    super()
+
+    afterNextRender(() => {
+      // If the user changes the sort order, reset back to the first page.
+      this.sort().sortChange.subscribe(() => (this.paginator().pageIndex = 0))
+
+      merge(this.sort().sortChange, this.paginator().page, this.refresh$)
+        .pipe(
+          debounceTime(100),
+          startWith({}),
+          switchMap(() => {
+            this.isLoading.set(true)
+            const order = this.sort().active
+              ? { [this.sort().active]: this.sort().direction.toUpperCase() }
+              : { createdAt: OrderTypeEnum.DESC }
+            return this.knowledgeDocumentService!.getAll({
+              take: this.pageSize(),
+              skip: this.paginator().pageIndex,
+              relations: ['storageFile'],
+              order
+            }).pipe(catchError(() => observableOf(null)))
+          }),
+          map((data) => {
+            // Flip flag to show that loading has finished.
+            this.isLoading.set(false)
+            this.isRateLimitReached = data === null
+
+            if (data === null) {
+              return []
+            }
+
+            // Only refresh the result length if there is new data. In case of rate
+            // limit errors, we do not want to reset the paginator to zero, as that
+            // would prevent users from re-triggering requests.
+            this.total.set(data.total)
+            return data.items
+          })
+        )
+        .subscribe((data) => this.data.set(data))
+    })
+
+    effect(() => {
+      if (this.data()?.some((item) => item.status === 'running')) {
+        this.delayRefresh$.next(true)
+      }
+    })
+
+    this.delayRefresh$.pipe(takeUntilDestroyed(), debounceTime(5000)).subscribe(() => this.refresh())
+  }
 
   getValue(row: any, name: string) {
     return get(row, name)

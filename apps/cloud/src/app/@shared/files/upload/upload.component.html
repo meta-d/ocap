@@ -1,4 +1,4 @@
-<div class="container relative flex-1 flex m-4 border-2 border-dashed rounded-lg"
+<div class="container relative flex-1 flex border-2 border-dashed rounded-lg"
     ngmDnd (fileDropped)="onFileDropped($event)"
   >
     <input type="file" #fileDropRef id="fileDropRef" multiple class="invisible"
@@ -32,14 +32,17 @@
         </span>
       </label>
 
-      @for (file of files(); track i; let i = $index) {
-        <div class="flex justify-end items-center">
-          {{ file.name }}
-          <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" (click)="removeFile(file)">
-            <mat-icon>close</mat-icon> 
-          </button>
-        </div>
-      }
+      <div class="w-full flex flex-col stretch">
+        @for (item of files(); track i; let i = $index) {
+          <div class="flex justify-between items-center px-2 hover:bg-black/5 dark:hover:bg-white/10">
+            {{ item.file.name }}
+            <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" (click)="removeFile(item)">
+              <mat-icon>close</mat-icon> 
+            </button>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="item.progress" />
+        }
+      </div>
     </div>
     
 </div>

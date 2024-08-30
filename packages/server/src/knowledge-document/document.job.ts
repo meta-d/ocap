@@ -1,28 +1,29 @@
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
-import { OllamaEmbeddings } from '@langchain/ollama'
-import { OpenAIEmbeddings } from '@langchain/openai'
 import { TokenTextSplitter } from '@langchain/textsplitters'
-import { AiProvider, AiProviderRole, ICopilot, IKnowledgeDocument } from '@metad/contracts'
+import { AiProviderRole, IKnowledgeDocument } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { JOB_REF, Process, Processor } from '@nestjs/bull'
-import { Inject, Scope } from '@nestjs/common'
+import { Inject, Logger, Scope } from '@nestjs/common'
 import { Job } from 'bull'
 import { Document } from 'langchain/document'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
+import { Pool } from 'pg'
 import { CopilotService } from '../copilot'
 import { FileStorage } from '../core/file-storage'
 import { Provider } from '../core/file-storage/providers/provider'
-import { KnowledgeDocumentService } from './document.service'
-import { KnowledgebaseService } from '../knowledgebase/knowledgebase.service'
-import { KnowledgeDocumentVectorStore } from './vector-store'
 import { DATABASE_POOL_TOKEN } from '../database'
-import { Pool } from 'pg'
+import { KnowledgebaseService } from '../knowledgebase/knowledgebase.service'
+import { KnowledgeDocumentService } from './document.service'
+import { KnowledgeDocumentVectorStore } from './vector-store'
+import { createEmbeddings } from './types'
 
 @Processor({
 	name: 'knowledge-document',
 	scope: Scope.REQUEST
 })
 export class KnowledgeDocumentConsumer {
+	private readonly logger = new Logger(KnowledgeDocumentConsumer.name)
+
 	storageProvider: Provider<any>
 	constructor(
 		@Inject(JOB_REF) jobRef: Job,
@@ -59,7 +60,6 @@ export class KnowledgeDocumentConsumer {
 
 			// Create table for vector store if not exist
 			await vectorStore.ensureTableInDatabase()
-
 		} catch (err) {
 			await Promise.all(
 				job.data.docs.map((doc) =>
@@ -70,7 +70,6 @@ export class KnowledgeDocumentConsumer {
 			return
 		}
 
-		let progress = 0
 		for await (const doc of job.data.docs) {
 			const document = await this.service.findOne(doc.id, { relations: ['storageFile'] })
 
@@ -88,7 +87,21 @@ export class KnowledgeDocumentConsumer {
 						break
 				}
 
-				await vectorStore.addKnowledgeDocument(document, data)
+				if (data) {
+					this.logger.debug(`Embeddings document '${document.storageFile.originalName}' size: ${data.length}`)
+					const batchSize = 10
+					let count = 0
+					while (batchSize * count < data.length) {
+						const batch = data.slice(batchSize * count, batchSize * (count + 1))
+						await vectorStore.addKnowledgeDocument(document, batch)
+						count++
+						const progress = (((batchSize * count) / data.length) * 100).toFixed(1)
+						this.logger.debug(
+							`Embeddings document '${document.storageFile.originalName}' progress: ${progress}%`
+						)
+						await this.service.update(doc.id, { progress: Number(progress) })
+					}
+				}
 
 				await this.service.update(doc.id, { status: 'finish', processMsg: '' })
 			} catch (err) {
@@ -115,9 +128,6 @@ export class KnowledgeDocumentConsumer {
 		})
 
 		const splitDocs = await textSplitter.splitDocuments(data)
-
-		console.log(splitDocs.slice(0, 5))
-
 		return splitDocs
 	}
 
@@ -125,31 +135,6 @@ export class KnowledgeDocumentConsumer {
 		const fileBuffer = await this.storageProvider.getFile(document.storageFile.file)
 		const loader = new PDFLoader(new Blob([fileBuffer], { type: 'pdf' }))
 		const data = await loader.load()
-
-		console.log(data.slice(0, 5))
-
 		return data
-	}
-}
-
-export function createEmbeddings(copilot: ICopilot) {
-	switch (copilot.provider) {
-		case AiProvider.OpenAI:
-		case AiProvider.Azure:
-			return new OpenAIEmbeddings({
-				verbose: true,
-				apiKey: copilot.apiKey,
-				model: copilot.defaultModel,
-				configuration: {
-					baseURL: copilot.apiHost
-				}
-			})
-		case AiProvider.Ollama:
-			return new OllamaEmbeddings({
-				baseUrl: copilot.apiHost,
-				model: copilot.defaultModel
-			})
-		default:
-			throw new Error(`Unimplemented copilot provider '${copilot.provider}' for embeddings`)
 	}
 }

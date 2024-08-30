@@ -1,3 +1,12 @@
 :host {
-  @apply w-full flex flex-col p-4;
+  @apply flex-1 w-full flex overflow-hidden;
+}
+
+:host::ng-deep {
+  .mdc-list-item {
+    padding: 1rem;
+  }
+  .mdc-list-item__secondary-text {
+    white-space: pre-wrap;
+  }
 }

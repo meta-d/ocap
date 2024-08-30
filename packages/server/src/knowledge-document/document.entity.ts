@@ -104,7 +104,7 @@ export class KnowledgeDocument extends TenantOrganizationBaseEntity implements I
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
 	@Optional()
-	@Column({ nullable: true })
+	@Column({ nullable: true, type: 'float' })
 	progress?: number
 
 	@ApiPropertyOptional({ type: () => String })

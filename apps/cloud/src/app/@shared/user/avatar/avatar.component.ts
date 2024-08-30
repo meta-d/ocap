@@ -2,13 +2,17 @@ import { CommonModule } from '@angular/common'
 import { Component, Input } from '@angular/core'
 import { IUser } from '../../../@core'
 import { UserPipe } from "../../pipes"
+import { AvatarComponent } from '../../files'
 
+/**
+ * 内容用 AvatarComponent 替代
+ */
 @Component({
     standalone: true,
     selector: 'pac-user-avatar',
-    template: `<img class="" [src]="user?.imageUrl || '/assets/images/avatar-default.svg'" alt="{{user | user}}"/>`,
+    template: `<pac-avatar [imageUrl]="user?.imageUrl" alt="{{user | user}}"/>`,
     styles: [``],
-    imports: [CommonModule, UserPipe]
+    imports: [CommonModule, UserPipe, AvatarComponent]
 })
 export class UserAvatarComponent {
   @Input() user?: IUser

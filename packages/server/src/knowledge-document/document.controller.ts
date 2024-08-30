@@ -1,6 +1,6 @@
 import { IKnowledgeDocument } from '@metad/contracts'
 import { InjectQueue } from '@nestjs/bull'
-import { Body, Controller, Logger, Post, UseInterceptors } from '@nestjs/common'
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Logger, Param, Post, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Queue } from 'bull'
@@ -9,6 +9,7 @@ import { CrudController } from '../core/crud'
 import { TransformInterceptor } from '../core/interceptors'
 import { KnowledgeDocument } from './document.entity'
 import { KnowledgeDocumentService } from './document.service'
+import { DocumentChunkDTO } from './dto'
 
 @ApiTags('KnowledgeDocument')
 @ApiBearerAuth()
@@ -50,5 +51,17 @@ export class KnowledgeDocumentController extends CrudController<KnowledgeDocumen
 		})
 
 		return await this.service.save(docs)
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@Get(':id/chunk')
+	async getChunks(@Param('id') id: string) {
+		const chunks = await this.service.getChunks(id)
+		return chunks.map((item) => new DocumentChunkDTO(item))
+	}
+
+	@Delete(':docId/chunk/:id')
+	async deleteChunk(@Param('docId') docId: string, @Param('id') id: string) {
+		await this.service.deleteChunk(docId, id)
 	}
 }

@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
+import { DocumentInterface } from '@langchain/core/documents'
 import { API_PREFIX, OrganizationBaseCrudService } from '@metad/cloud/state'
 import { IKnowledgebase } from '@metad/contracts'
 import { NGXLogger } from 'ngx-logger'
-import { CopilotRoleService } from './copilot-role.service'
 
 const API_KNOWLEDGEBASE = API_PREFIX + '/knowledgebase'
 
@@ -14,5 +14,9 @@ export class KnowledgebaseService extends OrganizationBaseCrudService<IKnowledge
 
   constructor() {
     super(API_KNOWLEDGEBASE)
+  }
+
+  test(id: string, options: { query: string; k: number; filter?: Record<string, unknown> }) {
+    return this.httpClient.post<[DocumentInterface, number][]>(this.apiBaseUrl + '/' + id + '/test', options)
   }
 }

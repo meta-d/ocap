@@ -1,4 +1,5 @@
-import { Controller, Logger, UseInterceptors } from '@nestjs/common'
+import { Metadata } from '@metad/contracts'
+import { Body, Controller, Logger, Param, Post, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CrudController } from '../core/crud'
@@ -17,5 +18,10 @@ export class KnowledgebaseController extends CrudController<Knowledgebase> {
 		private readonly commandBus: CommandBus
 	) {
 		super(service)
+	}
+
+	@Post(':id/test')
+	async test(@Param('id') id: string, @Body() body: { query: string; k: number; filter: Metadata }) {
+		return this.service.test(id, body)
 	}
 }
