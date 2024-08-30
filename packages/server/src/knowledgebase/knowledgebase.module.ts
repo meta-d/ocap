@@ -9,6 +9,8 @@ import { DatabaseModule } from '../database/database.module'
 import { Knowledgebase } from './knowledgebase.entity'
 import { KnowledgebaseController } from './knowledgebase.controller'
 import { KnowledgebaseService } from './knowledgebase.service'
+import { QueryHandlers } from './queries/handlers'
+import { CommandHandlers } from './commands/handlers'
 
 @Module({
 	imports: [
@@ -21,7 +23,7 @@ import { KnowledgebaseService } from './knowledgebase.service'
 		DatabaseModule
 	],
 	controllers: [KnowledgebaseController],
-	providers: [KnowledgebaseService ],
+	providers: [KnowledgebaseService, ...QueryHandlers, ...CommandHandlers],
 	exports: [KnowledgebaseService]
 })
 export class KnowledgebaseModule {}

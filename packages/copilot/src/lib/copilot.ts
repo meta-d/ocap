@@ -53,23 +53,23 @@ export abstract class CopilotService {
 
   readonly clientOptions$ = new BehaviorSubject<ClientOptions>(null)
 
-  readonly llm$ = combineLatest([this.copilot$, this.clientOptions$]).pipe(
-    map(([copilot, clientOptions]) =>
-      createLLM<ChatOpenAI>(copilot, clientOptions, (input) => {
-        this.tokenUsage$.next(input)
-      })
-    ),
-    shareReplay(1)
-  )
+  // readonly llm$ = combineLatest([this.copilot$, this.clientOptions$]).pipe(
+  //   map(([copilot, clientOptions]) =>
+  //     copilot?.enabled ? createLLM<ChatOpenAI>(copilot, clientOptions, (input) => {
+  //       this.tokenUsage$.next(input)
+  //     }) : null
+  //   ),
+  //   shareReplay(1)
+  // )
 
-  readonly secondaryLLM$ = combineLatest([this.#secondary$, this.clientOptions$]).pipe(
-    map(([secondary, clientOptions]) =>
-      createLLM(secondary, clientOptions, (input) => {
-        this.tokenUsage$.next(input)
-      })
-    ),
-    shareReplay(1)
-  )
+  // readonly secondaryLLM$ = combineLatest([this.#secondary$, this.clientOptions$]).pipe(
+  //   map(([secondary, clientOptions]) =>
+  //     secondary?.enabled ? createLLM(secondary, clientOptions, (input) => {
+  //       this.tokenUsage$.next(input)
+  //     }) : null
+  //   ),
+  //   shareReplay(1)
+  // )
 
   /**
    * Token usage event
@@ -121,58 +121,58 @@ export abstract class CopilotService {
   }
 }
 
-export function createLLM<T = ChatOpenAI | BaseChatModel>(
-  copilot: ICopilot,
-  clientOptions: ClientOptions,
-  tokenRecord: (input: { copilot: ICopilot; tokenUsed: number }) => void
-): T {
-  switch (copilot?.provider) {
-    case AiProvider.OpenAI:
-    case AiProvider.Azure:
-      return new ChatOpenAI({
-        apiKey: copilot.apiKey,
-        configuration: {
-          baseURL: copilot.apiHost || null,
-          ...(clientOptions ?? {})
-        },
-        model: copilot.defaultModel,
-        temperature: 0,
-        callbacks: [
-          {
-            handleLLMEnd(output) {
-              let tokenUsed = 0
-              output.generations?.forEach((generation) => {
-                generation.forEach((item) => {
-                  tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
-                })
-              })
-              tokenRecord({ copilot, tokenUsed })
-            }
-          }
-        ]
-      }) as T
-    // case AiProvider.Ollama:
-    //   return new NgmChatOllama({
-    //     baseUrl: copilot.apiHost || null,
-    //     model: copilot.defaultModel,
-    //     headers: {
-    //       ...(clientOptions?.defaultHeaders ?? {})
-    //     },
-    //     callbacks: [
-    //       {
-    //         handleLLMEnd(output) {
-    //           let tokenUsed = 0
-    //           output.generations?.forEach((generation) => {
-    //             generation.forEach((item) => {
-    //               tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
-    //             })
-    //           })
-    //           tokenRecord({ copilot, tokenUsed })
-    //         },
-    //       },
-    //     ],
-    //   }) as T
-    default:
-      return null
-  }
-}
+// export function createLLM<T = ChatOpenAI | BaseChatModel>(
+//   copilot: ICopilot,
+//   clientOptions: ClientOptions,
+//   tokenRecord: (input: { copilot: ICopilot; tokenUsed: number }) => void
+// ): T {
+//   switch (copilot?.provider) {
+//     case AiProvider.OpenAI:
+//     case AiProvider.Azure:
+//       return new ChatOpenAI({
+//         apiKey: copilot.apiKey,
+//         configuration: {
+//           baseURL: copilot.apiHost || null,
+//           ...(clientOptions ?? {})
+//         },
+//         model: copilot.defaultModel,
+//         temperature: 0,
+//         callbacks: [
+//           {
+//             handleLLMEnd(output) {
+//               let tokenUsed = 0
+//               output.generations?.forEach((generation) => {
+//                 generation.forEach((item) => {
+//                   tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
+//                 })
+//               })
+//               tokenRecord({ copilot, tokenUsed })
+//             }
+//           }
+//         ]
+//       }) as T
+//     // case AiProvider.Ollama:
+//     //   return new NgmChatOllama({
+//     //     baseUrl: copilot.apiHost || null,
+//     //     model: copilot.defaultModel,
+//     //     headers: {
+//     //       ...(clientOptions?.defaultHeaders ?? {})
+//     //     },
+//     //     callbacks: [
+//     //       {
+//     //         handleLLMEnd(output) {
+//     //           let tokenUsed = 0
+//     //           output.generations?.forEach((generation) => {
+//     //             generation.forEach((item) => {
+//     //               tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
+//     //             })
+//     //           })
+//     //           tokenRecord({ copilot, tokenUsed })
+//     //         },
+//     //       },
+//     //     ],
+//     //   }) as T
+//     default:
+//       return null
+//   }
+// }

@@ -2,7 +2,7 @@ import { DocumentParserConfig, IKnowledgebase, IKnowledgeDocument, IStorageFile 
 import { Optional } from '@nestjs/common'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsDate, IsJSON, IsNumber, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, RelationId } from 'typeorm'
 import { Knowledgebase, StorageFile, TenantOrganizationBaseEntity } from '../core/entities/internal'
 
 @Entity('knowledge_document')
@@ -25,7 +25,7 @@ export class KnowledgeDocument extends TenantOrganizationBaseEntity implements I
 	knowledgebaseId?: string
 
 	@ApiProperty({ type: () => StorageFile, readOnly: true })
-	@ManyToOne(() => StorageFile, {
+	@OneToOne(() => StorageFile, {
 		nullable: true,
 		onUpdate: 'CASCADE',
 		onDelete: 'CASCADE'

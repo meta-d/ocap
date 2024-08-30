@@ -76,7 +76,7 @@ export class CopilotKnowledgeRetriever<V extends VectorStoreInterface = VectorSt
 			}
 
 			return this.service.maxMarginalRelevanceSearch(query, {
-				tenentId: this.options.tenantId,
+				tenantId: this.options.tenantId,
 				organizationId: this.options.organizationId,
 				k: this.k,
 				filter: this.filter as any,
@@ -87,7 +87,7 @@ export class CopilotKnowledgeRetriever<V extends VectorStoreInterface = VectorSt
 		}
 
 		const docs = await this.service.similaritySearch(query, {
-			tenentId: this.options.tenantId,
+			tenantId: this.options.tenantId,
 			organizationId: this.options.organizationId,
 			command: this.command,
 			k: this.k,

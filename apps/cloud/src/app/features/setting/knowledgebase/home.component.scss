@@ -1,3 +1,15 @@
 :host {
   @apply w-full flex flex-col p-4;
 }
+
+.pac-knowledgebase-card {
+  .pac-card__menu {
+    @apply absolute;
+    right: 5px;
+    top: 5px;
+
+    &.active {
+      opacity: 1;
+    }
+  }
+}

@@ -208,7 +208,11 @@
       "Models": "模型",
       "Status": "状态",
       "Message": "消息",
-      "Created At": "创建于"
+      "Created At": "创建于",
+      "Primary": "主",
+      "Secondary": "副",
+      "Embedding": "嵌入",
+      "Open": "打开"
     },
     "MENU": {
       "Certification": "认证",
@@ -1555,13 +1559,21 @@
       "TakeMeThere": "带我去！"
     },
     "Knowledgebase": {
+      "Knowledgebase": "知识库",
       "Documents": "文档",
       "Test": "测试",
       "Configuration": "配置",
       "NewFiles": "新增文件",
       "EmbeddingModel": "嵌入模型",
       "Chunks": "分块",
-      "DeleteChunk": "删除块"
+      "DeleteChunk": "删除块",
+      "ConfirmDeleteKnowledgebase": "确定删除知识库及其所有内容？",
+      "NewKnowledgebase": "新建知识库",
+      "ParsingProgress": "解析进度",
+      "RestartParsing": "重新解析",
+      "StopParsing": "停止解析",
+      "StartParsing": "开始解析",
+      "DeleteKnowledgeDocument": "删除知识文档"
     },
     "title": {
       "short": "分析云"

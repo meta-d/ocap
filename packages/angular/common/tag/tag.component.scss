@@ -23,6 +23,9 @@
     &.yellow {
       @apply text-yellow-500;
     }
+    &.gray {
+      @apply text-gray-500;
+    }
   }
 
   &.selectable {
@@ -45,6 +48,9 @@
       &.yellow.selected {
         @apply bg-yellow-100;
       }
+      &.gray.selected {
+        @apply bg-gray-100;
+      }
     }
   }
 
@@ -65,12 +71,15 @@
       &.yellow {
         @apply bg-yellow-100;
       }
+      &.gray {
+        @apply bg-gray-100;
+      }
     }
   }
 }
 
 .tag {
-  @apply px-3 py-1 rounded-lg text-base;
+  @apply px-3 py-1 rounded-lg;
 }
 
 ::ng-deep {

@@ -53,7 +53,7 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   readonly copilotOptions = computed(() =>
     this.copilots()?.map((copilot) => ({
       key: copilot.id,
-      caption: copilot.provider
+      caption: copilot.provider + `(${copilot.role})`
     }))
   )
 

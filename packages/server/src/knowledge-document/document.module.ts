@@ -11,8 +11,8 @@ import { KnowledgeDocumentService } from './document.service'
 import { KnowledgeDocumentConsumer } from './document.job'
 import { StorageFileModule } from '../storage-file'
 import { CopilotModule } from '../copilot'
+import { CopilotRoleModule } from '../copilot-role/copilot-role.module'
 import { KnowledgebaseModule } from '../knowledgebase/knowledgebase.module'
-import { QueryHandlers } from './queries/handlers'
 
 @Module({
 	imports: [
@@ -24,13 +24,14 @@ import { QueryHandlers } from './queries/handlers'
 		StorageFileModule,
 		CopilotModule,
 		KnowledgebaseModule,
+		CopilotRoleModule,
 
 		BullModule.registerQueue({
-			name: 'knowledge-document',
+			name: 'embedding-document',
 		  })
 	],
 	controllers: [KnowledgeDocumentController],
-	providers: [KnowledgeDocumentService, KnowledgeDocumentConsumer, ...QueryHandlers],
+	providers: [KnowledgeDocumentService, KnowledgeDocumentConsumer ],
 	exports: [KnowledgeDocumentService]
 })
 export class KnowledgeDocumentModule {}

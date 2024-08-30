@@ -66,9 +66,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   readonly llm = toSignal(this.copilot.llm$)
   readonly secondaryLLM$ = combineLatest([this.copilot.secondary$, this.copilot.clientOptions$]).pipe(
-    map(([secondary, clientOptions]) => createLLM(secondary, clientOptions, (input) => {
+    map(([secondary, clientOptions]) => secondary?.enabled ? createLLM(secondary, clientOptions, (input) => {
       this.copilot.recordTokenUsage(input)
-    })),
+    }) : null),
     shareReplay(1)
   )
   readonly secondaryLLM = toSignal(this.secondaryLLM$)

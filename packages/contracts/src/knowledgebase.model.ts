@@ -3,6 +3,13 @@ import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
 import { ICopilot } from './copilot.model'
 import { IStorageFile } from './storage-file.model'
 
+export type KnowledgebaseParserConfig = {
+  pages?: number[][]
+  embeddingBatchSize?: number
+  chunkSize: number | null
+  chunkOverlap: number | null
+}
+
 /**
  * Knowledgebase
  */
@@ -44,9 +51,7 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
    */
   parserId: string
 
-  parserConfig: {
-    pages: number[][]
-  }
+  parserConfig: KnowledgebaseParserConfig
 
   status: string
 

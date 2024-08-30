@@ -1,13 +1,17 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { AsyncPipe } from '@angular/common'
 import { afterNextRender, Component, effect, inject, model, signal, viewChild } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
 import { MatSort, MatSortModule } from '@angular/material/sort'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
+import {
+  NgmCommonModule,
+  NgmConfirmDeleteComponent,
+  NgmCountdownConfirmationComponent
+} from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { get } from 'lodash-es'
 import {
@@ -15,6 +19,7 @@ import {
   catchError,
   debounceTime,
   EMPTY,
+  filter,
   map,
   merge,
   of as observableOf,
@@ -70,6 +75,7 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
 
   readonly pageSize = model(10)
   readonly knowledgebase = this.knowledgebaseComponent.knowledgebase
+  readonly knowledgebase$ = toObservable(this.knowledgebase)
 
   readonly refresh$ = new BehaviorSubject<boolean>(true)
   readonly delayRefresh$ = new Subject<boolean>()
@@ -90,7 +96,7 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
     {
       name: 'processMsg',
       caption: 'Message'
-    },
+    }
   ]
   columnsToDisplayWithExpand = [...this.columnsToDisplay.map(({ name }) => name), 'progress', 'expand']
   expandedElement: any | null
@@ -107,16 +113,20 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
       // If the user changes the sort order, reset back to the first page.
       this.sort().sortChange.subscribe(() => (this.paginator().pageIndex = 0))
 
-      merge(this.sort().sortChange, this.paginator().page, this.refresh$)
+      merge(this.sort().sortChange, this.paginator().page, this.knowledgebase$, this.refresh$)
         .pipe(
-          debounceTime(100),
           startWith({}),
+          debounceTime(100),
+          filter(() => !!this.knowledgebase()),
           switchMap(() => {
             this.isLoading.set(true)
             const order = this.sort().active
               ? { [this.sort().active]: this.sort().direction.toUpperCase() }
               : { createdAt: OrderTypeEnum.DESC }
             return this.knowledgeDocumentService!.getAll({
+              where: {
+                knowledgebaseId: this.knowledgebase().id
+              },
               take: this.pageSize(),
               skip: this.paginator().pageIndex,
               relations: ['storageFile'],
@@ -223,5 +233,39 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
       },
       error: (err) => {}
     })
+  }
+
+  restartParsing(id: string) {
+    this.#dialog
+      .open(NgmCountdownConfirmationComponent, {
+        data: {
+          recordType: 'Restart parsing job?'
+        }
+      })
+      .afterClosed()
+      .pipe(switchMap((confirm) => (confirm ? this.knowledgeDocumentService.startParsing(id) : EMPTY)))
+      .subscribe({
+        next: () => {
+          this.refresh()
+        },
+        error: (err) => {}
+      })
+  }
+
+  stopParsing(id: string) {
+    this.#dialog
+      .open(NgmCountdownConfirmationComponent, {
+        data: {
+          recordType: 'Stop the parsing job?'
+        }
+      })
+      .afterClosed()
+      .pipe(switchMap((confirm) => (confirm ? this.knowledgeDocumentService.stopParsing(id) : EMPTY)))
+      .subscribe({
+        next: () => {
+          this.refresh()
+        },
+        error: (err) => {}
+      })
   }
 }

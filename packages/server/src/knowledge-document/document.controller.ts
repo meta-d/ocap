@@ -1,6 +1,16 @@
 import { IKnowledgeDocument } from '@metad/contracts'
 import { InjectQueue } from '@nestjs/bull'
-import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Logger, Param, Post, UseInterceptors } from '@nestjs/common'
+import {
+	Body,
+	ClassSerializerInterceptor,
+	Controller,
+	Delete,
+	Get,
+	Logger,
+	Param,
+	Post,
+	UseInterceptors
+} from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Queue } from 'bull'
@@ -20,7 +30,7 @@ export class KnowledgeDocumentController extends CrudController<KnowledgeDocumen
 	constructor(
 		private readonly service: KnowledgeDocumentService,
 		private readonly commandBus: CommandBus,
-		@InjectQueue('knowledge-document') private docQueue: Queue
+		@InjectQueue('embedding-document') private docQueue: Queue
 	) {
 		super(service)
 	}
@@ -31,7 +41,7 @@ export class KnowledgeDocumentController extends CrudController<KnowledgeDocumen
 	}
 
 	@Post('process')
-	async start(@Body() body: {ids: string[]}) {
+	async start(@Body() body: { ids: string[] }) {
 		const { items } = await this.service.findAll({
 			where: {
 				id: In(body.ids)
@@ -43,14 +53,58 @@ export class KnowledgeDocumentController extends CrudController<KnowledgeDocumen
 		const job = await this.docQueue.add({
 			docs
 		})
-		
+
 		docs.forEach((item) => {
 			item.jobId = job.id as string
 			item.status = 'running'
 			item.processMsg = ''
+			item.progress = 0
 		})
 
 		return await this.service.save(docs)
+	}
+
+	@Delete(':id/job')
+	async stopJob(@Param('id') id: string) {
+		const knowledgeDocument = await this.service.findOne(id)
+		try {
+			if (knowledgeDocument.jobId) {
+				const job = await this.docQueue.getJob(knowledgeDocument.jobId)
+				// cancel job
+				const lockKey = job.lockKey()
+				await job.moveToFailed({ message: 'Job stopped by user' })
+			}
+		} catch(err) {}
+
+		knowledgeDocument.jobId = null
+		knowledgeDocument.status = 'cancel'
+		knowledgeDocument.progress = 0
+
+		return await this.service.save(knowledgeDocument)
+	}
+
+	@Post('similarity-search')
+	async similaritySearch(
+		@Body('query') query: string,
+		@Body('options') options?: { k: number; filter: any; score?: number }
+	) {
+		this.#logger.debug(
+			`Retrieving documents for query: ${query} with k = ${options?.k} score = ${options?.score} and filter = ${options?.filter}`
+		)
+
+		return this.service.similaritySearch(query, options)
+	}
+
+	@Post('mmr-search')
+	async maxMarginalRelevanceSearch(
+		@Body('query') query: string,
+		@Body('options') options?: { k: number; filter: any }
+	) {
+		this.#logger.debug(
+			`Retrieving documents for mmr query: ${query} with k = ${options?.k} and filter = ${options?.filter}`
+		)
+
+		return this.service.maxMarginalRelevanceSearch(query, options)
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)

@@ -1,13 +1,15 @@
-import { IKnowledgeDocument } from '@metad/contracts'
+import { AiBusinessRole, IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { Pool } from 'pg'
 import { Repository } from 'typeorm'
+import { CopilotRoleService } from '../copilot-role/copilot-role.service'
+import { RequestContext } from '../core'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
+import { DATABASE_POOL_TOKEN } from '../database'
 import { StorageFileService } from '../storage-file'
 import { KnowledgeDocument } from './document.entity'
-import { DATABASE_POOL_TOKEN } from '../database'
-import { Pool } from 'pg'
-import { KnowledgeDocumentVectorStore } from './vector-store'
+import { KnowledgebaseService, KnowledgeDocumentVectorStore } from '../knowledgebase'
 
 @Injectable()
 export class KnowledgeDocumentService extends TenantOrganizationAwareCrudService<KnowledgeDocument> {
@@ -17,6 +19,8 @@ export class KnowledgeDocumentService extends TenantOrganizationAwareCrudService
 		@InjectRepository(KnowledgeDocument)
 		repository: Repository<KnowledgeDocument>,
 		private readonly storageFileService: StorageFileService,
+		private readonly knowledgebaseService: KnowledgebaseService,
+		private readonly roleService: CopilotRoleService,
 		@Inject(DATABASE_POOL_TOKEN) private readonly pgPool: Pool
 	) {
 		super(repository)
@@ -43,13 +47,68 @@ export class KnowledgeDocumentService extends TenantOrganizationAwareCrudService
 
 	async getChunks(id: string) {
 		const document = await this.findOne(id, { relations: ['knowledgebase'] })
-		const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, null, this.pgPool)
+		const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, this.pgPool)
 		return await vectorStore.getChunks(id)
 	}
 
 	async deleteChunk(documentId: string, id: string) {
 		const document = await this.findOne(documentId, { relations: ['knowledgebase'] })
-		const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, null, this.pgPool)
+		const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, this.pgPool)
 		return await vectorStore.deleteChunk(id)
+	}
+
+	async similaritySearch(
+		query: string,
+		options?: {
+			role?: AiBusinessRole
+			k: number
+			filter: KnowledgeDocumentVectorStore['filter']
+			score?: number
+			tenantId?: string
+			organizationId?: string
+		}
+	) {
+		const { role, k, score, filter } = options ?? {}
+		const tenantId = options?.tenantId ?? RequestContext.currentTenantId()
+		const organizationId = options?.organizationId ?? RequestContext.getOrganizationId()
+
+		const { record: copilotRole, success } = await this.roleService.findOneOrFail({ where: { name: role } })
+		let knowledgebases: IKnowledgebase[] = []
+		if (!success) {
+			const result = await this.knowledgebaseService.findAll()
+			knowledgebases = result.items
+		} else {
+			//
+		}
+
+		const documents = []
+		const kbs = await Promise.all(
+			knowledgebases.map((kb) => {
+				return this.knowledgebaseService.getVectorStore(kb, tenantId, organizationId).then((vectorStore) => {
+					return vectorStore.similaritySearchWithScore(query, k, filter)
+				})
+			})
+		)
+
+		kbs.forEach((kb) => {
+			kb.forEach(([doc, score]) => {
+				documents.push(doc)
+			})
+		})
+
+		return documents
+	}
+
+	async maxMarginalRelevanceSearch(
+		query: string,
+		options?: {
+			role?: AiBusinessRole
+			k: number
+			filter: Record<string, any>
+			tenantId?: string
+			organizationId?: string
+		}
+	) {
+		//
 	}
 }

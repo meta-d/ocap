@@ -25,20 +25,25 @@
     }
 
     <ng-container matColumnDef="progress">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> {{'PAC.KEY_WORDS.Progress' | translate: {Default: 'Progress'} }} </th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> {{'PAC.Knowledgebase.ParsingProgress' | translate: {Default: 'Parsing Progress'} }} </th>
       <td mat-cell *matCellDef="let element">
-        @if (element.status === 'running') {
-          <div class="flex items-center gap-1">
-            <mat-progress-spinner
-              class="example-margin"
-              mode="determinate" diameter="24" color="accent"
-              [value]="element.progress">
-            </mat-progress-spinner>
-
-            <span>{{element.progress}}%</span>
-          </div>
-        } @else if (element.status === 'finish') {
-          <ngm-tags [tags]="[{caption: '完成'}]" color="green" />
+        @switch (element.status) {
+          @case ('running') {
+            <div class="flex items-center gap-1">
+              <mat-progress-spinner
+                mode="determinate" diameter="24" color="accent"
+                [value]="element.progress">
+              </mat-progress-spinner>
+  
+              <span>{{element.progress}}%</span>
+            </div>
+          }
+          @case('finish') {
+            <ngm-tags class="text-sm" [tags]="[{caption: '完成'}]" color="green" />
+          }
+          @default {
+            <ngm-tags class="text-sm" [tags]="[{caption: '未开始'}]" color="gray" />
+          }
         }
       </td>
     </ng-container>
@@ -46,7 +51,7 @@
     <ng-container matColumnDef="expand">
       <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
       <td mat-cell *matCellDef="let element">
-        <div class="flex items-center" displayDensity="cosy" >
+        <div class="flex items-center gap-2" displayDensity="cosy" >
           <button mat-icon-button aria-label="expand row" (click)="(expandedElement = expandedElement?.id === element.id ? null : element); $event.stopPropagation()">
             @if (expandedElement?.id === element.id) {
               <mat-icon>keyboard_arrow_up</mat-icon>
@@ -54,16 +59,27 @@
               <mat-icon>keyboard_arrow_down</mat-icon>
             }
           </button>
-          <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.StartParsing' | translate: {Default: 'Start parsing'}" matTooltipPosition="above"
-            (click)="startParsing(element.id)"
-          >
-            <mat-icon fontSet="material-icons-outlined">play_circle</mat-icon>
-          </button>
-      
-          <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.EditKnowledgeDocument' | translate: {Default: 'Edit Knowledge Document'}" matTooltipPosition="above"
-          >
-            <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
-          </button>
+
+          @if (element.status === 'finish') {
+            <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.RestartParsing' | translate: {Default: 'Restart parsing'}" matTooltipPosition="above"
+              (click)="restartParsing(element.id)"
+            >
+              <mat-icon fontSet="material-icons-outlined">restart_alt</mat-icon>
+            </button>
+          } @else if(element.status === 'running') {
+            <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.StopParsing' | translate: {Default: 'Stop parsing'}" matTooltipPosition="above"
+              (click)="stopParsing(element.id)"
+            >
+              <mat-icon fontSet="material-icons-outlined">stop_circle</mat-icon>
+            </button>
+          } @else {
+            <button mat-icon-button [matTooltip]="'PAC.Knowledgebase.StartParsing' | translate: {Default: 'Start parsing'}" matTooltipPosition="above"
+              (click)="startParsing(element.id)"
+            >
+              <mat-icon fontSet="material-icons-outlined">play_circle</mat-icon>
+            </button>
+          }
+
           <mat-divider vertical style="height: 20px;" />
           <button mat-icon-button ngmAppearance="danger" [matTooltip]="'PAC.Knowledgebase.DeleteKnowledgeDocument' | translate: {Default: 'Delete Knowledge Document'}" matTooltipPosition="above"
             (click)="deleteDocument(element.id, element.storageFile)"
@@ -77,7 +93,7 @@
     <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
     <ng-container matColumnDef="expandedDetail">
       <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
-        <div class="example-element-detail"
+        <div class="example-element-detail" displayDensity="compact"
             [@detailExpand]="element.id === expandedElement?.id ? 'expanded' : 'collapsed'">
           <div class="example-element-diagram">
             <div class="example-element-position"> {{element.position}} </div>
@@ -85,12 +101,21 @@
             <div class="example-element-name"> {{element.name}} </div>
             <div class="example-element-weight"> {{element.weight}} </div>
           </div>
-          <div class="example-element-description flex-1 flex gap-2">
+          <div class="example-element-description flex-1 flex flex-wrap gap-2">
             <ngm-slider-input [label]=" 'PAC.Knowledgebase.ChunkTokenNum' | translate: {Default: 'Number of Chunk Token'} "
               class="w-[300px]"
               [ngModel]="element.parserConfig.chunkSize"
               (ngModelChange)="element.parserConfig.chunkSize = $event"
               (changeEnd)="updateParserConfig(element, {chunkSize: element.parserConfig.chunkSize})"
+              [min]="0"
+              [max]="10000"
+            />
+
+            <ngm-slider-input [label]=" 'PAC.Knowledgebase.ChunkOverlap' | translate: {Default: 'Chunk Overlap'} "
+              class="w-[300px]"
+              [ngModel]="element.parserConfig.chunkOverlap"
+              (ngModelChange)="element.parserConfig.chunkOverlap = $event"
+              (changeEnd)="updateParserConfig(element, {chunkOverlap: element.parserConfig.chunkOverlap})"
               [min]="0"
               [max]="1000"
             />

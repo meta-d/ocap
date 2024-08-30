@@ -55,6 +55,7 @@ import { StoryCreationComponent } from '../@shared'
 import { AppService } from '../app.service'
 import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
+import { injectChatCommand } from '../@shared/copilot'
 
 
 @Component({
@@ -145,6 +146,12 @@ export class FeaturesComponent implements OnInit {
   |--------------------------------------------------------------------------
   */
   readonly menus = signal<PacMenuItem[]>([])
+  /**
+  |--------------------------------------------------------------------------
+  | Copilots
+  |--------------------------------------------------------------------------
+  */
+  readonly chatCommand = injectChatCommand()
 
   /**
   |--------------------------------------------------------------------------

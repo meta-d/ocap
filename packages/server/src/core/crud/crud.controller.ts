@@ -63,7 +63,7 @@ export abstract class CrudController<T extends BaseEntity> {
 	@Get()
 	async findAll(
 		filter: PaginationParams<T>,
-		@Query('$filter', ParseJsonPipe) where?: PaginationParams<T>['where'],
+		@Query('$where', ParseJsonPipe) where?: PaginationParams<T>['where'],
 		@Query('$relations', ParseJsonPipe) relations?: PaginationParams<T>['relations'],
 		@Query('$order', ParseJsonPipe) order?: PaginationParams<T>['order'],
 		@Query('$take') take?: PaginationParams<T>['take'],

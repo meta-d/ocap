@@ -1,4 +1,4 @@
-import { AiProvider, ICopilot, IKnowledgebase } from '@metad/contracts'
+import { AiProvider, ICopilot, IKnowledgebase, KnowledgebaseParserConfig } from '@metad/contracts'
 import { Optional } from '@nestjs/common'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNumber, IsOptional, IsString } from 'class-validator'
@@ -83,7 +83,7 @@ export class Knowledgebase extends TenantOrganizationBaseEntity implements IKnow
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	parserConfig: { pages: number[][] }
+	parserConfig: KnowledgebaseParserConfig
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()

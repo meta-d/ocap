@@ -3,18 +3,36 @@ import { Component, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
+import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatestWith, EMPTY, map, switchMap } from 'rxjs'
-import { KnowledgebaseService, routeAnimations, Store, ToastrService } from '../../../@core'
-import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
+import {
+  getErrorMessage,
+  IKnowledgebase,
+  KnowledgebaseService,
+  OrderTypeEnum,
+  routeAnimations,
+  Store,
+  ToastrService
+} from '../../../@core'
+import { AvatarComponent, MaterialModule, TranslationBaseComponent, UserProfileInlineComponent } from '../../../@shared'
 
 @Component({
   standalone: true,
   selector: 'pac-settings-knowledgebases',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  imports: [AsyncPipe, RouterModule, TranslateModule, MaterialModule],
+  imports: [
+    AsyncPipe,
+    RouterModule,
+    TranslateModule,
+    MaterialModule,
+    AppearanceDirective,
+    DensityDirective,
+    AvatarComponent,
+    UserProfileInlineComponent
+  ],
   animations: [routeAnimations]
 })
 export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
@@ -31,10 +49,16 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
   readonly knowledgebases = toSignal(
     this.knowledgebaseService.selectOrganizationId().pipe(
       combineLatestWith(this.refresh$),
-      switchMap(() => this.knowledgebaseService.getAll()),
-      map(({items}) => items)
+      switchMap(() =>
+        this.knowledgebaseService.getAll({ relations: ['createdBy'], order: { createdAt: OrderTypeEnum.DESC } })
+      ),
+      map(({ items }) => items)
     )
   )
+
+  refresh() {
+    this.refresh$.next(true)
+  }
 
   openKnowledgebase(id: string) {
     this.#router.navigate([id], { relativeTo: this.#route })
@@ -44,7 +68,9 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
     this.#dialog
       .open(NgmConfirmUniqueComponent, {
         data: {
-          title: this.getTranslation('knowledgebases.new'),
+          title: this.translateService.instant('PAC.Knowledgebase.NewKnowledgebase', {
+            Default: `New Knowledgebase`
+          })
         }
       })
       .afterClosed()
@@ -59,10 +85,38 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
       )
       .subscribe({
         next: (result) => {
+          this.refresh()
           this._toastrService.success('Created knowledgebase', 'Success')
         },
         error: (error) => {
           this._toastrService.error(error, 'Error')
+        }
+      })
+  }
+
+  edit(item: IKnowledgebase) {
+    this.#router.navigate([item.id, 'configuration'], { relativeTo: this.#route })
+  }
+
+  remove(item: IKnowledgebase) {
+    this.#dialog
+      .open(NgmConfirmDeleteComponent, {
+        data: {
+          value: item.name,
+          information: this.translateService.instant('PAC.Knowledgebase.ConfirmDeleteKnowledgebase', {
+            Default: `Confirm delete knowledgebase and all its contents?`
+          })
+        }
+      })
+      .afterClosed()
+      .pipe(switchMap((confirm) => (confirm ? this.knowledgebaseService.delete(item.id) : EMPTY)))
+      .subscribe({
+        next: () => {
+          this.refresh()
+          this._toastrService.success('PAC.Messages.DeletedSuccessfully', 'Deleted Successfully')
+        },
+        error: (error) => {
+          this._toastrService.error(getErrorMessage(error), 'Error')
         }
       })
   }
