@@ -1,6 +1,6 @@
+import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
+import { EPubLoader } from '@langchain/community/document_loaders/fs/epub'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
-import { EPubLoader } from "@langchain/community/document_loaders/fs/epub"
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
 import { IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { JOB_REF, Process, Processor } from '@nestjs/bull'
@@ -8,10 +8,11 @@ import { Inject, Logger, Scope } from '@nestjs/common'
 import { Job } from 'bull'
 import { Document } from 'langchain/document'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { FileStorage } from '../core/file-storage'
 import { Provider } from '../core/file-storage/providers/provider'
-import { KnowledgeDocumentService } from './document.service'
 import { KnowledgebaseService, KnowledgeDocumentVectorStore } from '../knowledgebase/index'
+import { KnowledgeDocumentService } from './document.service'
 
 @Processor({
 	name: 'embedding-document',
@@ -25,7 +26,7 @@ export class KnowledgeDocumentConsumer {
 	constructor(
 		@Inject(JOB_REF) jobRef: Job,
 		private readonly knowledgebaseService: KnowledgebaseService,
-		private readonly service: KnowledgeDocumentService,
+		private readonly service: KnowledgeDocumentService
 	) {}
 
 	@Process({ concurrency: 5 })
@@ -35,8 +36,12 @@ export class KnowledgeDocumentConsumer {
 		let vectorStore: KnowledgeDocumentVectorStore
 		try {
 			const doc = job.data.docs[0]
-			
-			vectorStore = await this.knowledgebaseService.getVectorStore(this.knowledgebase, doc.tenantId, doc.organizationId)
+
+			vectorStore = await this.knowledgebaseService.getVectorStore(
+				this.knowledgebase,
+				doc.tenantId,
+				doc.organizationId
+			)
 		} catch (err) {
 			await Promise.all(
 				job.data.docs.map((doc) =>
@@ -65,6 +70,9 @@ export class KnowledgeDocumentConsumer {
 					case 'epub':
 						data = await this.processEpub(document)
 						break
+					case 'docx':
+						data = await this.processDocx(document)
+						break
 				}
 
 				if (data) {
@@ -77,7 +85,10 @@ export class KnowledgeDocumentConsumer {
 						const batch = data.slice(batchSize * count, batchSize * (count + 1))
 						await vectorStore.addKnowledgeDocument(document, batch)
 						count++
-						const progress = batchSize * count >= data.length ? 100 : (((batchSize * count) / data.length) * 100).toFixed(1)
+						const progress =
+							batchSize * count >= data.length
+								? 100
+								: (((batchSize * count) / data.length) * 100).toFixed(1)
 						this.logger.debug(
 							`Embeddings document '${document.storageFile.originalName}' progress: ${progress}%`
 						)
@@ -123,14 +134,22 @@ export class KnowledgeDocumentConsumer {
 		return await this.splitDocuments(document, data)
 	}
 
+	async processDocx(document: IKnowledgeDocument): Promise<Document<Record<string, any>>[]> {
+		const filePath = this.storageProvider.path(document.storageFile.file)
+		const loader = new DocxLoader(filePath)
+		const data = await loader.load()
+
+		return await this.splitDocuments(document, data)
+	}
+
 	async splitDocuments(document: IKnowledgeDocument, data: Document[]) {
 		let chunkSize: number, chunkOverlap: number
 		if (document.parserConfig?.chunkSize) {
 			chunkSize = document.parserConfig.chunkSize
-			chunkOverlap = document.parserConfig.chunkOverlap ?? (chunkSize / 10)
+			chunkOverlap = document.parserConfig.chunkOverlap ?? chunkSize / 10
 		} else if (this.knowledgebase.parserConfig?.chunkSize) {
 			chunkSize = this.knowledgebase.parserConfig.chunkSize
-			chunkOverlap = this.knowledgebase.parserConfig.chunkOverlap ?? (chunkSize / 10)
+			chunkOverlap = this.knowledgebase.parserConfig.chunkOverlap ?? chunkSize / 10
 		} else {
 			chunkSize = 1000
 			chunkOverlap = 100

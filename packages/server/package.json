@@ -38,6 +38,7 @@
     "helmet": "^4.6.0",
     "html-to-text": "^7.1.2",
     "jsonwebtoken": "^8.5.1",
+    "mammoth": "^1.8.0",
     "mjml": "^4.10.3",
     "moment": "^2.29.1",
     "moment-range": "^4.0.2",
