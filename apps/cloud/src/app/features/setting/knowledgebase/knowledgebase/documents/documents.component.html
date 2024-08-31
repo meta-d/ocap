@@ -39,10 +39,13 @@
             </div>
           }
           @case('finish') {
-            <ngm-tags class="text-sm" [tags]="[{caption: '完成'}]" color="green" />
+            <ngm-tags class="text-sm" [tags]="[{ caption: 'PAC.Knowledgebase.Status_Finish' | translate: {Default: 'Finish'} }]" color="green" />
+          }
+          @case('error') {
+            <ngm-tags class="text-sm" [tags]="[{ caption: 'PAC.Knowledgebase.Status_Error' | translate: {Default: 'Error'} }]" color="red" />
           }
           @default {
-            <ngm-tags class="text-sm" [tags]="[{caption: '未开始'}]" color="gray" />
+            <ngm-tags class="text-sm" [tags]="[{caption: 'PAC.Knowledgebase.Status_NotStart' | translate: {Default: 'Not Start'} }]" color="gray" />
           }
         }
       </td>
