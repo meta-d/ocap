@@ -1,5 +1,6 @@
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
-import { TokenTextSplitter } from '@langchain/textsplitters'
+import { EPubLoader } from "@langchain/community/document_loaders/fs/epub"
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
 import { IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { JOB_REF, Process, Processor } from '@nestjs/bull'
@@ -54,12 +55,15 @@ export class KnowledgeDocumentConsumer {
 					.setProvider(document.storageFile.storageProvider)
 					.getProviderInstance()
 				let data: Document<Record<string, any>>[]
-				switch (document.type) {
+				switch (document.type.toLowerCase()) {
 					case 'md':
 						data = await this.processMarkdown(document)
 						break
 					case 'pdf':
 						data = await this.processPdf(document)
+						break
+					case 'epub':
+						data = await this.processEpub(document)
 						break
 				}
 
@@ -111,9 +115,17 @@ export class KnowledgeDocumentConsumer {
 		return await this.splitDocuments(document, data)
 	}
 
+	async processEpub(document: IKnowledgeDocument): Promise<Document<Record<string, any>>[]> {
+		const filePath = this.storageProvider.path(document.storageFile.file)
+		const loader = new EPubLoader(filePath, { splitChapters: false })
+		const data = await loader.load()
+
+		return await this.splitDocuments(document, data)
+	}
+
 	async splitDocuments(document: IKnowledgeDocument, data: Document[]) {
 		let chunkSize: number, chunkOverlap: number
-		if (document.parserConfig.chunkSize) {
+		if (document.parserConfig?.chunkSize) {
 			chunkSize = document.parserConfig.chunkSize
 			chunkOverlap = document.parserConfig.chunkOverlap ?? (chunkSize / 10)
 		} else if (this.knowledgebase.parserConfig?.chunkSize) {
@@ -123,9 +135,11 @@ export class KnowledgeDocumentConsumer {
 			chunkSize = 1000
 			chunkOverlap = 100
 		}
-		const textSplitter = new TokenTextSplitter({
+		const delimiter = document.parserConfig?.delimiter || this.knowledgebase.parserConfig?.delimiter
+		const textSplitter = new RecursiveCharacterTextSplitter({
 			chunkSize,
-			chunkOverlap
+			chunkOverlap,
+			separators: delimiter?.split(' ')
 		})
 
 		return await textSplitter.splitDocuments(data)

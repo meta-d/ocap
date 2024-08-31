@@ -11,6 +11,7 @@ export class KnowledgeSearchQuery implements IQuery {
 			knowledgebaseId: string
 			query: string
 			k?: number
+			score?: number
 			filter?: Metadata
 		}
 	) {}

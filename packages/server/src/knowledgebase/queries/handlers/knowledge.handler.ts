@@ -9,7 +9,7 @@ export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearc
 	constructor(private readonly knowledgebaseService: KnowledgebaseService) {}
 
 	public async execute(command: KnowledgeSearchQuery): Promise<[DocumentInterface, number][]> {
-		const { knowledgebaseId, query, k, filter } = command.input
+		const { knowledgebaseId, query, k, score, filter } = command.input
 		const tenantId = command.input.tenantId ?? RequestContext.currentTenantId()
 		const organizationId = command.input.organizationId ?? RequestContext.getOrganizationId()
 		const knowledgebase = await this.knowledgebaseService.findOne({ where: { tenantId, organizationId, id: knowledgebaseId } })
@@ -18,6 +18,8 @@ export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearc
 			tenantId,
 			organizationId
 		)
-		return await vectorStore.similaritySearchWithScore(query, k, filter)
+		const documents = await vectorStore.similaritySearchWithScore(query, k, filter)
+
+		return documents.filter(([, _score]) => (1 - _score) >= (score ?? 0.1 ))
 	}
 }

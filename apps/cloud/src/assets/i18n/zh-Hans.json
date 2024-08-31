@@ -216,8 +216,8 @@
     },
     "MENU": {
       "Certification": "认证",
-      "Copilot": "副驾驶",
-      "AI Copilot": "AI 副驾驶",
+      "Copilot": "智能助理",
+      "AI Copilot": "AI 智能助理",
       "Dashboard": "仪表板",
       "Semantic Model": "语义模型",
       "Story": "故事",
@@ -236,6 +236,7 @@
       "Feature": "功能",
       "Email Template": "邮件模板",
       "Custom SMTP": "自定义 SMTP",
+      "Knowledgebase": "知识库",
       "Preview": "预览",
       "AGENT": "代理",
       "LOCAL_AGENT": "本地代理",
@@ -1294,9 +1295,9 @@
       "CreateCertification": "创建认证"
     },
     "Copilot": {
-      "Copilot": "Copilot",
-      "AICopilot": "AI 副驾驶",
-      "EnableCopilot": "启用 Copilot",
+      "Copilot": "智能助理",
+      "AICopilot": "AI 智能助理",
+      "EnableCopilot": "启用智能助理",
       "GetYourApiKey": "获取你的 API Key",
       "ProvideOpenaiApiKey": "请提供 Openai API Key?",
       "Provider": "提供商",
@@ -1317,7 +1318,7 @@
       "ExamplesOfPrompts": "提示语示例",
       "APIKey": "API 密钥",
       "APIHost": "API 主机",
-      "AskAICopilot": "向 AI 副驾驶询问问题",
+      "AskAICopilot": "向 AI 智能助理询问问题",
       "EnableSecondaryProvider": "启用副提供商",
       "Prompt": "提示",
       "SendPrompt": "发送提示",
@@ -1336,7 +1337,7 @@
         "Vectorized": "向量化",
         "Vector": "向量",
         "BusinessRole": "业务角色",
-        "CopilotCommand": "副驾驶命令",
+        "CopilotCommand": "智能助理命令",
         "Input": "输入",
         "Output": "输出",
         "Metadata": "元数据",
@@ -1417,7 +1418,7 @@
         "Title": "💡智慧洞察",
         "CreateSemanticModelForUse": "添加到故事：创建语义模型后才能使用",
         "AddWidgetToStoryTitle": "将微件添加到故事",
-        "AskAICopilot": "向 AI 副驾驶询问问题",
+        "AskAICopilot": "向 AI 智能助理询问问题",
         "AskAICopilotDesc": "您可以针对您的数据提出问题，并立即将答案以可视化形式呈现。这些可视化图表最终可以添加到您的故事中。",
         "ForExample": "例如",
         "PromptExamplesForVisit": [
@@ -1510,8 +1511,8 @@
           "Description": "维护系统角色和权限"
         },
         "FEATURE_COPILOT": {
-          "Name": "AI 副驾驶",
-          "Description": "配置和使用 AI 副驾驶功能"
+          "Name": "AI 智能助理",
+          "Description": "配置和使用 AI 智能助理功能"
         },
         "FEATURE_MODEL": {
           "Name": "语义模型",
@@ -1544,6 +1545,34 @@
         "FEATURE_BUSINESS_AREA": {
           "Name": "业务域",
           "Description": "启用业务域功能，创建和使用业务域"
+        },
+        "FEATURE_ORGANIZATION": {
+          "Name": "组织",
+          "Description": "管理租户的组织"
+        },
+        "FEATURE_USER": {
+          "Name": "用户",
+          "Description": "管理租户的用户"
+        },
+        "FEATURE_SETTING": {
+          "Name": "租户设置",
+          "Description": "管理租户的设置"
+        },
+        "FEATURE_FILE_STORAGE": {
+          "Name": "文件存储",
+          "Description": "管理文件存储的配置"
+        },
+        "FEATURE_SMTP": {
+          "Name": "自定义 SMTP",
+          "Description": "管理租户组织的自定义 SMTP"
+        },
+        "FEATURE_EMAIL": {
+          "Name": "电子邮件",
+          "Description": "管理电子邮件"
+        },
+        "FEATURE_EMAIL_TEMPLATE": {
+          "Name": "自定义电子邮件模版",
+          "Description": "管理租户组织的电子邮件模版"
         }
       }
     },
@@ -1573,7 +1602,15 @@
       "RestartParsing": "重新解析",
       "StopParsing": "停止解析",
       "StartParsing": "开始解析",
-      "DeleteKnowledgeDocument": "删除知识文档"
+      "DeleteKnowledgeDocument": "删除知识文档",
+      "EmbeddingBatchSize": "嵌入批量大小",
+      "ChunkSize": "区块大小",
+      "ChunkOverlap": "区块重叠",
+      "RetrievalTest": "检索测试",
+      "SimilarityThreshold": "相似度阈值",
+      "SimilarityThresholdInfo": "如果查询和块之间的相似度小于此阈值，则该块将被过滤掉。",
+      "TopK": "前多少",
+      "Delimiter": "分隔符"
     },
     "title": {
       "short": "分析云"

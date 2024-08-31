@@ -5,7 +5,11 @@ import { Component, input } from '@angular/core'
     standalone: true,
     selector: 'pac-avatar',
     template: `<img class="" [src]="imageUrl() || '/assets/images/avatar-default.svg'" [alt]="alt()" />`,
-    styles: [``],
+    styles: [`:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}`],
     imports: [CommonModule]
 })
 export class AvatarComponent {

@@ -9,9 +9,9 @@ import { CopilotService } from '../copilot'
 import { RequestContext } from '../core'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
 import { DATABASE_POOL_TOKEN } from '../database'
-import { KnowledgeSearchQuery } from '../knowledge-document/queries/'
 import { Knowledgebase } from './knowledgebase.entity'
 import { KnowledgeDocumentVectorStore } from './vector-store'
+import { KnowledgeSearchQuery } from './queries'
 
 @Injectable()
 export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Knowledgebase> {

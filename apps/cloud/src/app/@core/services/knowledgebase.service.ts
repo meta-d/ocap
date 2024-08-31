@@ -16,7 +16,7 @@ export class KnowledgebaseService extends OrganizationBaseCrudService<IKnowledge
     super(API_KNOWLEDGEBASE)
   }
 
-  test(id: string, options: { query: string; k: number; filter?: Record<string, unknown> }) {
+  test(id: string, options: { query: string; k: number; score: number; filter?: Record<string, unknown> }) {
     return this.httpClient.post<[DocumentInterface, number][]>(this.apiBaseUrl + '/' + id + '/test', options)
   }
 }

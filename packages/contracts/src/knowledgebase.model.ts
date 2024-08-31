@@ -8,6 +8,7 @@ export type KnowledgebaseParserConfig = {
   embeddingBatchSize?: number
   chunkSize: number | null
   chunkOverlap: number | null
+  delimiter: string | null
 }
 
 /**

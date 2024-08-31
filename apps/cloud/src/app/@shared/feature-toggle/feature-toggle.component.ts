@@ -3,13 +3,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute } from '@angular/router'
 import { IFeature, IFeatureOrganization, IFeatureToggle } from '@metad/contracts'
+import { NgmCountdownConfirmationComponent } from '@metad/ocap-angular/common'
 import { combineLatest, firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, map, shareReplay, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { environment } from '../../../environments/environment'
 import { FeatureService, FeatureStoreService, Store } from '../../@core/services'
 import { TranslationBaseComponent } from '../language/translation-base.component'
-import { NgmCountdownConfirmationComponent } from '@metad/ocap-angular/common'
-
 
 @Component({
   selector: 'pac-feature-toggle',
@@ -37,7 +36,9 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
   )
   public readonly organization$ = this._storeService.selectedOrganization$
 
-  public readonly features$ = this._featureService.getParentFeatures(['children']).pipe(map(({ items }) => items))
+  public readonly features$ = this._featureService.getParentFeatures(['children']).pipe(
+    map(({ items }) => items),
+  )
 
   public readonly featureTenant$ = this._storeService.featureTenant$
 
@@ -56,7 +57,10 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
 
   ngOnInit(): void {
     combineLatest([this.featureTenant$, this.featureOrganizations$])
-      .pipe(withLatestFrom(combineLatest([this.isOrganization$, this.organization$])), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        withLatestFrom(combineLatest([this.isOrganization$, this.organization$])),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe(([[featureTenant, featureOrganizations], [isOrganization, organization]]) => {
         if (isOrganization && organization) {
           this._storeService.featureOrganizations = featureOrganizations
@@ -95,9 +99,9 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
       this._matDialog
         .open(NgmCountdownConfirmationComponent, {
           data: {
-          	recordType: feature.description,
-          	isEnabled: isEnabled
-          },
+            recordType: feature.description,
+            isEnabled: isEnabled
+          }
         })
         .afterClosed()
     )

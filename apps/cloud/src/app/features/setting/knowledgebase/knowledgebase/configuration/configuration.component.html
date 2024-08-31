@@ -38,6 +38,12 @@
       [selectOptions]="models()"
     />
 
+    <div formGroupName="parserConfig">
+      <ngm-input [label]=" 'PAC.Knowledgebase.EmbeddingBatchSize' | translate: {Default: 'Embedding Batch Size'} " formControlName="embeddingBatchSize" />
+      <ngm-input [label]=" 'PAC.Knowledgebase.ChunkSize' | translate: {Default: 'Chunk Size'} " formControlName="chunkSize" />
+      <ngm-input [label]=" 'PAC.Knowledgebase.ChunkOverlap' | translate: {Default: 'Chunk Overlap'} " formControlName="chunkOverlap" />
+    </div>
+
     <div class="flex justify-end">
       <button mat-flat-button (click)="cancel()">
         {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}

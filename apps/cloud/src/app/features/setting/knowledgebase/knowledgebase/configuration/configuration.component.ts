@@ -8,6 +8,7 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { startWith } from 'rxjs'
 import {
+  IKnowledgebase,
   KnowledgebaseService,
   PACCopilotService,
   Store,
@@ -41,10 +42,16 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   readonly formGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
     description: new FormControl(''),
+    avatar: new FormControl(null),
     language: new FormControl(null, [Validators.required]),
     copilotId: new FormControl(null),
     embeddingModelId: new FormControl(null),
-    avatar: new FormControl(null),
+    
+    parserConfig: new FormGroup({
+      embeddingBatchSize: new FormControl(null),
+      chunkSize: new FormControl(null),
+      chunkOverlap: new FormControl(null),
+    })
   })
 
   readonly copilots = computed(() =>
@@ -99,11 +106,12 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
 
   save() {
     this.loading.set(true)
-    this.knowledgebaseService.update(this.knowledgebase().id, { ...this.formGroup.value }).subscribe({
+    this.knowledgebaseService.update(this.knowledgebase().id, { ...this.formGroup.value } as Partial<IKnowledgebase>).subscribe({
       next: () => {
         this.formGroup.markAsPristine()
         this.loading.set(false)
         this._toastrService.success('PAC.Messages.SavedSuccessfully', {Default: 'Saved successfully'})
+        this.knowledgebaseComponent.refresh()
       },
       error: (error) => {
         this._toastrService.error(getErrorMessage(error))

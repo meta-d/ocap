@@ -149,7 +149,9 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
             return data.items
           })
         )
-        .subscribe((data) => this.data.set(data))
+        .subscribe((data) =>
+          this.data.set(data.map((item) => ({ ...item, parserConfig: item.parserConfig ?? {} }) as IKnowledgeDocument))
+        )
     })
 
     effect(() => {
@@ -190,7 +192,6 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
       )
       .subscribe({
         next: (files: IKnowledgeDocument[]) => {
-          console.log(files)
           this.refresh()
         },
         error: (err) => {}

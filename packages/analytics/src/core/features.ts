@@ -148,5 +148,20 @@ export const DEFAULT_FEATURES: Partial<IFeatureCreateInput>[] = [
 		isEnabled: true,
 		icon: 'project-outline',
 		status: 'success',
+	},
+	{
+		code: FeatureEnum.FEATURE_COPILOT,
+		children: [
+			{
+				name: 'Copilot ChatBI',
+				code: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
+				description: 'Manage ChatBI of Copilot',
+				image: 'file-storage.png',
+				link: 'settings/chatbi',
+				isEnabled: true,
+				icon: 'file-text-outline',
+				status: 'info'
+			},
+		]
 	}
 ]

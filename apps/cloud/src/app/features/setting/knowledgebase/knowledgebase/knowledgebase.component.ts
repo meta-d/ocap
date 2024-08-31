@@ -4,8 +4,8 @@ import { RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
-import { of, pipe, switchMap } from 'rxjs'
-import { KnowledgebaseService, Store, ToastrService, routeAnimations } from '../../../../@core'
+import { BehaviorSubject, of, pipe, switchMap } from 'rxjs'
+import { KnowledgebaseService, ToastrService, routeAnimations } from '../../../../@core'
 import { AvatarComponent, MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 
 @Component({
@@ -19,16 +19,22 @@ import { AvatarComponent, MaterialModule, TranslationBaseComponent } from '../..
 export class KnowledgebaseComponent extends TranslationBaseComponent {
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)
-  readonly #store = inject(Store)
   readonly paramId = injectParams('id')
 
+  readonly refresh$ = new BehaviorSubject<boolean>(true)
   readonly knowledgebase = derivedFrom(
     [this.paramId],
-    pipe(switchMap(([id]) => (id ? this.knowledgebaseService.getOneById(id) : of(null)))),
+    pipe(
+      switchMap(([id]) =>
+        id ? this.refresh$.pipe(switchMap(() => this.knowledgebaseService.getOneById(id))) : of(null)
+      )
+    ),
     {
       initialValue: null
     }
   )
 
-  readonly organizationId$ = this.#store.selectOrganizationId()
+  refresh() {
+    this.refresh$.next(true)
+  }
 }

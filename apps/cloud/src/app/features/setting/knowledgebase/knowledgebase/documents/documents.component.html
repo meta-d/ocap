@@ -102,7 +102,7 @@
             <div class="example-element-weight"> {{element.weight}} </div>
           </div>
           <div class="example-element-description flex-1 flex flex-wrap gap-2">
-            <ngm-slider-input [label]=" 'PAC.Knowledgebase.ChunkTokenNum' | translate: {Default: 'Number of Chunk Token'} "
+            <ngm-slider-input [label]=" 'PAC.Knowledgebase.ChunkSize' | translate: {Default: 'Chunk Size'} "
               class="w-[300px]"
               [ngModel]="element.parserConfig.chunkSize"
               (ngModelChange)="element.parserConfig.chunkSize = $event"
