@@ -5,9 +5,10 @@ import { ChatEventsGateway } from './chat.gateway'
 import { CommandHandlers } from './commands/handlers'
 import { CopilotModule } from '../copilot'
 import { CopilotCheckpointModule } from '../copilot-checkpoint'
+import { KnowledgebaseModule } from '../knowledgebase/knowledgebase.module'
 
 @Module({
-	imports: [CqrsModule, CopilotModule, CopilotCheckpointModule],
+	imports: [CqrsModule, CopilotModule, CopilotCheckpointModule, KnowledgebaseModule],
 	controllers: [ChatController],
 	providers: [ChatEventsGateway, ...CommandHandlers]
 })

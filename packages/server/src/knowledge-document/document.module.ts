@@ -11,7 +11,6 @@ import { KnowledgeDocumentService } from './document.service'
 import { KnowledgeDocumentConsumer } from './document.job'
 import { StorageFileModule } from '../storage-file'
 import { CopilotModule } from '../copilot'
-import { CopilotRoleModule } from '../copilot-role/copilot-role.module'
 import { KnowledgebaseModule } from '../knowledgebase/knowledgebase.module'
 
 @Module({
@@ -24,7 +23,6 @@ import { KnowledgebaseModule } from '../knowledgebase/knowledgebase.module'
 		StorageFileModule,
 		CopilotModule,
 		KnowledgebaseModule,
-		CopilotRoleModule,
 
 		BullModule.registerQueue({
 			name: 'embedding-document',

@@ -83,29 +83,29 @@ export class KnowledgeDocumentController extends CrudController<KnowledgeDocumen
 		return await this.service.save(knowledgeDocument)
 	}
 
-	@Post('similarity-search')
-	async similaritySearch(
-		@Body('query') query: string,
-		@Body('options') options?: { k: number; filter: any; score?: number }
-	) {
-		this.#logger.debug(
-			`Retrieving documents for query: ${query} with k = ${options?.k} score = ${options?.score} and filter = ${options?.filter}`
-		)
+	// @Post('similarity-search')
+	// async similaritySearch(
+	// 	@Body('query') query: string,
+	// 	@Body('options') options?: { k: number; filter: any; score?: number }
+	// ) {
+	// 	this.#logger.debug(
+	// 		`Retrieving documents for query: ${query} with k = ${options?.k} score = ${options?.score} and filter = ${options?.filter}`
+	// 	)
 
-		return this.service.similaritySearch(query, options)
-	}
+	// 	return this.service.similaritySearch(query, options)
+	// }
 
-	@Post('mmr-search')
-	async maxMarginalRelevanceSearch(
-		@Body('query') query: string,
-		@Body('options') options?: { k: number; filter: any }
-	) {
-		this.#logger.debug(
-			`Retrieving documents for mmr query: ${query} with k = ${options?.k} and filter = ${options?.filter}`
-		)
+	// @Post('mmr-search')
+	// async maxMarginalRelevanceSearch(
+	// 	@Body('query') query: string,
+	// 	@Body('options') options?: { k: number; filter: any }
+	// ) {
+	// 	this.#logger.debug(
+	// 		`Retrieving documents for mmr query: ${query} with k = ${options?.k} and filter = ${options?.filter}`
+	// 	)
 
-		return this.service.maxMarginalRelevanceSearch(query, options)
-	}
+	// 	return this.service.maxMarginalRelevanceSearch(query, options)
+	// }
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@Get(':id/chunk')

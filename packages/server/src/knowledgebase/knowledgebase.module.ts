@@ -11,6 +11,7 @@ import { KnowledgebaseController } from './knowledgebase.controller'
 import { KnowledgebaseService } from './knowledgebase.service'
 import { QueryHandlers } from './queries/handlers'
 import { CommandHandlers } from './commands/handlers'
+import { CopilotRoleModule } from '../copilot-role/copilot-role.module'
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { CommandHandlers } from './commands/handlers'
 		CqrsModule,
 		UserModule,
 		CopilotModule,
+		CopilotRoleModule,
 		DatabaseModule
 	],
 	controllers: [KnowledgebaseController],

@@ -6,6 +6,8 @@ import { ChatConversationAgent } from '../../chat-conversation'
 import { ChatAgentState } from '../../types'
 import { ChatCommand } from '../chat.command'
 import { shortuuid } from '@metad/server-common'
+import { KnowledgebaseService } from '../../../knowledgebase'
+import { formatDocumentsAsString } from 'langchain/util/document'
 
 @CommandHandler(ChatCommand)
 export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
@@ -14,6 +16,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 	constructor(
 		private readonly copilotService: CopilotService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
+		private readonly knowledgebaseService: KnowledgebaseService,
 		private readonly commandBus: CommandBus
 	) {}
 
@@ -39,6 +42,16 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 		}
 
 		const answerId = shortuuid()
+		const documents = await this.knowledgebaseService.similaritySearch(content, {
+			tenantId,
+			organizationId
+		})
+		const context = formatDocumentsAsString(documents)
+		console.log(context)
+
+		conversation.updateState({
+			context
+		})
 		return conversation.chat(content).pipe(
 			filter((content) => content != null),
 			map((content: string) => {
