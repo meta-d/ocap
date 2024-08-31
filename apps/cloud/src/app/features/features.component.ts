@@ -446,8 +446,18 @@ export class FeaturesComponent implements OnInit {
         ]
       },
       {
+        title: 'Chat',
+        matIcon: 'voice_chat',
+        link: '/chat',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'Chat',
+          featureKey: FeatureEnum.FEATURE_COPILOT,
+        }
+      },
+      {
         title: 'Chat BI',
-        matIcon: 'try',
+        matIcon: 'mms',
         link: '/chatbi',
         pathMatch: 'prefix',
         data: {

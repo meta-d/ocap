@@ -1,10 +1,11 @@
+import { AiProviderRole } from '@metad/contracts'
 import { DeepPartial } from '@metad/server-common'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { IsNull, Repository } from 'typeorm'
+import { RequestContext } from '../core'
 import { PaginationParams, TenantOrganizationAwareCrudService } from '../core/crud'
 import { Copilot } from './copilot.entity'
-import { RequestContext } from '../core'
 
 @Injectable()
 export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> {
@@ -15,10 +16,10 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 		super(repository)
 	}
 
-	async findAvalibles(filter?: PaginationParams<Copilot>,) {
-		const {items, total} = await super.findAll(filter)
+	async findAvalibles(filter?: PaginationParams<Copilot>) {
+		const { items, total } = await super.findAll(filter)
 		if (items.some((item) => item.enabled)) {
-			return {items, total}
+			return { items, total }
 		}
 		return await super.findAllWithoutOrganization()
 	}
@@ -28,16 +29,32 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 	async findOneByRole(role: string, tenantId: string, organizationId: string): Promise<Copilot> {
 		tenantId = tenantId || RequestContext.currentTenantId()
 		organizationId = organizationId || RequestContext.getOrganizationId()
-		const items = await this.repository.find({where: {tenantId, organizationId, role}})
+		const items = await this.repository.find({ where: { tenantId, organizationId, role } })
 		return items.length ? items[0] : null
 	}
 
 	/**
 	 */
-	async findTenantOneByRole(role: string, tenantId: string,): Promise<Copilot> {
+	async findTenantOneByRole(role: string, tenantId: string): Promise<Copilot> {
 		tenantId = tenantId || RequestContext.currentTenantId()
-		const items = await this.repository.find({where: {tenantId, role, organizationId: IsNull()}})
+		const items = await this.repository.find({ where: { tenantId, role, organizationId: IsNull() } })
 		return items.length ? items[0] : null
+	}
+
+	async findCopilot(tenantId: string, organizationId: string) {
+		tenantId = tenantId || RequestContext.currentTenantId()
+		organizationId = organizationId || RequestContext.getOrganizationId()
+		let copilot = await this.findOneByRole(AiProviderRole.Secondary, tenantId, organizationId)
+		if (!copilot) {
+			copilot = await this.findOneByRole(AiProviderRole.Primary, tenantId, organizationId)
+		}
+		if (!copilot) {
+			copilot = await this.findTenantOneByRole(AiProviderRole.Secondary, tenantId)
+		}
+		if (!copilot) {
+			copilot = await this.findTenantOneByRole(AiProviderRole.Primary, tenantId)
+		}
+		return copilot
 	}
 
 	/**

@@ -1,0 +1,10 @@
+<div class="flex-1 w-full">
+    @for (message of messages(); track message.id) {
+        <div class="my-4 p-4">{{message.content}}</div>
+    }
+</div>
+
+<div class="flex items-center gap-4">
+    <ngm-input class="w-full" simple [(ngModel)]="input"></ngm-input>
+    <button mat-raised-button color="primary" (click)="ask()">Ask</button>
+</div>

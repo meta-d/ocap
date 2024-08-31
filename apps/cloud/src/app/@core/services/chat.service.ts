@@ -1,17 +1,18 @@
-import { HttpClient } from '@angular/common/http'
 import { Injectable, inject, signal } from '@angular/core'
-import { API_PREFIX, Store } from '@metad/cloud/state'
+import { Store } from '@metad/cloud/state'
 import { nonNullable } from '@metad/core'
-import { environment } from 'apps/cloud/src/environments/environment'
-import { BehaviorSubject, Observable, Subject } from 'rxjs'
-import { distinctUntilChanged, filter, map } from 'rxjs/operators'
+import { BehaviorSubject, Subject } from 'rxjs'
+import { distinctUntilChanged, filter } from 'rxjs/operators'
 import { Socket, io } from 'socket.io-client'
+import { environment } from '../../../environments/environment'
 import { AuthStrategy } from '../auth'
 import { getWebSocketUrl } from '../utils'
+import { ChatUserMessage } from '@metad/contracts'
 
 @Injectable({ providedIn: 'root' })
-export class AgentService {
-  readonly #http = inject(HttpClient)
+export class ChatService {
+  static readonly namespace = 'chat'
+
   readonly #store = inject(Store)
   readonly #auth = inject(AuthStrategy)
 
@@ -42,7 +43,7 @@ export class AgentService {
 
   connect() {
     if (!this.socket || this.socket.disconnected || !this.#connected$.value) {
-      this.socket = io(`${getWebSocketUrl(environment.API_BASE_URL)}/`, {
+      this.socket = io(`${getWebSocketUrl(environment.API_BASE_URL)}/${ChatService.namespace}`, {
         auth: (cb: (param: { token: string }) => void) => {
           cb({ token: this.#store.token })
         }
@@ -94,14 +95,7 @@ export class AgentService {
     this.#disconnected$.next(!status)
   }
 
-  getTenantAgentLocal(): Observable<string> {
-    return this.#http.get<any>(`${API_PREFIX}/agent`).pipe(
-      map((result) => {
-        if (result.success) {
-          return result.record?.value
-        }
-        return null
-      })
-    )
+  message(message: ChatUserMessage) {
+    this.emit('message', {message, organizationId: this.#store.selectedOrganization.id})
   }
 }

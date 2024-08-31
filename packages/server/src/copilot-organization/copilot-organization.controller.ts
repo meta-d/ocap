@@ -1,11 +1,12 @@
 import { ICopilotOrganization, IPagination, RolesEnum } from '@metad/contracts'
 import { Body, Controller, Get, Logger, Param, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { CrudController, PaginationParams, TransformInterceptor } from '../core'
+import { ApiTags } from '@nestjs/swagger'
+import { TransformInterceptor } from '../core/interceptors'
 import { ParseJsonPipe, RoleGuard, Roles, UseValidationPipe } from '../shared'
 import { CopilotOrganization } from './copilot-organization.entity'
 import { CopilotOrganizationService } from './copilot-organization.service'
+import { CrudController, PaginationParams } from '../core/crud'
 
 @ApiTags('CopilotOrganization')
 @UseInterceptors(TransformInterceptor)

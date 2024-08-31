@@ -35,7 +35,8 @@ import {
 	CopilotCheckpoint,
 	CopilotCheckpointWrites,
 	Knowledgebase,
-	KnowledgeDocument
+	KnowledgeDocument,
+	ChatConversation
 } from './internal';
 
 export const coreEntities = [
@@ -75,5 +76,6 @@ export const coreEntities = [
 	StorageFile,
 	SecretToken,
 	Knowledgebase,
-	KnowledgeDocument
+	KnowledgeDocument,
+	ChatConversation
 ];

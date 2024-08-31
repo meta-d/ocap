@@ -10,7 +10,7 @@ import {
   RunnableLambda,
   RunnableToolLike,
 } from "@langchain/core/runnables";
-import { DynamicTool, StructuredTool, StructuredToolInterface } from "@langchain/core/tools";
+import { DynamicTool, StructuredToolInterface } from "@langchain/core/tools";
 import {
   BaseLanguageModelCallOptions,
   BaseLanguageModelInput,

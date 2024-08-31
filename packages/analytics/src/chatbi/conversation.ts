@@ -17,17 +17,18 @@ import {
 	Schema
 } from '@metad/ocap-core'
 import {
+	AgentState,
 	Copilot,
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	createExampleFewShotPrompt,
+	createReactAgent,
 	createReferencesRetrieverTool,
 } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { groupBy } from 'lodash'
 import { BehaviorSubject, firstValueFrom, Subject, switchMap, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
-import { AgentState, createReactAgent } from '../core/index'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../model-member/index'
 import { convertOcapSemanticModel, getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
 import { ChatBIService } from './chatbi.service'

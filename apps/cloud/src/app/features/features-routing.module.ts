@@ -120,6 +120,14 @@ const routes: Routes = [
         }
       },
       {
+        path: 'chat',
+        loadChildren: () => import('./chat/routes').then(m => m.routes),
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Chat',
+        }
+      },
+      {
         path: 'data',
         loadChildren: () => import('./data-factory/routes').then(m => m.routes),
         canActivate: [AuthGuard],

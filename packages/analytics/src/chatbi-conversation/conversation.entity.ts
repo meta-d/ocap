@@ -19,7 +19,7 @@ export class ChatBIConversation extends TenantOrganizationBaseEntity implements 
 	@Column({ nullable: true })
 	name?: string
 
-    	/**
+    /**
 	 * Model
 	 */
 	@ApiProperty({ type: () => SemanticModel })
