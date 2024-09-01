@@ -1364,6 +1364,9 @@
         "SureDeleteRole": "确定删除此角色吗？"
       }
     },
+    "Chat": {
+      "DeleteConversation": "删除会话"
+    },
     "ChatBI": {
       "Title": "ChatBI-数据分析与洞察",
       "TransformData": "利用人工智能将数据转化为洞察力。",

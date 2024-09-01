@@ -37,7 +37,7 @@ export class CrudService<T> {
   }
 
   create(entity: Partial<T>) {
-    return this.httpClient.post(this.apiBaseUrl, entity)
+    return this.httpClient.post<T>(this.apiBaseUrl, entity)
   }
 
   update(id: string, entity: Partial<T>) {

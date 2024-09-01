@@ -1,12 +1,70 @@
-<div class="flex-1 flex flex-col w-full lg:w-[800px] m-auto">
-    <div class="flex-1 w-full">
-        @for (message of messages(); track message.id) {
-            <div class="my-4 p-4">{{message.content}}</div>
+<mat-sidenav-container class="flex-1">
+  <mat-sidenav #sidenav opened mode="side" class="w-[400px]">
+    <pac-chat-sidenav-menu class="w-full p-2" [sidenav]="sidenav"/>
+
+    <div class="flex-1 overflow-auto">
+      <mat-list>
+        @for (item of conversations(); track item.id) {
+          <mat-list-item class="pac-chat__conversation-item group cursor-pointer rounded-md hover:bg-black/5 dark:hover:bg-white/10"
+            [ngClass]="{active: item.id === conversationId()}"
+            [class.menu-active]="mt.menuOpen"
+            (click)="selectConversation(item)">
+            {{item.title || item.id}}
+
+            <div class="absolute bottom-0 top-0 items-center gap-1.5 pr-2 right-0 flex">
+              <span class="" data-state="closed">
+                <button class="menu-trigger flex items-center justify-center text-token-text-secondary transition opacity-0 group-hover:opacity-50 hover:opacity-100" type="button" id="radix-:r5pv:" aria-haspopup="menu" aria-expanded="false" data-state="closed"
+                  [matMenuTriggerFor]="convMenu"
+                  [matMenuTriggerData]="item"
+                  #mt="matMenuTrigger"
+                  [class.active]="mt.menuOpen"
+                  (click)="$event.stopPropagation();">
+                  <pac-chat-more-svg />
+                </button>
+              </span>
+            </div>
+          </mat-list-item>
         }
+      </mat-list>
     </div>
-    
-    <div class="flex items-center gap-4">
-        <ngm-input class="w-full" simple [(ngModel)]="input"></ngm-input>
-        <button mat-raised-button color="primary" (click)="ask()">Ask</button>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <pac-chat-toolbar>
+      @if (!sidenav.opened) {
+        <pac-chat-sidenav-menu [sidenav]="sidenav"/>
+      }
+    </pac-chat-toolbar>
+    <div class="flex-1 flex flex-col w-full lg:w-[800px] max-w-full m-auto p-8">
+      <div class="flex-1 w-full">
+        @for (message of messages(); track message.id) {
+          @switch (message.role) {
+            @case ('user') {
+              <div class="w-full flex justify-end my-4">
+                <div class="max-w-[70%] p-4 whitespace-pre-wrap rounded-2xl bg-black/5">{{ message.content }}</div>
+              </div>
+            }
+            @case ('assistant') {
+              <pac-ai-message class="my-4 p-4" [message]="message" />
+            }
+          }
+        }
+      </div>
+
+      <pac-chat-input />
     </div>
-</div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+<mat-menu #convMenu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent let-id="id">
+    <button mat-menu-item >
+      <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+      {{ 'PAC.KEY_WORDS.Rename' | translate: {Default: 'Rename'} }}
+    </button>
+
+    <button mat-menu-item ngmAppearance="danger" (click)="deleteConv(id)">
+      <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+      {{ 'PAC.KEY_WORDS.Delete' | translate: {Default: 'Delete'} }}
+    </button>
+  </ng-template>
+</mat-menu>

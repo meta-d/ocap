@@ -8,6 +8,8 @@ import { SharedModule } from '../shared'
 import { CopilotCheckpointModule } from '../copilot-checkpoint'
 import { ChatConversationController } from './conversation.controller'
 import { ChatConversationService } from './conversation.service'
+import { CommandHandlers } from './commands/handlers'
+import { QueryHandlers } from './queries/handlers'
 
 @Module({
 	imports: [
@@ -19,6 +21,6 @@ import { ChatConversationService } from './conversation.service'
 		CopilotCheckpointModule
 	],
 	controllers: [ChatConversationController],
-	providers: [ChatConversationService]
+	providers: [ChatConversationService, ...CommandHandlers, ...QueryHandlers]
 })
 export class ChatConversationModule {}

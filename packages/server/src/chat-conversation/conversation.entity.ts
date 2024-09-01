@@ -23,8 +23,14 @@ export class ChatConversation extends TenantOrganizationBaseEntity implements IC
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
 	options?: {
-		messages: any[]
+		//
 	}
+
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	messages?: any[]
 
 	/*
     |--------------------------------------------------------------------------

@@ -13,6 +13,7 @@ import { Knowledgebase } from './knowledgebase.entity'
 import { KnowledgeDocumentVectorStore } from './vector-store'
 import { KnowledgeSearchQuery } from './queries'
 import { CopilotRoleService } from '../copilot-role/copilot-role.service'
+import { sortBy } from 'lodash'
 
 @Injectable()
 export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Knowledgebase> {
@@ -97,7 +98,7 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 			//
 		}
 
-		const documents: DocumentInterface<Record<string, any>>[] = []
+		const documents: {doc: DocumentInterface<Record<string, any>>; score: number;}[] = []
 		const kbs = await Promise.all(
 			knowledgebases.map((kb) => {
 				return this.getVectorStore(kb, tenantId, organizationId).then((vectorStore) => {
@@ -108,11 +109,11 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 
 		kbs.forEach((kb) => {
 			kb.forEach(([doc, score]) => {
-				documents.push(doc)
+				documents.push({doc, score})
 			})
 		})
 
-		return documents
+		return sortBy(documents, 'score', 'desc').slice(0, k).map(({doc}) => doc)
 	}
 
 	async maxMarginalRelevanceSearch(

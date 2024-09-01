@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
-import { DeleteResult, FindConditions, FindOneOptions, Repository } from 'typeorm'
-import { ChatConversation } from './conversation.entity'
+import { Repository } from 'typeorm'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
+import { ChatConversation } from './conversation.entity'
 
 @Injectable()
 export class ChatConversationService extends TenantOrganizationAwareCrudService<ChatConversation> {
@@ -16,5 +16,4 @@ export class ChatConversationService extends TenantOrganizationAwareCrudService<
 	) {
 		super(chatRepository)
 	}
-
 }

@@ -1,13 +1,12 @@
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { shortuuid } from '@metad/server-common'
+import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
+import { formatDocumentsAsString } from 'langchain/util/document'
 import { filter, map, Observable } from 'rxjs'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
 import { CopilotService } from '../../../copilot/'
-import { ChatConversationAgent } from '../../chat-conversation'
-import { ChatAgentState } from '../../types'
-import { ChatCommand } from '../chat.command'
-import { shortuuid } from '@metad/server-common'
 import { KnowledgebaseService } from '../../../knowledgebase'
-import { formatDocumentsAsString } from 'langchain/util/document'
+import { ChatConversationAgent } from '../../chat-conversation'
+import { ChatCommand } from '../chat.command'
 
 @CommandHandler(ChatCommand)
 export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
@@ -17,7 +16,8 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 		private readonly copilotService: CopilotService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly knowledgebaseService: KnowledgebaseService,
-		private readonly commandBus: CommandBus
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
 	) {}
 
 	public async execute(command: ChatCommand): Promise<Observable<any>> {
@@ -30,7 +30,15 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 			}
 			this.conversations.set(
 				conversationId,
-				new ChatConversationAgent(conversationId, user, copilot, this.copilotCheckpointSaver, this.commandBus)
+				new ChatConversationAgent(
+					conversationId,
+					organizationId,
+					user,
+					copilot,
+					this.copilotCheckpointSaver,
+					this.commandBus,
+					this.queryBus
+				)
 			)
 		}
 		const conversation = this.conversations.get(conversationId)
@@ -44,24 +52,33 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 		const answerId = shortuuid()
 		const documents = await this.knowledgebaseService.similaritySearch(content, {
 			tenantId,
-			organizationId
+			organizationId,
+			k: 5,
+			score: 0.5
 		})
 		const context = formatDocumentsAsString(documents)
-		console.log(context)
 
 		conversation.updateState({
 			context
 		})
+
+		// Update conversation messages
+		await conversation.updateMessage({ id, content, role: 'user' })
 		return conversation.chat(content).pipe(
-			filter((content) => content != null),
-			map((content: string) => {
-				// const lastMessage = state.messages[state.messages.length - 1]
-				return {
-					conversationId,
-					id: answerId,
-					content // lastMessage.content
+			filter((data) => data != null),
+			map(({ event, content }) => {
+				if (event === 'on_chat_model_stream') {
+					return {
+						conversationId,
+						id: answerId,
+						content // lastMessage.content
+					}
+				} else if (event === 'on_chat_model_end') {
+					conversation.updateMessage({ id: answerId, content, role: 'assistant' })
 				}
+				return null
 			}),
+			filter((data) => data != null)
 		)
 	}
 }

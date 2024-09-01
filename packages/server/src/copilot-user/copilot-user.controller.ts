@@ -21,7 +21,7 @@ export class CopilotUserController extends CrudController<CopilotUser> {
 	}
 
 	@UseGuards(RoleGuard)
-	@Roles(RolesEnum.ADMIN, RolesEnum.TRIAL)
+	@Roles(RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN, RolesEnum.TRIAL)
 	@Get()
 	@UseValidationPipe()
 	async getAll(
@@ -32,7 +32,7 @@ export class CopilotUserController extends CrudController<CopilotUser> {
 	}
 
 	@UseGuards(RoleGuard)
-	@Roles(RolesEnum.ADMIN, RolesEnum.TRIAL)
+	@Roles(RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN, RolesEnum.TRIAL)
 	@Post(':id/renew')
 	async renew(@Param('id') id: string, @Body() entity: Partial<ICopilotUser>) {
 		return await this.service.renew(id, entity)
