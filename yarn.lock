@@ -12308,6 +12308,14 @@ double-ended-queue@^2.1.0-0:
   resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
   integrity sha512-+BNfZ+deCo8hMNpDqDnvT+c0XpJ5cUa6mqYq89bho2Ifze4URTqRkcwR399hWoTrTkbZ/XJYDgP6rc7pRgffEQ==
 
+duck-duck-scrape@^2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/duck-duck-scrape/-/duck-duck-scrape-2.2.5.tgz#a756ef01a7002148daabe17be2436a239a478aa4"
+  integrity sha512-RTu/Ag5LhgD/j1l2zVGCwTINBoEYCffl58nMoBjtXWJG8tTex72h3gxpDjAr8jVqFaBvhgASNKTUsE31JeqYgw==
+  dependencies:
+    html-entities "^2.3.3"
+    needle "^3.2.0"
+
 duck@^0.1.12:
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/duck/-/duck-0.1.12.tgz#de7adf758421230b6d7aee799ce42670586b9efa"
@@ -14652,7 +14660,7 @@ html-encoding-sniffer@^3.0.0:
   dependencies:
     whatwg-encoding "^2.0.0"
 
-html-entities@^2.1.0, html-entities@^2.3.2, html-entities@^2.5.2:
+html-entities@^2.1.0, html-entities@^2.3.2, html-entities@^2.3.3, html-entities@^2.5.2:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/html-entities/-/html-entities-2.5.2.tgz#201a3cf95d3a15be7099521620d19dfb4f65359f"
   integrity sha512-K//PSRMQk4FZ78Kyau+mZurHn3FH0Vwr+H36eE0rPbeYkRRi9YxceYPhuN60UwWorxyKHhqoAJl2OFKa4BVtaA==
@@ -18525,7 +18533,7 @@ needle@2.4.0:
     iconv-lite "^0.4.4"
     sax "^1.2.4"
 
-needle@^3.1.0:
+needle@^3.1.0, needle@^3.2.0:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/needle/-/needle-3.3.1.tgz#63f75aec580c2e77e209f3f324e2cdf3d29bd049"
   integrity sha512-6k0YULvhpw+RoLNiQCRKOl09Rv1dPLr8hHnVjHqdolKwDrdNyk+Hmrthi4lIGPPz3r39dLx0hsF5s40sZ3Us4Q==

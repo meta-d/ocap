@@ -12,6 +12,11 @@ import { Copilot, createLLM, createReactAgent } from '../copilot'
 import { CopilotCheckpointSaver } from '../copilot-checkpoint'
 import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { ChatAgentState, chatAgentState } from './types'
+import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
+import { WikipediaQueryRun } from "@langchain/community/tools/wikipedia_query_run";
+import { DuckDuckGoSearch } from "@langchain/community/tools/duckduckgo_search";
+
+
 
 export class ChatConversationAgent {
 	public graph: CompiledStateGraph<ChatAgentState, Partial<ChatAgentState>, typeof START | 'agent' | 'tools'>
@@ -29,6 +34,9 @@ export class ChatConversationAgent {
 	}
 
 	createAgentGraph() {
+
+
+
 		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
 			// console.log(input)
 			this.commandBus.execute(
@@ -41,7 +49,19 @@ export class ChatConversationAgent {
 			)
 		})
 
-		const tools = []
+		const tavilySearchTool = new TavilySearchResults({
+			apiKey: '',
+			maxResults: 2,
+		})
+
+		const wikiTool = new WikipediaQueryRun({
+			topKResults: 3,
+			maxDocContentLength: 4000,
+		  });
+
+		const duckTool = new DuckDuckGoSearch({ maxResults: 1 });
+
+		const tools = [tavilySearchTool, wikiTool, duckTool]
 
 		return createReactAgent({
 			state: chatAgentState,
@@ -98,6 +118,8 @@ References documents:
 						event,
 						content: aiContent
 					}
+				} else if (['on_chain_start', 'on_chain_end'].includes(event)) {
+					console.log(data)
 				}
 
 				return null

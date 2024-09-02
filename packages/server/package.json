@@ -29,6 +29,7 @@
     "class-validator": "^0.13.1",
     "cls-hooked": "^4.2.2",
     "date-fns": "^3.0.4",
+    "duck-duck-scrape": "^2.2.5",
     "email-templates": "^8.0.8",
     "epub2": "^3.0.2",
     "express-session": "^1.17.2",

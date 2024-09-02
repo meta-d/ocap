@@ -3,6 +3,9 @@
   --mat-sidenav-content-background-color: var(--ngm-color-surface-container);
   --mat-sidenav-container-background-color: var(--ngm-color-surface-container);
   --mdc-list-list-item-container-shape: .5rem;
+  --mdc-list-list-item-label-text-size: .85rem;
+  --mdc-list-list-item-one-line-container-height: 34px;
+
   @apply max-w-full flex-1 flex flex-col;
 }
 

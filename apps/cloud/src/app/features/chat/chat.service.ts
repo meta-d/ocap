@@ -1,6 +1,6 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core'
 import { CopilotChatMessage } from '@metad/copilot'
-import { IChatConversation } from '../../@core'
+import { IChatConversation, OrderTypeEnum } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { firstValueFrom, map } from 'rxjs'
@@ -33,7 +33,7 @@ export class ChatService {
       })
     })
 
-    this.conversationService.getAll().pipe(map(({ items }) => items)).subscribe((items) => {
+    this.conversationService.getAll({ order: { updatedAt: OrderTypeEnum.DESC }, take: 20 }).pipe(map(({ items }) => items)).subscribe((items) => {
       this.conversations.set(items)
     })
 
