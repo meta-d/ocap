@@ -10,7 +10,6 @@ import { ChatService } from '../chat.service'
 import {CdkMenuModule} from '@angular/cdk/menu'
 import { KnowledgebaseListComponent, ToolsetListComponent } from '../../../@shared/copilot'
 import { Icons } from '../icons'
-import { ICopilotToolset } from '../../../@core'
 
 
 @Component({
@@ -45,15 +44,4 @@ export class ChatToolbarComponent {
 
   readonly toolsetList = computed(()  => this.role()?.toolsets)
   readonly toolsets = this.chatService.toolsets
-
-  constructor() {
-    effect(() => {
-      if (this.role()) {
-        // 默认启用所有知识库
-        this.knowledgebases.set(this.role().knowledgebases)
-        // 默认不使用工具集
-        this.toolsets.set([])
-      }
-    }, { allowSignalWrites: true })
-  }
 }

@@ -35,7 +35,8 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 						organizationId,
 						roleId: role?.id,
 						options: {
-							knowledgebases: role?.knowledgebases
+							knowledgebases: role?.knowledgebases,
+							toolsets: role?.toolsets
 						}
 					}
 				})

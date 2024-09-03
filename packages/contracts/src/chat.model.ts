@@ -10,6 +10,7 @@ export interface IChatConversation extends IBasePerTenantAndOrganizationEntityMo
   
   options?: {
     knowledgebases: string[]
+    toolsets: string[]
   }
 
   messages?: CopilotChatMessage[] | null

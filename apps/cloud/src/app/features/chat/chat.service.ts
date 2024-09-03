@@ -1,14 +1,14 @@
 import { Location } from '@angular/common'
-import { computed, effect, inject, Injectable, model, signal } from '@angular/core'
+import { effect, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
+import { nonNullable } from '@metad/ocap-core'
 import { injectParams } from 'ngxtension/inject-params'
-import { combineLatestWith, distinctUntilChanged, filter, firstValueFrom, map, switchMap, tap, withLatestFrom } from 'rxjs'
+import { combineLatestWith, distinctUntilChanged, filter, map, of, switchMap, tap, withLatestFrom } from 'rxjs'
 import { IChatConversation, ICopilotRole, ICopilotToolset, IKnowledgebase, OrderTypeEnum } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService } from '../../@core/services'
 import { AppService } from '../../app.service'
-import { nonNullable } from '@metad/ocap-core'
 
 @Injectable()
 export class ChatService {
@@ -22,9 +22,10 @@ export class ChatService {
   readonly paramRole = injectParams('role')
   readonly paramId = injectParams('id')
 
+  readonly conversationId = signal<string>(null)
   readonly role = signal<ICopilotRole>(null)
   readonly conversation = signal<IChatConversation>(null)
-  readonly conversationId = computed(() => this.conversation()?.id)
+  // readonly conversationId = computed(() => this.conversation()?.id)
 
   readonly messages = signal<CopilotChatMessage[]>([])
 
@@ -56,33 +57,55 @@ export class ChatService {
         this.role.set(roles.find((item) => item.name === paramRole))
       }
     })
-  private idSub = toObservable(this.paramId).pipe(
-      filter((id) => id && this.conversation()?.id !== id),
-      switchMap((id) => this.conversationService.getById(id, { relations: ['role'] }))
-    ).subscribe((data) => this.conversation.set(data))
-
-  private conversationSub = toObservable(this.conversation).pipe(
-    filter(nonNullable),
-    map((conversation) => conversation?.id),
-    distinctUntilChanged(),
-    // filter((id) =>!!id),
-  ).subscribe((id) => {
-    const roleName = this.paramRole()
-    const paramId = this.paramId()
-    // if (paramId !== id) {
-    if (this.role()?.name) {
-      if (id) {
-        this.#location.replaceState('/chat/r/' + this.conversation().role.name + '/c/' + id)
+  private idSub = toObservable(this.conversationId)
+    .pipe(
+      filter((id) => this.conversation()?.id != id),
+      switchMap((id) =>
+        id ? this.conversationService.getById(id, { relations: ['role', 'role.knowledgebases'] }) : of(null)
+      )
+    )
+    .subscribe((data) => {
+      if (data) {
+        this.role.set(data.role)
+        this.conversation.set(data)
+        this.knowledgebases.set(
+          data.options?.knowledgebases?.map((id) => data.role.knowledgebases?.find((item) => item.id === id))
+        )
+        this.toolsets.set(data.options?.toolsets?.map((id) => data.role.toolsets?.find((item) => item.id === id)))
       } else {
-        this.#location.replaceState('/chat/r/' + this.conversation().role.name)
+        // New empty conversation
+        this.conversation.set({} as IChatConversation)
+        // 默认启用所有知识库
+        this.knowledgebases.set(this.role()?.knowledgebases ?? [])
+        // 默认不使用工具集
+        this.toolsets.set([])
       }
-    } else if (id) {
-      this.#location.replaceState('/chat/c/' + id)
-    } else {
-      this.#location.replaceState('/chat/')
-    }
-    // }
-  })
+    })
+
+  private conversationSub = toObservable(this.conversation)
+    .pipe(
+      filter(nonNullable),
+      map((conversation) => conversation?.id),
+      distinctUntilChanged()
+      // filter((id) =>!!id),
+    )
+    .subscribe((id) => {
+      const roleName = this.paramRole()
+      const paramId = this.paramId()
+      // if (paramId !== id) {
+      if (this.role()?.name) {
+        if (id) {
+          this.#location.replaceState('/chat/r/' + this.conversation().role.name + '/c/' + id)
+        } else {
+          this.#location.replaceState('/chat/r/' + this.conversation().role.name)
+        }
+      } else if (id) {
+        this.#location.replaceState('/chat/c/' + id)
+      } else {
+        this.#location.replaceState('/chat/')
+      }
+      // }
+    })
 
   constructor() {
     this.chatService.connect()
@@ -99,7 +122,7 @@ export class ChatService {
     })
 
     this.conversationService
-      .getAll({ select: ['id', 'key', 'title', 'updatedAt'], relations: ['role'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
+      .getAll({ select: ['id', 'key', 'title', 'updatedAt'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
       .pipe(map(({ items }) => items))
       .subscribe((items) => {
         this.conversations.set(items)
@@ -115,34 +138,43 @@ export class ChatService {
       },
       { allowSignalWrites: true }
     )
+
+    effect(
+      () => {
+        if (this.paramId()) {
+          this.conversationId.set(this.paramId())
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   message(id: string, content: string) {
     return this.chatService.message({
       role: {
         id: this.role()?.id,
-        knowledgebases: this.knowledgebases().map(({id}) => id),
-        toolsets: this.toolsets().map(({id}) => id),
+        knowledgebases: this.knowledgebases().map(({ id }) => id),
+        toolsets: this.toolsets().map(({ id }) => id)
       },
       message: {
         conversationId: this.conversationId(),
         id,
         language: this.appService.lang(),
         content
-      },
+      }
     })
   }
 
   async newConversation(role?: ICopilotRole) {
     this.role.set(role)
-    this.conversation.set({role} as IChatConversation)
-
+    this.conversationId.set(null)
   }
 
   setConversation(id: string) {
-    const conversation = this.conversations().find((item) => item.id === id)
-    this.role.set(conversation.role)
-    this.conversation.set(conversation)
+    // const conversation = this.conversations().find((item) => item.id === id)
+    // this.role.set(conversation.role)
+    this.conversationId.set(id)
+    // this.conversation.set(conversation)
   }
 
   deleteConversation(id: string) {
@@ -151,5 +183,4 @@ export class ChatService {
       next: () => {}
     })
   }
-
 }
