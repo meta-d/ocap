@@ -5,7 +5,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
-import { CopilotChatMessage, IChatConversation, IUser } from '@metad/contracts'
+import { CopilotChatMessage, IChatConversation, ICopilotToolset, IUser } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { from, map, tap } from 'rxjs'
@@ -29,10 +29,9 @@ export class ChatConversationAgent {
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
 	) {
-		this.graph = this.createAgentGraph()
 	}
 
-	createAgentGraph() {
+	createAgentGraph(toolsets: ICopilotToolset[]) {
 		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
 			this.commandBus.execute(
 				new CopilotTokenRecordCommand({
@@ -44,21 +43,27 @@ export class ChatConversationAgent {
 			)
 		})
 
-		const tavilySearchTool = new TavilySearchResults({
-			apiKey: '',
-			maxResults: 2
-		})
+		const tools = []
+		if (toolsets.some((item) => item.name === 'TavilySearch')) {
+			const tavilySearchTool = new TavilySearchResults({
+				apiKey: '',
+				maxResults: 2
+			})
+			tools.push(tavilySearchTool)
+		}
+		if (toolsets.some((item) => item.name === 'Wikipedia')) {
+			const wikiTool = new WikipediaQueryRun({
+				topKResults: 3,
+				maxDocContentLength: 4000
+			})
+			tools.push(wikiTool)
+		}
+		if (toolsets.some((item) => item.name === 'DuckDuckGo')) {
+		  const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
+		  tools.push(duckTool)
+		}
 
-		const wikiTool = new WikipediaQueryRun({
-			topKResults: 3,
-			maxDocContentLength: 4000
-		})
-
-		const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
-
-		const tools = [tavilySearchTool, wikiTool, duckTool]
-
-		return createReactAgent({
+		this.graph = createReactAgent({
 			state: chatAgentState,
 			llm,
 			checkpointSaver: this.copilotCheckpointSaver,
@@ -76,6 +81,8 @@ References documents:
 				return [new SystemMessage(system), ...state.messages]
 			}
 		})
+
+		return this
 	}
 
 	chat(input: string) {

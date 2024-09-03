@@ -7,7 +7,7 @@ import { Socket, io } from 'socket.io-client'
 import { environment } from '../../../environments/environment'
 import { AuthStrategy } from '../auth'
 import { getWebSocketUrl } from '../utils'
-import { ChatUserMessage } from '@metad/contracts'
+import { ChatGatewayMessage } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
@@ -95,12 +95,7 @@ export class ChatService {
     this.#disconnected$.next(!status)
   }
 
-  message(data: {
-    role?: {
-      id: string;
-      knowledgebases: string[] | null
-    }
-    message: ChatUserMessage}) {
+  message(data: Omit<ChatGatewayMessage, 'organizationId'>) {
     this.emit('message', {...data, organizationId: this.#store.selectedOrganization.id})
   }
 }

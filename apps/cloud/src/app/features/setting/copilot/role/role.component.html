@@ -21,9 +21,14 @@
   </form>
 
   <div class="flex-1 flex flex-col p-4 overflow-auto">
-    <h2 class="p-2">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</h2>
+    <h2 class="p-2 text-lg">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</h2>
     <div class="max-h-[200px] overflow-auto">
       <pac-knowledgebase-list class="w-full" [knowledgebaseList]="knowledgebaseList()" [(knowledgebases)]="knowledgebases" />
+    </div>
+
+    <h2 class="my-2 p-2 text-lg">{{'PAC.KEY_WORDS.Toolset' | translate: {Default: 'Toolset'} }}</h2>
+    <div class="max-h-[200px] overflow-auto">
+      <pac-toolset-list class="w-full" [toolsetList]="toolsetList()" [(toolsets)]="toolsets" />
     </div>
   </div>
 </div>

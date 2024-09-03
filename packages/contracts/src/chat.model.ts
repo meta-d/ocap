@@ -31,6 +31,7 @@ export type ChatGatewayMessage = {
   role: {
     id: string
 		knowledgebases?: string[]
+    toolsets: string[] | null
   }
   message: ChatUserMessage
 }

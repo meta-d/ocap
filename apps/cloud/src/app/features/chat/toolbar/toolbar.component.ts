@@ -8,8 +8,9 @@ import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from '../../../@shared'
 import { ChatService } from '../chat.service'
 import {CdkMenuModule} from '@angular/cdk/menu'
-import { KnowledgebaseListComponent } from '../../../@shared/copilot'
+import { KnowledgebaseListComponent, ToolsetListComponent } from '../../../@shared/copilot'
 import { Icons } from '../icons'
+import { ICopilotToolset } from '../../../@core'
 
 
 @Component({
@@ -24,7 +25,8 @@ import { Icons } from '../icons'
     MaterialModule,
     NgmCommonModule,
     ...Icons,
-    KnowledgebaseListComponent
+    KnowledgebaseListComponent,
+    ToolsetListComponent
   ],
   selector: 'pac-chat-toolbar',
   templateUrl: './toolbar.component.html',
@@ -39,15 +41,18 @@ export class ChatToolbarComponent {
   readonly role = this.chatService.role
 
   readonly knowledgebaseList = computed(() => this.role()?.knowledgebases)
-  // readonly knowledgebases = model<IKnowledgebase[]>([])
   readonly knowledgebases = this.chatService.knowledgebases
 
-  readonly toolsetList = signal([])
+  readonly toolsetList = computed(()  => this.role()?.toolsets)
+  readonly toolsets = this.chatService.toolsets
 
   constructor() {
     effect(() => {
       if (this.role()) {
+        // 默认启用所有知识库
         this.knowledgebases.set(this.role().knowledgebases)
+        // 默认不使用工具集
+        this.toolsets.set([])
       }
     }, { allowSignalWrites: true })
   }

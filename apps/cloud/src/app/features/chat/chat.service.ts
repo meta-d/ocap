@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
 import { injectParams } from 'ngxtension/inject-params'
 import { combineLatestWith, distinctUntilChanged, filter, firstValueFrom, map, switchMap, tap, withLatestFrom } from 'rxjs'
-import { IChatConversation, ICopilotRole, IKnowledgebase, OrderTypeEnum } from '../../@core'
+import { IChatConversation, ICopilotRole, ICopilotToolset, IKnowledgebase, OrderTypeEnum } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { nonNullable } from '@metad/ocap-core'
@@ -35,6 +35,7 @@ export class ChatService {
     this.copilotRoleService.getAll({ relations: ['knowledgebases'] }).pipe(map(({ items }) => items))
   )
   readonly knowledgebases = signal<IKnowledgebase[]>([])
+  readonly toolsets = signal<ICopilotToolset[]>([])
 
   private roleSub = toObservable(this.role)
     .pipe(
@@ -120,7 +121,8 @@ export class ChatService {
     return this.chatService.message({
       role: {
         id: this.role()?.id,
-        knowledgebases: this.knowledgebases().map(({id}) => id)
+        knowledgebases: this.knowledgebases().map(({id}) => id),
+        toolsets: this.toolsets().map(({id}) => id),
       },
       message: {
         conversationId: this.conversationId(),
@@ -150,5 +152,4 @@ export class ChatService {
     })
   }
 
-  
 }

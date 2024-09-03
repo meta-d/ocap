@@ -1,4 +1,4 @@
-import { ChatGatewayMessage, ChatMessage, ChatUserMessage, IUser } from '@metad/contracts'
+import { ChatGatewayMessage, ChatMessage, IUser } from '@metad/contracts'
 import { UseGuards } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import {

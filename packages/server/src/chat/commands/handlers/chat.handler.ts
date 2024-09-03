@@ -1,4 +1,4 @@
-import { IChatConversation } from '@metad/contracts'
+import { IChatConversation, TOOLSETS } from '@metad/contracts'
 import { shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { formatDocumentsAsString } from 'langchain/util/document'
@@ -52,6 +52,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 			if (!copilot) {
 				throw new Error('copilot not found')
 			}
+
 			this.conversations.set(
 				chatConversation.id,
 				new ChatConversationAgent(
@@ -62,7 +63,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					this.copilotCheckpointSaver,
 					this.commandBus,
 					this.queryBus
-				)
+				).createAgentGraph(TOOLSETS.filter((item) => role?.toolsets?.includes(item.id)))
 			)
 		}
 		const conversation = this.conversations.get(chatConversation.id)
@@ -99,7 +100,9 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 						content // lastMessage.content
 					}
 				} else if (event === 'on_chat_model_end') {
-					conversation.updateMessage({ id: answerId, content, role: 'assistant' })
+					if (content) {
+						conversation.updateMessage({ id: answerId, content, role: 'assistant' })
+					}
 				}
 				return null
 			}),
