@@ -69,6 +69,6 @@ export class ParseJsonPipe implements PipeTransform<string> {
 			);
 		}
 
-		return {};
+		return null;
 	}
 }

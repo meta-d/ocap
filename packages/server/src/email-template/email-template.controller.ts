@@ -58,7 +58,7 @@ export class EmailTemplateController extends CrudController<EmailTemplate> {
 	@Get('count')
 	@UsePipes(new ValidationPipe({ transform: true }))
 	async getCount(
-		@Query() filter: PaginationParams<IEmailTemplate>
+		@Query() filter: PaginationParams<EmailTemplate>
 	): Promise<number> {
 		return this.emailTemplateService.count({
 			where: {
@@ -71,7 +71,7 @@ export class EmailTemplateController extends CrudController<EmailTemplate> {
 	@Get('pagination')
 	@UsePipes(new ValidationPipe({ transform: true }))
 	async pagination(
-		@Query() filter: PaginationParams<IEmailTemplate>
+		@Query() filter: PaginationParams<EmailTemplate>
 	): Promise<IPagination<EmailTemplate>> {
 		return this.emailTemplateService.paginate(filter);
 	}
@@ -136,10 +136,10 @@ export class EmailTemplateController extends CrudController<EmailTemplate> {
 
 	@Get()
 	async findAll(
-		@Query('data', ParseJsonPipe) filter: PaginationParams<IEmailTemplate>
+		@Query('data', ParseJsonPipe) filter: PaginationParams<EmailTemplate>
 	): Promise<IPagination<EmailTemplate>> {
 		return await this.queryBus.execute(
-			new EmailTemplateQuery(filter)
+			new EmailTemplateQuery(filter as PaginationParams<IEmailTemplate>)
 		);
 	}
 

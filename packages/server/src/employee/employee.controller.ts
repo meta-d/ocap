@@ -273,7 +273,7 @@ export class EmployeeController extends CrudController<Employee> {
 	@Get('count')
 	@UsePipes(new ValidationPipe({ transform: true }))
 	async getCount(
-		@Query() filter: PaginationParams<IEmployee>
+		@Query() filter: PaginationParams<Employee>
 	): Promise<number> {
 		return this.employeeService.count({
 			where: {
@@ -294,7 +294,7 @@ export class EmployeeController extends CrudController<Employee> {
 	@Get('pagination')
 	@UsePipes(new ValidationPipe({ transform: true }))
 	async pagination(
-		@Query() filter: PaginationParams<IEmployee>
+		@Query() filter: PaginationParams<Employee>
 	): Promise<IPagination<Employee>> {
 		return this.employeeService.paginate(filter);
 	}

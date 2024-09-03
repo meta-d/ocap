@@ -15,8 +15,9 @@ import { DeepPartial } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BaseEntity } from '../entities/internal';
 import { ICrudService } from './icrud.service';
-import { PaginationParams } from './pagination-params';
+import { OptionsSelect, PaginationParams } from './pagination-params';
 import { ParseJsonPipe, UUIDValidationPipe } from './../../shared/pipes';
+import { isNil, omitBy } from 'lodash';
 
 @ApiResponse({ 
 	status: HttpStatus.UNAUTHORIZED,
@@ -68,15 +69,18 @@ export abstract class CrudController<T extends BaseEntity> {
 		@Query('$order', ParseJsonPipe) order?: PaginationParams<T>['order'],
 		@Query('$take') take?: PaginationParams<T>['take'],
 		@Query('$skip') skip?: PaginationParams<T>['skip'],
+		@Query('$select', ParseJsonPipe) select?: OptionsSelect<T>['select'],
 		...options: any[]
 	): Promise<IPagination<T>> {
-		return this.crudService.findAll({...(filter ?? {}),
-			where: where ?? filter?.where,
-			relations: relations ?? filter.relations,
-			order: order ?? filter?.order,
-			take: take ?? filter?.take,
-			skip: skip ?? filter?.skip,
-		});
+		return this.crudService.findAll(omitBy({
+		where: where ?? filter?.where,
+		relations: relations ?? filter?.relations,
+		order: order ?? filter?.order,
+		take: take ?? filter?.take,
+		skip: skip ?? filter?.skip,
+		select: select,
+		...(filter ?? {}),
+	}, isNil));
 	}
 	
 	@ApiOperation({ summary: 'Find by id' })

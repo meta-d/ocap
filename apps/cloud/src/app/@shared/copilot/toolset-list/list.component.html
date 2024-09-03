@@ -1,14 +1,16 @@
-<ul cdkListbox cdkListboxMultiple class="ngm-cdk-listbox"
-  [(ngModel)]="toolsets"
-  [cdkListboxCompareWith]="compareId"
->
-  @for (item of toolsetList(); track item.id) {
-    <li [cdkOption]="item" #option="cdkOption" class="ngm-cdk-option flex items-center cursor-pointer px-8 py-3 rounded-md hover:bg-black/5 dark:hover:bg-white/10"
-      [class.cdk-option-selected]="option.isSelected()"
-    >
-      @if (option.isSelected()) {
-        <mat-icon class="absolute left-1" fontSet="material-icons-outlined" color="accent">check_small</mat-icon>
-      }
-      <pac-avatar [imageUrl]="item.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{item.name}}</li>
-  }
-</ul>
+@if (toolsetList()?.length) {
+  <ul cdkListbox cdkListboxMultiple class="ngm-cdk-listbox"
+    [(ngModel)]="toolsets"
+    [cdkListboxCompareWith]="compareId"
+  >
+    @for (item of toolsetList(); track item.id) {
+      <li [cdkOption]="item" #option="cdkOption" class="ngm-cdk-option flex items-center cursor-pointer px-8 py-3 rounded-md hover:bg-black/5 dark:hover:bg-white/10"
+        [class.cdk-option-selected]="option.isSelected()"
+      >
+        @if (option.isSelected()) {
+          <mat-icon class="absolute left-1" fontSet="material-icons-outlined" color="accent">check_small</mat-icon>
+        }
+        <pac-avatar [imageUrl]="item.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />{{item.name}}</li>
+    }
+  </ul>
+}

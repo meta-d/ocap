@@ -42,7 +42,7 @@ export class ApprovalPolicyService extends TenantAwareCrudService<ApprovalPolicy
 	 */
 	async findAllApprovalPolicies(
 		options: PaginationParams<ApprovalPolicy>
-	): Promise<IPagination<IApprovalPolicy>> {
+	): Promise<IPagination<ApprovalPolicy>> {
 		return await super.findAll({
 			...(
 				(options && options.where) ? {

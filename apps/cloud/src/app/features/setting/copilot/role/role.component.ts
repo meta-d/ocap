@@ -7,8 +7,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayBehaviour, nonBlank } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { TOOLSETS } from '../../../../@core/copilot'
-import { KnowledgebaseListComponent, ToolsetListComponent } from '../../../../@shared/copilot'
 import { injectParams } from 'ngxtension/inject-params'
 import { distinctUntilChanged, filter, firstValueFrom, map, switchMap } from 'rxjs'
 import {
@@ -21,7 +19,9 @@ import {
   OrderTypeEnum,
   ToastrService
 } from '../../../../@core'
+import { TOOLSETS } from '../../../../@core/copilot'
 import { AvatarEditorComponent, MaterialModule, UpsertEntityComponent } from '../../../../@shared'
+import { KnowledgebaseListComponent, ToolsetListComponent } from '../../../../@shared/copilot'
 
 @Component({
   standalone: true,
@@ -69,7 +69,8 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
     return this.formGroup.get('toolsets').value
   }
   set toolsets(value) {
-    this.formGroup.get('toolsets').setValue(value)
+    this.formGroup.patchValue({ toolsets: value })
+    this.formGroup.markAsDirty()
   }
 
   readonly knowledgebaseList = toSignal(
@@ -84,12 +85,6 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
     )
   })
   readonly toolsetList = signal<ICopilotToolset[]>(TOOLSETS)
-
-  // readonly toolsets = model<ICopilotToolset[]>([])
-  // readonly toolsetsDirty = computed(() => {
-  //   return this.toolsets().length !== this.copilotRole()?.toolsets?.length ||
-  //     this.toolsets().some((ts) => !this.copilotRole().toolsets.some((item) => item.id === ts.id))
-  // })
 
   private roleSub = toObservable(this.paramId)
     .pipe(
@@ -110,7 +105,6 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
         if (this.copilotRole()) {
           this.formGroup.patchValue(this.copilotRole())
           this.knowledgebases.set([...this.copilotRole().knowledgebases])
-          this.toolsets.set()
         } else {
           this.formGroup.reset()
         }

@@ -99,7 +99,7 @@ export class ChatService {
     })
 
     this.conversationService
-      .getAll({ relations: ['role'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
+      .getAll({ select: ['id', 'key', 'title', 'updatedAt'], relations: ['role'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
       .pipe(map(({ items }) => items))
       .subscribe((items) => {
         this.conversations.set(items)

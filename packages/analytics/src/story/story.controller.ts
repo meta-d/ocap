@@ -11,6 +11,7 @@ import {
 import {
 	CrudController,
 	CurrentUser,
+	PaginationParams,
 	ParseJsonPipe,
 	Public,
 	RequestContext,
@@ -173,6 +174,7 @@ export class StoryController extends CrudController<Story> {
 	@Get(':id')
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$relations', ParseJsonPipe) relations: PaginationParams<Story>['relations'],
 		@Query('$query', ParseJsonPipe) options: FindOneOptions<Story>,
 		@Query('token') token: string
 	): Promise<Story> {
@@ -180,12 +182,12 @@ export class StoryController extends CrudController<Story> {
 		if (token) {
 			const secretToken: ISecretToken = await this.commandBus.execute(new SecretTokenGetCommand({ token }))
 			if (secretToken && !secretToken.expired && secretToken.entityId === id) {
-				story = await this.storyService.findOne(id, options)
+				story = await this.storyService.findOne(id, {relations, ...options})
 			} else {
 				throw new ForbiddenException('The token is invalid or expired')
 			}
 		} else {
-			story = await this.queryBus.execute(new StoryOneQuery(id, options))
+			story = await this.queryBus.execute(new StoryOneQuery(id, {relations, ...options}))
 		}
 
 		const dto = new StoryDTO(story, accessOfStory(story))

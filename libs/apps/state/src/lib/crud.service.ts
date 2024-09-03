@@ -3,6 +3,7 @@ import { inject } from '@angular/core'
 import { OrderTypeEnum } from '@metad/contracts'
 
 export type PaginationParams<T> = {
+  select?: (keyof T)[]
   take?: number
   skip?: number
   where?: Partial<{[P in keyof T]: string | number | boolean | Date}>
@@ -20,7 +21,7 @@ export class CrudService<T> {
       .get<{ items: T[]; total: number }>(this.apiBaseUrl, { params: toHttpParams(options) })
   }
 
-  getById(id: string, options?: {relations?: string[]}) {
+  getById(id: string, options?: {select?: (keyof T)[]; relations?: string[]}) {
     return this.httpClient.get<T>(this.apiBaseUrl + `/${id}`, { params: toHttpParams(options) })
   }
 
@@ -37,12 +38,15 @@ export class CrudService<T> {
   }
 }
 
-function toHttpParams(options: PaginationParams<unknown>) {
+function toHttpParams(options: PaginationParams<any>) {
   if (!options) {
     return null
   }
-  const { where, relations, order, take, skip } = options
+  const { select, where, relations, order, take, skip } = options
   let params = new HttpParams()
+  if (select) {
+    params = params.append('$select', JSON.stringify(select))
+  }
   if (where) {
     params = params.append('$where', JSON.stringify(where))
   }
