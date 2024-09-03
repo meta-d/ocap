@@ -32,7 +32,7 @@
 <div class="flex-1"></div>
 
 <ng-template #menu>
-  <div class="example-menu" cdkMenu>
+  <div class="example-menu" cdkMenu displayDensity="cosy">
     <label class="px-2 pb-2">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
     <div class="max-h-64 w-56" (click)="$event.stopPropagation()">
       @if (knowledgebaseList()?.length) {

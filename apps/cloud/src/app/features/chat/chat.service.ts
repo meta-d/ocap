@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
 import { nonNullable } from '@metad/ocap-core'
 import { injectParams } from 'ngxtension/inject-params'
-import { combineLatestWith, distinctUntilChanged, filter, map, of, switchMap, tap, withLatestFrom } from 'rxjs'
+import { BehaviorSubject, combineLatestWith, distinctUntilChanged, filter, map, of, skip, switchMap, tap, withLatestFrom } from 'rxjs'
 import { IChatConversation, ICopilotRole, ICopilotToolset, IKnowledgebase, OrderTypeEnum } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService } from '../../@core/services'
 import { AppService } from '../../app.service'
@@ -23,7 +23,8 @@ export class ChatService {
   readonly paramId = injectParams('id')
 
   readonly conversationId = signal<string>(null)
-  readonly role = signal<ICopilotRole>(null)
+  // readonly role = signal<ICopilotRole>(null)
+  readonly role$ = new BehaviorSubject<ICopilotRole>(null)
   readonly conversation = signal<IChatConversation>(null)
   // readonly conversationId = computed(() => this.conversation()?.id)
 
@@ -38,47 +39,58 @@ export class ChatService {
   readonly knowledgebases = signal<IKnowledgebase[]>([])
   readonly toolsets = signal<ICopilotToolset[]>([])
 
-  private roleSub = toObservable(this.role)
+  readonly answering = signal<boolean>(false)
+
+  private roleSub = this.role$
     .pipe(
       withLatestFrom(toObservable(this.paramRole)),
-      tap(([role, paramRole]) => {
-        if (role?.name && role.name !== paramRole) {
-          this.#location.replaceState('/chat/r/' + role.name)
-        } else if (role?.name === 'common') {
-          this.#location.replaceState('/chat')
-        }
-      })
+      filter(() => !this.conversationId())
     )
-    .subscribe()
+    .subscribe(([role, paramRole]) => {
+      if (role?.name && role.name !== paramRole) {
+        this.#location.replaceState('/chat/r/' + role.name)
+      } else if (role?.name === 'common') {
+        this.#location.replaceState('/chat')
+      }
+
+      if (!this.conversationId()) {
+        // 默认启用所有知识库
+        this.knowledgebases.set(role?.knowledgebases ?? [])
+        // 默认使用所有工具集
+        this.toolsets.set(role?.toolsets ?? [])
+      }
+    })
   private paramRoleSub = toObservable(this.paramRole)
-    .pipe(combineLatestWith(toObservable(this.roles)), withLatestFrom(toObservable(this.role)))
+    .pipe(combineLatestWith(toObservable(this.roles)), withLatestFrom(this.role$))
     .subscribe(([[paramRole, roles], role]) => {
       if (roles && role?.name !== paramRole) {
-        this.role.set(roles.find((item) => item.name === paramRole))
+        this.role$.next(roles.find((item) => item.name === paramRole))
       }
     })
   private idSub = toObservable(this.conversationId)
     .pipe(
-      filter((id) => this.conversation()?.id != id),
+      skip(1),
+      filter((id) => !this.conversation() || this.conversation().id !== id),
       switchMap((id) =>
         id ? this.conversationService.getById(id, { relations: ['role', 'role.knowledgebases'] }) : of(null)
-      )
+      ),
+      tap((data) => {
+        if (data) {
+          this.conversation.set(data)
+          this.knowledgebases.set(
+            data.options?.knowledgebases?.map((id) => data.role.knowledgebases?.find((item) => item.id === id))
+          )
+          this.toolsets.set(data.options?.toolsets?.map((id) => data.role.toolsets?.find((item) => item.id === id)))
+        } else {
+          // New empty conversation
+          this.conversation.set({} as IChatConversation)
+        }
+      }),
+      combineLatestWith(toObservable(this.roles))
     )
-    .subscribe((data) => {
-      if (data) {
-        this.role.set(data.role)
-        this.conversation.set(data)
-        this.knowledgebases.set(
-          data.options?.knowledgebases?.map((id) => data.role.knowledgebases?.find((item) => item.id === id))
-        )
-        this.toolsets.set(data.options?.toolsets?.map((id) => data.role.toolsets?.find((item) => item.id === id)))
-      } else {
-        // New empty conversation
-        this.conversation.set({} as IChatConversation)
-        // 默认启用所有知识库
-        this.knowledgebases.set(this.role()?.knowledgebases ?? [])
-        // 默认不使用工具集
-        this.toolsets.set([])
+    .subscribe(([conversation, roles]) => {
+      if (conversation) {
+        this.role$.next(roles?.find((role) => role.id === conversation.roleId))
       }
     })
 
@@ -93,11 +105,11 @@ export class ChatService {
       const roleName = this.paramRole()
       const paramId = this.paramId()
       // if (paramId !== id) {
-      if (this.role()?.name) {
+      if (this.role$.value?.name) {
         if (id) {
-          this.#location.replaceState('/chat/r/' + this.conversation().role.name + '/c/' + id)
+          this.#location.replaceState('/chat/r/' + this.role$.value.name + '/c/' + id)
         } else {
-          this.#location.replaceState('/chat/r/' + this.conversation().role.name)
+          this.#location.replaceState('/chat/r/' + this.role$.value.name)
         }
       } else if (id) {
         this.#location.replaceState('/chat/c/' + id)
@@ -119,6 +131,8 @@ export class ChatService {
         }
         return [...messages]
       })
+
+      this.answering.set(false)
     })
 
     this.conversationService
@@ -152,7 +166,7 @@ export class ChatService {
   message(id: string, content: string) {
     return this.chatService.message({
       role: {
-        id: this.role()?.id,
+        id: this.role$.value?.id,
         knowledgebases: this.knowledgebases().map(({ id }) => id),
         toolsets: this.toolsets().map(({ id }) => id)
       },
@@ -166,8 +180,8 @@ export class ChatService {
   }
 
   async newConversation(role?: ICopilotRole) {
-    this.role.set(role)
     this.conversationId.set(null)
+    this.role$.next(role)
   }
 
   setConversation(id: string) {

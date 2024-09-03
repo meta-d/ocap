@@ -32,11 +32,12 @@ export class ChatInputComponent {
 
   readonly promptControl = new FormControl<string>(null)
   readonly prompt = toSignal(this.promptControl.valueChanges)
-  readonly answering = signal<boolean>(false)
+  readonly answering = this.chatService.answering
 
   ask() {
     const id = uuid()
-    const content = this.prompt()
+    const content = this.prompt().trim()
+    this.answering.set(true)
     this.chatService.messages.update((messages) => [
       ...(messages ?? []),
       {
@@ -51,5 +52,16 @@ export class ChatInputComponent {
 
   stopGenerating() {}
 
-  triggerFun(event: any) {}
+  triggerFun(event: KeyboardEvent) {
+    if ((event.isComposing || event.shiftKey) && event.key === 'Enter') {
+      return
+    }
+
+    if (event.key === 'Enter') {
+      setTimeout(() => {
+        this.ask()
+      })
+      return
+    }
+  }
 }
