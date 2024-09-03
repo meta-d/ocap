@@ -1,7 +1,10 @@
+import { IChatConversation } from '@metad/contracts'
 import { shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { formatDocumentsAsString } from 'langchain/util/document'
+import { isNil } from 'lodash'
 import { filter, map, Observable } from 'rxjs'
+import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
 import { CopilotService } from '../../../copilot/'
 import { KnowledgebaseService } from '../../../knowledgebase'
@@ -21,17 +24,38 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 	) {}
 
 	public async execute(command: ChatCommand): Promise<Observable<any>> {
-		const { tenantId, organizationId, user, message } = command.input
+		const { tenantId, organizationId, user, role, message } = command.input
 		const { conversationId, id, language, content } = message
-		if (!this.conversations.has(conversationId)) {
+		let chatConversation: IChatConversation = null
+		if (isNil(conversationId)) {
+			chatConversation = await this.commandBus.execute(
+				new ChatConversationCreateCommand({
+					entity: {
+						tenantId,
+						organizationId,
+						roleId: role?.id,
+						options: {
+							knowledgebases: role?.knowledgebases
+						}
+					}
+				})
+			)
+		} else {
+			chatConversation = await this.queryBus.execute(
+				new FindChatConversationQuery({
+					id: conversationId
+				})
+			)
+		}
+		if (!this.conversations.has(chatConversation.id)) {
 			const copilot = await this.copilotService.findCopilot(tenantId, organizationId)
 			if (!copilot) {
 				throw new Error('copilot not found')
 			}
 			this.conversations.set(
-				conversationId,
+				chatConversation.id,
 				new ChatConversationAgent(
-					conversationId,
+					chatConversation,
 					organizationId,
 					user,
 					copilot,
@@ -41,7 +65,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				)
 			)
 		}
-		const conversation = this.conversations.get(conversationId)
+		const conversation = this.conversations.get(chatConversation.id)
 
 		if (language) {
 			conversation.updateState({
@@ -54,7 +78,8 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 			tenantId,
 			organizationId,
 			k: 5,
-			score: 0.5
+			score: 0.5,
+			knowledgebases: chatConversation.options?.knowledgebases
 		})
 		const context = formatDocumentsAsString(documents)
 

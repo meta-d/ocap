@@ -1,4 +1,4 @@
-import { ChatMessage, ChatUserMessage, IUser } from '@metad/contracts'
+import { ChatGatewayMessage, ChatMessage, ChatUserMessage, IUser } from '@metad/contracts'
 import { UseGuards } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import {
@@ -33,7 +33,7 @@ export class ChatEventsGateway implements OnGatewayDisconnect {
 	@UseGuards(WsJWTGuard)
 	@SubscribeMessage('message')
 	message(
-		@MessageBody() data: { organizationId: string; message: ChatUserMessage },
+		@MessageBody() data: ChatGatewayMessage,
 		@ConnectedSocket() client: Socket,
 		@WsUser() user: IUser
 	): Observable<WsResponse<ChatMessage>> {

@@ -1,0 +1,45 @@
+<div class="flex-1 flex items-start overflow-auto">
+  <form class="flex flex-col gap-2 p-4 w-full lg:w-[400px] lg:max-w-[400px]" [formGroup]="formGroup">
+    <pac-avatar-editor formControlName="avatar" class="w-16 h-16 self-center" />
+
+    <ngm-input class="flex-1" [label]="'PAC.Copilot.Roles.Name' | translate: {Default: 'Name'}" valueKey="key"
+      formControlName="name"
+    />
+
+    <ngm-input class="flex-1" [label]="'PAC.Copilot.Roles.Title' | translate: {Default: 'Title'}" valueKey="key"
+      formControlName="title"
+    />
+
+    <ngm-input class="flex-1" [label]="'PAC.Copilot.Roles.TitleCN' | translate: {Default: 'Title (CN)'}" valueKey="key"
+      formControlName="titleCN"
+    />
+
+    <ngm-input class="flex-1" [label]="'PAC.Copilot.Roles.Description' | translate: {Default: 'Description'}" valueKey="key"
+      formControlName="description"
+    />
+
+  </form>
+
+  <div class="flex-1 flex flex-col p-4 overflow-auto">
+    <h2 class="p-2">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</h2>
+    <div class="max-h-[200px] overflow-auto">
+      <pac-knowledgebase-list class="w-full" [knowledgebaseList]="knowledgebaseList()" [(knowledgebases)]="knowledgebases" />
+    </div>
+  </div>
+</div>
+
+<div class="flex justify-between items-center p-4">
+  <div></div>
+  <div ngmButtonGroup>
+    <button mat-button (click)="close()">{{'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}</button>
+    <button mat-raised-button color="primary" [disabled]="loading() || ((formGroup.invalid || formGroup.pristine) && !knowledgebasesDirty())"
+      (click)="saveAll()"
+    >{{'PAC.KEY_WORDS.Save' | translate: {Default: 'Save'} }}</button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="absolute w-full h-full flex justify-center items-center">
+    <mat-progress-spinner mode="indeterminate" diameter="26" strokeWidth="2" />
+  </div>
+}

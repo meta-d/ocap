@@ -2,6 +2,8 @@ import { Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
 import { PermissionsEnum } from '../../../@core'
 import { CopilotComponent } from './copilot.component'
+import { CopilotRolesComponent } from './roles/roles.component'
+import { CopilotRoleComponent } from './role/role.component'
 
 export default [
   {
@@ -41,7 +43,17 @@ export default [
       },
       {
         path: 'roles',
-        loadComponent: () => import('./roles/roles.component').then((m) => m.CopilotRolesComponent)
+        component: CopilotRolesComponent,
+        children: [
+          {
+            path: 'create',
+            component: CopilotRoleComponent,
+          },
+          {
+            path: ':id',
+            component: CopilotRoleComponent,
+          }
+        ]
       },
       {
         path: 'usages',

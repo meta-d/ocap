@@ -212,7 +212,10 @@
       "Primary": "主",
       "Secondary": "副",
       "Embedding": "嵌入",
-      "Open": "打开"
+      "Open": "打开",
+      "Knowledgebases": "知识库",
+      "Empty": "无数据",
+      "Toolset": "工具集"
     },
     "MENU": {
       "Certification": "认证",
@@ -1361,7 +1364,8 @@
         "Description": "描述",
         "Actions": "操作",
         "AddRole": "添加新角色",
-        "SureDeleteRole": "确定删除此角色吗？"
+        "SureDeleteRole": "确定删除此角色吗？",
+        "Avatar": "头像"
       }
     },
     "Chat": {

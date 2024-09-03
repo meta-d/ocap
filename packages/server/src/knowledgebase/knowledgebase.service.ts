@@ -3,17 +3,17 @@ import { AiBusinessRole, AiProviderRole, ICopilot, IKnowledgebase, Metadata } fr
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
+import { sortBy } from 'lodash'
 import { Pool } from 'pg'
-import { Repository } from 'typeorm'
+import { In, IsNull, Not, Repository } from 'typeorm'
 import { CopilotService } from '../copilot'
+import { CopilotRoleService } from '../copilot-role/copilot-role.service'
 import { RequestContext } from '../core'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
 import { DATABASE_POOL_TOKEN } from '../database'
 import { Knowledgebase } from './knowledgebase.entity'
-import { KnowledgeDocumentVectorStore } from './vector-store'
 import { KnowledgeSearchQuery } from './queries'
-import { CopilotRoleService } from '../copilot-role/copilot-role.service'
-import { sortBy } from 'lodash'
+import { KnowledgeDocumentVectorStore } from './vector-store'
 
 @Injectable()
 export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Knowledgebase> {
@@ -77,30 +77,30 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 	async similaritySearch(
 		query: string,
 		options?: {
-			role?: AiBusinessRole
+			// role?: AiBusinessRole
 			k?: number
 			filter?: KnowledgeDocumentVectorStore['filter']
 			score?: number
 			tenantId?: string
 			organizationId?: string
+			knowledgebases?: string[]
 		}
 	) {
-		const { role, k, score, filter } = options ?? {}
+		const { knowledgebases, k, score, filter } = options ?? {}
 		const tenantId = options?.tenantId ?? RequestContext.currentTenantId()
 		const organizationId = options?.organizationId ?? RequestContext.getOrganizationId()
+		const result = await this.findAll({
+			where: {
+				tenantId,
+				organizationId,
+				id: knowledgebases ? In(knowledgebases) : Not(IsNull())
+			}
+		})
+		const _knowledgebases = result.items
 
-		const { record: copilotRole, success } = await this.roleService.findOneOrFail({ where: { name: role } })
-		let knowledgebases: IKnowledgebase[] = []
-		if (!success) {
-			const result = await this.findAll()
-			knowledgebases = result.items
-		} else {
-			//
-		}
-
-		const documents: {doc: DocumentInterface<Record<string, any>>; score: number;}[] = []
+		const documents: { doc: DocumentInterface<Record<string, any>>; score: number }[] = []
 		const kbs = await Promise.all(
-			knowledgebases.map((kb) => {
+			_knowledgebases.map((kb) => {
 				return this.getVectorStore(kb, tenantId, organizationId).then((vectorStore) => {
 					return vectorStore.similaritySearchWithScore(query, k, filter)
 				})
@@ -109,11 +109,14 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 
 		kbs.forEach((kb) => {
 			kb.forEach(([doc, score]) => {
-				documents.push({doc, score})
+				documents.push({ doc, score })
 			})
 		})
 
-		return sortBy(documents, 'score', 'desc').slice(0, k).map(({doc}) => doc)
+		return sortBy(documents, 'score', 'desc')
+			.filter(({ score: _score }) => 1 - _score >= (score ?? 0.1))
+			.slice(0, k)
+			.map(({ doc }) => doc)
 	}
 
 	async maxMarginalRelevanceSearch(

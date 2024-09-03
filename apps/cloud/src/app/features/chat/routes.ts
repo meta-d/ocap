@@ -3,7 +3,19 @@ import { ChatHomeComponent } from './home.component'
 
 export const routes: Routes = [
   {
-    path: '',
-    component: ChatHomeComponent
-  }
+    path: 'r/:role',
+    component: ChatHomeComponent,
+  },
+  {
+    path: 'c/:id',
+    component: ChatHomeComponent,
+  },
+  {
+    path: 'r/:role/c/:id',
+    component: ChatHomeComponent,
+  },
+  {
+    path: '**',
+    component: ChatHomeComponent,
+  },
 ]

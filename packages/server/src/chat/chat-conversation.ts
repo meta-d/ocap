@@ -1,3 +1,6 @@
+import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
+import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
+import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_run'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
@@ -5,24 +8,20 @@ import { CompiledStateGraph, START } from '@langchain/langgraph'
 import { CopilotChatMessage, IChatConversation, IUser } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
-import { filter, from, map, tap } from 'rxjs'
+import { from, map, tap } from 'rxjs'
 import { ChatConversationUpdateCommand } from '../chat-conversation'
-import { FindChatConversationQuery } from '../chat-conversation/'
 import { Copilot, createLLM, createReactAgent } from '../copilot'
 import { CopilotCheckpointSaver } from '../copilot-checkpoint'
 import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { ChatAgentState, chatAgentState } from './types'
-import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
-import { WikipediaQueryRun } from "@langchain/community/tools/wikipedia_query_run";
-import { DuckDuckGoSearch } from "@langchain/community/tools/duckduckgo_search";
-
-
 
 export class ChatConversationAgent {
 	public graph: CompiledStateGraph<ChatAgentState, Partial<ChatAgentState>, typeof START | 'agent' | 'tools'>
-	private conversation: IChatConversation = null
+	get id() {
+		return this.conversation.id
+	}
 	constructor(
-		public readonly id: string,
+		public conversation: IChatConversation,
 		public readonly organizationId: string,
 		private readonly user: IUser,
 		private readonly copilot: Copilot,
@@ -34,11 +33,7 @@ export class ChatConversationAgent {
 	}
 
 	createAgentGraph() {
-
-
-
 		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
-			// console.log(input)
 			this.commandBus.execute(
 				new CopilotTokenRecordCommand({
 					...input,
@@ -51,15 +46,15 @@ export class ChatConversationAgent {
 
 		const tavilySearchTool = new TavilySearchResults({
 			apiKey: '',
-			maxResults: 2,
+			maxResults: 2
 		})
 
 		const wikiTool = new WikipediaQueryRun({
 			topKResults: 3,
-			maxDocContentLength: 4000,
-		  });
+			maxDocContentLength: 4000
+		})
 
-		const duckTool = new DuckDuckGoSearch({ maxResults: 1 });
+		const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
 
 		const tools = [tavilySearchTool, wikiTool, duckTool]
 
@@ -85,25 +80,28 @@ References documents:
 
 	chat(input: string) {
 		let aiContent = ''
-		return from(this.graph.streamEvents(
-			{
-				input,
-				messages: [new HumanMessage(input)]
-			},
-			{
-				version: 'v2',
-				configurable: {
-					thread_id: this.id
+		return from(
+			this.graph.streamEvents(
+				{
+					input,
+					messages: [new HumanMessage(input)]
 				},
-				recursionLimit: AgentRecursionLimit
-				// debug: true
-			}
-		)).pipe(
+				{
+					version: 'v2',
+					configurable: {
+						thread_id: this.id,
+						thread_ns: ''
+					},
+					recursionLimit: AgentRecursionLimit
+					// debug: true
+				}
+			)
+		).pipe(
 			tap(({ event }: any) => console.log(`streamEvents event type of graph:`, event)),
 			// filter(({ event }: any) => event === 'on_chat_model_stream'),
 			map(({ event, data }: any) => {
 				// console.log(event)
-			    if (event === 'on_chat_model_stream') {
+				if (event === 'on_chat_model_stream') {
 					const msg = data.chunk as AIMessageChunk
 					if (!msg.tool_call_chunks?.length) {
 						// console.log(msg.content)
@@ -140,15 +138,6 @@ References documents:
 
 	async updateMessage(message: CopilotChatMessage) {
 		// Record conversation messages
-		if (!this.conversation) {
-			this.conversation = await this.queryBus.execute(
-				new FindChatConversationQuery({
-					tenantId: this.user.tenantId,
-					organizationId: this.organizationId,
-					id: this.id
-				})
-			)
-		}
 		this.conversation = await this.commandBus.execute(
 			new ChatConversationUpdateCommand({
 				id: this.id,

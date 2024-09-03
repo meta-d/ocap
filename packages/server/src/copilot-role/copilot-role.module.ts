@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { RouterModule } from 'nest-router'
@@ -7,6 +7,7 @@ import { CopilotRoleController } from './copilot-role.controller'
 import { CopilotRole } from './copilot-role.entity'
 import { CopilotRoleService } from './copilot-role.service'
 import { CommandHandlers } from './commands/handlers/index'
+import { KnowledgebaseModule } from '../knowledgebase/'
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { CommandHandlers } from './commands/handlers/index'
         TypeOrmModule.forFeature([CopilotRole]),
         TenantModule,
         CqrsModule,
+        forwardRef(() => KnowledgebaseModule)
     ],
     controllers: [CopilotRoleController],
     providers: [CopilotRoleService, ...CommandHandlers],

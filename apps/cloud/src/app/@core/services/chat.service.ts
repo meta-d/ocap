@@ -95,7 +95,12 @@ export class ChatService {
     this.#disconnected$.next(!status)
   }
 
-  message(message: ChatUserMessage) {
-    this.emit('message', {message, organizationId: this.#store.selectedOrganization.id})
+  message(data: {
+    role?: {
+      id: string;
+      knowledgebases: string[] | null
+    }
+    message: ChatUserMessage}) {
+    this.emit('message', {...data, organizationId: this.#store.selectedOrganization.id})
   }
 }

@@ -8,6 +8,7 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
 import { MaterialModule } from '../../../@shared'
+import { AvatarComponent } from "../../../@shared/files/avatar/avatar.component";
 
 @Component({
   standalone: true,
@@ -21,8 +22,9 @@ import { MaterialModule } from '../../../@shared'
     TranslateModule,
     MarkdownModule,
     MaterialModule,
-    NgmCommonModule
-  ],
+    NgmCommonModule,
+    AvatarComponent
+],
   selector: 'pac-ai-message',
   templateUrl: './ai-message.component.html',
   styleUrl: 'ai-message.component.scss',

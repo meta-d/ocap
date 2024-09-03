@@ -6,9 +6,9 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule, NgmConfirmDeleteComponent, TableColumn } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, EMPTY, catchError, switchMap, tap } from 'rxjs'
+import { BehaviorSubject, EMPTY, catchError, map, switchMap, tap } from 'rxjs'
 import { CopilotRoleService, ICopilotRole, ToastrService, getErrorMessage, omitSystemProperty } from '../../../../@core'
-import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
+import { AvatarComponent, MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 
 type CopilotRoleRowType = Partial<ICopilotRole> & { __edit__?: boolean }
 
@@ -17,15 +17,23 @@ type CopilotRoleRowType = Partial<ICopilotRole> & { __edit__?: boolean }
   selector: 'pac-settings-copilot-roles',
   templateUrl: './roles.component.html',
   styleUrls: ['./roles.component.scss'],
-  imports: [RouterModule, TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule, NgmCommonModule]
+  imports: [
+    RouterModule,
+    TranslateModule,
+    MaterialModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgmCommonModule,
+    AvatarComponent
+  ]
 })
 export class CopilotRolesComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
 
   readonly roleService = inject(CopilotRoleService)
   readonly _toastrService = inject(ToastrService)
-  readonly router = inject(Router)
-  readonly route = inject(ActivatedRoute)
+  readonly #router = inject(Router)
+  readonly #route = inject(ActivatedRoute)
   readonly dialog = inject(MatDialog)
 
   readonly actionTemplate = viewChild('actionTemplate', { read: TemplateRef })
@@ -59,11 +67,12 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
 
   readonly dataSource = signal<CopilotRoleRowType[]>([])
 
-  readonly displayedColumns = ['name', 'title', 'titleCN', 'description', 'actions']
+  readonly displayedColumns = ['avatar', 'name', 'title', 'titleCN', 'description', 'actions']
 
   private itemsSub = this.refresh$
     .pipe(
       switchMap(() => this.roleService.getAll()),
+      map(({ items }) => items),
       takeUntilDestroyed()
     )
     .subscribe((items) => {
@@ -71,21 +80,23 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
     })
 
   addRole() {
-    this.dataSource.update((items) => [...items, { __edit__: true }])
+    // this.dataSource.update((items) => [...items, { __edit__: true }])
+    this.#router.navigate(['create'], { relativeTo: this.#route })
   }
 
   startEdit(item: CopilotRoleRowType) {
-    item.__edit__ = true
+    this.#router.navigate([item.id], { relativeTo: this.#route })
+    // item.__edit__ = true
   }
 
   saveEdit(item: CopilotRoleRowType) {
     if (item.id) {
       this.roleService.update(item.id, omitSystemProperty(item)).subscribe({
         next: () => {
-          this._toastrService.success('PAC.Messages.UpdatedSuccessfully' , { Default: 'Updated successfully' })
+          this._toastrService.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated successfully' })
           this.dataSource.update((items) => {
             const index = items.indexOf(item)
-            items[index] = { ...item, __edit__: false}
+            items[index] = { ...item, __edit__: false }
             return [...items]
           })
           // this.refresh$.next()

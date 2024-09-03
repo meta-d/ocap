@@ -1,5 +1,4 @@
 import { BaseMessage, FunctionCall, OpenAIToolCall } from '@langchain/core/messages'
-import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
@@ -145,7 +144,10 @@ export type JSONValue =
     }
   | Array<JSONValue>
 
-export type AIOptions = ChatCompletionCreateParamsBase & {
+export type AIOptions = {
+  model?: string
+  temperature?: number | null;
+  n?: number
   useSystemPrompt?: boolean
   verbose?: boolean
   interactive?: boolean

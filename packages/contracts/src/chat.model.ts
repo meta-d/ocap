@@ -9,12 +9,13 @@ export interface IChatConversation extends IBasePerTenantAndOrganizationEntityMo
   role?: ICopilotRole
   
   options?: {
-    //
+    knowledgebases: string[]
   }
 
   messages?: CopilotChatMessage[] | null
 }
 
+// Types
 export type ChatMessage = {
   conversationId: string;
   id: string;
@@ -23,6 +24,15 @@ export type ChatMessage = {
 
 export type ChatUserMessage = ChatMessage & {
   language: string
+}
+
+export type ChatGatewayMessage = {
+  organizationId: string;
+  role: {
+    id: string
+		knowledgebases?: string[]
+  }
+  message: ChatUserMessage
 }
 
 export type CopilotChatMessage = {

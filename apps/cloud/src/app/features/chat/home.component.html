@@ -3,6 +3,18 @@
     <pac-chat-sidenav-menu class="w-full p-2" [sidenav]="sidenav"/>
 
     <div class="flex-1 p-2 overflow-auto">
+      <ul cdkListbox>
+        @for (role of roles(); track role.id) {
+          <li [cdkOption]="role" class="flex items-center cursor-pointer px-4 py-2 rounded-md
+            active:scale-95 transition-transform
+           hover:bg-black/5 dark:hover:bg-white/10"
+            (click)="selectRole(role)"
+          ><pac-avatar [imageUrl]="role.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{role.name}}</li>
+        }
+      </ul>
+      <span class="flex h-9 items-center">
+        <h3 class="pb-2 pt-3 px-4 text-sm font-semibold text-ellipsis overflow-hidden break-all text-token-text-primary">昨天</h3>
+      </span>
       <mat-list>
         @for (item of conversations(); track item.id) {
           <mat-list-item class="pac-chat__conversation-item group cursor-pointer rounded-md hover:bg-black/5 dark:hover:bg-white/10"

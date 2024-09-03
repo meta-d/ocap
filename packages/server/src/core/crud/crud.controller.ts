@@ -91,9 +91,10 @@ export abstract class CrudController<T extends BaseEntity> {
 	@Get(':id')
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$relations', ParseJsonPipe) relations?: PaginationParams<T>['relations'],
 		...options: any[]
 	): Promise<T> {
-		return this.crudService.findOne(id);
+		return this.crudService.findOne(id, { relations });
 	}
 
 	@ApiOperation({ summary: 'Create new record' })

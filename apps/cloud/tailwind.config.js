@@ -25,7 +25,9 @@ module.exports = {
           700: '#455A64',
           800: '#37474F',
           900: '#263238'
-        }
+        },
+        'token-main-surface-secondary': 'var(--main-surface-secondary)',
+        'token-text-secondary': 'var(--text-secondary)'
       }
     },
     fontFamily: {

@@ -122,7 +122,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
 
   readonly lang = this.appService.lang
   readonly refreshFilter$ = new BehaviorSubject<void>(null)
-  readonly _roles = toSignal(this.refreshFilter$.pipe(switchMap(() => this.roleService.getAll())))
+  readonly _roles = toSignal(this.refreshFilter$.pipe(switchMap(() => this.roleService.getAll()), map(({items}) => items)))
   readonly roles = computed(() => {
     const lang = this.lang() as LanguagesEnum
     const roles = this._roles()?.map((role) => ({

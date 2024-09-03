@@ -46,7 +46,9 @@ export class PACCopilotService extends NgmCopilotService {
 
   private roleSub = this.roleService
     .getAll()
-    .pipe(takeUntilDestroyed())
+    .pipe(
+      map(({items}) => items),
+      takeUntilDestroyed())
     .subscribe((roles) => {
       this.roles.set(roles as BusinessRoleType[])
     })

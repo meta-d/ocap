@@ -1,6 +1,8 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
+import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -9,15 +11,16 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
-import { ChatConversationService, IChatConversation, routeAnimations } from '../../@core'
-import { MaterialModule } from '../../@shared'
+import { map } from 'rxjs/operators'
+import { CopilotRoleService, IChatConversation, ICopilotRole, routeAnimations } from '../../@core'
+import { AvatarComponent, MaterialModule } from '../../@shared'
 import { AppService } from '../../app.service'
 import { ChatAiMessageComponent } from './ai-message/ai-message.component'
 import { ChatInputComponent } from './chat-input/chat-input.component'
 import { ChatService } from './chat.service'
+import { ChatMoreComponent } from './icons'
 import { ChatSidenavMenuComponent } from './sidenav-menu/sidenav-menu.component'
 import { ChatToolbarComponent } from './toolbar/toolbar.component'
-import { ChatMoreComponent } from './icons'
 
 @Component({
   standalone: true,
@@ -27,11 +30,13 @@ import { ChatMoreComponent } from './icons'
     ReactiveFormsModule,
     RouterModule,
     DragDropModule,
+    CdkListboxModule,
     RouterModule,
     TranslateModule,
     MarkdownModule,
     MaterialModule,
     NgmCommonModule,
+    AvatarComponent,
 
     ChatAiMessageComponent,
     ChatToolbarComponent,
@@ -50,7 +55,6 @@ export class ChatHomeComponent {
   DisplayBehaviour = DisplayBehaviour
 
   readonly chatService = inject(ChatService)
-  readonly conversationService = inject(ChatConversationService)
   readonly appService = inject(AppService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
@@ -60,11 +64,17 @@ export class ChatHomeComponent {
   readonly conversations = this.chatService.conversations
   readonly conversationId = this.chatService.conversationId
 
+  readonly roles = this.chatService.roles
+
   selectConversation(item: IChatConversation) {
     this.chatService.setConversation(item.id)
   }
 
   deleteConv(id: string) {
     this.chatService.deleteConversation(id)
+  }
+
+  selectRole(role: ICopilotRole) {
+    this.chatService.newConversation(role)
   }
 }
