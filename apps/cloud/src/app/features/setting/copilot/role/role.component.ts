@@ -63,6 +63,7 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
     title: new FormControl(null),
     titleCN: new FormControl(null),
     description: new FormControl(null),
+    prompt: new FormControl(null),
     toolsets: new FormControl(null)
   })
   get toolsets() {

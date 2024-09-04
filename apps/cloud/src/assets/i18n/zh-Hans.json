@@ -1365,7 +1365,8 @@
         "Actions": "操作",
         "AddRole": "添加新角色",
         "SureDeleteRole": "确定删除此角色吗？",
-        "Avatar": "头像"
+        "Avatar": "头像",
+        "Prompt": "提示语"
       }
     },
     "Chat": {

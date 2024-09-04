@@ -30,6 +30,8 @@ export type ChatUserMessage = ChatMessage & {
 export enum ChatGatewayEvent {
   ConversationCreated = 'conversation_created',
   MessageStream = 'message_stream',
+  StepStart = 'step_start',
+  StepEnd = 'step_end',
   ToolStart = 'tool_start',
   ToolEnd = 'tool_end',
   ChainStart = 'chain_start',
@@ -61,6 +63,9 @@ export type ChatGatewayMessage = {
   data: {
     id: string
   }
+} | {
+  event: ChatGatewayEvent.StepStart | ChatGatewayEvent.StepEnd
+  data: CopilotChatMessage
 })
 
 export interface CopilotBaseMessage {
@@ -96,6 +101,10 @@ export type CopilotChatMessage = CopilotBaseMessage & {
   error?: string
 }
 
+export interface CopilotMessageGroup extends CopilotBaseMessage {
+  messages: CopilotChatMessage[]
+}
+
 export type JSONValue =
   | null
   | string
@@ -105,3 +114,8 @@ export type JSONValue =
       [x: string]: JSONValue
     }
   | Array<JSONValue>
+
+// Type guards
+export function isMessageGroup(message: CopilotBaseMessage): message is CopilotMessageGroup {
+  return 'messages' in message;
+}

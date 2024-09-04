@@ -18,6 +18,14 @@
       formControlName="description"
     />
 
+    <div class="flex-1 min-w-full flex flex-col">
+      <label class="ngm-input-label shrink-0">{{'PAC.Copilot.Roles.Prompt' | translate: {Default: 'Prompt'} }}</label>
+      <textarea class="ngm-input-element" matInput formControlName="prompt"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="2"
+          cdkAutosizeMaxRows="8"
+      ></textarea>
+    </div>
   </form>
 
   <div class="flex-1 flex flex-col p-4 overflow-auto">

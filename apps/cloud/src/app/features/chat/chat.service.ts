@@ -161,6 +161,14 @@ export class ChatService {
           this.appendStreamMessage(result.data.content)
           break
         }
+        case ChatGatewayEvent.StepStart: {
+          this.appendMessageStep(result.data)
+          break
+        }
+        case ChatGatewayEvent.StepEnd: {
+          this.updateMessageStep(result.data)
+          break
+        }
         case ChatGatewayEvent.ToolStart: {
           this.appendMessageStep({
             id: result.data.id,

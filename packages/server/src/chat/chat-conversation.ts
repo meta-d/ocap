@@ -9,6 +9,7 @@ import {
 	ChatGatewayEvent,
 	ChatGatewayMessage,
 	CopilotChatMessage,
+	CopilotMessageGroup,
 	IChatConversation,
 	ICopilotToolset,
 	IUser
@@ -27,6 +28,8 @@ export class ChatConversationAgent {
 	get id() {
 		return this.conversation.id
 	}
+
+	private message: CopilotMessageGroup = null
 	constructor(
 		public conversation: IChatConversation,
 		public readonly organizationId: string,
@@ -77,7 +80,8 @@ export class ChatConversationAgent {
 			// interruptAfter,
 			tools: [...tools],
 			messageModifier: async (state) => {
-				const systemTemplate = `{{language}}
+				const systemTemplate = `{{role}}
+{{language}}
 References documents:
 {{context}}
 `
@@ -95,6 +99,7 @@ References documents:
 		let aiContent = ''
 		const eventStack: string[] = []
 		let toolName = ''
+		// const message = { id: answerId, messages: [], role: 'assistant', content: '' } as CopilotMessageGroup
 		return from(
 			this.graph.streamEvents(
 				{
@@ -129,6 +134,12 @@ References documents:
 						const _event = eventStack.pop()
 						if (_event === 'on_tool_start') {
 							eventStack.pop()
+							this.message.messages.push({
+								id: toolName,
+								name: toolName,
+								role: 'tool',
+								status: 'done'
+							})
 							return {
 								event: ChatGatewayEvent.ToolEnd,
 								data: {
@@ -140,6 +151,7 @@ References documents:
 							eventStack.pop()
 						}
 						if (!eventStack.length) {
+							this.updateMessage({...this.message, status: 'done'})
 							return {
 								event: ChatGatewayEvent.ChainEnd,
 								data: {
@@ -155,7 +167,7 @@ References documents:
 							eventStack.pop()
 						}
 						if (aiContent) {
-							this.updateMessage({ id: answerId, content: aiContent, role: 'assistant' })
+							this.message.content = aiContent
 						}
 						return null
 					}
@@ -191,6 +203,12 @@ References documents:
 						if (_event !== 'on_tool_start') {
 							eventStack.pop()
 						}
+						this.message.messages.push({
+							id: rest.name,
+							name: rest.name,
+							role: 'tool',
+							status: 'done'
+						})
 						return {
 							event: ChatGatewayEvent.ToolEnd,
 							data: {
@@ -214,6 +232,14 @@ References documents:
 			},
 			state
 		)
+	}
+
+	newMessage(answerId: string) {
+		this.message = { id: answerId, messages: [], role: 'assistant', content: '' } as CopilotMessageGroup
+	}
+
+	addStep(step: CopilotChatMessage) {
+		this.message.messages.push(step)
 	}
 
 	async updateMessage(message: CopilotChatMessage) {

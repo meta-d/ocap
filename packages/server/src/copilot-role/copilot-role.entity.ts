@@ -32,6 +32,12 @@ export class CopilotRole extends TenantOrganizationBaseEntity implements ICopilo
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
+	@IsOptional()
+	@Column({ nullable: true, length: 500 })
+	prompt?: string
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
 	@Optional()
 	@Column({ nullable: true })
 	avatar?: string

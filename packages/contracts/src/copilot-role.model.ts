@@ -10,6 +10,7 @@ export interface ICopilotRole extends IBasePerTenantAndOrganizationEntityModel {
   title?: string
   titleCN?: string
   description?: string
+  prompt?: string
   active?: boolean
   avatar?: string
 

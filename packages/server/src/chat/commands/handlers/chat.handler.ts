@@ -1,4 +1,12 @@
-import { ChatGatewayEvent, ChatGatewayMessage, ChatUserMessage, IChatConversation, TOOLSETS } from '@metad/contracts'
+import {
+	ChatGatewayEvent,
+	ChatGatewayMessage,
+	ChatUserMessage,
+	CopilotChatMessage,
+	IChatConversation,
+	ICopilotRole,
+	TOOLSETS
+} from '@metad/contracts'
 import { shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { formatDocumentsAsString } from 'langchain/util/document'
@@ -6,6 +14,7 @@ import { isNil } from 'lodash'
 import { filter, Observable } from 'rxjs'
 import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
+import { FindCopilotRoleQuery } from '../../../copilot-role/index'
 import { CopilotService } from '../../../copilot/'
 import { KnowledgebaseService } from '../../../knowledgebase'
 import { ChatConversationAgent } from '../../chat-conversation'
@@ -62,7 +71,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					if (!copilot) {
 						throw new Error('copilot not found')
 					}
-		
+
 					this.conversations.set(
 						chatConversation.id,
 						new ChatConversationAgent(
@@ -77,14 +86,44 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					)
 				}
 				const conversation = this.conversations.get(chatConversation.id)
-		
+
 				if (language) {
 					conversation.updateState({
 						language: `Please answer in language: ${language}`
 					})
 				}
-		
+				if (role?.id) {
+					const copilotRole = await this.queryBus.execute<FindCopilotRoleQuery, ICopilotRole>(
+						new FindCopilotRoleQuery({ tenantId, organizationId, id: role.id })
+					)
+					conversation.updateState({
+						role: copilotRole.prompt
+					})
+				}
+
 				const answerId = shortuuid()
+				// Response start event
+				subscriber.next({
+					event: ChatGatewayEvent.ChainStart,
+					data: {
+						id: answerId
+					}
+				})
+
+				conversation.newMessage(answerId)
+
+				const stepMessage: CopilotChatMessage = {
+					id: 'documents',
+					role: 'system',
+					content: '',
+					status: 'thinking'
+				}
+				// conversation.addStep(stepMessage)
+				subscriber.next({
+					event: ChatGatewayEvent.StepStart,
+					data: stepMessage
+				})
+				// Search knowledgebases
 				const documents = await this.knowledgebaseService.similaritySearch(content, {
 					tenantId,
 					organizationId,
@@ -93,23 +132,26 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					knowledgebases: chatConversation.options?.knowledgebases
 				})
 				const context = formatDocumentsAsString(documents)
-		
+
 				conversation.updateState({
 					context
 				})
-		
-				// Update conversation messages
-				await conversation.updateMessage({ id, content, role: 'user' })
+
+				stepMessage.status = 'done'
+				stepMessage.content = `Got ${documents.length} documents!`
+				conversation.addStep({...stepMessage, status: 'done'})
 				subscriber.next({
-					event: ChatGatewayEvent.ChainStart,
-					data: {
-						id: answerId
-					}
+					event: ChatGatewayEvent.StepEnd,
+					data: {...stepMessage, status: 'done'}
 				})
 
-				conversation.chat(content, answerId).pipe(
-					filter((data) => data != null)
-				).subscribe(subscriber)
+				// Update conversation messages
+				await conversation.updateMessage({ id, content, role: 'user' })
+
+				conversation
+					.chat(content, answerId)
+					.pipe(filter((data) => data != null))
+					.subscribe(subscriber)
 			})()
 		})
 	}

@@ -8,6 +8,7 @@ import { CopilotRole } from './copilot-role.entity'
 import { CopilotRoleService } from './copilot-role.service'
 import { CommandHandlers } from './commands/handlers/index'
 import { KnowledgebaseModule } from '../knowledgebase/'
+import { QueryHandlers } from './queries/handlers'
 
 @Module({
     imports: [
@@ -18,7 +19,7 @@ import { KnowledgebaseModule } from '../knowledgebase/'
         forwardRef(() => KnowledgebaseModule)
     ],
     controllers: [CopilotRoleController],
-    providers: [CopilotRoleService, ...CommandHandlers],
+    providers: [CopilotRoleService, ...CommandHandlers, ...QueryHandlers],
     exports: [CopilotRoleService]
 })
 export class CopilotRoleModule { }
