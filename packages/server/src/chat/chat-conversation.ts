@@ -2,13 +2,20 @@ import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
 import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
 import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_run'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
+import { AIMessageChunk, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
-import { CopilotChatMessage, IChatConversation, ICopilotToolset, IUser } from '@metad/contracts'
+import {
+	ChatGatewayEvent,
+	ChatGatewayMessage,
+	CopilotChatMessage,
+	IChatConversation,
+	ICopilotToolset,
+	IUser
+} from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
-import { from, map, tap } from 'rxjs'
+import { from, map } from 'rxjs'
 import { ChatConversationUpdateCommand } from '../chat-conversation'
 import { Copilot, createLLM, createReactAgent } from '../copilot'
 import { CopilotCheckpointSaver } from '../copilot-checkpoint'
@@ -28,8 +35,7 @@ export class ChatConversationAgent {
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
-	) {
-	}
+	) {}
 
 	createAgentGraph(toolsets: ICopilotToolset[]) {
 		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
@@ -59,8 +65,8 @@ export class ChatConversationAgent {
 			tools.push(wikiTool)
 		}
 		if (toolsets.some((item) => item.name === 'DuckDuckGo')) {
-		  const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
-		  tools.push(duckTool)
+			const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
+			tools.push(duckTool)
 		}
 
 		this.graph = createReactAgent({
@@ -85,8 +91,10 @@ References documents:
 		return this
 	}
 
-	chat(input: string) {
+	chat(input: string, answerId: string) {
 		let aiContent = ''
+		const eventStack: string[] = []
+		let toolName = ''
 		return from(
 			this.graph.streamEvents(
 				{
@@ -104,29 +112,94 @@ References documents:
 				}
 			)
 		).pipe(
-			tap(({ event }: any) => console.log(`streamEvents event type of graph:`, event)),
-			// filter(({ event }: any) => event === 'on_chat_model_stream'),
-			map(({ event, data }: any) => {
-				// console.log(event)
-				if (event === 'on_chat_model_stream') {
-					const msg = data.chunk as AIMessageChunk
-					if (!msg.tool_call_chunks?.length) {
-						// console.log(msg.content)
-						aiContent += msg.content
+			// tap(({ event }: any) => console.log(`streamEvents event type of graph:`, event)),
+			map(({ event, data, ...rest }: any) => {
+				console.log(event)
+				
+				switch (event) {
+					case 'on_chain_start': {
+						eventStack.push(event)
+						break
+					}
+					case 'on_chat_model_start': {
+						eventStack.push(event)
+						break
+					}
+					case 'on_chain_end': {
+						const _event = eventStack.pop()
+						if (_event === 'on_tool_start') {
+							eventStack.pop()
+							return {
+								event: ChatGatewayEvent.ToolEnd,
+								data: {
+									name: toolName
+								}
+							}
+						}
+						if (_event !== 'on_chain_start') {
+							eventStack.pop()
+						}
+						if (!eventStack.length) {
+							return {
+								event: ChatGatewayEvent.ChainEnd,
+								data: {
+									id: answerId
+								}
+							}
+						}
+						break
+					}
+					case 'on_chat_model_end': {
+						const _event = eventStack.pop()
+						if (_event !== 'on_chat_model_start') {
+							eventStack.pop()
+						}
+						if (aiContent) {
+							this.updateMessage({ id: answerId, content: aiContent, role: 'assistant' })
+						}
+						return null
+					}
+					case 'on_chat_model_stream': {
+						const msg = data.chunk as AIMessageChunk
+						if (!msg.tool_call_chunks?.length) {
+							if (msg.content) {
+								aiContent += msg.content
+								return {
+									event: ChatGatewayEvent.MessageStream,
+									data: {
+										conversationId: this.id,
+										id: answerId,
+										content: msg.content
+									}
+								}
+							}
+						}
+						break
+					}
+					case 'on_tool_start': {
+						eventStack.push(event)
+						toolName = rest.name
 						return {
-							event,
-							content: msg.content
+							event: ChatGatewayEvent.ToolStart,
+							data: {
+								name: rest.name
+							}
 						}
 					}
-				} else if (event === 'on_chat_model_end') {
-					return {
-						event,
-						content: aiContent
+					case 'on_tool_end': {
+						const _event = eventStack.pop()
+						if (_event !== 'on_tool_start') {
+							eventStack.pop()
+						}
+						return {
+							event: ChatGatewayEvent.ToolEnd,
+							data: {
+								name: rest.name,
+								output: (<ToolMessage>data.output).content
+							}
+						} as ChatGatewayMessage
 					}
-				} else if (['on_chain_start', 'on_chain_end'].includes(event)) {
-					console.log(data)
 				}
-
 				return null
 			})
 		)

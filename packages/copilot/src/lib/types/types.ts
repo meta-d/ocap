@@ -57,18 +57,35 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
+export interface CopilotBaseMessage {
+  id: string
+  createdAt?: Date
+  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
+  
+  /**
+   * Status of the message:
+   * - thinking: AI is thinking
+   * - answering: AI is answering
+   * - pending: AI is pending for confirm or more information
+   * - done: AI is done
+   * - error: AI has error
+   * - info: todo
+   */
+  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'error' | 'info'
+
+  content?: string
+}
+
 /**
  */
-export interface CopilotChatMessage {
-  id: string
+export interface CopilotChatMessage extends CopilotBaseMessage {
   tool_call_id?: string
-  createdAt?: Date
-  content: string
   /**
    * If the message has a role of `function`, the `name` field is the name of the function.
    * Otherwise, the name field should not be set.
    */
   name?: string
+
   /**
    * If the assistant role makes a function call, the `function_call` field
    * contains the function call name and arguments. Otherwise, the field should
@@ -87,28 +104,20 @@ export interface CopilotChatMessage {
   annotations?: JSONValue[] | undefined
 
   error?: string
-
-  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
+  
   /**
    * Command name
    */
   command?: string
 
-  /**
-   * Status of the message:
-   * - thinking: AI is thinking
-   * - answering: AI is answering
-   * - pending: AI is pending for confirm or more information
-   * - done: AI is done
-   * - error: AI has error
-   * - info: todo
-   */
-  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'error' | 'info'
-
-  lcMessage?: BaseMessage
-
   historyCursor?: number
   reverted?: boolean
+
+  lcMessage?: BaseMessage
+}
+
+export interface CopilotMessageGroup extends CopilotBaseMessage {
+  messages: CopilotChatMessage[]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -157,4 +166,9 @@ export type AIOptions = {
 export enum MessageDataType {
   Route = 'route',
   ToolsCall = 'tools_call',
+}
+
+// Type guards
+export function isMessageGroup(message: CopilotBaseMessage): message is CopilotMessageGroup {
+  return 'messages' in message;
 }

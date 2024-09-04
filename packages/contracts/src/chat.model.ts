@@ -13,7 +13,7 @@ export interface IChatConversation extends IBasePerTenantAndOrganizationEntityMo
     toolsets: string[]
   }
 
-  messages?: CopilotChatMessage[] | null
+  messages?: CopilotBaseMessage[] | null
 }
 
 // Types
@@ -27,33 +27,47 @@ export type ChatUserMessage = ChatMessage & {
   language: string
 }
 
+export enum ChatGatewayEvent {
+  ConversationCreated = 'conversation_created',
+  MessageStream = 'message_stream',
+  ToolStart = 'tool_start',
+  ToolEnd = 'tool_end',
+  ChainStart = 'chain_start',
+  ChainEnd = 'chain_end',
+}
+
 export type ChatGatewayMessage = {
-  organizationId: string;
-  role: {
+  organizationId?: string;
+  role?: {
     id: string
 		knowledgebases?: string[]
     toolsets: string[] | null
   }
-  message: ChatUserMessage
-}
+} & ({
+  event: ChatGatewayEvent.ConversationCreated
+  data: IChatConversation
+} | {
+  event: ChatGatewayEvent.MessageStream
+  data: ChatUserMessage
+} | {
+  event: ChatGatewayEvent.ToolStart | ChatGatewayEvent.ToolEnd
+  data: {
+    id: string
+    name: string
+    output?: string
+  }
+} | {
+  event: ChatGatewayEvent.ChainStart | ChatGatewayEvent.ChainEnd
+  data: {
+    id: string
+  }
+})
 
-export type CopilotChatMessage = {
+export interface CopilotBaseMessage {
   id: string
-  tool_call_id?: string
   createdAt?: Date
-  content: string | any
-  /**
-   * If the message has a role of `function`, the `name` field is the name of the function.
-   * Otherwise, the name field should not be set.
-   */
-  name?: string
-
-  data?: JSONValue
-
-  error?: string
-
   role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
-
+  
   /**
    * Status of the message:
    * - thinking: AI is thinking
@@ -64,6 +78,22 @@ export type CopilotChatMessage = {
    * - info: todo
    */
   status?: 'thinking' | 'answering' | 'pending' | 'done' | 'error' | 'info'
+
+  content?: string | any
+}
+
+export type CopilotChatMessage = CopilotBaseMessage & {
+  tool_call_id?: string
+  
+  /**
+   * If the message has a role of `function`, the `name` field is the name of the function.
+   * Otherwise, the name field should not be set.
+   */
+  name?: string
+
+  data?: JSONValue
+
+  error?: string
 }
 
 export type JSONValue =

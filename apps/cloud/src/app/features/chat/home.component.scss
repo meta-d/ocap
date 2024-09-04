@@ -31,3 +31,9 @@
     @apply relative;
   }
 }
+
+:host::ng-deep {
+  .mat-drawer-inner-container {
+    @apply overflow-hidden flex flex-col;
+  }
+}

@@ -1,14 +1,34 @@
 import { Location } from '@angular/common'
 import { effect, inject, Injectable, signal } from '@angular/core'
-import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { CopilotChatMessage } from '@metad/copilot'
+import { CopilotBaseMessage, CopilotChatMessage, CopilotMessageGroup } from '@metad/copilot'
 import { nonNullable } from '@metad/ocap-core'
 import { injectParams } from 'ngxtension/inject-params'
-import { BehaviorSubject, combineLatestWith, distinctUntilChanged, filter, map, of, skip, switchMap, tap, withLatestFrom } from 'rxjs'
-import { IChatConversation, ICopilotRole, ICopilotToolset, IKnowledgebase, OrderTypeEnum } from '../../@core'
+import {
+  BehaviorSubject,
+  combineLatestWith,
+  distinctUntilChanged,
+  filter,
+  map,
+  of,
+  skip,
+  switchMap,
+  tap,
+  withLatestFrom
+} from 'rxjs'
+import {
+  ChatGatewayEvent,
+  ChatGatewayMessage,
+  IChatConversation,
+  ICopilotRole,
+  ICopilotToolset,
+  IKnowledgebase,
+  OrderTypeEnum
+} from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService } from '../../@core/services'
 import { AppService } from '../../app.service'
+
 
 @Injectable()
 export class ChatService {
@@ -23,12 +43,10 @@ export class ChatService {
   readonly paramId = injectParams('id')
 
   readonly conversationId = signal<string>(null)
-  // readonly role = signal<ICopilotRole>(null)
   readonly role$ = new BehaviorSubject<ICopilotRole>(null)
   readonly conversation = signal<IChatConversation>(null)
-  // readonly conversationId = computed(() => this.conversation()?.id)
 
-  readonly messages = signal<CopilotChatMessage[]>([])
+  readonly messages = signal<CopilotBaseMessage[]>([])
 
   // Conversations
   readonly conversations = signal<IChatConversation[]>([])
@@ -44,7 +62,8 @@ export class ChatService {
   private roleSub = this.role$
     .pipe(
       withLatestFrom(toObservable(this.paramRole)),
-      filter(() => !this.conversationId())
+      filter(() => !this.conversationId()),
+      takeUntilDestroyed()
     )
     .subscribe(([role, paramRole]) => {
       if (role?.name && role.name !== paramRole) {
@@ -61,7 +80,7 @@ export class ChatService {
       }
     })
   private paramRoleSub = toObservable(this.paramRole)
-    .pipe(combineLatestWith(toObservable(this.roles)), withLatestFrom(this.role$))
+    .pipe(combineLatestWith(toObservable(this.roles)), withLatestFrom(this.role$), takeUntilDestroyed())
     .subscribe(([[paramRole, roles], role]) => {
       if (roles && role?.name !== paramRole) {
         this.role$.next(roles.find((item) => item.name === paramRole))
@@ -86,7 +105,8 @@ export class ChatService {
           this.conversation.set({} as IChatConversation)
         }
       }),
-      combineLatestWith(toObservable(this.roles))
+      combineLatestWith(toObservable(this.roles)),
+      takeUntilDestroyed()
     )
     .subscribe(([conversation, roles]) => {
       if (conversation) {
@@ -98,8 +118,8 @@ export class ChatService {
     .pipe(
       filter(nonNullable),
       map((conversation) => conversation?.id),
-      distinctUntilChanged()
-      // filter((id) =>!!id),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
     )
     .subscribe((id) => {
       const roleName = this.paramRole()
@@ -121,23 +141,61 @@ export class ChatService {
 
   constructor() {
     this.chatService.connect()
-    this.chatService.on('message', (result) => {
-      this.messages.update((messages) => {
-        const index = messages.findIndex((message) => message.id === result.id)
-        if (index > -1) {
-          messages.splice(index, 1, { ...messages[index], content: messages[index].content + result.content })
-        } else {
-          messages.push({ ...result, role: 'assistant' })
+    this.chatService.on('message', (result: ChatGatewayMessage) => {
+      console.log('message return:', result)
+      switch(result.event) {
+        case ChatGatewayEvent.ChainStart: {
+          this.messages.update((items) => [...items, {
+            id: result.data.id,
+            role: 'assistant',
+            status: 'thinking'
+          }])
+          break
         }
-        return [...messages]
-      })
-
-      this.answering.set(false)
+        case ChatGatewayEvent.ConversationCreated: {
+          this.conversation.set({ ...result.data, messages: [...this.messages()] })
+          this.conversations.update((items) => [{ ...result.data }, ...items])
+          break
+        }
+        case ChatGatewayEvent.MessageStream: {
+          this.appendStreamMessage(result.data.content)
+          break
+        }
+        case ChatGatewayEvent.ToolStart: {
+          this.appendMessageStep({
+            id: result.data.id,
+            role: 'tool',
+            content: `调用工具: ${result.data.name}...`,
+            status: 'thinking',
+            name: result.data.name
+          })
+          break
+        }
+        case ChatGatewayEvent.ToolEnd: {
+          this.updateMessageStep({
+            id: result.data?.id,
+            role: 'tool',
+            content: `工具调用: ${result.data?.name} 已完成！`,
+            status: 'done'
+          })
+          break
+        }
+        case ChatGatewayEvent.ChainEnd: {
+          this.answering.set(false)
+          this.updateMessage(result.data.id, {
+            status: 'done'
+          })
+          break
+        }
+      }
     })
 
     this.conversationService
       .getAll({ select: ['id', 'key', 'title', 'updatedAt'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
-      .pipe(map(({ items }) => items))
+      .pipe(
+        map(({ items }) => items),
+        takeUntilDestroyed()
+      )
       .subscribe((items) => {
         this.conversations.set(items)
       })
@@ -165,12 +223,13 @@ export class ChatService {
 
   message(id: string, content: string) {
     return this.chatService.message({
+      event: ChatGatewayEvent.MessageStream,
       role: {
         id: this.role$.value?.id,
         knowledgebases: this.knowledgebases().map(({ id }) => id),
         toolsets: this.toolsets().map(({ id }) => id)
       },
-      message: {
+      data: {
         conversationId: this.conversationId(),
         id,
         language: this.appService.lang(),
@@ -180,6 +239,7 @@ export class ChatService {
   }
 
   async newConversation(role?: ICopilotRole) {
+    this.conversation.set(null)
     this.conversationId.set(null)
     this.role$.next(role)
   }
@@ -195,6 +255,45 @@ export class ChatService {
     this.conversations.update((items) => items.filter((item) => item.id !== id))
     this.conversationService.delete(id).subscribe({
       next: () => {}
+    })
+  }
+
+  updateMessage(id: string, message: Partial<CopilotBaseMessage>) {
+    this.messages.update((messages) => {
+      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+      messages[messages.length - 1] = {...lastMessage, ...message}
+      return [...messages]
+    })
+  }
+
+  appendStreamMessage(content: string) {
+    this.messages.update((messages) => {
+      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+      lastMessage.content = (lastMessage.content ?? '') + content
+      messages[messages.length - 1] = {...lastMessage}
+      return [...messages]
+    })
+  }
+
+  appendMessageStep(step: CopilotChatMessage) {
+    this.messages.update((messages) => {
+      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+      lastMessage.messages = [...(lastMessage.messages ?? []), step]
+      messages[messages.length - 1] = {...lastMessage}
+      return [...messages]
+    })
+  }
+
+  updateMessageStep(step: CopilotChatMessage) {
+    this.messages.update((messages) => {
+      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+      const lastStep = lastMessage.messages[lastMessage.messages.length - 1]
+      lastMessage.messages[lastMessage.messages.length - 1] = {
+        ...lastStep,
+        ...step
+      }
+      lastMessage.messages = [...lastMessage.messages]
+      return [...messages]
     })
   }
 }

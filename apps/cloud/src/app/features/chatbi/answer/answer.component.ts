@@ -28,13 +28,13 @@ import { StorySelectorComponent } from '../../../@shared'
 import { ChatbiService } from '../chatbi.service'
 import { ChatbiHomeComponent } from '../home.component'
 import { isQuestionAnswer, QuestionAnswer } from '../types'
-import { ChatbiLoadingComponent } from '../loading/loading.component'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { ExplainComponent } from '@metad/story/story'
 import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
 import { WidgetService } from '@metad/core'
 import { ChatbiChatComponent } from '../chat/chat.component'
 import { ChatbiInputComponent } from '../input/input.component'
+import { ChatLoadingComponent } from '../../../@shared/copilot'
 
 @Component({
   standalone: true,
@@ -62,7 +62,7 @@ import { ChatbiInputComponent } from '../input/input.component'
     NgmEntityPropertyComponent,
     NgmSearchComponent,
     NgmInputComponent,
-    ChatbiLoadingComponent
+    ChatLoadingComponent
   ],
   selector: 'pac-chatbi-answer',
   templateUrl: 'answer.component.html',

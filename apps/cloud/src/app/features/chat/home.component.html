@@ -1,15 +1,15 @@
 <mat-sidenav-container class="flex-1">
-  <mat-sidenav #sidenav opened mode="side" class="w-[400px]">
+  <mat-sidenav #sidenav opened [mode]="isMobile() ? 'over' : 'side'" class="w-[400px]">
     <pac-chat-sidenav-menu class="w-full p-2" [sidenav]="sidenav"/>
 
-    <div class="flex-1 p-2 overflow-auto">
+    <div class="flex-1 p-2 overflow-auto max-h-fit">
       <ul cdkListbox>
         @for (role of roles(); track role.id) {
           <li [cdkOption]="role" class="flex items-center cursor-pointer px-4 py-2 rounded-md
             active:scale-95 transition-transform
            hover:bg-black/5 dark:hover:bg-white/10"
             (click)="selectRole(role)"
-          ><pac-avatar [imageUrl]="role.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{role.name}}</li>
+          ><pac-avatar [imageUrl]="role.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{role.title}}</li>
         }
       </ul>
       <span class="flex h-9 items-center">
@@ -47,23 +47,23 @@
       }
     </pac-chat-toolbar>
     <div class="flex-1 overflow-auto">
-      <div class="flex flex-col w-full lg:w-[800px] max-w-full m-auto p-8">
+      <div class="flex flex-col w-full lg:w-[800px] max-w-full m-auto p-4 lg:p-8">
         @for (message of messages(); track message.id) {
           @switch (message.role) {
             @case ('user') {
               <div class="w-full flex justify-end my-4">
-                <div class="max-w-[70%] p-4 whitespace-pre-wrap rounded-2xl bg-black/5">{{ message.content }}</div>
+                <div class="max-w-[70%] p-4 whitespace-pre-wrap rounded-2xl bg-black/5 dark:bg-white/10">{{ message.content }}</div>
               </div>
             }
             @case ('assistant') {
-              <pac-ai-message class="my-4 p-4" [message]="message" />
+              <pac-ai-message class="my-4 lg:p-2" [message]="message" />
             }
           }
         }
       </div>
     </div>
 
-    <pac-chat-input class="w-full lg:w-[800px] max-w-full m-auto p-8"/>
+    <pac-chat-input class="w-full lg:w-[800px] max-w-full m-auto p-4 lg:p-8"/>
   </mat-sidenav-content>
 </mat-sidenav-container>
 

@@ -11,6 +11,8 @@ import { MaterialModule } from '../../../@shared'
 import { KnowledgebaseListComponent, ToolsetListComponent } from '../../../@shared/copilot'
 import { ChatService } from '../chat.service'
 import { Icons } from '../icons'
+import { AppService } from '../../../app.service'
+import { LanguagesEnum } from '../../../@core'
 
 @Component({
   standalone: true,
@@ -34,14 +36,27 @@ import { Icons } from '../icons'
 })
 export class ChatToolbarComponent {
   readonly chatService = inject(ChatService)
+  readonly appService = inject(AppService)
 
   readonly sidenav = input<MatSidenav>()
 
-  readonly role = toSignal(this.chatService.role$)
+  readonly lang = this.appService.lang
+  readonly _role = toSignal(this.chatService.role$)
 
-  readonly knowledgebaseList = computed(() => this.role()?.knowledgebases)
+  readonly knowledgebaseList = computed(() => this._role()?.knowledgebases)
   readonly knowledgebases = this.chatService.knowledgebases
 
-  readonly toolsetList = computed(() => this.role()?.toolsets)
+  readonly toolsetList = computed(() => this._role()?.toolsets)
   readonly toolsets = this.chatService.toolsets
+
+  readonly role = computed(() => {
+    if (!this._role()) {
+      return null
+    }
+    if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(this.lang() as LanguagesEnum)) {
+      return { ...this._role(), title: this._role().titleCN }
+    } else {
+      return this._role()
+    }
+  })
 }

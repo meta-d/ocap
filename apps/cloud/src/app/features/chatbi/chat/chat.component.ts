@@ -28,7 +28,7 @@ import { ChatbiAnswerComponent } from '../answer/answer.component'
 import { ChatbiService } from '../chatbi.service'
 import { injectExamplesAgent } from '../copilot'
 import { ChatbiInputComponent } from '../input/input.component'
-import { ChatbiLoadingComponent } from '../loading/loading.component'
+import { ChatLoadingComponent } from '../../../@shared/copilot'
 
 @Component({
   standalone: true,
@@ -48,7 +48,7 @@ import { ChatbiLoadingComponent } from '../loading/loading.component'
 
     ChatbiInputComponent,
     ChatbiAnswerComponent,
-    ChatbiLoadingComponent
+    ChatLoadingComponent
   ],
   selector: 'pac-chatbi-chat',
   templateUrl: 'chat.component.html',

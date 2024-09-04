@@ -4,9 +4,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core'
 @Component({
   standalone: true,
   imports: [CommonModule],
-  selector: 'pac-chatbi-loading',
+  selector: 'pac-chat-loading',
   templateUrl: 'loading.component.html',
   styleUrl: 'loading.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChatbiLoadingComponent {}
+export class ChatLoadingComponent {}

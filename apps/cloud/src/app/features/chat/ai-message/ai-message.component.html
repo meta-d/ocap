@@ -1,13 +1,34 @@
 <div>
-  <pac-avatar class="w-10 h-10 rounded-full overflow-hidden mr-4" [imageUrl]="''" />
+  <pac-avatar class="w-10 h-10 rounded-full overflow-hidden mr-4" [imageUrl]="role()?.avatar" />
 </div>
 
-<markdown clipboard class="ngm-copilot-markdown flex-1"
-  [clipboardButtonTemplate]="buttonTemplate"
-  lineNumbers
-  [start]="5"
-  [data]="message().content"
-/>
+<div class="flex-1 flex flex-col gap-2 mt-4">
+  @if (messageGroup(); as group) {
+    @for (message of group.messages; track message) {
+      @if (message.role === 'tool') {
+        <div class="flex justify-start items-center p-2 rounded-lg text-token-text-secondary bg-black/5">
+          @if (message.status === 'thinking') {
+            <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
+          }
+          <mat-icon fontSet="material-icons-round">construction</mat-icon>{{message.name}}
+        </div>
+      }
+    }
+  }
+  
+  @if (content()) {
+    <markdown clipboard class="ngm-copilot-markdown flex-1"
+      [clipboardButtonTemplate]="buttonTemplate"
+      lineNumbers
+      [start]="5"
+      [data]="content()"
+    />
+  }
+
+  @if (['thinking', 'answering'].includes(message().status) && answering()) {
+    <pac-chat-loading />
+  }
+</div>
 
 <ng-template #buttonTemplate>
   <!-- <button mat-flat-button displayDensity="compact" class="ngm-rounded-full"
