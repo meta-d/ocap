@@ -215,7 +215,10 @@
       "Open": "打开",
       "Knowledgebases": "知识库",
       "Empty": "无数据",
-      "Toolset": "工具集"
+      "Toolset": "工具集",
+      "About": "关于",
+      "ConversationStarters": "对话开场白",
+      "Toolsets": "工具集"
     },
     "MENU": {
       "Certification": "认证",
@@ -1366,7 +1369,8 @@
         "AddRole": "添加新角色",
         "SureDeleteRole": "确定删除此角色吗？",
         "Avatar": "头像",
-        "Prompt": "提示语"
+        "Prompt": "提示语",
+        "Starters": "开场白"
       }
     },
     "Chat": {

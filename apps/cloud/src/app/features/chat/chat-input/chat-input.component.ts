@@ -34,20 +34,24 @@ export class ChatInputComponent {
   readonly prompt = toSignal(this.promptControl.valueChanges)
   readonly answering = this.chatService.answering
 
-  ask() {
+  send() {
+    this.ask(this.prompt().trim())
+  }
+
+  ask(statement: string) {
     const id = uuid()
-    const content = this.prompt().trim()
+    // const content = this.prompt().trim()
     this.answering.set(true)
     this.chatService.messages.update((messages) => [
       ...(messages ?? []),
       {
         id,
         role: 'user',
-        content
+        content: statement
       }
     ])
     this.promptControl.setValue('')
-    this.chatService.message(id, content)
+    this.chatService.message(id, statement)
   }
 
   stopGenerating() {}
@@ -59,7 +63,7 @@ export class ChatInputComponent {
 
     if (event.key === 'Enter') {
       setTimeout(() => {
-        this.ask()
+        this.ask(this.prompt().trim())
       })
       return
     }

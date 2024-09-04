@@ -32,7 +32,7 @@
 <div class="flex-1"></div>
 
 <ng-template #menu>
-  <div class="example-menu" cdkMenu displayDensity="cosy">
+  <div class="ngm-cdk-menu" cdkMenu displayDensity="cosy">
     <label class="px-2 pb-2">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
     <div class="max-h-64 w-56" (click)="$event.stopPropagation()">
       @if (knowledgebaseList()?.length) {
@@ -53,10 +53,14 @@
       }
     </div>
 
-    <button class="example-menu-item" cdkMenuItem>
-      <pac-chat-hidden-svg />
+    <button class="ngm-cdk-menu-item" cdkMenuItem>
+      <mat-icon class="text-token-text-secondary mr-2">visibility_off</mat-icon>
       <span>{{'PAC.KEY_WORDS.Hidden'  | translate: {Default: 'Hidden'} }}</span>
     </button>
-    <button class="example-menu-item" cdkMenuItem>About</button>
+
+    <button class="ngm-cdk-menu-item" cdkMenuItem (click)="openAbout()">
+      <mat-icon class="text-token-text-secondary mr-2">info</mat-icon>
+      {{'PAC.KEY_WORDS.About'  | translate: {Default: 'About'} }}
+    </button>
   </div>
 </ng-template>

@@ -20,8 +20,10 @@
   --ngm-color-surface-container-highest: #e5e5e5;
   --ngm-color-outline-variant: theme('colors.neutral.100');
   --ngm-copilot-bg-color: var(--ngm-color-surface-container);
+  --main-surface-primary: var(--ngm-color-surface);
   --main-surface-secondary: theme('colors.neutral.100');
   --text-secondary: theme('colors.neutral.400');
+  --border-medium: theme('colors.neutral.300');
 }
 
 :root .dark {
@@ -37,6 +39,8 @@
   --ngm-color-surface-container-highest: #2f353c;
   --ngm-color-outline-variant: theme('colors.neutral.800');
   --ngm-copilot-bg-color: var(--ngm-color-surface-container);
+  --main-surface-primary: var(--ngm-color-surface);
   --main-surface-secondary: theme('colors.neutral.800');
   --text-secondary: theme('colors.zinc.300');
+  --border-medium: theme('colors.neutral.600');
 }

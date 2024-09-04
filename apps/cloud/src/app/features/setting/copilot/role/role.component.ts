@@ -1,7 +1,7 @@
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { Component, computed, effect, inject, model, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormArray, FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -64,6 +64,12 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
     titleCN: new FormControl(null),
     description: new FormControl(null),
     prompt: new FormControl(null),
+    starters: new FormArray([
+      new FormControl(null),
+      new FormControl(null),
+      new FormControl(null),
+      new FormControl(null),
+    ]),
     toolsets: new FormControl(null)
   })
   get toolsets() {
