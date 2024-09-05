@@ -602,6 +602,26 @@ export class FeaturesComponent implements OnInit {
             }
           },
           {
+            title: 'Knowledgebase',
+            matIcon: 'school',
+            link: '/settings/knowledgebase',
+            data: {
+              translationKey: 'Knowledgebase',
+              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
+              featureKey: FeatureEnum.FEATURE_COPILOT
+            }
+          },
+          {
+            title: 'Chat BI',
+            matIcon: 'try',
+            link: '/settings/chatbi',
+            data: {
+              translationKey: 'Chat BI',
+              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
+              featureKey: FeatureEnum.FEATURE_COPILOT
+            }
+          },
+          {
             title: 'User',
             matIcon: 'people',
             link: '/settings/users',

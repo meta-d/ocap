@@ -54,6 +54,12 @@ export class CopilotRole extends TenantOrganizationBaseEntity implements ICopilo
 	@Column({ type: 'json', nullable: true })
 	toolsets?: ICopilotToolset[]
 
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	options?: Record<string, any>
+
 	/*
     |--------------------------------------------------------------------------
     | @ManyToMany 

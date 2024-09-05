@@ -44,7 +44,7 @@ import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
 
 const TABLE_PAGE_SIZE = 10
 
-type ChatAnswer = {
+export type ChatAnswer = {
 	preface: string
 	visualType: 'Chart' | 'Table' | 'KPI'
 	dataSettings: DataSettings

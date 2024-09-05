@@ -1,5 +1,5 @@
 <mat-drawer-container class="w-full h-full" [autosize]="true">
-  <mat-drawer #drawer class="w-64" mode="side"
+  <mat-drawer #drawer class="w-64" [mode]="isMobile() ? 'over' : 'side'"
     [(opened)]="sideMenuOpened"
     ngmResizer [resizerWidth]="230">
     <div class="z-10 flex flex-col max-w-xs h-full p-2 md:p-4 md:pr-0">

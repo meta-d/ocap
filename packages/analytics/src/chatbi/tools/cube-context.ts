@@ -2,8 +2,8 @@ import { tool } from '@langchain/core/tools'
 import { isEntitySet, markdownModelCube } from '@metad/ocap-core'
 import { firstValueFrom, switchMap } from 'rxjs'
 import { z } from 'zod'
-import { ChatContext } from '../types'
-import { ChatBIModelService } from '../../chatbi-model/chatbi-model.service'
+import { ChatContext, GetCubesContextSchema } from '../types'
+import { ChatBIModelService } from '../../chatbi-model/'
 
 export function createCubeContextTool(context: ChatContext, modelService: ChatBIModelService) {
 	const { logger, dsCoreService, conversation } = context
@@ -49,14 +49,7 @@ export function createCubeContextTool(context: ChatContext, modelService: ChatBI
 		{
 			name: 'getCubeContext',
 			description: 'Get the context info for cubes',
-			schema: z.object({
-				cubes: z.array(
-					z.object({
-						modelId: z.string().describe('The model id of cube'),
-						name: z.string().describe('The name of cube')
-					})
-				)
-			})
+			schema: GetCubesContextSchema
 		}
 	)
 }

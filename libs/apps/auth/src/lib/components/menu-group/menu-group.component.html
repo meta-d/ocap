@@ -14,10 +14,12 @@
             [matTooltip]="item.title"
             matTooltipPosition="right"
             [matMenuTriggerFor]="isCollapsed && item.children ? subMenus : null"
+            #menuTrigger="matMenuTrigger"
             [routerLink]="isCollapsed ? item.link : null"
             routerLinkActive
             #rla="routerLinkActive"
-            [class.active]="rla.isActive">
+            [class.active]="rla.isActive"
+          >
             <mat-icon fontSet="material-icons-round">{{ item.matIcon }}</mat-icon>
           </button>
         } @else if (item.matIcon) {

@@ -4,6 +4,7 @@ import { AgentState, createCopilotAgentState } from '@metad/copilot'
 import { DSCoreService, EntityType, Indicator } from '@metad/ocap-core'
 import { ChatLarkContext, LarkService } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
+import { z } from 'zod'
 
 export const CHATBI_COMMAND_NAME = 'chatbi'
 export type ChatBIAgentState = AgentState
@@ -28,7 +29,7 @@ export type ChatContext = {
   logger: Logger,
   dsCoreService?: DSCoreService
   entityType?: EntityType
-  larkService: LarkService
+  larkService?: LarkService
   chatBIService?: IChatBI
   conversation?: IChatBIConversation
 }
@@ -66,3 +67,12 @@ export type IChatBIConversation = {
 }
 
 export const C_CHATBI_END_CONVERSATION = 'chatbi-end-conversation'
+
+export const GetCubesContextSchema = z.object({
+  cubes: z.array(
+    z.object({
+      modelId: z.string().describe('The model id of cube'),
+      name: z.string().describe('The name of cube')
+    })
+  )
+})

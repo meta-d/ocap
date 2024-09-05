@@ -22,6 +22,10 @@ export interface ICopilotRole extends IBasePerTenantAndOrganizationEntityModel {
   avatar?: string
 
   toolsets?: ICopilotToolset[]
+  /**
+   * More configuration
+   */
+  options?: Record<string, any>
 
   // Many to many relationship
   knowledgebases?: IKnowledgebase[]

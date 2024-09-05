@@ -38,6 +38,7 @@
     "handlebars": "^4.7.7",
     "helmet": "^4.6.0",
     "html-to-text": "^7.1.2",
+    "json-schema-to-zod": "^2.4.0",
     "jsonwebtoken": "^8.5.1",
     "mammoth": "^1.8.0",
     "mjml": "^4.10.3",
@@ -60,7 +61,8 @@
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.37",
     "underscore": "^1.13.1",
-    "unleash-client": "^3.10.1"
+    "unleash-client": "^3.10.1",
+    "zod-to-json-schema": "^3.23.2"
   },
   "devDependencies": {
     "@types/passport": "^1.0.11",

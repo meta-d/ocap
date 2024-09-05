@@ -38,6 +38,8 @@ export enum ChatGatewayEvent {
   ChainEnd = 'chain_end',
   CancelChain = 'cancel_chain',
   ChainAborted = 'chain_aborted',
+  Component = 'component',
+  
 }
 
 export type ChatGatewayMessage = {

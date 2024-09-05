@@ -8,60 +8,66 @@
   <div class="w-full flex flex-col items-start mb-8">
     <label class="text-lg font-bold">{{'PAC.KEY_WORDS.ConversationStarters' | translate: {Default: 'Conversation Starters'} }}</label>
     <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
-        @for (statement of role.starters; track statement) {
-          <div class="flex" tabindex="0">
-            <a class="group relative cursor-pointer ml-2 h-14 flex-grow rounded-xl border border-token-border-medium bg-token-main-surface-primary px-4
-              hover:bg-token-main-surface-secondary focus:outline-none active:scale-95 transition-transform"
-              (click)="onStart(statement)">
-              <div class="flex h-full items-center">
-                <div class="line-clamp-2 text-sm">{{statement}}</div>
-              </div>
+    @for (statement of role.starters; track statement) {
+      @if (statement) {
+        <div class="flex" tabindex="0">
+          <a class="group relative cursor-pointer ml-2 h-14 flex-grow rounded-xl border border-token-border-medium bg-token-main-surface-primary px-4
+            hover:bg-token-main-surface-secondary focus:outline-none active:scale-95 transition-transform"
+            (click)="onStart(statement)">
+            <div class="flex h-full items-center">
+              <div class="line-clamp-2 text-sm">{{statement}}</div>
+            </div>
+            <div
+              class="absolute -bottom-px -left-2 h-3 w-4 border-b border-token-border-medium bg-token-main-surface-primary group-hover:bg-token-main-surface-secondary"
+            >
               <div
-                class="absolute -bottom-px -left-2 h-3 w-4 border-b border-token-border-medium bg-token-main-surface-primary group-hover:bg-token-main-surface-secondary"
-              >
-                <div
-                  class="h-3 w-2 rounded-br-full border-b border-r border-token-border-medium bg-token-main-surface-primary"
-                ></div>
-              </div>
-              <div class="absolute bottom-0 right-2 top-0 hidden items-center group-hover:flex">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-token-main-surface-primary">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon-md text-token-text-primary"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M12 4C7.58172 4 4 7.58172 4 12C4 14.1941 4.88193 16.1802 6.31295 17.6265C6.6343 17.9513 6.69466 18.4526 6.45959 18.8443L5.76619 20H12C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22H4C3.63973 22 3.30731 21.8062 3.1298 21.4927C2.95229 21.1792 2.95715 20.7944 3.14251 20.4855L4.36137 18.4541C2.88894 16.7129 2 14.4595 2 12Z"
-                      fill="currentColor"
-                    ></path>
-                  </svg>
-                </div></div
-            ></a>
-          </div>
-        }
+                class="h-3 w-2 rounded-br-full border-b border-r border-token-border-medium bg-token-main-surface-primary"
+              ></div>
+            </div>
+            <div class="absolute bottom-0 right-2 top-0 hidden items-center group-hover:flex">
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-token-main-surface-primary">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon-md text-token-text-primary"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M12 4C7.58172 4 4 7.58172 4 12C4 14.1941 4.88193 16.1802 6.31295 17.6265C6.6343 17.9513 6.69466 18.4526 6.45959 18.8443L5.76619 20H12C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22H4C3.63973 22 3.30731 21.8062 3.1298 21.4927C2.95229 21.1792 2.95715 20.7944 3.14251 20.4855L4.36137 18.4541C2.88894 16.7129 2 14.4595 2 12Z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </div></div
+          ></a>
+        </div>
+      }
+    }
     </div>
   </div>
   
-  <div class="w-full flex flex-col mb-8">
-    <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
-    <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
-      @for (knowledgebase of role.knowledgebases; track knowledgebase) {
-        <pac-knowledgebase-card [knowledgebase]="knowledgebase" />
-      }
+  @if (role.knowledgebases?.length) {
+    <div class="w-full flex flex-col mb-8">
+      <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
+      <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
+        @for (knowledgebase of role.knowledgebases; track knowledgebase) {
+          <pac-knowledgebase-card [knowledgebase]="knowledgebase" />
+        }
+      </div>
     </div>
-  </div>
+  }
 
-  <div class="w-full flex flex-col mb-8">
-    <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Toolsets' | translate: {Default: 'Toolsets'} }}</label>
-    <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
-      @for (toolset of role.toolsets; track toolset) {
-        <pac-toolset-card [toolset]="toolset" />
-      }
+  @if (role.toolsets?.length) {
+    <div class="w-full flex flex-col mb-8">
+      <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Toolsets' | translate: {Default: 'Toolsets'} }}</label>
+      <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
+        @for (toolset of role.toolsets; track toolset) {
+          <pac-toolset-card [toolset]="toolset" />
+        }
+      </div>
     </div>
-  </div>
+  }
 </div>

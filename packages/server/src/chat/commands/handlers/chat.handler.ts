@@ -76,6 +76,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 							user,
 							copilot,
 							this.copilotCheckpointSaver,
+							this.chatService,
 							this.commandBus,
 							this.queryBus
 						).createAgentGraph(TOOLSETS.filter((item) => role?.toolsets?.includes(item.id)))

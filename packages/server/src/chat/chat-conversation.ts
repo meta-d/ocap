@@ -4,6 +4,7 @@ import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_ru
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { tool } from '@langchain/core/tools'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
 import {
 	ChatGatewayEvent,
@@ -17,14 +18,17 @@ import {
 } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
+import { jsonSchemaToZod } from 'json-schema-to-zod'
+import { formatDocumentsAsString } from 'langchain/util/document'
 import { catchError, concat, from, fromEvent, map, Observable, of } from 'rxjs'
+import { z } from 'zod'
 import { ChatConversationUpdateCommand } from '../chat-conversation'
 import { Copilot, createLLM, createReactAgent } from '../copilot'
 import { CopilotCheckpointSaver } from '../copilot-checkpoint'
 import { CopilotTokenRecordCommand } from '../copilot-user/commands'
-import { ChatAgentState, chatAgentState } from './types'
-import { formatDocumentsAsString } from 'langchain/util/document'
 import { KnowledgeSearchQuery } from '../knowledgebase/queries'
+import { ChatService } from './chat.service'
+import { ChatAgentState, chatAgentState } from './types'
 
 export class ChatConversationAgent {
 	public graph: CompiledStateGraph<ChatAgentState, Partial<ChatAgentState>, typeof START | 'agent' | 'tools'>
@@ -43,6 +47,7 @@ export class ChatConversationAgent {
 		private readonly user: IUser,
 		private readonly copilot: Copilot,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
+		private readonly chatService: ChatService,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
 	) {}
@@ -60,24 +65,63 @@ export class ChatConversationAgent {
 		})
 
 		const tools = []
-		if (toolsets.some((item) => item.name === 'TavilySearch')) {
-			const tavilySearchTool = new TavilySearchResults({
-				apiKey: '',
-				maxResults: 2
-			})
-			tools.push(tavilySearchTool)
-		}
-		if (toolsets.some((item) => item.name === 'Wikipedia')) {
-			const wikiTool = new WikipediaQueryRun({
-				topKResults: 3,
-				maxDocContentLength: 4000
-			})
-			tools.push(wikiTool)
-		}
-		if (toolsets.some((item) => item.name === 'DuckDuckGo')) {
-			const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
-			tools.push(duckTool)
-		}
+		toolsets.forEach((toolset) => {
+			switch (toolset.name) {
+				case 'TavilySearch': {
+					const tavilySearchTool = new TavilySearchResults({
+						apiKey: '',
+						maxResults: 2
+					})
+					tools.push(tavilySearchTool)
+					break
+				}
+				case 'Wikipedia': {
+					const wikiTool = new WikipediaQueryRun({
+						topKResults: 3,
+						maxDocContentLength: 4000
+					})
+					tools.push(wikiTool)
+					break
+				}
+				case 'DuckDuckGo': {
+					const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
+					tools.push(duckTool)
+					break
+				}
+				default: {
+					toolset.tools.forEach((item) => {
+						switch (item.type) {
+							case 'command': {
+								let zodSchema: z.AnyZodObject = null
+								try {
+									zodSchema = eval(jsonSchemaToZod(JSON.parse(item.schema), { module: 'cjs' }))
+								} catch (err) {
+									throw new Error(`Invalid input schema for tool: ${item.name}`)
+								}
+								tools.push(
+									tool(
+										async (args, config) => {
+											return await this.chatService.executeCommand(item.name, args, config, {
+												tenantId: this.tenantId,
+												organizationId: this.organizationId,
+												user: this.user,
+												copilot: this.copilot
+											})
+										},
+										{
+											name: item.name,
+											description: item.description,
+											schema: zodSchema
+										}
+									)
+								)
+								break
+							}
+						}
+					})
+				}
+			}
+		})
 
 		this.graph = createReactAgent({
 			state: chatAgentState,
@@ -118,7 +162,8 @@ References documents:
 						version: 'v2',
 						configurable: {
 							thread_id: this.id,
-							thread_ns: ''
+							thread_ns: '',
+							subscriber
 						},
 						recursionLimit: AgentRecursionLimit,
 						signal: this.abortController.signal
@@ -156,7 +201,7 @@ References documents:
 							eventStack.pop()
 						}
 						if (!eventStack.length) {
-							this.updateMessage({...this.message, status: 'done'})
+							this.updateMessage({ ...this.message, status: 'done' })
 							return {
 								event: ChatGatewayEvent.ChainEnd,
 								data: {
@@ -235,7 +280,7 @@ References documents:
 					event: ChatGatewayEvent.ChainAborted,
 					data: {
 						conversationId: this.conversation.id,
-						id: answerId,
+						id: answerId
 					}
 				})
 			})
@@ -261,29 +306,33 @@ References documents:
 				data: stepMessage
 			})
 			// Search knowledgebases
-			this.queryBus.execute(new KnowledgeSearchQuery({
-				tenantId: this.tenantId,
-				organizationId: this.organizationId,
-				k: 5,
-				score: 0.5,
-				knowledgebases: this.conversation.options?.knowledgebases,
-				query: content
-			})).then((items) => {
-				if (!subscriber.closed) {
-					const context = formatDocumentsAsString(items.map(({doc}) => doc))
-					this.updateState({ context })
-	
-					stepMessage.status = 'done'
-					stepMessage.content = `Got ${items.length} document chunks!`
-					this.addStep({ ...stepMessage, status: 'done' })
-					completed = true
-					subscriber.next({
-						event: ChatGatewayEvent.StepEnd,
-						data: { ...stepMessage, status: 'done' }
+			this.queryBus
+				.execute(
+					new KnowledgeSearchQuery({
+						tenantId: this.tenantId,
+						organizationId: this.organizationId,
+						k: 5,
+						score: 0.5,
+						knowledgebases: this.conversation.options?.knowledgebases,
+						query: content
 					})
-					subscriber.complete()
-				}
-			})
+				)
+				.then((items) => {
+					if (!subscriber.closed) {
+						const context = formatDocumentsAsString(items.map(({ doc }) => doc))
+						this.updateState({ context })
+
+						stepMessage.status = 'done'
+						stepMessage.content = `Got ${items.length} document chunks!`
+						this.addStep({ ...stepMessage, status: 'done' })
+						completed = true
+						subscriber.next({
+							event: ChatGatewayEvent.StepEnd,
+							data: { ...stepMessage, status: 'done' }
+						})
+						subscriber.complete()
+					}
+				})
 
 			return () => {
 				if (!completed) {
@@ -299,24 +348,23 @@ References documents:
 		}
 		this.abortController = new AbortController()
 		const abortSignal$ = fromEvent(this.abortController.signal, 'abort')
-		return concat(
-			this.knowledgeSearch(input, answerId),
-			this.streamGraphEvents(input, answerId)
-		).pipe(
-			(source) => new Observable((subscriber) => {
-				abortSignal$.subscribe(() => {
-					subscriber.next({
-						event: ChatGatewayEvent.ChainAborted,
-						data: {
-							conversationId: this.conversation.id,
-							id: answerId,
-						}
+		return concat(this.knowledgeSearch(input, answerId), this.streamGraphEvents(input, answerId)).pipe(
+			(source) =>
+				new Observable((subscriber) => {
+					abortSignal$.subscribe(() => {
+						subscriber.next({
+							event: ChatGatewayEvent.ChainAborted,
+							data: {
+								conversationId: this.conversation.id,
+								id: answerId
+							}
+						})
+						subscriber.unsubscribe()
+						this.abortMessage()
 					})
-					subscriber.unsubscribe()
-					this.abortMessage()
+					!subscriber.closed && source.subscribe(subscriber)
 				})
-				!subscriber.closed && source.subscribe(subscriber)
-			}))
+		)
 	}
 
 	updateState(state: Partial<ChatAgentState>) {
@@ -343,9 +391,9 @@ References documents:
 			await this.updateMessage({
 				...this.message,
 				status: 'aborted',
-				messages: this.message.messages.map((m) => (m.status === 'thinking' ? {...m, status: 'aborted'} : m))
+				messages: this.message.messages.map((m) => (m.status === 'thinking' ? { ...m, status: 'aborted' } : m))
 			} as CopilotMessageGroup)
-		} catch(err) {
+		} catch (err) {
 			console.log('error', err)
 		}
 	}
@@ -369,10 +417,10 @@ References documents:
 	cancel() {
 		try {
 			this.abortController?.abort(`Abort by user`)
-		} catch(err) {
+		} catch (err) {
 			//
 		}
-		
+
 		this.abortController = null
 	}
 }

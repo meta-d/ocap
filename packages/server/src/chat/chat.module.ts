@@ -11,6 +11,7 @@ import { ChatService } from './chat.service'
 @Module({
 	imports: [CqrsModule, CopilotModule, CopilotCheckpointModule, KnowledgebaseModule],
 	controllers: [ChatController],
-	providers: [ChatEventsGateway, ChatService, ...CommandHandlers]
+	providers: [ChatEventsGateway, ChatService, ...CommandHandlers],
+	exports: [ChatService]
 })
 export class ChatModule {}

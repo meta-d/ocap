@@ -1,11 +1,15 @@
-<pac-menu-group [isCollapsed]="isCollapsed" [menus]="general()"
-    (clicked)="clicked.emit()">
-</pac-menu-group>
+<pac-menu-group [isCollapsed]="isCollapsed()"
+  [isMobile]="isMobile()"
+  [menus]="general()"
+  (clicked)="clicked.emit()"
+/>
 
 <div class="pac-menu__space"></div>
 
 <ng-content></ng-content>
 
-<pac-menu-group [isCollapsed]="isCollapsed" [menus]="admin()"
-    (clicked)="clicked.emit()">
-</pac-menu-group>
+<pac-menu-group [isCollapsed]="isCollapsed()"
+  [isMobile]="isMobile()"
+  [menus]="admin()"
+  (clicked)="clicked.emit()"
+/>

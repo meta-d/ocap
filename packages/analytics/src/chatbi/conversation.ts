@@ -22,6 +22,7 @@ import {
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	createExampleFewShotPrompt,
+	createLLM,
 	createReactAgent,
 	createReferencesRetrieverTool,
 } from '@metad/server-core'
@@ -33,7 +34,6 @@ import { createDimensionMemberRetriever, SemanticModelMemberService } from '../m
 import { convertOcapSemanticModel, getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
 import { ChatBIService } from './chatbi.service'
 import { markdownCubes } from './graph/index'
-import { createLLM } from './llm'
 import {
 	createChatAnswerTool,
 	createCubeContextTool,

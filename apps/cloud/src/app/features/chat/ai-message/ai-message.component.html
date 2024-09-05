@@ -2,7 +2,7 @@
   <pac-avatar class="w-10 h-10 rounded-full overflow-hidden mr-4" [imageUrl]="role()?.avatar" />
 </div>
 
-<div class="flex-1 flex flex-col gap-2 mt-4 overflow-x-hidden">
+<div class="flex-1 flex flex-col gap-2 mt-2 overflow-x-hidden">
   @if (messageGroup(); as group) {
     @for (message of group.messages; track message) {
       @switch (message.role) {
