@@ -1,4 +1,4 @@
-import { CopilotModule, DatabaseModule, SharedModule, TenantModule } from '@metad/server-core'
+import { DatabaseModule, SharedModule, TenantModule } from '@metad/server-core'
 import { BullModule } from '@nestjs/bull'
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
@@ -10,6 +10,7 @@ import { ModelMemberController } from './member.controller'
 import { SemanticModelMember } from './member.entity'
 import { MemberProcessor } from './member.processor'
 import { SemanticModelMemberService } from './member.service'
+import { CopilotModule } from '@metad/server-ai'
 
 @Module({
 	imports: [

@@ -10,7 +10,6 @@ import { CommandHandlers } from './commands/handlers';
 import { TenantModule } from '../tenant/tenant.module';
 import { RoleModule } from './../role/role.module';
 import { UserModule } from './../user/user.module';
-import { EmployeeModule } from './../employee/employee.module';
 import { OrganizationProjectModule } from './../organization-project/organization-project.module';
 import { OrganizationContactModule } from './../organization-contact/organization-contact.module';
 import { OrganizationDepartmentModule } from './../organization-department/organization-department.module';
@@ -32,7 +31,6 @@ import { InviteService } from './invite.service';
 		TenantModule,
 		UserModule,
 		RoleModule,
-		EmployeeModule,
 		OrganizationModule,
 		OrganizationProjectModule,
 		OrganizationContactModule,

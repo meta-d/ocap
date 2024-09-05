@@ -7,6 +7,7 @@ import {
 	setDefaultFeatures,
 	setDefaultRolePermissions
 } from '@metad/server-core'
+import { ALL_AI_ENTITIES, AiSubscribers } from  '@metad/server-ai'
 import { Type } from '@nestjs/common'
 import { ALL_ENTITIES } from './entities/index'
 import { coreSubscribers as analyticsSubscribers } from './entities/subscribers'
@@ -15,11 +16,14 @@ import { ANALYTICS_ROLE_PERMISSIONS } from './role-permissions'
 
 export function prepare() {
 	const allEntities = coreEntities as Array<Type<any>>
-	allEntities.push(...ALL_ENTITIES)
+	allEntities.push(
+		...ALL_AI_ENTITIES,
+		...ALL_ENTITIES
+	)
 	setConfig({
 		dbConnectionOptions: {
 			entities: allEntities,
-			subscribers: [...coreSubscribers, ...analyticsSubscribers]
+			subscribers: [...coreSubscribers, ...AiSubscribers, ...analyticsSubscribers]
 		}
 	})
 

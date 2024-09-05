@@ -1,4 +1,4 @@
-import { EmployeeModule, SharedModule, TenantModule, UserModule } from '@metad/server-core'
+import { SharedModule, TenantModule, UserModule } from '@metad/server-core'
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -16,7 +16,6 @@ import { CommandHandlers } from './commands/handlers'
 		CqrsModule,
 		forwardRef(() => TenantModule),
 		forwardRef(() => UserModule),
-		EmployeeModule,
 	],
 	controllers: [BusinessAreaUserController],
 	providers: [BusinessAreaUserService, ...CommandHandlers],

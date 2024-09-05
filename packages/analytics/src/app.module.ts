@@ -67,7 +67,7 @@ import { ChatBIModelModule } from './chatbi-model'
 		CacheModule.register(),
 		CqrsModule,
 		forwardRef(() => TenantModule),
-		forwardRef(() => EmployeeModule),
+		// forwardRef(() => EmployeeModule),
 		forwardRef(() => OrganizationModule),
 		ProjectModule,
 		CollectionModule,

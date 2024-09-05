@@ -1,0 +1,15 @@
+{
+  "name": "@metad/server-ai",
+  "version": "2.7.0",
+  "type": "commonjs",
+  "dependencies": {
+    "duck-duck-scrape": "^2.2.5",
+    "epub2": "^3.0.2",
+    "html-to-text": "^7.1.2",
+    "json-schema-to-zod": "^2.4.0",
+    "pdf-parse": "^1.1.1",
+    "zod-to-json-schema": "^3.23.2"
+  },
+  "devDependencies": {
+  }
+}

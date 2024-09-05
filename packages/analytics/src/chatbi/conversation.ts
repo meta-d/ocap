@@ -25,7 +25,7 @@ import {
 	createLLM,
 	createReactAgent,
 	createReferencesRetrieverTool,
-} from '@metad/server-core'
+} from '@metad/server-ai'
 import { Logger } from '@nestjs/common'
 import { groupBy } from 'lodash'
 import { BehaviorSubject, firstValueFrom, Subject, switchMap, takeUntil } from 'rxjs'

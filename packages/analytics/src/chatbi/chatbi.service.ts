@@ -1,6 +1,6 @@
 import { AiProviderRole } from '@metad/contracts'
 import { Agent, DataSourceFactory } from '@metad/ocap-core'
-import { CopilotCheckpointSaver, CopilotKnowledgeService, CopilotService } from '@metad/server-core'
+import { CopilotCheckpointSaver, CopilotKnowledgeService, CopilotService } from '@metad/server-ai'
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common'
 import { Cache } from 'cache-manager'
 import { CommandBus } from '@nestjs/cqrs'

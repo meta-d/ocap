@@ -1,6 +1,6 @@
-import { KnowledgebaseSubscriber, StorageFileSubscriber, TagSubscriber } from './internal'
+import { StorageFileSubscriber, TagSubscriber } from './internal'
 
 /**
  * A map of the core TypeORM Subscribers.
  */
-export const coreSubscribers = [StorageFileSubscriber, TagSubscriber, KnowledgebaseSubscriber]
+export const coreSubscribers = [StorageFileSubscriber, TagSubscriber]

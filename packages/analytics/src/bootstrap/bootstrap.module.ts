@@ -1,9 +1,10 @@
 import { SeederModule, ServerAppModule } from '@metad/server-core'
+import { ServerAIModule } from '@metad/server-ai'
 import { Logger, MiddlewareConsumer, Module, NestModule, OnApplicationShutdown } from '@nestjs/common'
 import { AnalyticsModule } from '../app.module'
 
 @Module({
-	imports: [ServerAppModule, AnalyticsModule, SeederModule]
+	imports: [ServerAppModule, ServerAIModule, AnalyticsModule, SeederModule]
 })
 export class BootstrapModule implements NestModule, OnApplicationShutdown {
 	constructor() {}

@@ -1,4 +1,4 @@
-import { EmployeeModule, SharedModule, TenantModule } from '@metad/server-core'
+import { SharedModule, TenantModule } from '@metad/server-core'
 import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -15,7 +15,6 @@ import { StoryTemplateService } from './story-template.service'
 		TenantModule,
 		SharedModule,
 		CqrsModule,
-		EmployeeModule,
 		CaslModule
 	],
 	controllers: [StoryTemplateController],

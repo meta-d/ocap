@@ -1,6 +1,5 @@
 import { BusinessAreaRole } from '@metad/contracts'
 import {
-	Employee,
 	RequestContext,
 	TenantOrganizationAwareCrudService,
 	TenantOrganizationBaseEntity,
@@ -22,7 +21,6 @@ export abstract class BusinessAreaAwareCrudService<
 > extends TenantOrganizationAwareCrudService<T> {
 	protected constructor(
 		protected readonly repository: Repository<T>,
-		// protected readonly employeeRepository: Repository<Employee>,
 		protected readonly commandBus: CommandBus,
 	) {
 		super(repository)

@@ -39,6 +39,7 @@
       "@metad/ocap-echarts": ["packages/echarts/src/index.ts"],
       "@metad/ocap-sql": ["packages/sql/src/index.ts"],
       "@metad/ocap-xmla": ["packages/xmla/src/index.ts"],
+      "@metad/server-ai": ["packages/server-ai/src/index.ts"],
       "@metad/server-auth": ["packages/auth/src/index.ts"],
       "@metad/server-common": ["packages/common/src/index.ts"],
       "@metad/server-config": ["packages/config/src/index.ts"],

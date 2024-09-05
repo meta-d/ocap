@@ -7,17 +7,9 @@ import { ServeStaticModule, ServeStaticModuleOptions } from '@nestjs/serve-stati
 import { RouterModule } from 'nest-router'
 import { HeaderResolver, I18nJsonParser, I18nModule } from 'nestjs-i18n'
 import * as path from 'path'
-import { AIModule } from './ai/ai.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AuthModule } from './auth/auth.module'
-import { ChatModule } from './chat/index'
-import { CopilotModule } from './copilot'
-import { CopilotCheckpointModule } from './copilot-checkpoint/copilot-checkpoint.module'
-import { CopilotKnowledgeModule } from './copilot-knowledge/index'
-import { CopilotOrganizationModule } from './copilot-organization/copilot-organization.module'
-import { CopilotRoleModule } from './copilot-role/copilot-role.module'
-import { CopilotUserModule } from './copilot-user/copilot-user.module'
 import { CoreModule } from './core/core.module'
 import { RedisModule } from './core/redis.module'
 import { CountryModule } from './country/country.module'
@@ -31,8 +23,6 @@ import { resolveServeStaticPath } from './helper'
 import { HomeModule } from './home/home.module'
 import { IntegrationLarkModule } from './integration-lark/index'
 import { InviteModule } from './invite/invite.module'
-import { KnowledgeDocumentModule } from './knowledge-document/document.module'
-import { KnowledgebaseModule } from './knowledgebase/knowledgebase.module'
 import { LanguageModule } from './language/language.module'
 import { OrganizationContactModule } from './organization-contact/organization-contact.module'
 import { OrganizationDepartmentModule } from './organization-department/organization-department.module'
@@ -47,7 +37,6 @@ import { TenantSettingModule } from './tenant/tenant-setting'
 import { TenantModule } from './tenant/tenant.module'
 import { UserOrganizationModule } from './user-organization/user-organization.module'
 import { UserModule } from './user/index'
-import { ChatConversationModule } from './chat-conversation/index'
 
 @Module({
 	imports: [
@@ -79,8 +68,8 @@ import { ChatConversationModule } from './chat-conversation/index'
 		CoreModule,
 		AuthModule,
 		UserModule,
-		EmployeeModule,
 		TenantModule,
+		EmployeeModule,
 		TenantSettingModule,
 		EmailModule,
 		EmailTemplateModule,
@@ -99,19 +88,8 @@ import { ChatConversationModule } from './chat-conversation/index'
 		InviteModule,
 		CustomSmtpModule,
 		LanguageModule,
-		CopilotModule,
-		CopilotKnowledgeModule,
-		CopilotRoleModule,
-		CopilotUserModule,
-		CopilotOrganizationModule,
 		StorageFileModule,
-		AIModule,
-		CopilotCheckpointModule,
 		IntegrationLarkModule,
-		KnowledgebaseModule,
-		KnowledgeDocumentModule,
-		ChatModule,
-		ChatConversationModule
 	],
 	controllers: [AppController],
 	providers: [AppService],

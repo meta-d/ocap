@@ -32,7 +32,7 @@ import {
 	createLLM,
 	createReactAgent,
 	createReferencesRetrieverTool
-} from '@metad/server-core'
+} from '@metad/server-ai'
 import { CACHE_MANAGER, Inject, Logger } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { Cache } from 'cache-manager'
