@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from '../../../@shared'
 import { ChatService } from '../chat.service'
 import { ChatNewChatComponent, ChatSideMenuComponent } from '../icons'
+import { COMMON_COPILOT_ROLE } from '../types'
 
 @Component({
   standalone: true,
@@ -31,6 +32,6 @@ export class ChatSidenavMenuComponent {
   readonly sidenav = input<MatSidenav>()
 
   async newConversation() {
-    await this.chatService.newConversation()
+    await this.chatService.newConversation(COMMON_COPILOT_ROLE)
   }
 }

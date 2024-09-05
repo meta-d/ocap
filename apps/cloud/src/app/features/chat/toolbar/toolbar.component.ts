@@ -8,13 +8,12 @@ import { MatSidenav } from '@angular/material/sidenav'
 import { RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { LanguagesEnum } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
 import { AboutRoleComponent, KnowledgebaseListComponent, ToolsetListComponent } from '../../../@shared/copilot'
 import { AppService } from '../../../app.service'
+import { ChatInputComponent } from '../chat-input/chat-input.component'
 import { ChatService } from '../chat.service'
 import { Icons } from '../icons'
-import { ChatInputComponent } from '../chat-input/chat-input.component'
 
 @Component({
   standalone: true,
@@ -53,16 +52,7 @@ export class ChatToolbarComponent {
   readonly toolsetList = computed(() => this._role()?.toolsets)
   readonly toolsets = this.chatService.toolsets
 
-  readonly role = computed(() => {
-    if (!this._role()) {
-      return null
-    }
-    if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(this.lang() as LanguagesEnum)) {
-      return { ...this._role(), title: this._role().titleCN }
-    } else {
-      return this._role()
-    }
-  })
+  readonly role = this.chatService.role
 
   openAbout() {
     this.#dialog

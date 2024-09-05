@@ -30,6 +30,7 @@ module.exports = {
         'token-main-surface-secondary': 'var(--main-surface-secondary)',
         'token-text-secondary': 'var(--text-secondary)',
         'token-border-medium': 'var(--border-medium)',
+        'token-border-light': 'var(--border-light)',
       }
     },
     fontFamily: {

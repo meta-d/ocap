@@ -24,6 +24,7 @@
   --main-surface-secondary: theme('colors.neutral.100');
   --text-secondary: theme('colors.neutral.400');
   --border-medium: theme('colors.neutral.300');
+  --border-light: theme('colors.neutral.200');
 }
 
 :root .dark {
@@ -43,4 +44,5 @@
   --main-surface-secondary: theme('colors.neutral.800');
   --text-secondary: theme('colors.zinc.300');
   --border-medium: theme('colors.neutral.600');
+  --border-light: theme('colors.neutral.700');
 }

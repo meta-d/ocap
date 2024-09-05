@@ -1,7 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { CopilotBaseMessage, isMessageGroup } from '@metad/copilot'
@@ -40,7 +39,7 @@ export class ChatAiMessageComponent {
   readonly message = input<CopilotBaseMessage>()
   readonly content = computed(() => this.message()?.content)
 
-  readonly role = toSignal(this.chatService.role$)
+  readonly role = this.chatService.role
   readonly answering = this.chatService.answering
 
   readonly messageGroup = computed(() => {

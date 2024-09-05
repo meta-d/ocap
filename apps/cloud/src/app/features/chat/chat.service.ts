@@ -12,6 +12,7 @@ import {
   filter,
   map,
   of,
+  pipe,
   skip,
   switchMap,
   tap,
@@ -24,10 +25,13 @@ import {
   ICopilotRole,
   ICopilotToolset,
   IKnowledgebase,
+  LanguagesEnum,
   OrderTypeEnum
 } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService } from '../../@core/services'
 import { AppService } from '../../app.service'
+import { derivedFrom } from 'ngxtension/derived-from'
+import { COMMON_COPILOT_ROLE } from './types'
 
 
 @Injectable()
@@ -51,13 +55,33 @@ export class ChatService {
   // Conversations
   readonly conversations = signal<IChatConversation[]>([])
 
-  readonly roles = toSignal(
-    this.copilotRoleService.getAll({ relations: ['knowledgebases'] }).pipe(map(({ items }) => items))
-  )
   readonly knowledgebases = signal<IKnowledgebase[]>([])
   readonly toolsets = signal<ICopilotToolset[]>([])
 
   readonly answering = signal<boolean>(false)
+
+  readonly lang = this.appService.lang
+  readonly roles = derivedFrom([this.copilotRoleService.getAll({ relations: ['knowledgebases'] }).pipe(map(({ items }) => items)), this.lang], pipe(
+    map(([roles, lang]) => {
+      if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
+        return roles?.map((role) => ({ ...role, title: role.titleCN }))
+      } else {
+        return roles
+      }
+    })
+  ), {initialValue: []})
+  readonly role = derivedFrom([this.role$, this.lang], pipe(
+    map(([role, lang]) => {
+      if (!role) {
+        role = COMMON_COPILOT_ROLE
+      }
+      if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
+        return { ...role, title: role.titleCN }
+      } else {
+        return role
+      }
+    })
+  ))
 
   private roleSub = this.role$
     .pipe(
@@ -66,10 +90,10 @@ export class ChatService {
       takeUntilDestroyed()
     )
     .subscribe(([role, paramRole]) => {
-      if (role?.name && role.name !== paramRole) {
-        this.#location.replaceState('/chat/r/' + role.name)
-      } else if (role?.name === 'common') {
+      if (role?.name === 'common') {
         this.#location.replaceState('/chat')
+      } else if (role?.name && role.name !== paramRole) {
+        this.#location.replaceState('/chat/r/' + role.name)
       }
 
       if (!this.conversationId()) {

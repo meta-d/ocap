@@ -1,8 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -10,9 +9,7 @@ import { provideOcapCore } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { MarkdownModule } from 'ngx-markdown'
-import { map } from 'rxjs/operators'
-import { CopilotRoleService, IChatConversation, ICopilotRole, LanguagesEnum, routeAnimations } from '../../@core'
+import { IChatConversation, ICopilotRole, routeAnimations } from '../../@core'
 import { AvatarComponent, MaterialModule } from '../../@shared'
 import { AppService } from '../../app.service'
 import { ChatAiMessageComponent } from './ai-message/ai-message.component'
@@ -33,7 +30,6 @@ import { ChatToolbarComponent } from './toolbar/toolbar.component'
     CdkListboxModule,
     RouterModule,
     TranslateModule,
-    MarkdownModule,
     MaterialModule,
     NgmCommonModule,
     AvatarComponent,
@@ -66,13 +62,8 @@ export class ChatHomeComponent {
   readonly conversations = this.chatService.conversations
   readonly conversationId = this.chatService.conversationId
 
-  readonly roles = computed(() => {
-    if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(this.lang() as LanguagesEnum)) {
-      return this.chatService.roles()?.map((role) => ({ ...role, title: role.titleCN }))
-    } else {
-      return this.chatService.roles()
-    }
-  })
+  readonly roles = this.chatService.roles
+  readonly role = this.chatService.role
 
   selectConversation(item: IChatConversation) {
     this.chatService.setConversation(item.id)
