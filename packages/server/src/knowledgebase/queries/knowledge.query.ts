@@ -2,13 +2,13 @@ import { Metadata } from '@metad/contracts'
 import { IQuery } from '@nestjs/cqrs'
 
 export class KnowledgeSearchQuery implements IQuery {
-	static readonly type = '[Knowledge] Similarity Search'
+	static readonly type = '[Knowledgebase] Similarity Search'
 
 	constructor(
 		public readonly input: {
 			tenantId: string
 			organizationId: string
-			knowledgebaseId: string
+			knowledgebases: string[]
 			query: string
 			k?: number
 			score?: number

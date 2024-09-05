@@ -1,4 +1,4 @@
-import { ChatGatewayMessage, ChatMessage, IUser } from '@metad/contracts'
+import { ChatGatewayEvent, ChatGatewayMessage, ChatMessage, IUser } from '@metad/contracts'
 import { UseGuards } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import {
@@ -13,7 +13,7 @@ import {
 import { from, map, Observable, switchMap } from 'rxjs'
 import { Server, Socket } from 'socket.io'
 import { WsJWTGuard, WsUser } from '../shared/'
-import { ChatCommand } from './commands'
+import { CancelChatCommand, ChatCommand } from './commands'
 
 @WebSocketGateway({
 	namespace: 'chat',
@@ -37,6 +37,16 @@ export class ChatEventsGateway implements OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@WsUser() user: IUser
 	): Observable<WsResponse<ChatMessage>> {
+		if (data.event === ChatGatewayEvent.CancelChain) {
+			return from(this.commandBus.execute(
+				new CancelChatCommand({
+					...data,
+					tenantId: user.tenantId,
+					user,
+				})
+			))
+		}
+
 		return from(
 			this.commandBus.execute(
 				new ChatCommand({

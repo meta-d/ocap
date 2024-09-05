@@ -8,6 +8,7 @@ import { CompiledStateGraph, START } from '@langchain/langgraph'
 import {
 	ChatGatewayEvent,
 	ChatGatewayMessage,
+	CopilotBaseMessage,
 	CopilotChatMessage,
 	CopilotMessageGroup,
 	IChatConversation,
@@ -16,20 +17,26 @@ import {
 } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
-import { from, map } from 'rxjs'
+import { catchError, concat, from, fromEvent, map, Observable, of } from 'rxjs'
 import { ChatConversationUpdateCommand } from '../chat-conversation'
 import { Copilot, createLLM, createReactAgent } from '../copilot'
 import { CopilotCheckpointSaver } from '../copilot-checkpoint'
 import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { ChatAgentState, chatAgentState } from './types'
+import { formatDocumentsAsString } from 'langchain/util/document'
+import { KnowledgeSearchQuery } from '../knowledgebase/queries'
 
 export class ChatConversationAgent {
 	public graph: CompiledStateGraph<ChatAgentState, Partial<ChatAgentState>, typeof START | 'agent' | 'tools'>
 	get id() {
 		return this.conversation.id
 	}
+	get tenantId() {
+		return this.user.tenantId
+	}
 
 	private message: CopilotMessageGroup = null
+	private abortController: AbortController
 	constructor(
 		public conversation: IChatConversation,
 		public readonly organizationId: string,
@@ -95,32 +102,33 @@ References documents:
 		return this
 	}
 
-	chat(input: string, answerId: string) {
+	streamGraphEvents(input: string, answerId: string) {
 		let aiContent = ''
 		const eventStack: string[] = []
 		let toolName = ''
-		// const message = { id: answerId, messages: [], role: 'assistant', content: '' } as CopilotMessageGroup
-		return from(
-			this.graph.streamEvents(
-				{
-					input,
-					messages: [new HumanMessage(input)]
-				},
-				{
-					version: 'v2',
-					configurable: {
-						thread_id: this.id,
-						thread_ns: ''
+		let stepMessage = null
+		return new Observable((subscriber) => {
+			from(
+				this.graph.streamEvents(
+					{
+						input,
+						messages: [new HumanMessage(input)]
 					},
-					recursionLimit: AgentRecursionLimit
-					// debug: true
-				}
-			)
-		).pipe(
-			// tap(({ event }: any) => console.log(`streamEvents event type of graph:`, event)),
+					{
+						version: 'v2',
+						configurable: {
+							thread_id: this.id,
+							thread_ns: ''
+						},
+						recursionLimit: AgentRecursionLimit,
+						signal: this.abortController.signal
+						// debug: true
+					}
+				)
+			).subscribe(subscriber)
+		}).pipe(
 			map(({ event, data, ...rest }: any) => {
 				console.log(event)
-				
 				switch (event) {
 					case 'on_chain_start': {
 						eventStack.push(event)
@@ -134,12 +142,9 @@ References documents:
 						const _event = eventStack.pop()
 						if (_event === 'on_tool_start') {
 							eventStack.pop()
-							this.message.messages.push({
-								id: toolName,
-								name: toolName,
-								role: 'tool',
-								status: 'done'
-							})
+							if (stepMessage) {
+								stepMessage.status = 'done'
+							}
 							return {
 								event: ChatGatewayEvent.ToolEnd,
 								data: {
@@ -191,6 +196,13 @@ References documents:
 					case 'on_tool_start': {
 						eventStack.push(event)
 						toolName = rest.name
+						stepMessage = {
+							id: rest.name,
+							name: rest.name,
+							role: 'tool',
+							status: 'thinking'
+						}
+						this.addStep(stepMessage)
 						return {
 							event: ChatGatewayEvent.ToolStart,
 							data: {
@@ -203,12 +215,9 @@ References documents:
 						if (_event !== 'on_tool_start') {
 							eventStack.pop()
 						}
-						this.message.messages.push({
-							id: rest.name,
-							name: rest.name,
-							role: 'tool',
-							status: 'done'
-						})
+						if (stepMessage) {
+							stepMessage.status = 'done'
+						}
 						return {
 							event: ChatGatewayEvent.ToolEnd,
 							data: {
@@ -219,8 +228,95 @@ References documents:
 					}
 				}
 				return null
+			}),
+			catchError((err) => {
+				console.error(err)
+				return of({
+					event: ChatGatewayEvent.ChainAborted,
+					data: {
+						conversationId: this.conversation.id,
+						id: answerId,
+					}
+				})
 			})
 		)
+	}
+
+	knowledgeSearch(content: string, answerId: string) {
+		return new Observable((subscriber) => {
+			let completed = false
+			if (!this.conversation.options?.knowledgebases?.length) {
+				completed = true
+				subscriber.complete()
+			}
+
+			const stepMessage: CopilotChatMessage = {
+				id: 'documents',
+				role: 'system',
+				content: '',
+				status: 'thinking'
+			}
+			subscriber.next({
+				event: ChatGatewayEvent.StepStart,
+				data: stepMessage
+			})
+			// Search knowledgebases
+			this.queryBus.execute(new KnowledgeSearchQuery({
+				tenantId: this.tenantId,
+				organizationId: this.organizationId,
+				k: 5,
+				score: 0.5,
+				knowledgebases: this.conversation.options?.knowledgebases,
+				query: content
+			})).then((items) => {
+				if (!subscriber.closed) {
+					const context = formatDocumentsAsString(items.map(({doc}) => doc))
+					this.updateState({ context })
+	
+					stepMessage.status = 'done'
+					stepMessage.content = `Got ${items.length} document chunks!`
+					this.addStep({ ...stepMessage, status: 'done' })
+					completed = true
+					subscriber.next({
+						event: ChatGatewayEvent.StepEnd,
+						data: { ...stepMessage, status: 'done' }
+					})
+					subscriber.complete()
+				}
+			})
+
+			return () => {
+				if (!completed) {
+					this.addStep({ ...stepMessage, status: 'aborted' })
+				}
+			}
+		})
+	}
+
+	chat(input: string, answerId: string) {
+		if (this.abortController) {
+			this.cancel()
+		}
+		this.abortController = new AbortController()
+		const abortSignal$ = fromEvent(this.abortController.signal, 'abort')
+		return concat(
+			this.knowledgeSearch(input, answerId),
+			this.streamGraphEvents(input, answerId)
+		).pipe(
+			(source) => new Observable((subscriber) => {
+				abortSignal$.subscribe(() => {
+					subscriber.next({
+						event: ChatGatewayEvent.ChainAborted,
+						data: {
+							conversationId: this.conversation.id,
+							id: answerId,
+						}
+					})
+					subscriber.unsubscribe()
+					this.abortMessage()
+				})
+				!subscriber.closed && source.subscribe(subscriber)
+			}))
 	}
 
 	updateState(state: Partial<ChatAgentState>) {
@@ -242,7 +338,19 @@ References documents:
 		this.message.messages.push(step)
 	}
 
-	async updateMessage(message: CopilotChatMessage) {
+	async abortMessage() {
+		try {
+			await this.updateMessage({
+				...this.message,
+				status: 'aborted',
+				messages: this.message.messages.map((m) => (m.status === 'thinking' ? {...m, status: 'aborted'} : m))
+			} as CopilotMessageGroup)
+		} catch(err) {
+			console.log('error', err)
+		}
+	}
+
+	async updateMessage(message: CopilotBaseMessage) {
 		// Record conversation messages
 		this.conversation = await this.commandBus.execute(
 			new ChatConversationUpdateCommand({
@@ -253,5 +361,18 @@ References documents:
 				}
 			})
 		)
+	}
+
+	/**
+	 * Cancel the currently existing Graph execution task
+	 */
+	cancel() {
+		try {
+			this.abortController?.abort(`Abort by user`)
+		} catch(err) {
+			//
+		}
+		
+		this.abortController = null
 	}
 }

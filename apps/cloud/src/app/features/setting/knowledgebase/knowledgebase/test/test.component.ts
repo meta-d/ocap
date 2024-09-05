@@ -27,21 +27,23 @@ export class KnowledgeTestComponent extends TranslationBaseComponent {
   readonly score = model<number>(null)
   readonly topK = model<number>(null)
   readonly query = model<string>('')
-  readonly results = signal<[DocumentInterface, number][]>([])
+  readonly results = signal<{ doc: DocumentInterface; score: number }[]>([])
 
   readonly loading = signal<boolean>(false)
 
   test() {
     this.loading.set(true)
-    this.knowledgebaseService.test(this.knowledgebase().id, { query: this.query(), k: this.topK() ?? 10, score: this.score() }).subscribe({
-      next: (results) => {
-        this.results.set(results)
-        this.loading.set(false)
-      },
-      error: (err) => {
-        this._toastrService.error(getErrorMessage(err))
-        this.loading.set(false)
-      }
-    })
+    this.knowledgebaseService
+      .test(this.knowledgebase().id, { query: this.query(), k: this.topK() ?? 10, score: this.score() })
+      .subscribe({
+        next: (results) => {
+          this.results.set(results)
+          this.loading.set(false)
+        },
+        error: (err) => {
+          this._toastrService.error(getErrorMessage(err))
+          this.loading.set(false)
+        }
+      })
   }
 }

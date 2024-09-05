@@ -1,25 +1,45 @@
 import { DocumentInterface } from '@langchain/core/documents'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
-import { KnowledgeSearchQuery } from '../knowledge.query'
-import { KnowledgebaseService } from '../../knowledgebase.service'
+import { sortBy } from 'lodash'
+import { In, IsNull, Not } from 'typeorm'
 import { RequestContext } from '../../../core/context'
+import { KnowledgebaseService } from '../../knowledgebase.service'
+import { KnowledgeSearchQuery } from '../knowledge.query'
 
 @QueryHandler(KnowledgeSearchQuery)
 export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearchQuery> {
 	constructor(private readonly knowledgebaseService: KnowledgebaseService) {}
 
-	public async execute(command: KnowledgeSearchQuery): Promise<[DocumentInterface, number][]> {
-		const { knowledgebaseId, query, k, score, filter } = command.input
+	public async execute(command: KnowledgeSearchQuery): Promise<{ doc: DocumentInterface; score: number }[]> {
+		const { knowledgebases, query, k, score, filter } = command.input
 		const tenantId = command.input.tenantId ?? RequestContext.currentTenantId()
 		const organizationId = command.input.organizationId ?? RequestContext.getOrganizationId()
-		const knowledgebase = await this.knowledgebaseService.findOne({ where: { tenantId, organizationId, id: knowledgebaseId } })
-		const vectorStore = await this.knowledgebaseService.getVectorStore(
-			knowledgebase,
-			tenantId,
-			organizationId
-		)
-		const documents = await vectorStore.similaritySearchWithScore(query, k, filter)
+		const result = await this.knowledgebaseService.findAll({
+			where: {
+				tenantId,
+				organizationId,
+				id: knowledgebases ? In(knowledgebases) : Not(IsNull())
+			}
+		})
+		const _knowledgebases = result.items
 
-		return documents.filter(([, _score]) => (1 - _score) >= (score ?? 0.1 ))
+		const documents: { doc: DocumentInterface<Record<string, any>>; score: number }[] = []
+		const kbs = await Promise.all(
+			_knowledgebases.map((kb) => {
+				return this.knowledgebaseService.getVectorStore(kb, tenantId, organizationId).then((vectorStore) => {
+					return vectorStore.similaritySearchWithScore(query, k, filter)
+				})
+			})
+		)
+
+		kbs.forEach((kb) => {
+			kb.forEach(([doc, score]) => {
+				documents.push({ doc, score })
+			})
+		})
+
+		return sortBy(documents, 'score', 'desc')
+			.filter(({ score: _score }) => 1 - _score >= (score ?? 0.1))
+			.slice(0, k)
 	}
 }

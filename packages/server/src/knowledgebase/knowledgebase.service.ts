@@ -7,7 +7,6 @@ import { sortBy } from 'lodash'
 import { Pool } from 'pg'
 import { In, IsNull, Not, Repository } from 'typeorm'
 import { CopilotService } from '../copilot'
-import { CopilotRoleService } from '../copilot-role/copilot-role.service'
 import { RequestContext } from '../core'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
 import { DATABASE_POOL_TOKEN } from '../database'
@@ -23,7 +22,6 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 		@InjectRepository(Knowledgebase)
 		repository: Repository<Knowledgebase>,
 		private readonly copilotService: CopilotService,
-		private readonly roleService: CopilotRoleService,
 		private readonly queryBus: QueryBus,
 		@Inject(DATABASE_POOL_TOKEN) private readonly pgPool: Pool
 	) {
@@ -39,7 +37,7 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 			new KnowledgeSearchQuery({
 				tenantId,
 				organizationId,
-				knowledgebaseId: knowledgebase.id,
+				knowledgebases: [knowledgebase.id],
 				...options
 			})
 		)

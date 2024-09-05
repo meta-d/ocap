@@ -36,6 +36,8 @@ export enum ChatGatewayEvent {
   ToolEnd = 'tool_end',
   ChainStart = 'chain_start',
   ChainEnd = 'chain_end',
+  CancelChain = 'cancel_chain',
+  ChainAborted = 'chain_aborted',
 }
 
 export type ChatGatewayMessage = {
@@ -46,6 +48,17 @@ export type ChatGatewayMessage = {
     toolsets: string[] | null
   }
 } & ({
+  event: ChatGatewayEvent.CancelChain
+  data: {
+    conversationId: string // Conversation ID
+  }
+} | {
+  event: ChatGatewayEvent.ChainAborted
+  data: {
+    conversationId: string // Conversation ID
+    id?: string // Message id
+  }
+} | {
   event: ChatGatewayEvent.ConversationCreated
   data: IChatConversation
 } | {
@@ -79,10 +92,10 @@ export interface CopilotBaseMessage {
    * - answering: AI is answering
    * - pending: AI is pending for confirm or more information
    * - done: AI is done
+   * - aborted: AI is aborted
    * - error: AI has error
-   * - info: todo
    */
-  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'error' | 'info'
+  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'aborted' | 'error'
 
   content?: string | any
 }

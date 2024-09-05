@@ -219,6 +219,13 @@ export class ChatService {
           })
           break
         }
+        case ChatGatewayEvent.ChainAborted: {
+          this.answering.set(false)
+          if (this.conversation()?.id === result.data.conversationId) {
+            this.abortMessage(result.data.id)
+          }
+          break
+        }
       }
     })
 
@@ -262,7 +269,7 @@ export class ChatService {
         toolsets: this.toolsets().map(({ id }) => id)
       },
       data: {
-        conversationId: this.conversationId(),
+        conversationId: this.conversation()?.id,
         id,
         language: this.appService.lang(),
         content
@@ -270,7 +277,20 @@ export class ChatService {
     })
   }
 
+  cancelMessage() {
+    this.answering.set(false)
+    return this.chatService.message({
+      event: ChatGatewayEvent.CancelChain,
+      data: {
+        conversationId: this.conversation().id,
+      }
+    })
+  }
+
   async newConversation(role?: ICopilotRole) {
+    if (this.answering() && this.conversation()?.id) {
+      this.cancelMessage()
+    }
     this.conversation.set(null)
     this.conversationId.set(null)
     this.role$.next(role)
@@ -325,6 +345,23 @@ export class ChatService {
         ...step
       }
       lastMessage.messages = [...lastMessage.messages]
+      return [...messages]
+    })
+  }
+
+  abortMessage(id: string) {
+    this.messages.update((messages) => {
+      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+      if (lastMessage.id === id) {
+        lastMessage.messages = lastMessage.messages.map((m) => {
+          if (m.status === 'thinking') {
+            return {...m, status: 'aborted' }
+          }
+          return m
+        })
+        messages[messages.length - 1] = {...lastMessage, status: 'aborted'}
+      }
+      
       return [...messages]
     })
   }

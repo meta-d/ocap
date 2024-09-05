@@ -47,10 +47,6 @@ export class ChatAiMessageComponent {
     return isMessageGroup(message) ? message : null
   })
 
-  constructor() {
-    effect(() => console.log(this.message()))
-  }
-
   onCopy(copyButton) {
     copyButton.copied = true
     setTimeout(() => {

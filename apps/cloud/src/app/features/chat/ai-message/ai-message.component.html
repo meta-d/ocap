@@ -11,7 +11,14 @@
             @if (message.status === 'thinking') {
               <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
             }
-            <mat-icon fontSet="material-icons-round" class="mr-2">school</mat-icon>{{message.content}}
+            <mat-icon fontSet="material-icons-round" class="mr-2">school</mat-icon>
+            @if (message.status === 'aborted') {
+              {{ 'PAC.KEY_WORDS.Aborted' | translate: {Default: 'Aborted'} }}!
+            } @else if(message.status === 'thinking') {
+              {{ 'PAC.Chat.RetrievingDocuments' | translate: {Default: 'Retrieving Documents'} }}...
+            } @else {
+              {{message.content}}
+            }
           </div>
         }
         @case ('tool') {
@@ -20,6 +27,11 @@
               <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
             }
             <mat-icon fontSet="material-icons-round" class="mr-2">construction</mat-icon>{{message.name}}
+            @if (message.status === 'aborted') {
+              {{ 'PAC.KEY_WORDS.Aborted' | translate: {Default: 'Aborted'} }}!
+            } @else {
+              {{message.content}}
+            }
           </div>
         }
       }

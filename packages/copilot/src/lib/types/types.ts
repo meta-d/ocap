@@ -68,10 +68,10 @@ export interface CopilotBaseMessage {
    * - answering: AI is answering
    * - pending: AI is pending for confirm or more information
    * - done: AI is done
+   * - aborted: AI is aborted
    * - error: AI has error
-   * - info: todo
    */
-  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'error' | 'info'
+  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'aborted' | 'error'
 
   content?: string
 }

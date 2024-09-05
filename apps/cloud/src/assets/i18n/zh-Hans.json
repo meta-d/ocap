@@ -218,7 +218,8 @@
       "Toolset": "工具集",
       "About": "关于",
       "ConversationStarters": "对话开场白",
-      "Toolsets": "工具集"
+      "Toolsets": "工具集",
+      "Aborted": "已取消"
     },
     "MENU": {
       "Certification": "认证",
@@ -1374,7 +1375,8 @@
       }
     },
     "Chat": {
-      "DeleteConversation": "删除会话"
+      "DeleteConversation": "删除会话",
+      "RetrievingDocuments": "检索文档"
     },
     "ChatBI": {
       "Title": "ChatBI-数据分析与洞察",

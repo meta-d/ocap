@@ -54,7 +54,9 @@ export class ChatInputComponent {
     this.chatService.message(id, statement)
   }
 
-  stopGenerating() {}
+  stopGenerating() {
+    this.chatService.cancelMessage()
+  }
 
   triggerFun(event: KeyboardEvent) {
     if ((event.isComposing || event.shiftKey) && event.key === 'Enter') {
