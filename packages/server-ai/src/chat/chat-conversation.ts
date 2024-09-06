@@ -31,8 +31,11 @@ import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { KnowledgeSearchQuery } from '../knowledgebase/queries'
 import { ChatService } from './chat.service'
 import { ChatAgentState, chatAgentState } from './types'
+import { Logger } from '@nestjs/common'
+
 
 export class ChatConversationAgent {
+	private logger = new Logger(ChatConversationAgent.name)
 	private copilot: ICopilot = null
 	public graph: CompiledStateGraph<ChatAgentState, Partial<ChatAgentState>, typeof START | 'agent' | 'tools'>
 	get id() {
@@ -61,7 +64,8 @@ export class ChatConversationAgent {
 			this.commandBus.execute(
 				new CopilotTokenRecordCommand({
 					...input,
-					tenantId: copilot.tenantId,
+					tenantId: this.tenantId,
+					organizationId: this.organizationId,
 					userId: this.user.id,
 					copilot: copilot
 				})
@@ -71,6 +75,9 @@ export class ChatConversationAgent {
 
 	createAgentGraph(toolsets: ICopilotToolset[]) {
 		const llm = this.createLLM(this.copilot)
+		if (!llm) {
+			throw new Error(`Can't create chatModel for provider '${this.copilot.provider}'`)
+		}
 
 		const tools = []
 		toolsets.forEach((toolset) => {
@@ -421,6 +428,7 @@ References documents:
 				status: 'aborted',
 				messages: this.message.messages.map((m) => (m.status === 'thinking' ? { ...m, status: 'aborted' } : m))
 			} as CopilotMessageGroup)
+			this.logger.debug(`Conversation '${this.id}' has been aborted`)
 		} catch (err) {
 			console.log('error', err)
 		}

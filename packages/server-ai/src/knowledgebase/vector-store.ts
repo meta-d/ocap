@@ -2,7 +2,7 @@ import { PGVectorStore } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import { ICopilot, IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
 import { Pool } from 'pg'
-import { createEmbeddings } from './types'
+import { createEmbeddings } from '../copilot'
 
 export class KnowledgeDocumentVectorStore extends PGVectorStore {
 	private model: string | null= null

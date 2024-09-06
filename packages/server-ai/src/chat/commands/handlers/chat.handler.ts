@@ -1,5 +1,4 @@
 import {
-	AiProviderRole,
 	ChatGatewayEvent,
 	ChatGatewayMessage,
 	ChatUserMessage,
@@ -10,7 +9,7 @@ import {
 import { shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { isNil } from 'lodash'
-import { filter, Observable } from 'rxjs'
+import { Observable } from 'rxjs'
 import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
 import { FindCopilotRoleQuery } from '../../../copilot-role/index'
@@ -22,7 +21,6 @@ import { ChatCommand } from '../chat.command'
 export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 	constructor(
 		private readonly chatService: ChatService,
-		// private readonly copilotService: CopilotService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
@@ -72,7 +70,6 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 							chatConversation,
 							organizationId,
 							user,
-							// copilot,
 							this.copilotCheckpointSaver,
 							this.chatService,
 							this.commandBus,

@@ -1,11 +1,11 @@
 // src/openai/openai.service.ts
 
 import { ICopilot } from '@metad/contracts'
+import { AI_PROVIDERS } from '@metad/copilot'
 import { Injectable } from '@nestjs/common'
 import axios from 'axios'
 import { PassThrough } from 'stream'
 import { CopilotService } from '../copilot'
-import { AI_PROVIDERS } from './providers'
 
 function chatCompletionsUrl(copilot: ICopilot, path?: string) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost

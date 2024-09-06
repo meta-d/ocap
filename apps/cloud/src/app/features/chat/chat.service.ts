@@ -366,7 +366,7 @@ export class ChatService {
     this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
       if (lastMessage.id === id) {
-        lastMessage.messages = lastMessage.messages.map((m) => {
+        lastMessage.messages = lastMessage.messages?.map((m) => {
           if (m.status === 'thinking') {
             return { ...m, status: 'aborted' }
           }

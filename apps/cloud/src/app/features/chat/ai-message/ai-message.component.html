@@ -7,7 +7,7 @@
     @for (message of group.messages; track message) {
       @switch (message.role) {
         @case ('system') {
-          <div class="flex justify-start items-center p-2 rounded-lg text-token-text-secondary bg-black/5">
+          <div class="flex justify-start items-center p-2 rounded-lg text-token-text-secondary bg-black/5 dark:bg-white/10">
             @if (message.status === 'thinking') {
               <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
             }
@@ -22,7 +22,7 @@
           </div>
         }
         @case ('tool') {
-          <div class="flex justify-start items-center p-2 rounded-lg text-token-text-secondary bg-black/5">
+          <div class="flex justify-start items-center p-2 rounded-lg text-token-text-secondary bg-black/5 dark:bg-white/10">
             @if (message.status === 'thinking') {
               <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
             }

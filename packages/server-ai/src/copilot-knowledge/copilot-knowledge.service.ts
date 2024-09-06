@@ -1,4 +1,4 @@
-import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama'
+import { OllamaEmbeddings } from '@langchain/ollama'
 import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
@@ -6,7 +6,6 @@ import { MaxMarginalRelevanceSearchOptions } from '@langchain/core/vectorstores'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import {
 	AiBusinessRole,
-	AiProvider,
 	AiProviderRole,
 	ICopilot,
 	ICopilotKnowledge,
@@ -14,6 +13,7 @@ import {
 	OllamaEmbeddingsProviders,
 	OpenAIEmbeddingsProviders
 } from '@metad/contracts'
+import { DATABASE_POOL_TOKEN, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -23,8 +23,8 @@ import { DeleteResult, FindManyOptions, FindOneOptions, Repository, UpdateResult
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 import { CopilotRoleCreateCommand } from '../copilot-role/commands'
 import { CopilotService } from '../copilot/copilot.service'
-import { RequestContext, TenantOrganizationAwareCrudService, DATABASE_POOL_TOKEN } from '@metad/server-core'
 import { CopilotKnowledge } from './copilot-knowledge.entity'
+import { createEmbeddings } from '../copilot/llm'
 
 @Injectable()
 export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<CopilotKnowledge> {
@@ -35,10 +35,8 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 	constructor(
 		@InjectRepository(CopilotKnowledge)
 		repository: Repository<CopilotKnowledge>,
-
 		private copilotService: CopilotService,
 		@Inject(DATABASE_POOL_TOKEN) private pgPool: Pool,
-
 		private readonly commandBus: CommandBus
 	) {
 		super(repository)
@@ -47,23 +45,22 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 	async similaritySearch(
 		query: string,
 		options?: {
-			role?: AiBusinessRole;
-			command: string | string[];
-			k: number;
-			filter: PGVectorStore['filter'];
-			score?: number;
+			role?: AiBusinessRole
+			command: string | string[]
+			k: number
+			filter: PGVectorStore['filter']
+			score?: number
 			tenantId?: string
 			organizationId?: string
 		}
 	) {
 		const { role, command, k, score, filter } = options ?? {}
-		const commands = Array.isArray(command) ? {in: command} : command
+		const commands = Array.isArray(command) ? { in: command } : command
 
 		const tenantId = options?.tenantId ?? RequestContext.currentTenantId()
 		const organizationId = options?.organizationId ?? RequestContext.getOrganizationId()
 		let vectorStore = await this.getVectorStore(tenantId, organizationId, role)
 		if (vectorStore) {
-
 			// console.log(`Got vectorStore for tenantId ${tenantId} organizationId ${organizationId} role ${role}`)
 
 			let results = []
@@ -110,7 +107,11 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 	async maxMarginalRelevanceSearch(
 		query: string,
-		options?: { role?: AiBusinessRole; command?: string | string[]; k: number; filter: Record<string, any>;
+		options?: {
+			role?: AiBusinessRole
+			command?: string | string[]
+			k: number
+			filter: Record<string, any>
 			tenantId?: string
 			organizationId?: string
 		}
@@ -194,47 +195,30 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 	 */
 	private async getEmbeddings(copilot: ICopilot) {
 		if (copilot) {
-			if (OpenAIEmbeddingsProviders.includes(copilot.provider)) {
-				return new OpenAIEmbeddings({
-					verbose: true,
-					apiKey: copilot.apiKey,
-					configuration: {
-						baseURL: copilot.apiHost
-					}
-				})
-			} else if (OllamaEmbeddingsProviders.includes(copilot.provider)) {
-				return new OllamaEmbeddings({
-					baseUrl: copilot.apiHost,
-					model: copilot.defaultModel
-				})
-			}
+			return createEmbeddings(copilot, null, null)
 		}
-
 		return null
 	}
 
-	async getVectorStore(
-		tenantId: string,
-		organizationId: string,
-		role: AiBusinessRole | string,
-	) {
+	async getVectorStore(tenantId: string, organizationId: string, role: AiBusinessRole | string) {
 		const id = (organizationId || tenantId) + `:${role || 'default'}`
-		if (!this.vectorStores.has(id)) {
-			let collectionName = id
-			let primaryCopilot = await this.copilotService.findOneByRole(AiProviderRole.Primary, tenantId, organizationId)
-			if (!primaryCopilot?.enabled) {
-				primaryCopilot = await this.copilotService.findTenantOneByRole(AiProviderRole.Primary, tenantId)
+
+		let collectionName = id
+		const copilot = await this.copilotService.findCopilot(tenantId, organizationId, AiProviderRole.Embedding)
+		if (copilot) {
+			if (!copilot.organizationId) {
 				collectionName = tenantId + `:${role || 'default'}`
 			}
-			let copilot: ICopilot = null
-			if (primaryCopilot?.enabled) {
-				copilot = primaryCopilot
-			}
+		} else {
+			throw new Error('No embedding copilot found')
+		}
 
+		if (!this.vectorStores.has(id) || this.vectorStores.get(id).copilot.updatedAt !== copilot.updatedAt) {
+			
 			const embeddings = await this.getEmbeddings(copilot)
 
 			if (embeddings) {
-				const vectorStore = new PGMemberVectorStore(copilot.provider, embeddings, {
+				const vectorStore = new PGMemberVectorStore(copilot, embeddings, {
 					pool: this.pgPool,
 					tableName: 'copilot_knowledge_vector',
 					collectionTableName: 'copilot_knowledge_collection',
@@ -309,17 +293,23 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 				await this.repository.remove(items)
 			}
 
-			const examples = entities.filter((item) => (role ? item.role === role : !item.role)).map((example) => ({
-				...example,
-				input: example.input ? `${example.input}`.trim() : null,
-				output: example.output ? `${example.output}`.trim() : null
-			}))
+			const examples = entities
+				.filter((item) => (role ? item.role === role : !item.role))
+				.map((example) => ({
+					...example,
+					input: example.input ? `${example.input}`.trim() : null,
+					output: example.output ? `${example.output}`.trim() : null
+				}))
 				.filter((item) => !!item.command && !!item.input)
 			const roleExamples = await Promise.all(examples.map((entity) => super.create(entity)))
 			results.push(...roleExamples)
 			if (roleExamples.length && vectorStore) {
 				await vectorStore.addExamples(roleExamples)
-				await Promise.all(roleExamples.map((entity) => super.update(entity.id, { provider: vectorStore.provider, vector: true })))
+				await Promise.all(
+					roleExamples.map((entity) =>
+						super.update(entity.id, { provider: vectorStore.provider, vector: true })
+					)
+				)
 			}
 		}
 
@@ -330,8 +320,12 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 class PGMemberVectorStore {
 	vectorStore: PGVectorStore
 
+	get provider() {
+		return this.copilot.provider
+	}
+
 	constructor(
-		public provider: AiProvider,
+		public copilot: ICopilot,
 		public embeddings: EmbeddingsInterface,
 		_dbConfig: PGVectorStoreArgs
 	) {
@@ -349,7 +343,9 @@ class PGMemberVectorStore {
 						role: example.role,
 						command: example.command,
 						input: example.input,
-						output: example.output
+						output: example.output,
+						provider: this.provider,
+						model: this.copilot.defaultModel
 					},
 					pageContent: example.input
 				})

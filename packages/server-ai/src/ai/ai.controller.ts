@@ -1,13 +1,26 @@
 import { AiProviderRole, ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param, Get, ForbiddenException } from '@nestjs/common'
+import { AI_PROVIDERS } from '@metad/copilot'
+import { RequestContext } from '@metad/server-core'
+import {
+	Body,
+	Controller,
+	ForbiddenException,
+	Get,
+	Headers,
+	HttpCode,
+	HttpException,
+	HttpStatus,
+	Logger,
+	Param,
+	Post,
+	Res
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
-import { AI_PROVIDERS } from './providers'
-import { AiService } from './ai.service'
-import { CopilotUserService } from '../copilot-user/index'
-import { RequestContext } from '@metad/server-core'
 import { CopilotOrganizationService } from '../copilot-organization/index'
+import { CopilotUserService } from '../copilot-user/index'
+import { AiService } from './ai.service'
 
 function chatCompletionsUrl(copilot: ICopilot, path?: string) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -25,7 +38,7 @@ export class AIController {
 		private readonly aiService: AiService,
 		private readonly copilotService: CopilotService,
 		private readonly copilotUserService: CopilotUserService,
-		private readonly copilotOrganizationService: CopilotOrganizationService,
+		private readonly copilotOrganizationService: CopilotOrganizationService
 	) {}
 
 	@ApiOperation({ summary: 'Chat with AI provider apis' })
@@ -40,7 +53,6 @@ export class AIController {
 	@HttpCode(HttpStatus.CREATED)
 	@Post('chat')
 	async chat(@Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
-
 		const result = await this.copilotService.findAll()
 		if (result.total === 0) {
 			throw new Error('No copilot found')
@@ -56,9 +68,9 @@ export class AIController {
 					'content-type': 'application/json',
 					authorization: `Bearer ${copilot.apiKey}`,
 					accept: headers.accept
-				},
+				}
 			})
-			
+
 			if (!resp.headersSent) {
 				await streamToResponse(response, resp, { status: response.status })
 			}
@@ -84,7 +96,7 @@ failed: ${error.message}`)
 					'content-type': 'application/json',
 					authorization: `Bearer ${copilot.apiKey}`,
 					accept: headers.accept
-				},
+				}
 			})
 			// return response
 			return await response.json()
@@ -95,13 +107,26 @@ failed: ${error.message}`)
 		}
 	}
 	@Post('proxy/:role/:m')
-	async proxyModule(@Param('role') role: AiProviderRole, @Param('m') m: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
+	async proxyModule(
+		@Param('role') role: AiProviderRole,
+		@Param('m') m: string,
+		@Headers() headers,
+		@Body() body: any,
+		@Res() resp: ServerResponse
+	) {
 		const path = '/' + m
 		return await this.proxy(role, path, headers, body, resp)
 	}
 	@Post('proxy/:role/:m/:f')
-	async proxyModuleFun(@Param('role') role: AiProviderRole, @Param('m') m: string, @Param('f') f: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
-		const path = '/' + m + (f ? '/'+ f : '')
+	async proxyModuleFun(
+		@Param('role') role: AiProviderRole,
+		@Param('m') m: string,
+		@Param('f') f: string,
+		@Headers() headers,
+		@Body() body: any,
+		@Res() resp: ServerResponse
+	) {
+		const path = '/' + m + (f ? '/' + f : '')
 
 		// const stream = await this.aiService.proxyChatCompletionStream(path, body, headers);
 		// resp.setHeader('Content-Type', 'application/json');
@@ -116,10 +141,10 @@ failed: ${error.message}`)
 		try {
 			copilot = await this.getCopilot(role)
 			copilotUrl = chatCompletionsUrl(copilot, path)
-		} catch(err) {
+		} catch (err) {
 			throw new ForbiddenException(err.message)
 		}
-		
+
 		try {
 			const response = await fetch(copilotUrl, {
 				method: 'POST',
@@ -128,18 +153,21 @@ failed: ${error.message}`)
 					'content-type': 'application/json',
 					authorization: `Bearer ${copilot.apiKey}`,
 					accept: headers.accept
-				},
+				}
 			})
 
 			// if (body.stream) {
-				if (!resp.headersSent) {
-					await streamToResponse(response, resp, { status: response.status, headers: {
-						'content-type': response.headers.get('content-type') || 'application/json',
-					} })
-				}
+			if (!resp.headersSent) {
+				await streamToResponse(response, resp, {
+					status: response.status,
+					headers: {
+						'content-type': response.headers.get('content-type') || 'application/json'
+					}
+				})
+			}
 			// } else {
 			// 	const result = await response.json()
-				
+
 			// 	resp.write(JSON.stringify(result))
 			// 	resp.end()
 			// }
@@ -159,7 +187,9 @@ failed: ${error.message}`)
 		let result = await this.copilotService.findOneByRole(role, null, null)
 		if (result?.enabled) {
 			// Check token usage in organizaiton
-			const usage = await this.copilotUserService.findOneOrFail({ where: { userId, orgId: organizationId, provider: result.provider }})
+			const usage = await this.copilotUserService.findOneOrFail({
+				where: { userId, orgId: organizationId, provider: result.provider }
+			})
 			if (usage.success && usage.record.tokenLimit) {
 				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
 					throw new Error('Token usage exceeds limit')
@@ -171,7 +201,9 @@ failed: ${error.message}`)
 				throw new Error('No copilot found')
 			}
 			// Check token usage in tenant
-			const usage = await this.copilotOrganizationService.findOneOrFail({where: { organizationId, provider: result.provider }})
+			const usage = await this.copilotOrganizationService.findOneOrFail({
+				where: { organizationId, provider: result.provider }
+			})
 			if (usage.success && usage.record.tokenLimit) {
 				if (usage.record.tokenUsed >= usage.record.tokenLimit) {
 					throw new Error('Token usage exceeds limit')
@@ -182,30 +214,29 @@ failed: ${error.message}`)
 	}
 }
 
-
 /**
  * A utility function to stream a ReadableStream to a Node.js response-like object.
  */
 export async function streamToResponse(
 	res: Response,
 	response: ServerResponse,
-	init?: { headers?: Record<string, string>; status?: number },
-  ) {
+	init?: { headers?: Record<string, string>; status?: number }
+) {
 	response.writeHead(init?.status || 200, {
-	  ...(init?.headers ?? {}),
-	});
-  
-	const reader = res.body.getReader();
+		...(init?.headers ?? {})
+	})
+
+	const reader = res.body.getReader()
 	async function read() {
-	  const { done, value } = await reader.read()
-	  if (done) {
-		response.end();
-		return;
-	  }
-	  if (value) {
-		response.write(value);
-	  }
-	  await read();
+		const { done, value } = await reader.read()
+		if (done) {
+			response.end()
+			return
+		}
+		if (value) {
+			response.write(value)
+		}
+		await read()
 	}
-	await read();
+	await read()
 }

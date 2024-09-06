@@ -1,5 +1,6 @@
 import { DocumentInterface } from '@langchain/core/documents'
 import { AiBusinessRole, AiProviderRole, ICopilot, IKnowledgebase, Metadata } from '@metad/contracts'
+import { DATABASE_POOL_TOKEN, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -10,7 +11,6 @@ import { CopilotService } from '../copilot'
 import { Knowledgebase } from './knowledgebase.entity'
 import { KnowledgeSearchQuery } from './queries'
 import { KnowledgeDocumentVectorStore } from './vector-store'
-import { DATABASE_POOL_TOKEN, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 
 @Injectable()
 export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Knowledgebase> {
@@ -45,17 +45,10 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 
 	async getVectorStore(knowledgebase: IKnowledgebase, tenantId?: string, organizationId?: string) {
 		let copilot: ICopilot = null
-		// let model: string | null = null
-		// const knowledgebase = await this.findOne({ where: { id: knowledgebaseId, tenantId, organizationId } })
 		if (knowledgebase.copilotId) {
 			copilot = await this.copilotService.findOne(knowledgebase.copilotId)
-			// model = knowledgebase.embeddingModelId
 		} else {
-			copilot = await this.copilotService.findOneByRole(AiProviderRole.Embedding, tenantId, organizationId)
-			if (!copilot?.enabled) {
-				copilot = await this.copilotService.findOneByRole(AiProviderRole.Primary, tenantId, organizationId)
-			}
-			// model = copilot?.defaultModel
+			copilot = await this.copilotService.findCopilot(tenantId, organizationId, AiProviderRole.Embedding)
 		}
 
 		if (!copilot?.enabled) {
