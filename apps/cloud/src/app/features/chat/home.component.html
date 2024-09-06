@@ -20,8 +20,13 @@
           <mat-list-item class="pac-chat__conversation-item group cursor-pointer rounded-md hover:bg-black/5 dark:hover:bg-white/10"
             [ngClass]="{active: item.id === conversationId()}"
             [class.menu-active]="mt.menuOpen"
-            (click)="selectConversation(item)">
+            (click)="selectConversation(item)"
+          >
+          @if (editingConversation()  === item.id) {
+            <input matInput [(ngModel)]="editingTitle" (keydown.enter)="updateTitle(item)">
+          } @else {
             {{item.title || item.id}}
+          }
 
             <div class="absolute bottom-0 top-0 items-center gap-1.5 pr-2 right-0 flex">
               <span class="" data-state="closed">
@@ -92,8 +97,8 @@
 </mat-sidenav-container>
 
 <mat-menu #convMenu="matMenu" class="ngm-density__compact">
-  <ng-template matMenuContent let-id="id">
-    <button mat-menu-item >
+  <ng-template matMenuContent let-id="id" let-title="title">
+    <button mat-menu-item (click)="editingConversation.set(id);editingTitle.set(title)">
       <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
       {{ 'PAC.KEY_WORDS.Rename' | translate: {Default: 'Rename'} }}
     </button>

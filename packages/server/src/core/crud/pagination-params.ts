@@ -1,10 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { plainToClass, Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, Max, Min, ValidateNested } from 'class-validator';
-import { TenantOrganizationBaseDTO } from '../dto';
 import { OrderTypeEnum } from '@metad/contracts';
 import { parseToBoolean } from '@metad/server-common';
 import { SimpleObjectLiteral, convertNativeParameters, parseObject } from './pagination.helper';
+import { TenantOrganizationBaseDTO } from '../dto';
 
 
 /**

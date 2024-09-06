@@ -1,7 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -9,7 +9,7 @@ import { provideOcapCore } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { IChatConversation, ICopilotRole, routeAnimations } from '../../@core'
+import { ChatConversationService, IChatConversation, ICopilotRole, routeAnimations } from '../../@core'
 import { AvatarComponent, MaterialModule } from '../../@shared'
 import { AppService } from '../../app.service'
 import { ChatAiMessageComponent } from './ai-message/ai-message.component'
@@ -51,6 +51,7 @@ export class ChatHomeComponent {
   DisplayBehaviour = DisplayBehaviour
 
   readonly chatService = inject(ChatService)
+  readonly conversationService = inject(ChatConversationService)
   readonly appService = inject(AppService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
@@ -65,6 +66,9 @@ export class ChatHomeComponent {
   readonly roles = this.chatService.roles
   readonly role = this.chatService.role
 
+  readonly editingConversation = signal<string>(null)
+  readonly editingTitle = signal<string>(null)
+
   selectConversation(item: IChatConversation) {
     this.chatService.setConversation(item.id)
   }
@@ -75,5 +79,16 @@ export class ChatHomeComponent {
 
   selectRole(role: ICopilotRole) {
     this.chatService.newConversation(role)
+  }
+
+  updateTitle(conv: IChatConversation) {
+    this.conversationService.update(this.editingConversation(), {title: this.editingTitle()}).subscribe({
+      next: () => {
+        this.logger.debug('Updated conversation title')
+        conv.title = this.editingTitle()
+        this.editingConversation.set(null)
+        this.editingTitle.set('')
+      }
+    })
   }
 }

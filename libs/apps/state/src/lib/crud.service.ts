@@ -38,7 +38,7 @@ export class CrudService<T> {
   }
 }
 
-function toHttpParams(options: PaginationParams<any>) {
+export function toHttpParams(options: PaginationParams<any>) {
   if (!options) {
     return null
   }
@@ -63,5 +63,5 @@ function toHttpParams(options: PaginationParams<any>) {
     params = params.append('$skip', skip)
   }
 
-  return params
+  return params.append('data', JSON.stringify(options))
 }

@@ -1,9 +1,10 @@
 import { Location } from '@angular/common'
 import { effect, inject, Injectable, signal } from '@angular/core'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotBaseMessage, CopilotChatMessage, CopilotMessageGroup } from '@metad/copilot'
 import { nonNullable } from '@metad/ocap-core'
+import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import {
   BehaviorSubject,
@@ -30,9 +31,7 @@ import {
 } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService } from '../../@core/services'
 import { AppService } from '../../app.service'
-import { derivedFrom } from 'ngxtension/derived-from'
 import { COMMON_COPILOT_ROLE } from './types'
-
 
 @Injectable()
 export class ChatService {
@@ -61,27 +60,34 @@ export class ChatService {
   readonly answering = signal<boolean>(false)
 
   readonly lang = this.appService.lang
-  readonly roles = derivedFrom([this.copilotRoleService.getAll({ relations: ['knowledgebases'] }).pipe(map(({ items }) => items)), this.lang], pipe(
-    map(([roles, lang]) => {
-      if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
-        return roles?.map((role) => ({ ...role, title: role.titleCN }))
-      } else {
-        return roles
-      }
-    })
-  ), {initialValue: []})
-  readonly role = derivedFrom([this.role$, this.lang], pipe(
-    map(([role, lang]) => {
-      if (!role) {
-        role = COMMON_COPILOT_ROLE
-      }
-      if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
-        return { ...role, title: role.titleCN }
-      } else {
-        return role
-      }
-    })
-  ))
+  readonly roles = derivedFrom(
+    [this.copilotRoleService.getAllInOrg({ relations: ['knowledgebases'] }).pipe(map(({ items }) => items)), this.lang],
+    pipe(
+      map(([roles, lang]) => {
+        if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
+          return roles?.map((role) => ({ ...role, title: role.titleCN }))
+        } else {
+          return roles
+        }
+      })
+    ),
+    { initialValue: [] }
+  )
+  readonly role = derivedFrom(
+    [this.role$, this.lang],
+    pipe(
+      map(([role, lang]) => {
+        if (!role) {
+          role = COMMON_COPILOT_ROLE
+        }
+        if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
+          return { ...role, title: role.titleCN }
+        } else {
+          return role
+        }
+      })
+    )
+  )
 
   private roleSub = this.role$
     .pipe(
@@ -167,13 +173,16 @@ export class ChatService {
     this.chatService.connect()
     this.chatService.on('message', (result: ChatGatewayMessage) => {
       console.log('message return:', result)
-      switch(result.event) {
+      switch (result.event) {
         case ChatGatewayEvent.ChainStart: {
-          this.messages.update((items) => [...items, {
-            id: result.data.id,
-            role: 'assistant',
-            status: 'thinking'
-          }])
+          this.messages.update((items) => [
+            ...items,
+            {
+              id: result.data.id,
+              role: 'assistant',
+              status: 'thinking'
+            }
+          ])
           break
         }
         case ChatGatewayEvent.ConversationCreated: {
@@ -230,7 +239,7 @@ export class ChatService {
     })
 
     this.conversationService
-      .getAll({ select: ['id', 'key', 'title', 'updatedAt'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
+      .getMyInOrg({ select: ['id', 'key', 'title', 'updatedAt'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
       .pipe(
         map(({ items }) => items),
         takeUntilDestroyed()
@@ -282,7 +291,7 @@ export class ChatService {
     return this.chatService.message({
       event: ChatGatewayEvent.CancelChain,
       data: {
-        conversationId: this.conversation().id,
+        conversationId: this.conversation().id
       }
     })
   }
@@ -313,7 +322,7 @@ export class ChatService {
   updateMessage(id: string, message: Partial<CopilotBaseMessage>) {
     this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
-      messages[messages.length - 1] = {...lastMessage, ...message}
+      messages[messages.length - 1] = { ...lastMessage, ...message }
       return [...messages]
     })
   }
@@ -322,7 +331,7 @@ export class ChatService {
     this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
       lastMessage.content = (lastMessage.content ?? '') + content
-      messages[messages.length - 1] = {...lastMessage}
+      messages[messages.length - 1] = { ...lastMessage }
       return [...messages]
     })
   }
@@ -331,7 +340,7 @@ export class ChatService {
     this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
       lastMessage.messages = [...(lastMessage.messages ?? []), step]
-      messages[messages.length - 1] = {...lastMessage}
+      messages[messages.length - 1] = { ...lastMessage }
       return [...messages]
     })
   }
@@ -355,13 +364,13 @@ export class ChatService {
       if (lastMessage.id === id) {
         lastMessage.messages = lastMessage.messages.map((m) => {
           if (m.status === 'thinking') {
-            return {...m, status: 'aborted' }
+            return { ...m, status: 'aborted' }
           }
           return m
         })
-        messages[messages.length - 1] = {...lastMessage, status: 'aborted'}
+        messages[messages.length - 1] = { ...lastMessage, status: 'aborted' }
       }
-      
+
       return [...messages]
     })
   }

@@ -1,9 +1,9 @@
 import { IPagination } from '@metad/contracts'
+import { CrudController, PaginationParams, ParseJsonPipe, RequestContext } from '@metad/server-core'
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ChatConversation } from './conversation.entity'
 import { ChatConversationService } from './conversation.service'
-import { ParseJsonPipe, RequestContext, CrudController, PaginationParams } from '@metad/server-core'
 
 @ApiTags('ChatConversation')
 @ApiBearerAuth()
@@ -23,6 +23,6 @@ export class ChatConversationController extends CrudController<ChatConversation>
 		@Query('data', ParseJsonPipe) filter?: PaginationParams<ChatConversation>,
 		...options: any[]
 	): Promise<IPagination<ChatConversation>> {
-		return this.service.findAll({...filter, where: {createdById: RequestContext.currentUserId()}})
+		return this.service.findAll({ ...filter, where: { createdById: RequestContext.currentUserId() } })
 	}
 }

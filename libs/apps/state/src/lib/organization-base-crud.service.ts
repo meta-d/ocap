@@ -1,6 +1,6 @@
 import { inject } from '@angular/core'
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators'
-import { CrudService } from './crud.service'
+import { CrudService, PaginationParams } from './crud.service'
 import { Store } from './store.service'
 
 export class OrganizationBaseCrudService<T> extends CrudService<T> {
@@ -17,5 +17,9 @@ export class OrganizationBaseCrudService<T> extends CrudService<T> {
 
   getOneById(id: string) {
     return this.selectOrganizationId().pipe(switchMap(() => this.httpClient.get<T>(this.apiBaseUrl + '/' + id)))
+  }
+
+  getAllInOrg(options?: PaginationParams<T>) {
+    return this.selectOrganizationId().pipe(switchMap(() => super.getAll(options)))
   }
 }

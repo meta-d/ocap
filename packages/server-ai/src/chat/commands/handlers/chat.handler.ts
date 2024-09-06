@@ -41,6 +41,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 							entity: {
 								tenantId,
 								organizationId,
+								createdById: user.id,
 								roleId: role?.id,
 								title: content, // 改成 AI 自动总结标题
 								options: {
