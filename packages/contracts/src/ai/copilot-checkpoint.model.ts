@@ -1,4 +1,4 @@
-import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 
 /**
  * Checkpoints for copilot, for langgraph framework

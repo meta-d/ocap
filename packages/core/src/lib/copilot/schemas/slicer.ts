@@ -22,9 +22,6 @@ export const SlicerSchema = z.object({
   exclude: z.boolean().optional().describe('Exclude members'),
   members: z.array(MemberSchema).describe('Members in the slicer')
 })
-export const VariableSchema = z.object({
-  variable: z.string().describe('The name of the variable')
-})
 
 export const TimeSlicerSchema = z.object({
   dimension: z

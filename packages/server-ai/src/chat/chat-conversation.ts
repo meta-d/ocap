@@ -7,12 +7,14 @@ import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
 import {
+	AiProviderRole,
 	ChatGatewayEvent,
 	ChatGatewayMessage,
 	CopilotBaseMessage,
 	CopilotChatMessage,
 	CopilotMessageGroup,
 	IChatConversation,
+	ICopilot,
 	ICopilotToolset,
 	IUser
 } from '@metad/contracts'
@@ -23,7 +25,7 @@ import { formatDocumentsAsString } from 'langchain/util/document'
 import { catchError, concat, from, fromEvent, map, Observable, of } from 'rxjs'
 import { z } from 'zod'
 import { ChatConversationUpdateCommand } from '../chat-conversation'
-import { Copilot, createLLM, createReactAgent } from '../copilot'
+import { createLLM, createReactAgent } from '../copilot'
 import { CopilotCheckpointSaver } from '../copilot-checkpoint'
 import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { KnowledgeSearchQuery } from '../knowledgebase/queries'
@@ -31,6 +33,7 @@ import { ChatService } from './chat.service'
 import { ChatAgentState, chatAgentState } from './types'
 
 export class ChatConversationAgent {
+	private copilot: ICopilot = null
 	public graph: CompiledStateGraph<ChatAgentState, Partial<ChatAgentState>, typeof START | 'agent' | 'tools'>
 	get id() {
 		return this.conversation.id
@@ -45,24 +48,29 @@ export class ChatConversationAgent {
 		public conversation: IChatConversation,
 		public readonly organizationId: string,
 		private readonly user: IUser,
-		private readonly copilot: Copilot,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly chatService: ChatService,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
-	) {}
+	) {
+		this.copilot = this.chatService.findCopilot(this.tenantId, organizationId, AiProviderRole.Secondary)
+	}
 
-	createAgentGraph(toolsets: ICopilotToolset[]) {
-		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
+	createLLM(copilot: ICopilot) {
+		return createLLM<BaseChatModel>(copilot, {}, (input) => {
 			this.commandBus.execute(
 				new CopilotTokenRecordCommand({
 					...input,
-					tenantId: this.copilot.tenantId,
+					tenantId: copilot.tenantId,
 					userId: this.user.id,
-					copilot: this.copilot
+					copilot: copilot
 				})
 			)
 		})
+	}
+
+	createAgentGraph(toolsets: ICopilotToolset[]) {
+		const llm = this.createLLM(this.copilot)
 
 		const tools = []
 		toolsets.forEach((toolset) => {
@@ -98,6 +106,13 @@ export class ChatConversationAgent {
 								} catch (err) {
 									throw new Error(`Invalid input schema for tool: ${item.name}`)
 								}
+								// Copilot
+								let chatModel = llm
+								if (item.providerRole || toolset.providerRole) {
+									const copilot = this.chatService.findCopilot(this.tenantId, this.organizationId, item.providerRole || toolset.providerRole)
+									chatModel = this.createLLM(copilot)
+								}
+
 								tools.push(
 									tool(
 										async (args, config) => {
@@ -105,7 +120,7 @@ export class ChatConversationAgent {
 												tenantId: this.tenantId,
 												organizationId: this.organizationId,
 												user: this.user,
-												copilot: this.copilot
+												chatModel
 											})
 										},
 										{
@@ -162,7 +177,7 @@ References documents:
 						version: 'v2',
 						configurable: {
 							thread_id: this.id,
-							thread_ns: '',
+							checkpoint_ns: '',
 							subscriber
 						},
 						recursionLimit: AgentRecursionLimit,
@@ -170,110 +185,111 @@ References documents:
 						// debug: true
 					}
 				)
-			).subscribe(subscriber)
-		}).pipe(
-			map(({ event, data, ...rest }: any) => {
-				console.log(event)
-				switch (event) {
-					case 'on_chain_start': {
-						eventStack.push(event)
-						break
-					}
-					case 'on_chat_model_start': {
-						eventStack.push(event)
-						break
-					}
-					case 'on_chain_end': {
-						const _event = eventStack.pop()
-						if (_event === 'on_tool_start') {
-							eventStack.pop()
+			).pipe(
+				map(({ event, data, ...rest }: any) => {
+					console.log(event)
+					switch (event) {
+						case 'on_chain_start': {
+							eventStack.push(event)
+							break
+						}
+						case 'on_chat_model_start': {
+							eventStack.push(event)
+							break
+						}
+						case 'on_chain_end': {
+							const _event = eventStack.pop()
+							if (_event === 'on_tool_start') {
+								eventStack.pop()
+								if (stepMessage) {
+									stepMessage.status = 'done'
+								}
+								return {
+									event: ChatGatewayEvent.ToolEnd,
+									data: {
+										name: toolName
+									}
+								}
+							}
+							if (_event !== 'on_chain_start') {
+								eventStack.pop()
+							}
+							if (!eventStack.length) {
+								this.updateMessage({ ...this.message, status: 'done' })
+								return {
+									event: ChatGatewayEvent.ChainEnd,
+									data: {
+										id: answerId
+									}
+								}
+							}
+							break
+						}
+						case 'on_chat_model_end': {
+							const _event = eventStack.pop()
+							if (_event !== 'on_chat_model_start') {
+								eventStack.pop()
+							}
+							if (aiContent) {
+								this.message.content = aiContent
+							}
+							return null
+						}
+						case 'on_chat_model_stream': {
+							const msg = data.chunk as AIMessageChunk
+							if (!msg.tool_call_chunks?.length) {
+								if (msg.content) {
+									aiContent += msg.content
+									return {
+										event: ChatGatewayEvent.MessageStream,
+										data: {
+											conversationId: this.id,
+											id: answerId,
+											content: msg.content
+										}
+									}
+								}
+							}
+							break
+						}
+						case 'on_tool_start': {
+							eventStack.push(event)
+							toolName = rest.name
+							stepMessage = {
+								id: rest.name,
+								name: rest.name,
+								role: 'tool',
+								status: 'thinking'
+							}
+							this.addStep(stepMessage)
+							return {
+								event: ChatGatewayEvent.ToolStart,
+								data: {
+									name: rest.name
+								}
+							}
+						}
+						case 'on_tool_end': {
+							const _event = eventStack.pop()
+							if (_event !== 'on_tool_start') {
+								eventStack.pop()
+							}
 							if (stepMessage) {
 								stepMessage.status = 'done'
 							}
 							return {
 								event: ChatGatewayEvent.ToolEnd,
 								data: {
-									name: toolName
+									name: rest.name,
+									output: (<ToolMessage>data.output).content
 								}
-							}
-						}
-						if (_event !== 'on_chain_start') {
-							eventStack.pop()
-						}
-						if (!eventStack.length) {
-							this.updateMessage({ ...this.message, status: 'done' })
-							return {
-								event: ChatGatewayEvent.ChainEnd,
-								data: {
-									id: answerId
-								}
-							}
-						}
-						break
-					}
-					case 'on_chat_model_end': {
-						const _event = eventStack.pop()
-						if (_event !== 'on_chat_model_start') {
-							eventStack.pop()
-						}
-						if (aiContent) {
-							this.message.content = aiContent
-						}
-						return null
-					}
-					case 'on_chat_model_stream': {
-						const msg = data.chunk as AIMessageChunk
-						if (!msg.tool_call_chunks?.length) {
-							if (msg.content) {
-								aiContent += msg.content
-								return {
-									event: ChatGatewayEvent.MessageStream,
-									data: {
-										conversationId: this.id,
-										id: answerId,
-										content: msg.content
-									}
-								}
-							}
-						}
-						break
-					}
-					case 'on_tool_start': {
-						eventStack.push(event)
-						toolName = rest.name
-						stepMessage = {
-							id: rest.name,
-							name: rest.name,
-							role: 'tool',
-							status: 'thinking'
-						}
-						this.addStep(stepMessage)
-						return {
-							event: ChatGatewayEvent.ToolStart,
-							data: {
-								name: rest.name
-							}
+							} as ChatGatewayMessage
 						}
 					}
-					case 'on_tool_end': {
-						const _event = eventStack.pop()
-						if (_event !== 'on_tool_start') {
-							eventStack.pop()
-						}
-						if (stepMessage) {
-							stepMessage.status = 'done'
-						}
-						return {
-							event: ChatGatewayEvent.ToolEnd,
-							data: {
-								name: rest.name,
-								output: (<ToolMessage>data.output).content
-							}
-						} as ChatGatewayMessage
-					}
-				}
-				return null
-			}),
+					return null
+				}),
+			).subscribe(subscriber)
+		}).pipe(
 			catchError((err) => {
 				console.error(err)
 				return of({

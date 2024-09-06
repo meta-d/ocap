@@ -1,6 +1,6 @@
 import { AiProvider } from './ai.model'
-import { IBasePerTenantEntityModel } from './base-entity.model'
-import { IOrganization } from './organization.model'
+import { IBasePerTenantEntityModel } from '../base-entity.model'
+import { IOrganization } from '../organization.model'
 
 /**
  * 

@@ -1,4 +1,5 @@
 import {
+	AiProviderRole,
 	ChatGatewayEvent,
 	ChatGatewayMessage,
 	ChatUserMessage,
@@ -13,7 +14,6 @@ import { filter, Observable } from 'rxjs'
 import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
 import { FindCopilotRoleQuery } from '../../../copilot-role/index'
-import { CopilotService } from '../../../copilot/'
 import { ChatConversationAgent } from '../../chat-conversation'
 import { ChatService } from '../../chat.service'
 import { ChatCommand } from '../chat.command'
@@ -22,7 +22,7 @@ import { ChatCommand } from '../chat.command'
 export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 	constructor(
 		private readonly chatService: ChatService,
-		private readonly copilotService: CopilotService,
+		// private readonly copilotService: CopilotService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
@@ -64,10 +64,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					)
 				}
 				if (!this.chatService.getConversation(chatConversation.id)) {
-					const copilot = await this.copilotService.findCopilot(tenantId, organizationId)
-					if (!copilot) {
-						throw new Error('copilot not found')
-					}
+					await this.chatService.fetchCopilots(tenantId, organizationId)
 
 					this.chatService.setConversation(
 						chatConversation.id,
@@ -75,7 +72,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 							chatConversation,
 							organizationId,
 							user,
-							copilot,
+							// copilot,
 							this.copilotCheckpointSaver,
 							this.chatService,
 							this.commandBus,

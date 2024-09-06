@@ -1,5 +1,5 @@
 import { AiBusinessRole, AiProvider } from './ai.model'
-import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 
 /**
  * Examples for copilot, which is used to few shot user question

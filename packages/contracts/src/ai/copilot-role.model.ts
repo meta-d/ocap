@@ -1,4 +1,4 @@
-import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { ICopilotToolset } from './copilot-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
 

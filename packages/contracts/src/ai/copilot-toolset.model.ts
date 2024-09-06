@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
-import { IBasePerTenantEntityModel } from './base-entity.model'
-import { IUser } from './user.model'
-import { ICopilot } from './copilot.model'
+import { IBasePerTenantEntityModel } from '../base-entity.model'
+import { IUser } from '../user.model'
+import { AiProviderRole, ICopilot } from './copilot.model'
 
 /**
  * Toolset in copilot
@@ -17,6 +17,11 @@ export interface ICopilotToolset extends IBasePerTenantEntityModel {
    * avatar url
    */
   avatar?: string
+  /**
+   * Priority role of AI provider
+   * @default `AiProviderRole.Secondary`
+   */
+  providerRole?: AiProviderRole
 
   options?: {
     token: string
@@ -30,6 +35,12 @@ export type ICopilotTool = {
   description: string
   type?: 'command' | 'agent' | 'browser' | null
   schema?: string
+
+  /**
+   * Priority role of AI provider
+   * @default `AiProviderRole.Secondary`
+   */
+  providerRole?: AiProviderRole
 }
 
 export type CopilotToolContext = {
@@ -40,6 +51,7 @@ export type CopilotToolContext = {
   chatModel: unknown // BaseChatModel in langchain
 }
 
+// 临时
 export const TOOLSETS: ICopilotToolset[] = [
   {
     id: '1',
@@ -70,6 +82,7 @@ export const TOOLSETS: ICopilotToolset[] = [
     name: 'ChatBI',
     description: 'Chat with BI',
     avatar: '/assets/images/chatbi.jpg',
+    providerRole: AiProviderRole.Primary,
     tools: [
       {
         name: 'ChatBINewCommand',

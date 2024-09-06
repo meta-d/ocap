@@ -1,7 +1,7 @@
 import { AiProvider } from './ai.model'
-import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { ICopilot } from './copilot.model'
-import { IStorageFile } from './storage-file.model'
+import { IStorageFile } from '../storage-file.model'
 
 export type KnowledgebaseParserConfig = {
   pages?: number[][]

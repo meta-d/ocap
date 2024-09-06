@@ -1,10 +1,12 @@
-import { AiProviderRole } from '@metad/contracts'
+import { AiProviderRole, ICopilot } from '@metad/contracts'
 import { DeepPartial } from '@metad/server-common'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { IsNull, Repository } from 'typeorm'
 import { Copilot } from './copilot.entity'
 import { PaginationParams, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
+
+export const ProviderRolePriority = [AiProviderRole.Embedding, AiProviderRole.Secondary, AiProviderRole.Primary]
 
 @Injectable()
 export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> {
@@ -40,20 +42,45 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 		return items.length ? items[0] : null
 	}
 
-	async findCopilot(tenantId: string, organizationId: string) {
+	async findCopilot(tenantId: string, organizationId: string, role?: AiProviderRole) {
 		tenantId = tenantId || RequestContext.currentTenantId()
 		organizationId = organizationId || RequestContext.getOrganizationId()
-		let copilot = await this.findOneByRole(AiProviderRole.Secondary, tenantId, organizationId)
-		if (!copilot) {
-			copilot = await this.findOneByRole(AiProviderRole.Primary, tenantId, organizationId)
+		role = role ?? AiProviderRole.Secondary
+		let copilot: ICopilot = null
+		for (const priorityRole of ProviderRolePriority.slice(ProviderRolePriority.indexOf(role))) {
+			copilot = await this.findOneByRole(priorityRole, tenantId, organizationId)
+			if (copilot?.enabled) {
+				break
+			}
 		}
+		// 没有配置过 org 内的 copilot（包括又禁用的情况） 则使用 Tenant 全局配置
 		if (!copilot) {
-			copilot = await this.findTenantOneByRole(AiProviderRole.Secondary, tenantId)
+			for (const priorityRole of ProviderRolePriority.slice(ProviderRolePriority.indexOf(role))) {
+				copilot = await this.findTenantOneByRole(priorityRole, tenantId)
+				if (copilot?.enabled) {
+					break
+				}
+			}
 		}
-		if (!copilot) {
-			copilot = await this.findTenantOneByRole(AiProviderRole.Primary, tenantId)
-		}
+	
 		return copilot
+	}
+
+	/**
+	 * Find all copilots in organization or tenant globally
+	 * 
+	 * @param tenantId
+	 * @param organizationId 
+	 * @returns All copilots
+	 */
+	async findAllCopilots(tenantId: string, organizationId: string) {
+		tenantId = tenantId || RequestContext.currentTenantId()
+		organizationId = organizationId || RequestContext.getOrganizationId()
+		const items = await this.repository.find({ where: { tenantId, organizationId } })
+		if (items.length) {
+			return items
+		}
+		return await this.repository.find({ where: { tenantId, organizationId: IsNull() } })
 	}
 
 	/**

@@ -12,6 +12,7 @@ import {
   getEntityLevel,
   getEntityMeasures,
   getEntityProperty,
+  getEntityProperty2,
   isAdvancedFilter,
   isAdvancedSlicer,
   isDimension,
@@ -19,6 +20,8 @@ import {
   ISlicer,
   isMeasure,
   isNil,
+  isPropertyHierarchy,
+  isPropertyLevel,
   isString,
   Measure,
   omitBy,
@@ -360,8 +363,18 @@ export function getCubeHierarchyLevel(entityType: EntityType, hierarchy: string,
  */
 export function convertOrderby(entityType: EntityType, orderby: OrderBy): MDXProperty {
   const { by, order = 'ASC' } = deconstructOrderby(orderby)
+  const property = getEntityProperty2(entityType, by)
+  if (!property) {
+    throw new Error(`Not found property for order by: ${by}`)
+  }
+  let name = by
+  if (isPropertyLevel(property)) {
+    name = property.hierarchy
+  } else if(isPropertyHierarchy(property)) {
+    name = property.name
+  }
   return {
-    ...omitBy(getMDXProperty(entityType, by), isNil),
+    ...omitBy(getMDXProperty(entityType, name), isNil),
     order
   } as MDXProperty
 }

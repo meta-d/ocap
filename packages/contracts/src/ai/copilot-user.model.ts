@@ -1,7 +1,7 @@
 import { AiProvider } from './ai.model'
-import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
-import { IOrganization } from './organization.model'
-import { IUser } from './user.model'
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { IOrganization } from '../organization.model'
+import { IUser } from '../user.model'
 
 /**
  * 

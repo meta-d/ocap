@@ -47,9 +47,11 @@ import {
 	registerModel
 } from '../../../model/ocap'
 import { ChatBIService } from '../../chatbi.service'
-import { ChatAnswer, ChatAnswerSchema, createDimensionMemberRetrieverTool } from '../../tools'
-import { GetCubesContextSchema, insightAgentState } from '../../types'
+import { ChatAnswer, createDimensionMemberRetrieverTool } from '../../tools'
+import { ChatAnswerSchema, GetCubesContextSchema, insightAgentState } from '../../types'
 import { ChatBINewCommand } from '../chat-bi.command'
+import { getErrorMessage } from '@metad/server-common'
+import { markdownCubes } from '../../graph'
 
 @CommandHandler(ChatBINewCommand)
 export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
@@ -77,11 +79,12 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 	public async execute(command: ChatBINewCommand): Promise<any> {
 		const { args, config, context } = command
 
-		console.log(`execute ChatBINewCommand`, args, config, context)
+		// console.log(`execute ChatBINewCommand`, args, config, context)
+
 		// New Ocap context for every chatbi conversation
 		const dsCoreService = new NgmDSCoreService(this.agent, this.dataSourceFactory)
 		// Register all chat models (改成根据 Copilot 角色来)
-		await this.registerChatModels(dsCoreService, context)
+		const cubesContext = await this.registerChatModels(dsCoreService, context)
 		// Prepare LLM
 		const { copilot, chatModel } = context
 		const llm =
@@ -105,36 +108,38 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 		})
 		const { question } = args
 		const content = await exampleFewShotPrompt.format({ input: question })
-
-		const streamResults = await agent.stream(
-			{
-				input: question,
-				messages: [new HumanMessage(content)],
-				context
-			},
-			{
-				configurable: {
-					thread_id,
-					thread_ns: this.commandName
-				},
-				recursionLimit: AgentRecursionLimit
-				// debug: true
-			}
-		)
-		// let verboseContent = ''
-		// let end = false
+		
 		try {
+			const streamResults = await agent.stream(
+				{
+					input: question,
+					messages: [new HumanMessage(content)],
+					context: cubesContext
+				},
+				{
+					configurable: {
+						thread_id,
+						checkpoint_ns: this.commandName
+					},
+					recursionLimit: AgentRecursionLimit
+					// debug: true
+				}
+			)
+
+			// let verboseContent = ''
+			// let end = false
 			for await (const output of streamResults) {
-				//
+				// console.log(output)
 			}
 		} catch (error) {
 			console.error(error)
+			return `Error:` + getErrorMessage(error)
 		}
 
 		const state = await agent.getState({
 			configurable: {
 				thread_id,
-				thread_ns: this.commandName
+				checkpoint_ns: this.commandName
 			}
 		})
 
@@ -164,6 +169,8 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 
 		// Register all models
 		models.forEach((item) => registerModel(item.model, dsCoreService))
+
+		return markdownCubes(models)
 	}
 
 	createGraphAgent(llm: BaseChatModel, context: CopilotToolContext, dsCoreService: DSCoreService, subscriber: Subscriber<any>) {
@@ -280,9 +287,10 @@ ${createAgentStepsInstructions(
 	}
 
 	createChatAnswerTool(context: ChatBIContext) {
-		const { dsCoreService, entityType } = context
+		const { dsCoreService } = context
+
 		return tool(
-			async (answer): Promise<string> => {
+			async (answer: any): Promise<string> => {
 				this.logger.debug(`Execute copilot action 'answerQuestion':`, JSON.stringify(answer, null, 2))
 				try {
 					let entityType = null

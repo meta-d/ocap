@@ -220,7 +220,12 @@
       "ConversationStarters": "对话开场白",
       "Toolsets": "工具集",
       "Aborted": "已取消",
-      "Rename": "重命名"
+      "Rename": "重命名",
+      "Date_Today": "今天",
+      "Date_Yesterday": "昨天",
+      "Date_Last7Days": "前 7 天",
+      "Date_Last30Days": "前 30 天",
+      "Options": "选项"
     },
     "MENU": {
       "Certification": "认证",

@@ -64,6 +64,19 @@ export const OrderBySchema = z.object({
   order: z.enum([OrderDirection.ASC, OrderDirection.DESC]).describe('Order direction')
 })
 
+export const VariableSchema = z.object({
+  dimension: z
+      .object({
+        dimension: z.string().describe('The name of the dimension'),
+        hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
+        parameter: z.string().optional().describe('The name of variable reference to')
+      })
+      .describe('dimension of the variable'),
+  members: z.array(z.object({
+    key: z.string().describe('the UniqueName of dimension member, for example: `[MemberKey]`'),
+    caption: z.string().optional().describe('the caption of dimension member')
+  })).describe('Members in the variable')
+})
 
 /**
  * Due to the instability of the AI's returned results, it is necessary to attempt to fix dimensions for different situations:

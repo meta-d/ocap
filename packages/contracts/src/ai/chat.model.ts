@@ -1,4 +1,4 @@
-import { IBasePerTenantAndOrganizationEntityModel } from './base-entity.model'
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { ICopilotRole } from './copilot-role.model'
 
 export interface IChatConversation extends IBasePerTenantAndOrganizationEntityModel {

@@ -44,7 +44,7 @@
     </div>
 
     <label class="p-2">{{'PAC.KEY_WORDS.Toolset' | translate: {Default: 'Toolset'} }}</label>
-    <div class="max-h-64 w-56" (click)="$event.stopPropagation()">
+    <div class="max-h-64 w-56 mb-2" (click)="$event.stopPropagation()">
       @if (toolsetList()?.length) {
         <pac-toolset-list class="w-full" [toolsetList]="toolsetList()" [(toolsets)]="toolsets" />
       } @else {
@@ -53,10 +53,10 @@
       }
     </div>
 
-    <button class="ngm-cdk-menu-item" cdkMenuItem>
+    <!-- <button class="ngm-cdk-menu-item" cdkMenuItem>
       <mat-icon class="text-token-text-secondary mr-2">visibility_off</mat-icon>
       <span>{{'PAC.KEY_WORDS.Hidden'  | translate: {Default: 'Hidden'} }}</span>
-    </button>
+    </button> -->
 
     <button class="ngm-cdk-menu-item" cdkMenuItem (click)="openAbout()">
       <mat-icon class="text-token-text-secondary mr-2">info</mat-icon>

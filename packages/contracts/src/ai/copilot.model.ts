@@ -1,5 +1,5 @@
-import { AiProvider } from "./ai.model"
-import { IBasePerTenantAndOrganizationEntityModel } from "./base-entity.model"
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { AiProvider } from './ai.model'
 
 export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
   role: AiProviderRole
@@ -17,8 +17,11 @@ export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
   options?: any
 }
 
+/**
+ * The order of priority is: `Embedding`, `Secondary`, `Primary`
+ */
 export enum AiProviderRole {
   Primary = 'primary',
-  Secondary ='secondary',
+  Secondary = 'secondary',
   Embedding = 'Embedding'
 }

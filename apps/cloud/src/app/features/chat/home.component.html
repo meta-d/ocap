@@ -2,7 +2,10 @@
   <mat-sidenav #sidenav opened [mode]="isMobile() ? 'over' : 'side'" class="w-[400px]">
     <pac-chat-sidenav-menu class="w-full p-2" [sidenav]="sidenav"/>
 
-    <div class="flex-1 p-2 overflow-auto max-h-fit">
+    <div class="flex-1 p-2 overflow-auto max-h-fit"
+      waIntersectionObserver
+      waIntersectionThreshold="0.5"
+    >
       <ul cdkListbox>
         @for (role of roles(); track role.id) {
           <li [cdkOption]="role" class="flex items-center cursor-pointer px-4 py-2 rounded-md
@@ -12,37 +15,51 @@
           ><pac-avatar [imageUrl]="role.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{role.title}}</li>
         }
       </ul>
-      <span class="flex h-9 items-center">
-        <h3 class="pb-2 pt-3 px-4 text-sm font-semibold text-ellipsis overflow-hidden break-all text-token-text-primary">昨天</h3>
-      </span>
-      <mat-list>
-        @for (item of conversations(); track item.id) {
-          <mat-list-item class="pac-chat__conversation-item group cursor-pointer rounded-md hover:bg-black/5 dark:hover:bg-white/10"
-            [ngClass]="{active: item.id === conversationId()}"
-            [class.menu-active]="mt.menuOpen"
-            (click)="selectConversation(item)"
-          >
-          @if (editingConversation()  === item.id) {
-            <input matInput [(ngModel)]="editingTitle" (keydown.enter)="updateTitle(item)">
-          } @else {
-            {{item.title || item.id}}
-          }
 
-            <div class="absolute bottom-0 top-0 items-center gap-1.5 pr-2 right-0 flex">
-              <span class="" data-state="closed">
-                <button class="menu-trigger flex items-center justify-center text-token-text-secondary transition opacity-0 group-hover:opacity-50 hover:opacity-100" type="button" id="radix-:r5pv:" aria-haspopup="menu" aria-expanded="false" data-state="closed"
-                  [matMenuTriggerFor]="convMenu"
-                  [matMenuTriggerData]="item"
-                  #mt="matMenuTrigger"
-                  [class.active]="mt.menuOpen"
-                  (click)="$event.stopPropagation();">
-                  <pac-chat-more-svg />
-                </button>
-              </span>
-            </div>
-          </mat-list-item>
+      <mat-list>
+        @for (group of groups(); track groups.name) {
+          <div mat-subheader class="pt-8 text-sm font-semibold text-ellipsis overflow-hidden break-all text-token-text-primary">
+            {{ 'PAC.KEY_WORDS.Date_' + group.name | translate: {Default: group.name} }}</div>
+          @for (item of group.values; track item.id) {
+            <mat-list-item class="pac-chat__conversation-item group cursor-pointer rounded-md hover:bg-black/5 dark:hover:bg-white/10"
+              [ngClass]="{active: item.id === conversationId()}"
+              [class.menu-active]="mt.menuOpen"
+              (click)="selectConversation(item)"
+            >
+            @if (editingConversation()  === item.id) {
+              <input matInput [(ngModel)]="editingTitle" (keydown.enter)="updateTitle(item)">
+            } @else {
+              {{item.title || item.id}}
+            }
+
+              <div class="absolute bottom-0 top-0 items-center gap-1.5 pr-2 right-0 flex">
+                <span class="" data-state="closed">
+                  <button class="menu-trigger flex items-center justify-center text-token-text-secondary transition opacity-0
+                    group-hover:opacity-50 group-hover:hover:opacity-100"
+                    type="button" id="radix-:r5pv:" aria-haspopup="menu" aria-expanded="false" data-state="closed"
+                    [matMenuTriggerFor]="convMenu"
+                    [matMenuTriggerData]="item"
+                    #mt="matMenuTrigger"
+                    [class.active]="mt.menuOpen"
+                    [matTooltip]="'PAC.KEY_WORDS.Options' | translate: {Default: 'Options'} "
+                    matTooltipPosition="above"
+                    (click)="$event.stopPropagation();">
+                    <pac-chat-more-svg />
+                  </button>
+                </span>
+              </div>
+            </mat-list-item>
+          }
         }
       </mat-list>
+
+      @if (loading()) {
+        <div class="flex justify-center">
+          <mat-progress-spinner [diameter]="20" color="accent" mode="indeterminate" />
+        </div>
+      }
+
+      <div (waIntersectionObservee)="onIntersection()" class="p-4"></div>
     </div>
   </mat-sidenav>
   <mat-sidenav-content>

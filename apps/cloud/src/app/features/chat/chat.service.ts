@@ -22,6 +22,7 @@ import {
 import {
   ChatGatewayEvent,
   ChatGatewayMessage,
+  getErrorMessage,
   IChatConversation,
   ICopilotRole,
   ICopilotToolset,
@@ -29,7 +30,7 @@ import {
   LanguagesEnum,
   OrderTypeEnum
 } from '../../@core'
-import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService } from '../../@core/services'
+import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { COMMON_COPILOT_ROLE } from './types'
 
@@ -41,6 +42,7 @@ export class ChatService {
   readonly appService = inject(AppService)
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
+  readonly #toastr = inject(ToastrService)
   readonly #location = inject(Location)
   readonly paramRole = injectParams('role')
   readonly paramId = injectParams('id')
@@ -138,9 +140,14 @@ export class ChatService {
       combineLatestWith(toObservable(this.roles)),
       takeUntilDestroyed()
     )
-    .subscribe(([conversation, roles]) => {
-      if (conversation) {
-        this.role$.next(roles?.find((role) => role.id === conversation.roleId))
+    .subscribe({
+      next: ([conversation, roles]) => {
+        if (conversation) {
+          this.role$.next(roles?.find((role) => role.id === conversation.roleId))
+        }
+      },
+      error: (error) => {
+        this.#toastr.error(getErrorMessage(error))
       }
     })
 
@@ -237,16 +244,6 @@ export class ChatService {
         }
       }
     })
-
-    this.conversationService
-      .getMyInOrg({ select: ['id', 'key', 'title', 'updatedAt'], order: { updatedAt: OrderTypeEnum.DESC }, take: 20 })
-      .pipe(
-        map(({ items }) => items),
-        takeUntilDestroyed()
-      )
-      .subscribe((items) => {
-        this.conversations.set(items)
-      })
 
     effect(
       () => {
