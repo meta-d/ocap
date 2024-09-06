@@ -111,7 +111,6 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 
 				conversation
 					.chat(content, answerId)
-					.pipe(filter((data) => data != null))
 					.subscribe(subscriber)
 			})()
 		})

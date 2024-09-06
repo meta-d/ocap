@@ -60,7 +60,7 @@ export enum CopilotChatMessageRoleEnum {
 export interface CopilotBaseMessage {
   id: string
   createdAt?: Date
-  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
+  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info' | 'component'
   
   /**
    * Status of the message:

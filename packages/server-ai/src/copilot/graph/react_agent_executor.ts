@@ -18,7 +18,7 @@ import {
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { BaseCheckpointSaver, CompiledStateGraph, END, MessagesAnnotation, START, StateGraph, StateGraphArgs } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
-import { All } from "@langchain/langgraph/dist/pregel/types";
+import { All } from "@langchain/langgraph-checkpoint";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AgentState, createCopilotAgentState } from "./types";
 

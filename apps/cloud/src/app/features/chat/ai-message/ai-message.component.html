@@ -34,6 +34,9 @@
             }
           </div>
         }
+        @case ('component') {
+          <pac-chat-component-message [message]="message" class="w-full"/>
+        }
       }
     }
   }

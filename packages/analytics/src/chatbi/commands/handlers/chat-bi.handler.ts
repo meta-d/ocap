@@ -1,8 +1,8 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { HumanMessage, SystemMessage } from '@langchain/core/messages'
+import { HumanMessage, isAIMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
-import { ChatGatewayEvent, CopilotToolContext, OrderTypeEnum } from '@metad/contracts'
+import { ChatGatewayEvent, ChatGatewayMessage, CopilotToolContext, JSONValue, OrderTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, referencesCommandName } from '@metad/copilot'
 import {
 	Agent,
@@ -50,7 +50,7 @@ import { ChatBIService } from '../../chatbi.service'
 import { ChatAnswer, createDimensionMemberRetrieverTool } from '../../tools'
 import { ChatAnswerSchema, GetCubesContextSchema, insightAgentState } from '../../types'
 import { ChatBINewCommand } from '../chat-bi.command'
-import { getErrorMessage } from '@metad/server-common'
+import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { markdownCubes } from '../../graph'
 
 @CommandHandler(ChatBINewCommand)
@@ -119,7 +119,9 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 				{
 					configurable: {
 						thread_id,
-						checkpoint_ns: this.commandName
+						checkpoint_ns: this.commandName,
+						tenantId,
+						organizationId,
 					},
 					recursionLimit: AgentRecursionLimit
 					// debug: true
@@ -129,7 +131,9 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 			// let verboseContent = ''
 			// let end = false
 			for await (const output of streamResults) {
-				// console.log(output)
+				if (output.agent) {
+					//console.log(output.agent.messages)
+				}
 			}
 		} catch (error) {
 			console.error(error)
@@ -224,7 +228,7 @@ If you have any questions about how to analysis data (such as 'how to create a f
 
 ${createAgentStepsInstructions(
 	`Extract the information mentioned in the problem into 'dimensions', 'measurements', 'time', 'slicers', etc.`,
-	`For every measure, determine whether it exists in the cube context, if it does, proceed directly to the next step, if not found, call the 'createIndicator' tool to create new calculated measure for it. After creating the measure, you need to call the subsequent steps to re-answer the complete answer.`,
+	// `For every measure, determine whether it exists in the cube context, if it does, proceed directly to the next step, if not found, call the 'createIndicator' tool to create new calculated measure for it. After creating the measure, you need to call the subsequent steps to re-answer the complete answer.`,
 	CubeVariablePrompt,
 	`If the time condition is a specified fixed time (such as 2023 year, 202202, 2020 Q1), please add it to 'slicers' according to the time dimension. If the time condition is relative (such as this month, last month, last year), please add it to 'timeSlicers'.`,
 	`Then call 'answerQuestion' tool to show complete answer to user, don't create image for answer`
@@ -233,6 +237,7 @@ ${createAgentStepsInstructions(
 				const system = await SystemMessagePromptTemplate.fromTemplate(systemTemplate, {
 					templateFormat: 'mustache'
 				}).format({ ...state })
+
 				return [new SystemMessage(system), ...state.messages]
 			}
 		})
@@ -367,18 +372,28 @@ ${createAgentStepsInstructions(
 		}
 
 		return new Promise((resolve, reject) => {
+			const dataSettings = {
+				...answer.dataSettings,
+				chartAnnotation,
+				presentationVariant
+			}
 			chartService.selectResult().subscribe((result) => {
 				if (result.error) {
 					reject(result.error)
 				} else {
 					subscriber.next({
-						event: ChatGatewayEvent.Component,
+						event: ChatGatewayEvent.Message,
 						data: {
-							type: 'AnalyticalCard',
-							data: result.data,
-							chartAnnotation
+							id: shortuuid(),
+							role: 'component',
+							data: {
+								type: 'AnalyticalCard',
+								data: result.data,
+								dataSettings,
+								slicers
+							} as unknown as JSONValue
 						}
-					})
+					} as ChatGatewayMessage)
 					resolve({ data: result.data, categoryMembers: {} })
 				}
 				destroy$.next()
@@ -395,11 +410,7 @@ ${createAgentStepsInstructions(
 				})
 
 			chartService.slicers = slicers
-			chartService.dataSettings = {
-				...answer.dataSettings,
-				chartAnnotation,
-				presentationVariant
-			}
+			chartService.dataSettings = dataSettings
 		})
 	}
 }

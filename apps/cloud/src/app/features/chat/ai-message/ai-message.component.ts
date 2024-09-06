@@ -11,6 +11,7 @@ import { MaterialModule } from '../../../@shared'
 import { AvatarComponent } from '../../../@shared/files/avatar/avatar.component'
 import { ChatService } from '../chat.service'
 import { ChatLoadingComponent } from '../../../@shared/copilot'
+import { ChatComponentMessageComponent } from '../component-message/component-message.component'
 
 @Component({
   standalone: true,
@@ -26,7 +27,8 @@ import { ChatLoadingComponent } from '../../../@shared/copilot'
     MaterialModule,
     NgmCommonModule,
     AvatarComponent,
-    ChatLoadingComponent
+    ChatLoadingComponent,
+    ChatComponentMessageComponent
   ],
   selector: 'pac-ai-message',
   templateUrl: './ai-message.component.html',

@@ -29,6 +29,7 @@ export type ChatUserMessage = ChatMessage & {
 
 export enum ChatGatewayEvent {
   ConversationCreated = 'conversation_created',
+  Message = 'message',
   MessageStream = 'message_stream',
   StepStart = 'step_start',
   StepEnd = 'step_end',
@@ -38,8 +39,6 @@ export enum ChatGatewayEvent {
   ChainEnd = 'chain_end',
   CancelChain = 'cancel_chain',
   ChainAborted = 'chain_aborted',
-  Component = 'component',
-  
 }
 
 export type ChatGatewayMessage = {
@@ -81,12 +80,15 @@ export type ChatGatewayMessage = {
 } | {
   event: ChatGatewayEvent.StepStart | ChatGatewayEvent.StepEnd
   data: CopilotChatMessage
+} | {
+  event: ChatGatewayEvent.Message
+  data: CopilotChatMessage
 })
 
 export interface CopilotBaseMessage {
   id: string
   createdAt?: Date
-  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
+  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info' | 'component'
   
   /**
    * Status of the message:

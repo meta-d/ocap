@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { effectAction, provideOcapCore } from '@metad/ocap-angular/core'
+import { effectAction, NgmDSCoreService, provideOcapCore } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
@@ -16,7 +16,7 @@ import { isYesterday } from 'date-fns/isYesterday'
 import { subDays } from 'date-fns/subDays'
 import { NGXLogger } from 'ngx-logger'
 import { switchMap, tap } from 'rxjs/operators'
-import { ChatConversationService, IChatConversation, ICopilotRole, OrderTypeEnum, routeAnimations } from '../../@core'
+import { ChatBIModelService, ChatConversationService, IChatConversation, ICopilotRole, OrderTypeEnum, registerModel, routeAnimations } from '../../@core'
 import { AvatarComponent, MaterialModule } from '../../@shared'
 import { AppService } from '../../app.service'
 import { ChatAiMessageComponent } from './ai-message/ai-message.component'
@@ -25,6 +25,9 @@ import { ChatService } from './chat.service'
 import { ChatMoreComponent } from './icons'
 import { ChatSidenavMenuComponent } from './sidenav-menu/sidenav-menu.component'
 import { ChatToolbarComponent } from './toolbar/toolbar.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { convertNewSemanticModelResult, NgmSemanticModel } from '@metad/cloud/state'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 
 @Component({
   standalone: true,
@@ -58,8 +61,11 @@ import { ChatToolbarComponent } from './toolbar/toolbar.component'
 export class ChatHomeComponent {
   DisplayBehaviour = DisplayBehaviour
 
+  readonly #dsCoreService = inject(NgmDSCoreService)
+  readonly #wasmAgent = inject(WasmAgentService)
   readonly chatService = inject(ChatService)
   readonly conversationService = inject(ChatConversationService)
+  readonly chatbiModelService = inject(ChatBIModelService)
   readonly appService = inject(AppService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
@@ -121,6 +127,23 @@ export class ChatHomeComponent {
 
   constructor() {
     this.loadConversations()
+
+    this.chatbiModelService.getAllInOrg({
+      relations: [
+        'model',
+        'model.indicators',
+        'model.createdBy',
+        'model.updatedBy',
+        'model.dataSource',
+        'model.dataSource.type'
+      ]
+    }).pipe(
+      takeUntilDestroyed()
+    ).subscribe(({items}) => {
+      items.forEach(({model}) => {
+        this.registerModel(convertNewSemanticModelResult({...model, key: model.id}))
+      })
+    })
   }
 
   selectConversation(item: IChatConversation) {
@@ -177,5 +200,9 @@ export class ChatHomeComponent {
     if (!this.loading() && !this.done()) {
       this.loadConversations()
     }
+  }
+
+  private registerModel(model: NgmSemanticModel) {
+    registerModel(model, this.#dsCoreService, this.#wasmAgent)
   }
 }

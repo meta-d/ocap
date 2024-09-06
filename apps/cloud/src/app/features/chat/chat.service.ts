@@ -197,6 +197,10 @@ export class ChatService {
           this.conversations.update((items) => [{ ...result.data }, ...items])
           break
         }
+        case ChatGatewayEvent.Message: {
+          this.appendMessageStep(result.data)
+          break
+        }
         case ChatGatewayEvent.MessageStream: {
           this.appendStreamMessage(result.data.content)
           break
@@ -345,12 +349,15 @@ export class ChatService {
   updateMessageStep(step: CopilotChatMessage) {
     this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
-      const lastStep = lastMessage.messages[lastMessage.messages.length - 1]
-      lastMessage.messages[lastMessage.messages.length - 1] = {
-        ...lastStep,
-        ...step
+      const _steps = lastMessage.messages.reverse()
+      const index = _steps.findIndex((item) => item.role === step.role)
+      if (index > -1) {
+        _steps[index] = {
+          ..._steps[index],
+          ...step
+        }
+        lastMessage.messages = _steps.reverse()
       }
-      lastMessage.messages = [...lastMessage.messages]
       return [...messages]
     })
   }

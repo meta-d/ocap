@@ -22,7 +22,7 @@ import { AgentRecursionLimit } from '@metad/copilot'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { jsonSchemaToZod } from 'json-schema-to-zod'
 import { formatDocumentsAsString } from 'langchain/util/document'
-import { catchError, concat, from, fromEvent, map, Observable, of } from 'rxjs'
+import { catchError, concat, filter, from, fromEvent, map, Observable, of, tap } from 'rxjs'
 import { z } from 'zod'
 import { ChatConversationUpdateCommand } from '../chat-conversation'
 import { createLLM, createReactAgent } from '../copilot'
@@ -178,6 +178,8 @@ References documents:
 						configurable: {
 							thread_id: this.id,
 							checkpoint_ns: '',
+							tenantId: this.tenantId,
+							organizationId: this.organizationId,
 							subscriber
 						},
 						recursionLimit: AgentRecursionLimit,
@@ -290,6 +292,12 @@ References documents:
 				}),
 			).subscribe(subscriber)
 		}).pipe(
+			filter((data) => data != null),
+			tap((event: ChatGatewayMessage) => {
+				if (event?.event === ChatGatewayEvent.Message) {
+					this.addStep(event.data)
+				}
+			}),
 			catchError((err) => {
 				console.error(err)
 				return of({
@@ -387,7 +395,11 @@ References documents:
 		this.graph.updateState(
 			{
 				configurable: {
-					thread_id: this.id
+					thread_id: this.id,
+					checkpoint_ns: '',
+					checkpoint_id: '',
+					tenantId: this.tenantId,
+					organizationId: this.organizationId,
 				}
 			},
 			state
