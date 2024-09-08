@@ -39,6 +39,7 @@ export enum ChatGatewayEvent {
   ChainEnd = 'chain_end',
   CancelChain = 'cancel_chain',
   ChainAborted = 'chain_aborted',
+  Error = 'error'
 }
 
 export type ChatGatewayMessage = {
@@ -67,11 +68,7 @@ export type ChatGatewayMessage = {
   data: ChatUserMessage
 } | {
   event: ChatGatewayEvent.ToolStart | ChatGatewayEvent.ToolEnd
-  data: {
-    id: string
-    name: string
-    output?: string
-  }
+  data: CopilotChatMessage
 } | {
   event: ChatGatewayEvent.ChainStart | ChatGatewayEvent.ChainEnd
   data: {
@@ -81,7 +78,7 @@ export type ChatGatewayMessage = {
   event: ChatGatewayEvent.StepStart | ChatGatewayEvent.StepEnd
   data: CopilotChatMessage
 } | {
-  event: ChatGatewayEvent.Message
+  event: ChatGatewayEvent.Message | ChatGatewayEvent.Error
   data: CopilotChatMessage
 })
 

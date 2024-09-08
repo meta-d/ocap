@@ -193,7 +193,7 @@ export class ChatService {
           break
         }
         case ChatGatewayEvent.ConversationCreated: {
-          this.conversation.set({ ...result.data, messages: [...this.messages()] })
+          this.conversation.set({ ...result.data, messages: [...(this.messages() ?? [])] })
           this.conversations.update((items) => [{ ...result.data }, ...items])
           break
         }
@@ -228,7 +228,7 @@ export class ChatService {
             id: result.data?.id,
             role: 'tool',
             content: `工具调用: ${result.data?.name} 已完成！`,
-            status: 'done'
+            status: result.data.status
           })
           break
         }
@@ -244,6 +244,14 @@ export class ChatService {
           if (this.conversation()?.id === result.data.conversationId) {
             this.abortMessage(result.data.id)
           }
+          break
+        }
+        case ChatGatewayEvent.Error: {
+          this.answering.set(false)
+          this.updateMessage(result.data.id, {
+            status: 'error',                                
+            content: result.data.error
+          })
           break
         }
       }
@@ -330,6 +338,7 @@ export class ChatService {
 
   appendStreamMessage(content: string) {
     this.messages.update((messages) => {
+      messages ??= []
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
       lastMessage.content = (lastMessage.content ?? '') + content
       messages[messages.length - 1] = { ...lastMessage }

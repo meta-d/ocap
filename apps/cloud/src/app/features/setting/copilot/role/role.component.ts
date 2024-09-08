@@ -111,7 +111,7 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
       () => {
         if (this.copilotRole()) {
           this.formGroup.patchValue(this.copilotRole())
-          this.knowledgebases.set([...this.copilotRole().knowledgebases])
+          this.knowledgebases.set([...(this.copilotRole().knowledgebases ?? [])])
         } else {
           this.formGroup.reset()
         }

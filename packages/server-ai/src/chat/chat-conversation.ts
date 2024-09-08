@@ -32,6 +32,7 @@ import { KnowledgeSearchQuery } from '../knowledgebase/queries'
 import { ChatService } from './chat.service'
 import { ChatAgentState, chatAgentState } from './types'
 import { Logger } from '@nestjs/common'
+import { getErrorMessage } from '@metad/server-common'
 
 
 export class ChatConversationAgent {
@@ -224,7 +225,7 @@ References documents:
 								eventStack.pop()
 							}
 							if (!eventStack.length) {
-								this.updateMessage({ ...this.message, status: 'done' })
+								this.upsertMessageWithStatus('done')
 								return {
 									event: ChatGatewayEvent.ChainEnd,
 									data: {
@@ -290,7 +291,7 @@ References documents:
 								event: ChatGatewayEvent.ToolEnd,
 								data: {
 									name: rest.name,
-									output: (<ToolMessage>data.output).content
+									content: (<ToolMessage>data.output).content
 								}
 							} as ChatGatewayMessage
 						}
@@ -363,6 +364,13 @@ References documents:
 						})
 						subscriber.complete()
 					}
+				}).catch((error) => {
+					this.addStep({ ...stepMessage, status: 'error', content: getErrorMessage(error) })
+					subscriber.next({
+						event: ChatGatewayEvent.StepEnd,
+						data: { ...stepMessage, status: 'error' }
+					})
+					subscriber.error(error)
 				})
 
 			return () => {
@@ -391,10 +399,22 @@ References documents:
 							}
 						})
 						subscriber.unsubscribe()
-						this.abortMessage()
+						this.upsertMessageWithStatus('aborted')
 					})
 					!subscriber.closed && source.subscribe(subscriber)
+				}),
+			catchError((err) => {
+				this.upsertMessageWithStatus('error', getErrorMessage(err))
+				return of({
+					event: ChatGatewayEvent.Error,
+					data: {
+						conversationId: this.conversation.id,
+						id: answerId,
+						role: 'error',
+						error: getErrorMessage(err)
+					}
 				})
+			})
 		)
 	}
 
@@ -421,21 +441,30 @@ References documents:
 		this.message.messages.push(step)
 	}
 
-	async abortMessage() {
+	async upsertMessageWithStatus(status: CopilotBaseMessage['status'], content?: string) {
 		try {
-			await this.updateMessage({
+			// Update status of message and it's sub messages
+			const message = {
 				...this.message,
-				status: 'aborted',
-				messages: this.message.messages.map((m) => (m.status === 'thinking' ? { ...m, status: 'aborted' } : m))
-			} as CopilotMessageGroup)
-			this.logger.debug(`Conversation '${this.id}' has been aborted`)
+				status,
+				messages: this.message.messages.map((m) => (m.status === 'thinking' ? { ...m, status } : m))
+			} as CopilotMessageGroup
+
+			if (content) {
+				message.content = content
+			}
+
+			// Record conversation message
+			await this.saveMessage(message)
+
+			this.logger.debug(`Conversation '${this.id}' has been finished`)
 		} catch (err) {
 			console.log('error', err)
 		}
 	}
 
-	async updateMessage(message: CopilotBaseMessage) {
-		// Record conversation messages
+	async saveMessage(message: CopilotBaseMessage) {
+		// Record conversation message
 		this.conversation = await this.commandBus.execute(
 			new ChatConversationUpdateCommand({
 				id: this.id,

@@ -104,7 +104,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 
 				conversation.newMessage(answerId)
 				// Update conversation messages
-				await conversation.updateMessage({ id, content, role: 'user' })
+				await conversation.saveMessage({ id, content, role: 'user' })
 
 				conversation
 					.chat(content, answerId)
