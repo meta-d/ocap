@@ -170,7 +170,7 @@ References documents:
 	}
 
 	streamGraphEvents(input: string, answerId: string) {
-		let aiContent = ''
+		// let aiContent = ''
 		const eventStack: string[] = []
 		let toolName = ''
 		let stepMessage = null
@@ -205,6 +205,7 @@ References documents:
 						}
 						case 'on_chat_model_start': {
 							eventStack.push(event)
+							this.message.content = ''
 							break
 						}
 						case 'on_chain_end': {
@@ -240,16 +241,17 @@ References documents:
 							if (_event !== 'on_chat_model_start') {
 								eventStack.pop()
 							}
-							if (aiContent) {
-								this.message.content = aiContent
-							}
+							// if (aiContent) {
+							// 	this.message.content = aiContent
+							// }
 							return null
 						}
 						case 'on_chat_model_stream': {
 							const msg = data.chunk as AIMessageChunk
 							if (!msg.tool_call_chunks?.length) {
 								if (msg.content) {
-									aiContent += msg.content
+									this.message.content += msg.content
+									// aiContent += msg.content
 									return {
 										event: ChatGatewayEvent.MessageStream,
 										data: {
