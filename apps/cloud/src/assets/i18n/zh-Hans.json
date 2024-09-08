@@ -1382,7 +1382,8 @@
     },
     "Chat": {
       "DeleteConversation": "删除会话",
-      "RetrievingDocuments": "检索文档"
+      "RetrievingDocuments": "检索文档",
+      "RetrievedDocuments": "检索到{{value}}个相关文档块"
     },
     "ChatBI": {
       "Title": "ChatBI-数据分析与洞察",

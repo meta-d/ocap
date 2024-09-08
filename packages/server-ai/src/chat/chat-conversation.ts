@@ -355,14 +355,15 @@ References documents:
 					if (!subscriber.closed) {
 						const context = formatDocumentsAsString(items.map(({ doc }) => doc))
 						this.updateState({ context })
+						completed = true
 
 						stepMessage.status = 'done'
 						stepMessage.content = `Got ${items.length} document chunks!`
-						this.addStep({ ...stepMessage, status: 'done' })
-						completed = true
+						stepMessage.data = items
+						this.addStep({ ...stepMessage })
 						subscriber.next({
 							event: ChatGatewayEvent.StepEnd,
-							data: { ...stepMessage, status: 'done' }
+							data: { ...stepMessage }
 						})
 						subscriber.complete()
 					}

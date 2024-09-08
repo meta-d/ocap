@@ -15,9 +15,12 @@
             @if (message.status === 'aborted') {
               {{ 'PAC.KEY_WORDS.Aborted' | translate: {Default: 'Aborted'} }}!
             } @else if(message.status === 'thinking') {
-              {{ 'PAC.Chat.RetrievingDocuments' | translate: {Default: 'Retrieving Documents'} }}...
+              {{ 'PAC.Chat.RetrievingDocuments' | translate: {Default: 'Retrieving documents'} }}...
             } @else {
-              {{message.content}}
+              {{ 'PAC.Chat.RetrievedDocuments' | translate: {
+                  Default: 'Retrieved ' + ($any(message.data)?.length ?? 0) + ' relevant document chunks',
+                  value: $any(message.data)?.length ?? 0
+                } }}
             }
           </div>
         }
