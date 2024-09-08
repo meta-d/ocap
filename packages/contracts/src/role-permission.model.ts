@@ -50,7 +50,7 @@ export enum PermissionsEnum {
   ORG_HELP_CENTER_EDIT = 'ORG_HELP_CENTER_EDIT',
   ORG_CONTACT_EDIT = 'ORG_CONTACT_EDIT',
   ORG_CONTACT_VIEW = 'ORG_CONTACT_VIEW',
-  ORG_COPILOT_EDIT = 'ORG_COPILOT_EDIT',
+  // ORG_COPILOT_EDIT = 'ORG_COPILOT_EDIT',
   ORG_DEMO_EDIT = 'ORG_DEMO_EDIT', // Orgnization demo edit permission
   // INTEGRATION_VIEW = 'INTEGRATION_VIEW',
   FILE_STORAGE_VIEW = 'FILE_STORAGE_VIEW',
@@ -68,17 +68,20 @@ export const PermissionGroups = {
     PermissionsEnum.ADMIN_DASHBOARD_VIEW,
     PermissionsEnum.ORG_INVITE_VIEW,
     PermissionsEnum.ORG_INVITE_EDIT,
-    PermissionsEnum.ORG_TAGS_EDIT,
+    // PermissionsEnum.ORG_TAGS_EDIT,
     PermissionsEnum.VIEW_ALL_EMAILS,
     PermissionsEnum.VIEW_ALL_EMAIL_TEMPLATES,
-    PermissionsEnum.ORG_HELP_CENTER_EDIT,
-    PermissionsEnum.ORG_CONTACT_EDIT,
-    PermissionsEnum.ORG_CONTACT_VIEW,
+    // PermissionsEnum.ORG_HELP_CENTER_EDIT,
+    // PermissionsEnum.ORG_CONTACT_EDIT,
+    // PermissionsEnum.ORG_CONTACT_VIEW,
     PermissionsEnum.ORG_DEMO_EDIT,
-    PermissionsEnum.VIEW_ALL_ACCOUNTING_TEMPLATES,
+    // PermissionsEnum.VIEW_ALL_ACCOUNTING_TEMPLATES,
 
     // AI
     AIPermissionsEnum.KNOWLEDGEBASE_EDIT,
+    AIPermissionsEnum.COPILOT_VIEW,
+    AIPermissionsEnum.COPILOT_EDIT,
+    AIPermissionsEnum.CHAT_VIEW,
 
     // DataSource
     AnalyticsPermissionsEnum.DATA_SOURCE_VIEW,
@@ -92,35 +95,36 @@ export const PermissionGroups = {
     // Business Area
     AnalyticsPermissionsEnum.BUSINESS_AREA_VIEW,
     AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT,
+    // Certification
+    AnalyticsPermissionsEnum.CERTIFICATION_EDIT,
     // Indicator
     AnalyticsPermissionsEnum.INDICATOR_VIEW,
     AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
     AnalyticsPermissionsEnum.INDICATOR_EDIT,
-    // Insight
-    AnalyticsPermissionsEnum.INSIGHT_VIEW,
-    AnalyticsPermissionsEnum.INSIGHT_EDIT,
+    // ChatBI
+    AnalyticsPermissionsEnum.CHATBI_VIEW,
+    AnalyticsPermissionsEnum.CHATBI_EDIT,
     // Subscription
-    AnalyticsPermissionsEnum.SUBSCRIPTION_VIEW,
-    AnalyticsPermissionsEnum.SUBSCRIPTION_EDIT
+    // AnalyticsPermissionsEnum.SUBSCRIPTION_VIEW,
+    // AnalyticsPermissionsEnum.SUBSCRIPTION_EDIT
   ],
 
   //Readonly permissions, are only enabled for admin role
   ADMINISTRATION: [
-    PermissionsEnum.ORG_EMPLOYEES_VIEW,
-    PermissionsEnum.ORG_EMPLOYEES_EDIT,
+    // PermissionsEnum.ORG_EMPLOYEES_VIEW,
+    // PermissionsEnum.ORG_EMPLOYEES_EDIT,
     PermissionsEnum.ORG_USERS_VIEW,
     PermissionsEnum.ORG_USERS_EDIT,
-    PermissionsEnum.ORG_COPILOT_EDIT,
     PermissionsEnum.ALL_ORG_VIEW,
     PermissionsEnum.ALL_ORG_EDIT,
     PermissionsEnum.CHANGE_SELECTED_ORGANIZATION,
     PermissionsEnum.CHANGE_ROLES_PERMISSIONS,
     PermissionsEnum.SUPER_ADMIN_EDIT,
-    PermissionsEnum.PUBLIC_PAGE_EDIT,
+    // PermissionsEnum.PUBLIC_PAGE_EDIT,
     // PermissionsEnum.INTEGRATION_VIEW,
-    PermissionsEnum.FILE_STORAGE_VIEW,
-    PermissionsEnum.SMS_GATEWAY_VIEW,
-    PermissionsEnum.CUSTOM_SMTP_VIEW,
+    // PermissionsEnum.FILE_STORAGE_VIEW,
+    // PermissionsEnum.SMS_GATEWAY_VIEW,
+    // PermissionsEnum.CUSTOM_SMTP_VIEW,
     // PermissionsEnum.IMPORT_EXPORT_VIEW,
     PermissionsEnum.ACCESS_DELETE_ACCOUNT,
     PermissionsEnum.ACCESS_DELETE_ALL_DATA

@@ -10,7 +10,6 @@ export const DEFAULT_ROLE_PERMISSIONS = [
 			PermissionsEnum.ORG_HELP_CENTER_EDIT,
 			PermissionsEnum.ORG_USERS_VIEW,
 			PermissionsEnum.ORG_USERS_EDIT,
-			PermissionsEnum.ORG_COPILOT_EDIT,
 			PermissionsEnum.ALL_ORG_VIEW,
 			PermissionsEnum.ALL_ORG_EDIT,
 			// PermissionsEnum.POLICY_EDIT,
@@ -48,7 +47,6 @@ export const DEFAULT_ROLE_PERMISSIONS = [
 			PermissionsEnum.ORG_HELP_CENTER_EDIT,
 			PermissionsEnum.ORG_USERS_VIEW,
 			PermissionsEnum.ORG_USERS_EDIT,
-			PermissionsEnum.ORG_COPILOT_EDIT,
 			PermissionsEnum.ALL_ORG_VIEW,
 			PermissionsEnum.ALL_ORG_EDIT,
 			// PermissionsEnum.POLICY_EDIT,
@@ -110,7 +108,6 @@ export const DEFAULT_ROLE_PERMISSIONS = [
 			PermissionsEnum.ADMIN_DASHBOARD_VIEW,
 			PermissionsEnum.ORG_TAGS_EDIT,
 			PermissionsEnum.PROFILE_EDIT,
-			PermissionsEnum.ORG_COPILOT_EDIT,
 			PermissionsEnum.ORG_DEMO_EDIT,
 		]
 	}

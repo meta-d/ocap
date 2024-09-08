@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
-import { PermissionsEnum } from '../../../@core'
+import { AIPermissionsEnum, PermissionsEnum } from '../../../@core'
 import { KnowledgebaseHomeComponent } from './home.component'
 
 export default [
@@ -11,7 +11,7 @@ export default [
     data: {
       title: 'Settings / Knowledgebase Home',
       permissions: {
-        only: [PermissionsEnum.ORG_COPILOT_EDIT],
+        only: [AIPermissionsEnum.KNOWLEDGEBASE_EDIT],
         redirectTo: '/settings'
       }
     },

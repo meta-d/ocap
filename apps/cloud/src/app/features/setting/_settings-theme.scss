@@ -8,6 +8,7 @@
 
   .pac-sketch-card {
     position: relative;
+    background-color: var(--ngm-color-surface-container-low);
 
     .mat-mdc-card-avatar {
       overflow: hidden;
@@ -55,8 +56,9 @@
         opacity: 1;
       }
     }
+    &:active {
+      transform: scale(0.98);
+    }
   }
-
-
 
 }

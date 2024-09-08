@@ -35,6 +35,7 @@ import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { combineLatestWith, firstValueFrom } from 'rxjs'
 import { filter, map, startWith, tap } from 'rxjs/operators'
 import {
+  AIPermissionsEnum,
   AbilityActions,
   AnalyticsFeatures,
   AnalyticsFeatures as AnalyticsFeaturesEnum,
@@ -434,15 +435,15 @@ export class FeaturesComponent implements OnInit {
               featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
-          {
-            title: 'Insights',
-            matIcon: 'insights',
-            link: '/home/insight',
-            data: {
-              translationKey: 'Insights',
-              featureKey: AnalyticsFeatures.FEATURE_INSIGHT
-            }
-          }
+          // {
+          //   title: 'Insights',
+          //   matIcon: 'insights',
+          //   link: '/home/insight',
+          //   data: {
+          //     translationKey: 'Insights',
+          //     featureKey: AnalyticsFeatures.FEATURE_INSIGHT
+          //   }
+          // }
         ]
       },
       {
@@ -453,6 +454,7 @@ export class FeaturesComponent implements OnInit {
         data: {
           translationKey: 'Chat',
           featureKey: FeatureEnum.FEATURE_COPILOT,
+          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
         }
       },
       {
@@ -463,6 +465,7 @@ export class FeaturesComponent implements OnInit {
         data: {
           translationKey: 'ChatBI',
           featureKey: FeatureEnum.FEATURE_COPILOT,
+          permissionKeys: [AnalyticsPermissionsEnum.CHATBI_VIEW]
         }
       },
       {
@@ -597,7 +600,7 @@ export class FeaturesComponent implements OnInit {
             link: '/settings/copilot',
             data: {
               translationKey: 'AI Copilot',
-              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
+              permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
               featureKey: FeatureEnum.FEATURE_COPILOT
             }
           },
@@ -607,7 +610,7 @@ export class FeaturesComponent implements OnInit {
             link: '/settings/knowledgebase',
             data: {
               translationKey: 'Knowledgebase',
-              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
+              permissionKeys: [AIPermissionsEnum.KNOWLEDGEBASE_EDIT],
               featureKey: FeatureEnum.FEATURE_COPILOT
             }
           },
@@ -617,7 +620,7 @@ export class FeaturesComponent implements OnInit {
             link: '/settings/chatbi',
             data: {
               translationKey: 'Chat BI',
-              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
+              permissionKeys: [AnalyticsPermissionsEnum.CHATBI_EDIT],
               featureKey: FeatureEnum.FEATURE_COPILOT
             }
           },
@@ -661,8 +664,7 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Certification',
               // 同语义模型的功能绑定一起启用与否
               featureKey: AnalyticsFeatures.FEATURE_MODEL,
-              permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
-              // permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
+              permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
             }
           },
           {

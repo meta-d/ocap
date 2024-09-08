@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
-import { PermissionsEnum } from '../../../@core'
+import { AIPermissionsEnum, PermissionsEnum } from '../../../@core'
 import { CopilotComponent } from './copilot.component'
 import { CopilotRolesComponent } from './roles/roles.component'
 import { CopilotRoleComponent } from './role/role.component'
@@ -13,7 +13,7 @@ export default [
     data: {
       title: 'Settings / Copilot',
       permissions: {
-        only: [PermissionsEnum.ORG_COPILOT_EDIT],
+        only: [AIPermissionsEnum.COPILOT_EDIT],
         redirectTo: '/settings'
       }
     },

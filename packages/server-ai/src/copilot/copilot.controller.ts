@@ -1,4 +1,4 @@
-import { IPagination, PermissionsEnum } from '@metad/contracts'
+import { AIPermissionsEnum, IPagination } from '@metad/contracts'
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -39,7 +39,7 @@ export class CopilotController extends CrudController<Copilot> {
 		description: 'Invalid input, The response body may contain clues as to what went wrong'
 	})
 	@UseGuards(PermissionGuard)
-	@Permissions(PermissionsEnum.ORG_COPILOT_EDIT)
+	@Permissions(AIPermissionsEnum.COPILOT_EDIT)
 	@HttpCode(HttpStatus.CREATED)
 	@Post()
 	async create(@Body() entity: DeepPartial<Copilot>): Promise<Copilot> {

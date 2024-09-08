@@ -3,6 +3,7 @@
 }
 
 .pac-knowledgebase-card {
+  @apply flex;
   .pac-card__menu {
     @apply absolute;
     right: 5px;

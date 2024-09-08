@@ -1680,8 +1680,8 @@
       "PERMISSIONS": {
         "ADMIN_DASHBOARD_VIEW": "查看管理员仪表盘",
         "ORG_COPILOT_EDIT": "配置智能助理",
-        "MODELS_VIEW": "查看模型",
-        "MODELS_EDIT": "编辑模型",
+        "MODELS_VIEW": "查看语义模型",
+        "MODELS_EDIT": "编辑语义模型",
         "STORIES_VIEW": "查看故事看板",
         "STORIES_EDIT": "编辑故事看板",
         "BUSINESS_AREA_VIEW": "查看业务域",
@@ -1790,7 +1790,16 @@
         "TENANT_SETTINGS": "租户设置表",
         "ACCESS_DELETE_ACCOUNT": "访问删除账号",
         "ACCESS_DELETE_ALL_DATA": "访问删除所有数据",
-        "ORG_DEMO_EDIT": "维护组织演示样例"
+        "ORG_DEMO_EDIT": "维护组织演示样例",
+        "DATA_SOURCE_VIEW": "查看数据源",
+        "DATA_SOURCE_EDIT": "维护数据源",
+        "CERTIFICATION_EDIT": "维护认证",
+        "CHATBI_VIEW": "使用 ChatBI",
+        "CHATBI_EDIT": "维护 ChatBI 配置",
+        "COPILOT_VIEW": "使用智能助理",
+        "COPILOT_EDIT": "维护智能助理配置",
+        "KNOWLEDGEBASE_EDIT": "维护知识库",
+        "CHAT_VIEW": "使用智能对话"
       },
       "Organization": {
         "AllOrganizations": "所有组织",
