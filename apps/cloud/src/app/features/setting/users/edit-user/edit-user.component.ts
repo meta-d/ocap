@@ -1,12 +1,12 @@
-import { Component, OnDestroy, OnInit, effect, inject } from '@angular/core'
+import { Component, OnDestroy, effect, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { UsersService } from '@metad/cloud/state'
+import { Store, UsersService } from '@metad/cloud/state'
 import { MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
-import { routeAnimations } from '../../../../@core'
-import { UserBasicComponent } from '../user-basic/user-basic.component'
+import { RolesEnum, routeAnimations } from '../../../../@core'
 import { PACUserOrganizationsComponent } from '../organizations/organizations.component'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { UserBasicComponent } from '../user-basic/user-basic.component'
 import { PACUsersComponent } from '../users.component'
 
 @Component({
@@ -18,11 +18,15 @@ import { PACUsersComponent } from '../users.component'
   imports: [SharedModule, MaterialModule, UserBasicComponent, PACUserOrganizationsComponent]
 })
 export class PACEditUserComponent implements OnDestroy {
+  RolesEnum = RolesEnum
 
+  readonly store = inject(Store)
   private userService = inject(UsersService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private usersComponent = inject(PACUsersComponent)
+
+  readonly me = this.store.user
 
   public readonly userId$ = this.route.params.pipe(
     startWith(this.route.snapshot.params),
@@ -31,13 +35,15 @@ export class PACEditUserComponent implements OnDestroy {
     distinctUntilChanged()
   )
 
-  public readonly user = toSignal(this.userId$.pipe(
-    switchMap((userId) => this.userService.getUserById(userId))))
+  public readonly user = toSignal(this.userId$.pipe(switchMap((userId) => this.userService.getUserById(userId))))
 
   constructor() {
-    effect(() => {
-      this.usersComponent.setCurrentLink(this.user())
-    }, {allowSignalWrites: true})
+    effect(
+      () => {
+        this.usersComponent.setCurrentLink(this.user())
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   navigate(url) {

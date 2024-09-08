@@ -9,6 +9,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { startWith } from 'rxjs'
 import {
   IKnowledgebase,
+  KnowledgebasePermission,
   KnowledgebaseService,
   PACCopilotService,
   Store,
@@ -24,10 +25,20 @@ import { KnowledgebaseComponent } from '../knowledgebase.component'
   selector: 'pac-settings-knowledgebase-configuration',
   templateUrl: './configuration.component.html',
   styleUrls: ['./configuration.component.scss'],
-  imports: [AsyncPipe, RouterModule, ReactiveFormsModule, TranslateModule, MaterialModule, NgmCommonModule, AvatarEditorComponent],
+  imports: [
+    AsyncPipe,
+    RouterModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    MaterialModule,
+    NgmCommonModule,
+    AvatarEditorComponent
+  ],
   animations: [routeAnimations]
 })
 export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
+  KnowledgebasePermission = KnowledgebasePermission
+  
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)
   readonly #store = inject(Store)
@@ -44,13 +55,14 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
     description: new FormControl(''),
     avatar: new FormControl(null),
     language: new FormControl(null, [Validators.required]),
+    permission: new FormControl<KnowledgebasePermission>(null),
     copilotId: new FormControl(null),
     embeddingModelId: new FormControl(null),
-    
+
     parserConfig: new FormGroup({
       embeddingBatchSize: new FormControl(null),
       chunkSize: new FormControl(null),
-      chunkOverlap: new FormControl(null),
+      chunkOverlap: new FormControl(null)
     })
   })
 
@@ -106,18 +118,20 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
 
   save() {
     this.loading.set(true)
-    this.knowledgebaseService.update(this.knowledgebase().id, { ...this.formGroup.value } as Partial<IKnowledgebase>).subscribe({
-      next: () => {
-        this.formGroup.markAsPristine()
-        this.loading.set(false)
-        this._toastrService.success('PAC.Messages.SavedSuccessfully', {Default: 'Saved successfully'})
-        this.knowledgebaseComponent.refresh()
-      },
-      error: (error) => {
-        this._toastrService.error(getErrorMessage(error))
-        this.loading.set(false)
-      }
-    })
+    this.knowledgebaseService
+      .update(this.knowledgebase().id, { ...this.formGroup.value } as Partial<IKnowledgebase>)
+      .subscribe({
+        next: () => {
+          this.formGroup.markAsPristine()
+          this.loading.set(false)
+          this._toastrService.success('PAC.Messages.SavedSuccessfully', { Default: 'Saved successfully' })
+          this.knowledgebaseComponent.refresh()
+        },
+        error: (error) => {
+          this._toastrService.error(getErrorMessage(error))
+          this.loading.set(false)
+        }
+      })
   }
 
   cancel() {

@@ -34,7 +34,7 @@
 <ng-template #menu>
   <div class="ngm-cdk-menu" cdkMenu displayDensity="cosy">
     <label class="px-2 pb-2">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
-    <div class="max-h-64 w-56" (click)="$event.stopPropagation()">
+    <div class="max-h-64 w-56 overflow-y-auto" (click)="$event.stopPropagation()">
       @if (knowledgebaseList()?.length) {
         <pac-knowledgebase-list class="w-full" [knowledgebaseList]="knowledgebaseList()" [(knowledgebases)]="knowledgebases" />
       } @else {
@@ -58,9 +58,11 @@
       <span>{{'PAC.KEY_WORDS.Hidden'  | translate: {Default: 'Hidden'} }}</span>
     </button> -->
 
-    <button class="ngm-cdk-menu-item" cdkMenuItem (click)="openAbout()">
-      <mat-icon class="text-token-text-secondary mr-2">info</mat-icon>
-      {{'PAC.KEY_WORDS.About'  | translate: {Default: 'About'} }}
-    </button>
+    @if (role()?.id) {
+      <button class="ngm-cdk-menu-item" cdkMenuItem (click)="openAbout()">
+        <mat-icon class="text-token-text-secondary mr-2">info</mat-icon>
+        {{'PAC.KEY_WORDS.About'  | translate: {Default: 'About'} }}
+      </button>
+    }
   </div>
 </ng-template>

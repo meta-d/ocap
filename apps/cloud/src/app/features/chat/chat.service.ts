@@ -129,9 +129,9 @@ export class ChatService {
         if (data) {
           this.conversation.set(data)
           this.knowledgebases.set(
-            data.options?.knowledgebases?.map((id) => data.role.knowledgebases?.find((item) => item.id === id))
+            data.options?.knowledgebases?.map((id) => data.role?.knowledgebases?.find((item) => item.id === id))
           )
-          this.toolsets.set(data.options?.toolsets?.map((id) => data.role.toolsets?.find((item) => item.id === id)))
+          this.toolsets.set(data.options?.toolsets?.map((id) => data.role?.toolsets?.find((item) => item.id === id)))
         } else {
           // New empty conversation
           this.conversation.set({} as IChatConversation)

@@ -1,4 +1,5 @@
 import { AnalyticsPermissionsEnum } from './analytics/index'
+import { AIPermissionsEnum } from './ai/index'
 import { IBasePerTenantEntityModel } from './base-entity.model'
 import { IRole } from './role.model'
 
@@ -75,6 +76,9 @@ export const PermissionGroups = {
     PermissionsEnum.ORG_CONTACT_VIEW,
     PermissionsEnum.ORG_DEMO_EDIT,
     PermissionsEnum.VIEW_ALL_ACCOUNTING_TEMPLATES,
+
+    // AI
+    AIPermissionsEnum.KNOWLEDGEBASE_EDIT,
 
     // DataSource
     AnalyticsPermissionsEnum.DATA_SOURCE_VIEW,

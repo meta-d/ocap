@@ -1,6 +1,6 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
@@ -8,6 +8,8 @@ import { MatSidenav } from '@angular/material/sidenav'
 import { RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
+import { combineLatest, map } from 'rxjs'
+import { KnowledgebaseService } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
 import { AboutRoleComponent, KnowledgebaseListComponent, ToolsetListComponent } from '../../../@shared/copilot'
 import { AppService } from '../../../app.service'
@@ -37,6 +39,7 @@ import { Icons } from '../icons'
 })
 export class ChatToolbarComponent {
   readonly chatService = inject(ChatService)
+  readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly appService = inject(AppService)
   readonly #dialog = inject(MatDialog)
 
@@ -46,13 +49,25 @@ export class ChatToolbarComponent {
   readonly lang = this.appService.lang
   readonly _role = toSignal(this.chatService.role$)
 
-  readonly knowledgebaseList = computed(() => this._role()?.knowledgebases)
+  readonly allKnowledgebases = toSignal(
+    combineLatest([this.knowledgebaseService.getMyAllInOrg(), this.knowledgebaseService.getAllByPublicInOrg()]).pipe(
+      map(([my, publics]) => [...my.items, ...publics.items])
+    )
+  )
+
+  readonly knowledgebaseList = computed(() =>
+    this._role()?.id ? this._role().knowledgebases : this.allKnowledgebases()
+  )
   readonly knowledgebases = this.chatService.knowledgebases
 
   readonly toolsetList = computed(() => this._role()?.toolsets)
   readonly toolsets = this.chatService.toolsets
 
   readonly role = this.chatService.role
+
+  constructor() {
+    effect(() => console.log(this._role()))
+  }
 
   openAbout() {
     this.#dialog

@@ -32,6 +32,11 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
    * KB description
    */
   description?: string
+  /**
+   * Public in tenant or in organization or private
+   * @default private
+   */
+  permission?: KnowledgebasePermission
 
   aiProvider?: AiProvider
   /**
@@ -58,6 +63,12 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
 
   copilotId?: string
   copilot?: ICopilot
+}
+
+export enum KnowledgebasePermission {
+  Private = 'private',
+  Organization = 'organization',
+  Public = 'public'
 }
 
 export type DocumentParserConfig = {

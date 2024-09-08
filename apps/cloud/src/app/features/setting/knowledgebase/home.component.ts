@@ -6,10 +6,11 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatestWith, EMPTY, map, switchMap } from 'rxjs'
+import { BehaviorSubject, EMPTY, map, switchMap } from 'rxjs'
 import {
   getErrorMessage,
   IKnowledgebase,
+  KnowledgebasePermission,
   KnowledgebaseService,
   OrderTypeEnum,
   routeAnimations,
@@ -36,6 +37,8 @@ import { AvatarComponent, MaterialModule, TranslationBaseComponent, UserProfileI
   animations: [routeAnimations]
 })
 export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
+  KnowledgebasePermission = KnowledgebasePermission
+
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)
   readonly #store = inject(Store)
@@ -47,10 +50,9 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
 
   readonly refresh$ = new BehaviorSubject<boolean>(true)
   readonly knowledgebases = toSignal(
-    this.knowledgebaseService.selectOrganizationId().pipe(
-      combineLatestWith(this.refresh$),
+    this.refresh$.pipe(
       switchMap(() =>
-        this.knowledgebaseService.getAll({ relations: ['createdBy'], order: { createdAt: OrderTypeEnum.DESC } })
+        this.knowledgebaseService.getAllInOrg({ relations: ['createdBy'], order: { createdAt: OrderTypeEnum.DESC } })
       ),
       map(({ items }) => items)
     )

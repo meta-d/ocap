@@ -3,11 +3,11 @@ import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/for
 import { matchValidator } from '@metad/cloud/auth'
 import { AuthService } from '@metad/cloud/state'
 import { ITag, IUser } from '@metad/contracts'
-import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/formly'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { firstValueFrom, map } from 'rxjs'
 import { LANGUAGES, RoleService, Store } from '../../../../@core'
 import { TranslationBaseComponent } from '../../../language/translation-base.component'
+import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 
 @Component({
   selector: 'pac-user-basic-info-form',

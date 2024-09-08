@@ -225,7 +225,8 @@
       "Date_Yesterday": "昨天",
       "Date_Last7Days": "前 7 天",
       "Date_Last30Days": "前 30 天",
-      "Options": "选项"
+      "Options": "选项",
+      "Permission": "权限"
     },
     "MENU": {
       "Certification": "认证",
@@ -1635,7 +1636,10 @@
       "Status_Finish": "完成",
       "Status_Error": "错误",
       "Status_NotStart": "未开始",
-      "Input": "输入"
+      "Input": "输入",
+      "Permission_Private": "私有",
+      "Permission_Organization": "组织内",
+      "Permission_Public": "公开"
     },
     "title": {
       "short": "分析云"
