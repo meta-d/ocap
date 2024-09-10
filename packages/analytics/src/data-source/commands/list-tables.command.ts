@@ -7,8 +7,7 @@ export class ListTablesCommand implements ICommand {
 
 	constructor(
 		public readonly args: {
-			dataSourceId: string
-			schema: string
+			//
 		},
 		public readonly config: RunnableConfig,
 		public readonly context: CopilotToolContext

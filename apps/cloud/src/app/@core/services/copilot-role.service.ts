@@ -15,9 +15,9 @@ export class CopilotRoleService extends OrganizationBaseCrudService<ICopilotRole
     super(API_COPILOT_ROLE)
   }
 
-  getAll(options?: PaginationParams<ICopilotRole>) {
-    return this.#refresh.pipe(switchMap(() => super.getAll(options)))
-  }
+  // getAll(options?: PaginationParams<ICopilotRole>) {
+  //   return this.#refresh.pipe(switchMap(() => super.getAll(options)))
+  // }
 
   create(entity: Partial<ICopilotRole>) {
     return this.httpClient.post<ICopilotRole>(`${API_COPILOT_ROLE}`, entity).pipe(tap(() => this.refresh()))

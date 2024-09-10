@@ -476,6 +476,7 @@ export class FeaturesComponent implements OnInit {
         data: {
           translationKey: 'DataFactory',
           featureKey: AnalyticsFeatures.FEATURE_MODEL,
+          permissionKeys: [AnalyticsPermissionsEnum.DATA_FACTORY_VIEW]
         }
       },
       {

@@ -2,7 +2,7 @@ import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
 import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
 import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_run'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessageChunk, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
+import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
@@ -13,6 +13,7 @@ import {
 	CopilotBaseMessage,
 	CopilotChatMessage,
 	CopilotMessageGroup,
+	CopilotToolContext,
 	IChatConversation,
 	ICopilot,
 	ICopilotRole,
@@ -127,15 +128,20 @@ export class ChatConversationAgent {
 								tools.push(
 									tool(
 										async (args, config) => {
-											return await this.chatService.executeCommand(item.name, {
-												...(defaultArgs ?? {}),
-												...args
-											}, config, {
-												tenantId: this.tenantId,
-												organizationId: this.organizationId,
-												user: this.user,
-												chatModel
-											})
+											try {
+												return await this.chatService.executeCommand(item.name, {
+														...(defaultArgs ?? {}),
+														...args
+													}, config, <CopilotToolContext>{
+														tenantId: this.tenantId,
+														organizationId: this.organizationId,
+														user: this.user,
+														chatModel,
+														roleContext: role?.options?.context
+													})
+											} catch(error) {
+												return `Error: ${getErrorMessage(error)}`
+											}
 										},
 										{
 											name: item.name,
@@ -247,9 +253,6 @@ References documents:
 							if (_event !== 'on_chat_model_start') {
 								eventStack.pop()
 							}
-							// if (aiContent) {
-							// 	this.message.content = aiContent
-							// }
 							return null
 						}
 						case 'on_chat_model_stream': {
@@ -257,7 +260,6 @@ References documents:
 							if (!msg.tool_call_chunks?.length) {
 								if (msg.content) {
 									this.message.content += msg.content
-									// aiContent += msg.content
 									return {
 										event: ChatGatewayEvent.MessageStream,
 										data: {
@@ -273,8 +275,9 @@ References documents:
 						case 'on_tool_start': {
 							eventStack.push(event)
 							toolName = rest.name
+							console.log(data, rest)
 							stepMessage = {
-								id: rest.name,
+								id: rest.run_id,
 								name: rest.name,
 								role: 'tool',
 								status: 'thinking'
@@ -283,7 +286,10 @@ References documents:
 							return {
 								event: ChatGatewayEvent.ToolStart,
 								data: {
-									name: rest.name
+									id: rest.run_id,
+									name: rest.name,
+									role: 'tool',
+									status: 'thinking'
 								}
 							}
 						}
@@ -295,11 +301,15 @@ References documents:
 							if (stepMessage) {
 								stepMessage.status = 'done'
 							}
+
+							console.log(data, rest)
 							return {
 								event: ChatGatewayEvent.ToolEnd,
 								data: {
+									id: rest.run_id,
 									name: rest.name,
-									content: (<ToolMessage>data.output).content
+									role: 'tool',
+									status: 'done',
 								}
 							} as ChatGatewayMessage
 						}
@@ -451,6 +461,9 @@ References documents:
 	}
 
 	async upsertMessageWithStatus(status: CopilotBaseMessage['status'], content?: string) {
+		if (!content && !this.message.content && !this.message.messages?.length) {
+			return
+		}
 		try {
 			// Update status of message and it's sub messages
 			const message = {

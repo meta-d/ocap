@@ -14,7 +14,8 @@ export class ListTablesHandler implements ICommandHandler<ListTablesCommand> {
 	}
 
 	public async execute(command: ListTablesCommand): Promise<string> {
-		const { dataSourceId, schema } = command.args
+		const { roleContext } = command.context
+		const { dataSourceId, schema } = roleContext ?? {}
 		const isDev = process.env.NODE_ENV === 'development'
 
 		const dataSource = await this.dataSourceService.prepareDataSource(dataSourceId)

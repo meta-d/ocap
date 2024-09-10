@@ -28,6 +28,7 @@ module.exports = {
         },
         'token-main-surface-primary': 'var(--main-surface-primary)',
         'token-main-surface-secondary': 'var(--main-surface-secondary)',
+        'token-main-surface-low': 'var(--ngm-color-surface-container-low)',
         'token-text-secondary': 'var(--text-secondary)',
         'token-border-medium': 'var(--border-medium)',
         'token-border-light': 'var(--border-light)',

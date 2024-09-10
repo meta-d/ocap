@@ -32,6 +32,7 @@ export interface ICopilotRole extends IBasePerTenantAndOrganizationEntityModel {
 }
 
 export type TCopilotRoleOptions = {
+  context?: Record<string, any>
   toolsets: {
     [id: string]: {
       [tool: string]: {

@@ -54,6 +54,15 @@
     <div class="max-h-[200px] overflow-auto">
       <pac-toolset-list class="w-full" [toolsetList]="toolsetList()" [(toolsets)]="toolsets" />
     </div>
+
+    <div class="flex-1 min-w-full flex flex-col">
+      <label class="my-2 p-2 text-lg shrink-0">{{'PAC.Copilot.Roles.ToolOptions' | translate: {Default: 'Tool Options'} }}</label>
+      <textarea class="ngm-input-element" matInput [formControl]="options"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="2"
+          cdkAutosizeMaxRows="8"
+      ></textarea>
+    </div>
   </div>
 </div>
 

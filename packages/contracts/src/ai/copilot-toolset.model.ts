@@ -49,6 +49,7 @@ export type CopilotToolContext = {
   user: IUser
   copilot: ICopilot
   chatModel: unknown // BaseChatModel in langchain
+  roleContext: Record<string, any>
 }
 
 // 临时
@@ -112,8 +113,8 @@ export const TOOLSETS: ICopilotToolset[] = [
         schema: JSON.stringify(
           zodToJsonSchema(
             z.object({
-              dataSourceId: z.string().describe('The id of dataSource'),
-              schema: z.string().describe('The schema in dataSource db'),
+              // dataSourceId: z.string().describe('The id of dataSource'),
+              // schema: z.string().describe('The schema in dataSource db'),
             })
           )
         )
@@ -125,9 +126,21 @@ export const TOOLSETS: ICopilotToolset[] = [
         schema: JSON.stringify(
           zodToJsonSchema(
             z.object({
-              dataSourceId: z.string().describe('The id of dataSource'),
-              schema: z.string().describe('The schema in dataSource db'),
+              // dataSourceId: z.string().describe('The id of dataSource'),
+              // schema: z.string().describe('The schema in dataSource db'),
               tables: z.array(z.string()).describe('The tables to query')
+            })
+          )
+        )
+      },
+      {
+        name: 'QuerySql',
+        description: 'Execute SQL statement of query',
+        type: 'command',
+        schema: JSON.stringify(
+          zodToJsonSchema(
+            z.object({
+              query: z.string().describe('The sql statement of query')
             })
           )
         )

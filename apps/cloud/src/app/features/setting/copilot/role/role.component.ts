@@ -70,7 +70,8 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
       new FormControl(null),
       new FormControl(null),
     ]),
-    toolsets: new FormControl(null)
+    toolsets: new FormControl(null),
+    options: new FormControl(null),
   })
   get toolsets() {
     return this.formGroup.get('toolsets').value
@@ -78,6 +79,9 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
   set toolsets(value) {
     this.formGroup.patchValue({ toolsets: value })
     this.formGroup.markAsDirty()
+  }
+  get options() {
+    return this.formGroup.get('options') as FormControl
   }
 
   readonly knowledgebaseList = toSignal(
@@ -110,7 +114,7 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
     effect(
       () => {
         if (this.copilotRole()) {
-          this.formGroup.patchValue(this.copilotRole())
+          this.formGroup.patchValue({...this.copilotRole(), options: this.copilotRole().options ? JSON.stringify(this.copilotRole().options, null, 2) : null})
           this.knowledgebases.set([...(this.copilotRole().knowledgebases ?? [])])
         } else {
           this.formGroup.reset()
@@ -130,7 +134,8 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
     try {
       if (this.formGroup.dirty) {
         if (this.paramId()) {
-          await firstValueFrom(this.update(this.paramId(), { ...this.formGroup.value }))
+          await firstValueFrom(this.update(this.paramId(), { ...this.formGroup.value, options: 
+            this.formGroup.value.options ? JSON.parse(this.formGroup.value.options) : null }))
         } else {
           this.copilotRole.set(await firstValueFrom(this.save({ ...this.formGroup.value })))
         }

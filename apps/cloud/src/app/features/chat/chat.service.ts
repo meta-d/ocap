@@ -214,22 +214,11 @@ export class ChatService {
           break
         }
         case ChatGatewayEvent.ToolStart: {
-          this.appendMessageStep({
-            id: result.data.id,
-            role: 'tool',
-            content: `调用工具: ${result.data.name}...`,
-            status: 'thinking',
-            name: result.data.name
-          })
+          this.appendMessageStep(result.data)
           break
         }
         case ChatGatewayEvent.ToolEnd: {
-          this.updateMessageStep({
-            id: result.data?.id,
-            role: 'tool',
-            content: `工具调用: ${result.data?.name} 已完成！`,
-            status: result.data.status
-          })
+          this.updateMessageStep(result.data)
           break
         }
         case ChatGatewayEvent.ChainEnd: {
@@ -359,7 +348,7 @@ export class ChatService {
     this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
       const _steps = lastMessage.messages.reverse()
-      const index = _steps.findIndex((item) => item.role === step.role)
+      const index = _steps.findIndex((item) => item.id === step.id && item.role === step.role)
       if (index > -1) {
         _steps[index] = {
           ..._steps[index],

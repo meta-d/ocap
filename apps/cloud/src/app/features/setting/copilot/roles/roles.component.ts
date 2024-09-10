@@ -7,7 +7,7 @@ import { NgmCommonModule, NgmConfirmDeleteComponent, TableColumn } from '@metad/
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, EMPTY, catchError, map, switchMap, tap } from 'rxjs'
-import { CopilotRoleService, ICopilotRole, ToastrService, getErrorMessage, omitSystemProperty } from '../../../../@core'
+import { CopilotRoleService, ICopilotRole, OrderTypeEnum, ToastrService, getErrorMessage, omitSystemProperty } from '../../../../@core'
 import { AvatarComponent, MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 
 type CopilotRoleRowType = Partial<ICopilotRole> & { __edit__?: boolean }
@@ -71,7 +71,7 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
 
   private itemsSub = this.refresh$
     .pipe(
-      switchMap(() => this.roleService.getAll()),
+      switchMap(() => this.roleService.getAllInOrg({ order: {updatedAt: OrderTypeEnum.DESC } })),
       map(({ items }) => items),
       takeUntilDestroyed()
     )

@@ -2,19 +2,19 @@ import { createQueryRunnerByType } from '@metad/adapter'
 import { ChatService } from '@metad/server-ai'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { DataSourceService } from '../../data-source.service'
-import { QuerySchemaCommand } from '../query-schema.command'
+import { QuerySqlCommand } from '../query-sql.command'
 
-@CommandHandler(QuerySchemaCommand)
-export class QuerySchemaHandler implements ICommandHandler<QuerySchemaCommand> {
+@CommandHandler(QuerySqlCommand)
+export class QuerySqlHandler implements ICommandHandler<QuerySqlCommand> {
 	constructor(
 		private readonly chatService: ChatService,
 		private readonly dataSourceService: DataSourceService
 	) {
-		this.chatService.registerCommand('QuerySchema', QuerySchemaCommand)
+		this.chatService.registerCommand('QuerySql', QuerySqlCommand)
 	}
 
-	public async execute(command: QuerySchemaCommand): Promise<string> {
-		const { tables } = command.args
+	public async execute(command: QuerySqlCommand): Promise<string> {
+		const { query } = command.args
 		const { roleContext } = command.context
 		const { dataSourceId, schema } = roleContext ?? {}
 		const isDev = process.env.NODE_ENV === 'development'
@@ -28,16 +28,10 @@ export class QuerySchemaHandler implements ICommandHandler<QuerySchemaCommand> {
 		})
 
 		try {
-			let result = ''
-			for await (const table of tables) {
-				const tableSchema = await runner.getSchema(schema, table)
-				result += `Table ${table}:\n${tableSchema}\n`
-				// Query samples data
-				const data = await runner.runQuery(`SELECT * FROM ${table} LIMIT 10`, { catalog: schema })
-				result += `Sample data:\n` + JSON.stringify(data) + '\n\n'
-			}
+			// Query samples data
+			const data = await runner.runQuery(query, { catalog: schema })
 
-			return result
+			return JSON.stringify(data)
 		} finally {
 			await runner.teardown()
 		}
