@@ -61,6 +61,14 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 						})
 					)
 				}
+
+				let copilotRole: ICopilotRole = null
+				if (role?.id) {
+					copilotRole = await this.queryBus.execute<FindCopilotRoleQuery, ICopilotRole>(
+						new FindCopilotRoleQuery({ tenantId, organizationId, id: role.id })
+					)
+				}
+
 				if (!this.chatService.getConversation(chatConversation.id)) {
 					await this.chatService.fetchCopilots(tenantId, organizationId)
 
@@ -74,7 +82,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 							this.chatService,
 							this.commandBus,
 							this.queryBus
-						).createAgentGraph(TOOLSETS.filter((item) => role?.toolsets?.includes(item.id)))
+						).createAgentGraph(copilotRole, TOOLSETS.filter((item) => role?.toolsets?.includes(item.id)))
 					)
 				}
 				const conversation = this.chatService.getConversation(chatConversation.id)
@@ -84,10 +92,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 						language: `Please answer in language: ${language}`
 					})
 				}
-				if (role?.id) {
-					const copilotRole = await this.queryBus.execute<FindCopilotRoleQuery, ICopilotRole>(
-						new FindCopilotRoleQuery({ tenantId, organizationId, id: role.id })
-					)
+				if (copilotRole) {
 					conversation.updateState({
 						role: copilotRole.prompt
 					})

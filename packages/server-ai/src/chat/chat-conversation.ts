@@ -15,6 +15,7 @@ import {
 	CopilotMessageGroup,
 	IChatConversation,
 	ICopilot,
+	ICopilotRole,
 	ICopilotToolset,
 	IUser
 } from '@metad/contracts'
@@ -74,7 +75,7 @@ export class ChatConversationAgent {
 		})
 	}
 
-	createAgentGraph(toolsets: ICopilotToolset[]) {
+	createAgentGraph(role: ICopilotRole, toolsets: ICopilotToolset[]) {
 		const llm = this.createLLM(this.copilot)
 		if (!llm) {
 			throw new Error(`Can't create chatModel for provider '${this.copilot.provider}'`)
@@ -121,10 +122,15 @@ export class ChatConversationAgent {
 									chatModel = this.createLLM(copilot)
 								}
 
+								const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
+
 								tools.push(
 									tool(
 										async (args, config) => {
-											return await this.chatService.executeCommand(item.name, args, config, {
+											return await this.chatService.executeCommand(item.name, {
+												...(defaultArgs ?? {}),
+												...args
+											}, config, {
 												tenantId: this.tenantId,
 												organizationId: this.organizationId,
 												user: this.user,
@@ -134,7 +140,7 @@ export class ChatConversationAgent {
 										{
 											name: item.name,
 											description: item.description,
-											schema: zodSchema
+											schema: defaultArgs ? null : zodSchema
 										}
 									)
 								)

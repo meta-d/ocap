@@ -97,5 +97,41 @@ export const TOOLSETS: ICopilotToolset[] = [
         )
       }
     ]
+  },
+  {
+    id: '4',
+    name: 'ChatSQL',
+    description: 'Chat with SQL DB',
+    avatar: '/assets/images/chatbi.jpg',
+    providerRole: AiProviderRole.Primary,
+    tools: [
+      {
+        name: 'ListTables',
+        description: 'List tables',
+        type: 'command',
+        schema: JSON.stringify(
+          zodToJsonSchema(
+            z.object({
+              dataSourceId: z.string().describe('The id of dataSource'),
+              schema: z.string().describe('The schema in dataSource db'),
+            })
+          )
+        )
+      },
+      {
+        name: 'QuerySchema',
+        description: 'Query schema for tables',
+        type: 'command',
+        schema: JSON.stringify(
+          zodToJsonSchema(
+            z.object({
+              dataSourceId: z.string().describe('The id of dataSource'),
+              schema: z.string().describe('The schema in dataSource db'),
+              tables: z.array(z.string()).describe('The tables to query')
+            })
+          )
+        )
+      }
+    ]
   }
 ]

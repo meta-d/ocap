@@ -25,8 +25,18 @@ export interface ICopilotRole extends IBasePerTenantAndOrganizationEntityModel {
   /**
    * More configuration
    */
-  options?: Record<string, any>
+  options?: TCopilotRoleOptions
 
   // Many to many relationship
   knowledgebases?: IKnowledgebase[]
+}
+
+export type TCopilotRoleOptions = {
+  toolsets: {
+    [id: string]: {
+      [tool: string]: {
+        defaultArgs: Record<string, any>
+      }
+    }
+  }
 }
