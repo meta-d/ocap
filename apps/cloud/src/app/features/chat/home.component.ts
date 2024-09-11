@@ -1,7 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, viewChild } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -70,6 +70,8 @@ export class ChatHomeComponent {
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly logger = inject(NGXLogger)
+
+  readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
 
   readonly isMobile = this.appService.isMobile
   readonly lang = this.appService.lang
@@ -144,6 +146,12 @@ export class ChatHomeComponent {
         this.registerModel(convertNewSemanticModelResult({...model, key: model.id}))
       })
     })
+
+    effect(() => {
+      if (this.chatService.messages()) {
+        this.scrollBottom()
+      }
+    })
   }
 
   selectConversation(item: IChatConversation) {
@@ -204,5 +212,15 @@ export class ChatHomeComponent {
 
   private registerModel(model: NgmSemanticModel) {
     registerModel(model, this.#dsCoreService, this.#wasmAgent)
+  }
+
+  scrollBottom(smooth = false) {
+    setTimeout(() => {
+      this.contentContainer().nativeElement.scrollTo({
+        top: this.contentContainer().nativeElement.scrollHeight,
+        left: 0,
+        behavior: smooth ? 'smooth' : 'instant'
+      })
+    }, 100)
   }
 }

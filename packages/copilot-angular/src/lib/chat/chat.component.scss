@@ -140,6 +140,7 @@
     --subtle-purple: color-mix(in srgb, var(--bright-blue) 5%, white 10%);
     --full-contrast: white;
     --bright-blue: color-mix(in srgb, oklch(51.01% 0.274 263.83), var(--full-contrast) 60%);
+    line-height: 2;
 
     > * {
       @apply whitespace-pre-line;

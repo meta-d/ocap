@@ -8,6 +8,7 @@ import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import {
   BehaviorSubject,
+  catchError,
   combineLatestWith,
   distinctUntilChanged,
   filter,
@@ -123,7 +124,12 @@ export class ChatService {
       skip(1),
       filter((id) => !this.conversation() || this.conversation().id !== id),
       switchMap((id) =>
-        id ? this.conversationService.getById(id, { relations: ['role', 'role.knowledgebases'] }) : of(null)
+        id ? this.conversationService.getById(id, { relations: ['role', 'role.knowledgebases'] }).pipe(
+          catchError((error) => {
+            this.#toastr.error(getErrorMessage(error))
+            return of(null)
+          }), 
+        ) : of(null)
       ),
       tap((data) => {
         if (data) {
