@@ -63,7 +63,9 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
       embeddingBatchSize: new FormControl(null),
       chunkSize: new FormControl(null),
       chunkOverlap: new FormControl(null)
-    })
+    }),
+
+    similarityThreshold: new FormControl(null),
   })
 
   readonly copilots = computed(() =>

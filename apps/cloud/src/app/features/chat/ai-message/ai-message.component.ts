@@ -12,6 +12,7 @@ import { AvatarComponent } from '../../../@shared/files/avatar/avatar.component'
 import { ChatService } from '../chat.service'
 import { ChatLoadingComponent } from '../../../@shared/copilot'
 import { ChatComponentMessageComponent } from '../component-message/component-message.component'
+import { CdkMenuModule } from '@angular/cdk/menu'
 
 @Component({
   standalone: true,
@@ -23,6 +24,7 @@ import { ChatComponentMessageComponent } from '../component-message/component-me
     DragDropModule,
     RouterModule,
     TranslateModule,
+    CdkMenuModule,
     MarkdownModule,
     MaterialModule,
     NgmCommonModule,
@@ -55,4 +57,5 @@ export class ChatAiMessageComponent {
       copyButton.copied = false
     }, 3000)
   }
+ 
 }

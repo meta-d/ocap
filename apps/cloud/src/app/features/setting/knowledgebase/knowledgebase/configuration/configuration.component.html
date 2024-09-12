@@ -52,6 +52,13 @@
       <ngm-input [label]=" 'PAC.Knowledgebase.ChunkOverlap' | translate: {Default: 'Chunk Overlap'} " formControlName="chunkOverlap" />
     </div>
 
+    <ngm-slider-input [label]=" 'PAC.Knowledgebase.SimilarityThreshold' | translate: {Default: 'Similarity Threshold'}"
+      formControlName="similarityThreshold"
+      [min]="0" [max]="1" [step]="0.01">
+      <span class="font-notoColorEmoji" [matTooltip]="'PAC.Knowledgebase.SimilarityThresholdInfo' | translate: {Default: 'If the similarity between the query and the chunk is less than this threshold, the chunk will be filtered out.'}"
+        >💡</span>
+    </ngm-slider-input>
+
     <div class="flex justify-end">
       <button mat-flat-button (click)="cancel()">
         {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}

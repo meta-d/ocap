@@ -11,7 +11,10 @@
             @if (message.status === 'thinking') {
               <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
             }
-            <mat-icon fontSet="material-icons-round" class="mr-2">school</mat-icon>
+            <mat-icon fontSet="material-icons-round" class="mr-2"
+              [cdkMenuTriggerFor]="docs"
+              [cdkMenuTriggerData]="message"
+            >school</mat-icon>
             @if (message.status === 'aborted') {
               {{ 'PAC.KEY_WORDS.Aborted' | translate: {Default: 'Aborted'} }}!
             } @else if(message.status === 'thinking') {
@@ -73,4 +76,12 @@
       </svg>
     }
   </button>
+</ng-template>
+
+<ng-template #docs let-data="data">
+  <div class="ngm-cdk-menu max-h-96 max-w-lg" cdkMenu>
+    @for (item of data; track $index) {
+      <pre class="mb-16">{{item.doc.pageContent}}</pre>
+    }
+  </div>
 </ng-template>

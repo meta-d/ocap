@@ -361,8 +361,8 @@ References documents:
 					new KnowledgeSearchQuery({
 						tenantId: this.tenantId,
 						organizationId: this.organizationId,
-						k: 5,
-						score: 0.5,
+						k: 10,
+						// score: 0.5,
 						knowledgebases: this.conversation.options?.knowledgebases,
 						query: content
 					})

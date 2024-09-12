@@ -71,7 +71,7 @@ export class Knowledgebase extends TenantOrganizationBaseEntity implements IKnow
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
 	@Optional()
-	@Column({ nullable: true })
+	@Column({ nullable: true, type: 'decimal' })
 	similarityThreshold: number
 
 	@ApiPropertyOptional({ type: () => Number })
