@@ -10,7 +10,7 @@ export function getSemanticModelKey(model: ISemanticModel) {
 	return model.id
 }
 
-export function registerModel(model: ISemanticModel, dsCoreService: DSCoreService) {
+export function registerSemanticModel(model: ISemanticModel, dsCoreService: DSCoreService) {
 	const modelKey = getSemanticModelKey(model)
 	const agentType = isNil(model.dataSource)
 		? AgentType.Wasm
@@ -35,7 +35,7 @@ export function registerModel(model: ISemanticModel, dsCoreService: DSCoreServic
 		} as any,
 		schema: {
 			...(model.options?.schema ?? {}),
-			indicators: model.indicators
+			indicators: model.indicators?.map(convertOcapIndicatorResult)
 		}
 	} as DataSourceOptions
 

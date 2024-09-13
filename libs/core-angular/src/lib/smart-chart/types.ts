@@ -56,8 +56,7 @@ export enum NxChromaticType {
 }
 
 /**
- * From
- * https://github.com/SAP/odata-vocabularies/blob/master/vocabularies/UI.md
+ * @deprecated use ChartTypeEnum
  */
 export enum NxChartType {
   Column = 'Column',

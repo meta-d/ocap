@@ -1,20 +1,26 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { HumanMessage, isAIMessage, SystemMessage } from '@langchain/core/messages'
+import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
 import { ChatGatewayEvent, ChatGatewayMessage, CopilotToolContext, JSONValue, OrderTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, referencesCommandName } from '@metad/copilot'
 import {
 	Agent,
+	assignDeepOmitBlank,
 	ChartBusinessService,
+	ChartOrient,
+	ChartTypeEnum,
+	cloneDeep,
 	CubeVariablePrompt,
 	DataSourceFactory,
 	DSCoreService,
 	EntityType,
 	FilteringLogic,
+	getChartType,
 	isEntitySet,
 	makeCubeRulesPrompt,
 	markdownModelCube,
+	PieVariant,
 	PresentationVariant,
 	PROMPT_RETRIEVE_DIMENSION_MEMBER,
 	PROMPT_TIME_SLICER,
@@ -44,7 +50,7 @@ import {
 	NgmDSCoreService,
 	OCAP_AGENT_TOKEN,
 	OCAP_DATASOURCE_TOKEN,
-	registerModel
+	registerSemanticModel
 } from '../../../model/ocap'
 import { ChatBIService } from '../../chatbi.service'
 import { ChatAnswer, createDimensionMemberRetrieverTool } from '../../tools'
@@ -53,6 +59,7 @@ import { ChatBINewCommand } from '../chat-bi.command'
 import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { markdownCubes } from '../../graph'
 import { CallbackManager } from '@langchain/core/callbacks/manager'
+import { omit, upperFirst } from 'lodash'
 
 @CommandHandler(ChatBINewCommand)
 export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
@@ -83,6 +90,10 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 
 		// console.log(`execute ChatBINewCommand`, args, config, context)
 
+		const controller = new AbortController()
+		const abortEventListener = () => { controller.abort() }
+		config.signal.addEventListener('abort', abortEventListener)
+
 		// New Ocap context for every chatbi conversation
 		const dsCoreService = new NgmDSCoreService(this.agent, this.dataSourceFactory)
 		// Register all chat models (改成根据 Copilot 角色来)
@@ -95,7 +106,7 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 				//
 			})
 		const { tenantId, organizationId } = context
-		const { thread_id, subscriber } = config.configurable
+		const { thread_id, subscriber } = config.configurable as { thread_id: string; subscriber: Subscriber<ChatGatewayMessage>}
 
 		// Create graph
 		const agent = this.createGraphAgent(llm, context, dsCoreService, subscriber)
@@ -112,34 +123,99 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 		const content = await exampleFewShotPrompt.format({ input: question })
 		
 		try {
-			const streamResults = await agent.stream(
+			const streamResults = agent.streamEvents(
 				{
 					input: question,
 					messages: [new HumanMessage(content)],
 					context: cubesContext
 				},
 				{
+					version: 'v2',
 					configurable: {
 						thread_id,
 						checkpoint_ns: this.commandName,
 						tenantId,
 						organizationId,
 					},
-					recursionLimit: AgentRecursionLimit
+					recursionLimit: AgentRecursionLimit,
+					signal: controller.signal
 					// debug: true
 				}
 			)
 
-			// let verboseContent = ''
-			// let end = false
-			for await (const output of streamResults) {
-				if (output.agent) {
-					//console.log(output.agent.messages)
+			// let prevEvent = ''
+			let chatContent = ''
+			for await (const { event, data, ...rest } of streamResults) {
+				// if (event === 'on_chat_model_stream') {
+				// 	if (prevEvent === 'on_chat_model_stream') {
+				// 		process.stdout.write('.')
+				// 	} else {
+				// 		console.log('on_chat_model_stream')
+				// 	}
+				// } else {
+				// 	console.log(event)
+				// }
+				// prevEvent = event
+				
+				switch (event) {
+					case 'on_chain_start': {
+						break
+					}
+					case 'on_chat_model_start': {
+						chatContent = ''
+						break
+					}
+					case 'on_chat_model_stream': {
+						const msg = data.chunk as AIMessageChunk
+						if (!msg.tool_call_chunks?.length) {
+							if (msg.content) {
+								chatContent += msg.content
+							}
+						}
+						break
+					}
+					case 'on_chat_model_end': {
+						if (chatContent) {
+							subscriber.next({
+								event: ChatGatewayEvent.Agent,
+								data: {
+									id: parentRunId,
+									message: {
+										id: shortuuid(),
+										role: 'assistant',
+										content: chatContent
+									}
+								}
+							})
+						}
+						break
+					}
+					case 'on_tool_start': {
+						this.logger.debug(`Tool call '` + rest.name + '\':')
+						this.logger.debug(data)
+						break
+					}
+					case 'on_tool_end': {
+						subscriber.next({
+							event: ChatGatewayEvent.Agent,
+							data: {
+								id: parentRunId,
+								message: {
+									id: rest.run_id,
+									role: 'tool',
+									content: `- Tool call: \`${rest.name}\``,
+								}
+							}
+						})
+						break
+					}
 				}
 			}
 		} catch (error) {
 			console.error(error)
 			return `Error:` + getErrorMessage(error)
+		} finally {
+			config.signal.removeEventListener('abort', abortEventListener)
 		}
 
 		const state = await agent.getState({
@@ -172,10 +248,10 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 		})
 
 		const models = items.filter((item) => role ? item.roles.some((_) => _.id === role.id) : true)
-			.map((item) => ({ ...item, model: convertOcapSemanticModel(item.model) }))
+			// .map((item) => ({ ...item, model: convertOcapSemanticModel(item.model) }))
 
 		// Register all models
-		models.forEach((item) => registerModel(item.model, dsCoreService))
+		models.forEach((item) => registerSemanticModel(item.model, dsCoreService))
 
 		return markdownCubes(models)
 	}
@@ -347,7 +423,7 @@ ${createAgentStepsInstructions(
 		const destroy$ = new Subject<void>()
 
 		const chartAnnotation = {
-			chartType: answer.chartType,
+			chartType: tryFixChartType(answer.chartType),
 			dimensions: answer.dimensions?.map((dimension) => tryFixDimension(dimension, entityType)),
 			measures: answer.measures?.map((measure) => tryFixDimension(measure, entityType))
 		}
@@ -422,4 +498,83 @@ type ChatBIContext = {
 	dsCoreService: DSCoreService
 	entityType: EntityType
 	subscriber: Subscriber<any>
+}
+
+
+const CHART_TYPES = [
+    {
+      name: 'Line',
+      type: ChartTypeEnum.Line,
+      orient: ChartOrient.vertical,
+      chartOptions: {
+        legend: {
+          show: true
+        },
+        tooltip: {
+          appendToBody: true,
+          trigger: 'axis'
+        }
+      }
+    },
+    {
+      name: 'Column',
+      type: ChartTypeEnum.Bar,
+      orient: ChartOrient.vertical,
+      chartOptions: {
+        legend: {
+          show: true
+        },
+        tooltip: {
+          appendToBody: true,
+          trigger: 'axis'
+        }
+      }
+    },
+    {
+      name: 'Bar',
+      type: ChartTypeEnum.Bar,
+      orient: ChartOrient.horizontal,
+      chartOptions: {
+        legend: {
+          show: true
+        },
+        tooltip: {
+          appendToBody: true,
+          trigger: 'axis'
+        }
+      }
+    },
+    {
+      name: 'Pie',
+      type: ChartTypeEnum.Pie,
+      variant: PieVariant.None,
+      chartOptions: {
+        seriesStyle: {
+          __showitemStyle__: true,
+          itemStyle: {
+            borderColor: 'white',
+            borderWidth: 1,
+            borderRadius: 10
+          }
+        },
+        __showlegend__: true,
+        legend: {
+          type: 'scroll',
+          orient: 'vertical',
+          right: 0,
+          align: 'right'
+        },
+        tooltip: {
+          appendToBody: true
+        }
+      }
+    }
+  ]
+
+function tryFixChartType(chartType) {
+	return assignDeepOmitBlank(
+		cloneDeep(getChartType(upperFirst(chartType.type))?.value.chartType),
+		omit(chartType, 'type'),
+		5
+	)
 }

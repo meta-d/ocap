@@ -249,6 +249,10 @@ export class ChatService {
           })
           break
         }
+        case ChatGatewayEvent.Agent: {
+          this.appendStepMessage(result.data.id, result.data.message)
+          break
+        }
       }
     })
 
@@ -342,17 +346,33 @@ export class ChatService {
   }
 
   appendMessageStep(step: CopilotChatMessage) {
+    this.updateLatestMessage((lastMessage) => ({
+      ...lastMessage,
+      messages: [...(lastMessage.messages ?? []), step]
+    }))
+  }
+
+  updateLatestMessage(updateFn: (value: CopilotMessageGroup) => CopilotMessageGroup) {
     this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
-      lastMessage.messages = [...(lastMessage.messages ?? []), step]
-      messages[messages.length - 1] = { ...lastMessage }
+      messages[messages.length - 1] = updateFn(lastMessage)
       return [...messages]
     })
   }
 
+  appendStepMessage(id: string, subStep: CopilotChatMessage) {
+    this.updateLatestMessage((lastMessage) => {
+      const index = lastMessage.messages.findIndex((item) => item.id === id)
+      if (index > -1) {
+        (<CopilotMessageGroup>lastMessage.messages[index]).messages ??= [];
+        (<CopilotMessageGroup>lastMessage.messages[index]).messages.push(subStep)
+      }
+      return {...lastMessage, messages: [...lastMessage.messages]}
+    })
+  }
+
   updateMessageStep(step: CopilotChatMessage) {
-    this.messages.update((messages) => {
-      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+    this.updateLatestMessage((lastMessage) => {
       const _steps = lastMessage.messages.reverse()
       const index = _steps.findIndex((item) => item.id === step.id && item.role === step.role)
       if (index > -1) {
@@ -362,13 +382,12 @@ export class ChatService {
         }
         lastMessage.messages = _steps.reverse()
       }
-      return [...messages]
+      return {...lastMessage}
     })
   }
 
   abortMessage(id: string) {
-    this.messages.update((messages) => {
-      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+    this.updateLatestMessage((lastMessage) => {
       if (lastMessage.id === id) {
         lastMessage.messages = lastMessage.messages?.map((m) => {
           if (m.status === 'thinking') {
@@ -376,10 +395,10 @@ export class ChatService {
           }
           return m
         })
-        messages[messages.length - 1] = { ...lastMessage, status: 'aborted' }
-      }
 
-      return [...messages]
+        return { ...lastMessage, status: 'aborted' }
+      }
+      return lastMessage
     })
   }
 }

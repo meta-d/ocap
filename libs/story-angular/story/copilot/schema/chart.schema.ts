@@ -1,9 +1,19 @@
+import { makeChartEnum } from '@metad/core'
 import {
+  ChartAnnotation,
+  ChartMeasureSchema,
+  ChartType,
+  DataSettingsSchema,
   DeepPartial,
+  DimensionSchema,
+  EntityType,
+  SlicerSchema,
+  assignDeepOmitBlank,
+  cloneDeep,
   getChartType,
-  makeChartEnum,
-} from '@metad/core'
-import { ChartAnnotation, ChartMeasureSchema, ChartType, DataSettingsSchema, DimensionSchema, EntityType, SlicerSchema, assignDeepOmitBlank, cloneDeep, omit, tryFixDimension } from '@metad/ocap-core'
+  omit,
+  tryFixDimension
+} from '@metad/ocap-core'
 import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
 
@@ -38,7 +48,7 @@ export const ChartSchema = z.object({
   }),
   dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),
   measures: z.array(ChartMeasureSchema).describe('The measures used by the chart'),
-  slicers: z.array(SlicerSchema).optional().describe('The slicers used by the chart data'),
+  slicers: z.array(SlicerSchema).optional().describe('The slicers used by the chart data')
 })
 
 export const ChartWidgetSchema = z.object({

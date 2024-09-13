@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
-import { CopilotBaseMessage, isMessageGroup } from '@metad/copilot'
+import { CopilotBaseMessage, CopilotChatMessage, isMessageGroup } from '@metad/copilot'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
@@ -13,6 +13,12 @@ import { ChatService } from '../chat.service'
 import { ChatLoadingComponent } from '../../../@shared/copilot'
 import { ChatComponentMessageComponent } from '../component-message/component-message.component'
 import { CdkMenuModule } from '@angular/cdk/menu'
+
+interface ICopilotChatMessage extends CopilotChatMessage {
+  expanded: boolean
+  messages: CopilotChatMessage[]
+  data: any[]
+}
 
 @Component({
   standalone: true,
@@ -48,7 +54,7 @@ export class ChatAiMessageComponent {
 
   readonly messageGroup = computed(() => {
     const message = this.message()
-    return isMessageGroup(message) ? message : null
+    return isMessageGroup<ICopilotChatMessage>(message) ? message : null
   })
 
   onCopy(copyButton) {

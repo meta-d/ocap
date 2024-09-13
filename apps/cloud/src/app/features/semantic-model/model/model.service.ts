@@ -3,13 +3,13 @@ import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, convertNewSemanticModelResult } from '@metad/cloud/state'
-import { DeepPartial, nonNullable } from '@metad/core'
 import { NgmDSCoreService, effectAction } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   AgentType,
   Cube,
   DataSource,
+  DeepPartial,
   Dimension,
   EntityType,
   PropertyDimension,
@@ -18,6 +18,7 @@ import {
   TableEntity,
   isEntitySet,
   isEntityType,
+  nonNullable,
   omit,
   wrapHierarchyValue
 } from '@metad/ocap-core'

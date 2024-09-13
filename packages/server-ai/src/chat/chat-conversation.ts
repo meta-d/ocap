@@ -184,10 +184,10 @@ References documents:
 	}
 
 	streamGraphEvents(input: string, answerId: string) {
-		// let aiContent = ''
 		const eventStack: string[] = []
 		let toolName = ''
 		let stepMessage = null
+		// let prevEvent = ''
 		return new Observable((subscriber) => {
 			from(
 				this.graph.streamEvents(
@@ -211,7 +211,16 @@ References documents:
 				)
 			).pipe(
 				map(({ event, data, ...rest }: any) => {
-					console.log(event)
+					// if (event === 'on_chat_model_stream') {
+					// 	if (prevEvent === 'on_chat_model_stream') {
+					// 		process.stdout.write('.')
+					// 	} else {
+					// 		console.log('on_chat_model_stream')
+					// 	}
+					// } else {
+					// 	console.log(event)
+					// }
+					// prevEvent = event
 					switch (event) {
 						case 'on_chain_start': {
 							eventStack.push(event)
@@ -240,7 +249,7 @@ References documents:
 								eventStack.pop()
 							}
 							if (!eventStack.length) {
-								this.upsertMessageWithStatus('done')
+								
 								return {
 									event: ChatGatewayEvent.ChainEnd,
 									data: {
@@ -275,9 +284,10 @@ References documents:
 							break
 						}
 						case 'on_tool_start': {
+							this.logger.debug(`Tool call '` + rest.name + '\':')
+							this.logger.debug(data)
 							eventStack.push(event)
 							toolName = rest.name
-							console.log(data, rest)
 							stepMessage = {
 								id: rest.run_id,
 								name: rest.name,
@@ -296,6 +306,9 @@ References documents:
 							}
 						}
 						case 'on_tool_end': {
+							this.logger.debug(`Tool call end'` + rest.name + '\':')
+							this.logger.debug(data)
+
 							const _event = eventStack.pop()
 							if (_event !== 'on_tool_start') {
 								eventStack.pop()
@@ -304,7 +317,6 @@ References documents:
 								stepMessage.status = 'done'
 							}
 
-							console.log(data, rest)
 							return {
 								event: ChatGatewayEvent.ToolEnd,
 								data: {
@@ -321,9 +333,16 @@ References documents:
 			).subscribe(subscriber)
 		}).pipe(
 			filter((data) => data != null),
-			tap((event: ChatGatewayMessage) => {
-				if (event?.event === ChatGatewayEvent.Message) {
-					this.addStep(event.data)
+			tap({
+				next: (event: ChatGatewayMessage) => {
+					if (event?.event === ChatGatewayEvent.Message) {
+						this.addStep(event.data)
+					} else if(event?.event === ChatGatewayEvent.Agent) {
+						this.addStepMessage(event.data.id, event.data.message)
+					}
+				},
+				complete: () => {
+					this.upsertMessageWithStatus('done')
 				}
 			}),
 			catchError((err) => {
@@ -460,6 +479,15 @@ References documents:
 
 	addStep(step: CopilotChatMessage) {
 		this.message.messages.push(step)
+	}
+
+	addStepMessage(id: string, message: CopilotChatMessage) {
+		const index = this.message.messages.findIndex((item) => item.id === id)
+		if (index > -1) {
+			const step = this.message.messages[index] as CopilotMessageGroup
+			step.messages ??= []
+			step.messages.push(message)
+		}
 	}
 
 	async upsertMessageWithStatus(status: CopilotBaseMessage['status'], content?: string) {

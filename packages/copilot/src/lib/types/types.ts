@@ -116,8 +116,8 @@ export interface CopilotChatMessage extends CopilotBaseMessage {
   lcMessage?: BaseMessage
 }
 
-export interface CopilotMessageGroup extends CopilotBaseMessage {
-  messages: CopilotChatMessage[]
+export interface CopilotMessageGroup<T extends CopilotChatMessage = CopilotChatMessage> extends CopilotBaseMessage {
+  messages: T[]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -169,6 +169,6 @@ export enum MessageDataType {
 }
 
 // Type guards
-export function isMessageGroup(message: CopilotBaseMessage): message is CopilotMessageGroup {
+export function isMessageGroup<T extends CopilotChatMessage = CopilotChatMessage>(message: CopilotBaseMessage): message is CopilotMessageGroup<T> {
   return 'messages' in message;
 }

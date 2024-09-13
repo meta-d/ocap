@@ -6,7 +6,6 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import {
   createSubStore,
-  DeepPartial,
   dirtyCheckWith,
   getErrorMessage,
   Intent,
@@ -26,6 +25,7 @@ import {
   CalculationProperty,
   DataSettings,
   DataSourceSettings,
+  DeepPartial,
   EntityType,
   isEntityType,
   isMeasureControlProperty,

@@ -508,10 +508,6 @@ export function convertQueryResultColumns(schema) {
   return uniqBy(columns, 'name')
 }
 
-export type DeepPartial<T> = T extends object ? {
-  [P in keyof T]?: DeepPartial<T[P]>;
-} : T;
-
 export function getErrorMessage(err: any): string {
   let error: string
   if (typeof err === 'string') {

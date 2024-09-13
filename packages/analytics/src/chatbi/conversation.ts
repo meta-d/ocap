@@ -31,7 +31,7 @@ import { groupBy } from 'lodash'
 import { BehaviorSubject, firstValueFrom, Subject, switchMap, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../model-member/index'
-import { convertOcapSemanticModel, getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
+import { getSemanticModelKey, NgmDSCoreService, registerSemanticModel } from '../model/ocap'
 import { ChatBIService } from './chatbi.service'
 import { markdownCubes } from './graph/index'
 import {
@@ -189,11 +189,11 @@ export class ChatBIConversation implements IChatBIConversation {
 			}
 		})
 
-		const models = items.map((item) => ({...item, model: convertOcapSemanticModel(item.model)}))
+		// const models = items.map((item) => ({...item, model: convertOcapSemanticModel(item.model)}))
 
-		this.logger.debug(`Chat models visits:`, models.map(({ visits }) => visits).join(', '))
+		this.logger.debug(`Chat models visits:`, items.map(({ visits }) => visits).join(', '))
 
-		this.models = models
+		this.models = items
 		this.indicators$.next([])
 
 		this.graph.updateState(
@@ -223,22 +223,8 @@ ${markdownCubes(this.models.slice(3))}
 	}
 
 	registerModel(model: ISemanticModel) {
-		registerModel(model, this.dsCoreService)
+		registerSemanticModel(model, this.dsCoreService)
 	}
-
-	// async switchContext(modelId: string, cubeName: string) {
-	// 	// Get Data Source
-	// 	const modelKey = this.getModelKey(modelId)
-	// 	const modelDataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
-	// 	// Get entity type context
-	// 	const entityType = await firstValueFrom(modelDataSource.selectEntityType(cubeName))
-	// 	if (!isEntityType(entityType)) {
-	// 		throw entityType
-	// 	}
-	// 	const context = markdownModelCube({ modelId, dataSource: modelKey, cube: entityType })
-	// 	this.context = context
-	// 	return context
-	// }
 
 	createAgentGraph() {
 		const chatId = this.chatId
