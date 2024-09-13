@@ -1,3 +1,4 @@
+import { ICopilotRole } from '../ai'
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { ISemanticModel } from './semantic-model'
 
@@ -9,6 +10,9 @@ export interface IChatBIModel extends IBasePerTenantAndOrganizationEntityModel {
   entityDescription?: string
   visits?: number
   options?: ChatBIModelOptions
+
+  // ManyToMany
+  roles?: ICopilotRole[]
 }
 
 export type ChatBIModelOptions = {

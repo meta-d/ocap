@@ -52,6 +52,7 @@ import { ChatAnswerSchema, GetCubesContextSchema, insightAgentState } from '../.
 import { ChatBINewCommand } from '../chat-bi.command'
 import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { markdownCubes } from '../../graph'
+import { CallbackManager } from '@langchain/core/callbacks/manager'
 
 @CommandHandler(ChatBINewCommand)
 export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
@@ -73,11 +74,12 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 		@Inject(CACHE_MANAGER)
 		private readonly cacheManager: Cache
 	) {
-		chatService.registerCommand('ChatBINewCommand', ChatBINewCommand)
+		this.chatService.registerCommand('ChatBI', ChatBINewCommand)
 	}
 
 	public async execute(command: ChatBINewCommand): Promise<any> {
 		const { args, config, context } = command
+		const parentRunId = (<CallbackManager>config.callbacks).getParentRunId()
 
 		// console.log(`execute ChatBINewCommand`, args, config, context)
 
@@ -147,7 +149,7 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 			}
 		})
 
-		const messages = state.values().messages
+		const messages = state.values.messages
 
 		return messages[messages.length - 1].content
 	}
@@ -160,16 +162,17 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 	}
 
 	async registerChatModels(dsCoreService: DSCoreService, context: CopilotToolContext) {
-		const { tenantId, organizationId } = context
+		const { tenantId, organizationId, role } = context
 		const { items } = await this.modelService.findAll({
 			where: { tenantId, organizationId },
-			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators'],
+			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators', 'roles'],
 			order: {
 				visits: OrderTypeEnum.DESC
 			}
 		})
 
-		const models = items.map((item) => ({ ...item, model: convertOcapSemanticModel(item.model) }))
+		const models = items.filter((item) => role ? item.roles.some((_) => _.id === role.id) : true)
+			.map((item) => ({ ...item, model: convertOcapSemanticModel(item.model) }))
 
 		// Register all models
 		models.forEach((item) => registerModel(item.model, dsCoreService))

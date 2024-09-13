@@ -3,6 +3,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 import { IBasePerTenantEntityModel } from '../base-entity.model'
 import { IUser } from '../user.model'
 import { AiProviderRole, ICopilot } from './copilot.model'
+import { ICopilotRole } from './copilot-role.model'
 
 /**
  * Toolset in copilot
@@ -50,6 +51,7 @@ export type CopilotToolContext = {
   copilot: ICopilot
   chatModel: unknown // BaseChatModel in langchain
   roleContext: Record<string, any>
+  role: ICopilotRole
 }
 
 // 临时
@@ -86,8 +88,8 @@ export const TOOLSETS: ICopilotToolset[] = [
     providerRole: AiProviderRole.Primary,
     tools: [
       {
-        name: 'ChatBINewCommand',
-        description: 'ChatBI New Command Tool',
+        name: 'ChatBI',
+        description: 'ChatBI Command Tool',
         type: 'command',
         schema: JSON.stringify(
           zodToJsonSchema(

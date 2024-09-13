@@ -3,7 +3,7 @@
 }
 
 .pac-knowledgebase-card {
-  @apply flex;
+  @apply flex shadow-sm border border-gray-200 rounded-lg hover:bg-gray-100 dark:border-neutral-700 dark:bg-white/10 dark:hover:bg-white/20;
   .pac-card__menu {
     @apply absolute;
     right: 5px;

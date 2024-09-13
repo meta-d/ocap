@@ -1378,7 +1378,8 @@
         "SureDeleteRole": "确定删除此角色吗？",
         "Avatar": "头像",
         "Prompt": "提示语",
-        "Starters": "开场白"
+        "Starters": "开场白",
+        "ToolOptions": "工具选项"
       }
     },
     "Chat": {
@@ -1433,7 +1434,8 @@
       "Caption": "简要描述",
       "AddModel": "添加模型",
       "AnotherBatch": "换一批",
-      "TryFollowing": "您还可以尝试以下分析"
+      "TryFollowing": "您还可以尝试以下分析",
+      "RolesWithPermission": "有权限的角色"
     },
     "Home": {
       "Insight": {

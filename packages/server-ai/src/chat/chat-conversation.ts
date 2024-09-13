@@ -123,6 +123,7 @@ export class ChatConversationAgent {
 									chatModel = this.createLLM(copilot)
 								}
 
+								// Default args values in copilot role for tool function
 								const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
 
 								tools.push(
@@ -137,7 +138,8 @@ export class ChatConversationAgent {
 														organizationId: this.organizationId,
 														user: this.user,
 														chatModel,
-														roleContext: role?.options?.context
+														role,
+														roleContext: role?.options?.context,
 													})
 											} catch(error) {
 												return `Error: ${getErrorMessage(error)}`

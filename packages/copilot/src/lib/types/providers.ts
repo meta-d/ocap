@@ -78,6 +78,14 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'gpt-4-32k',
         name: 'GPT-4 32k'
+      },
+      {
+        id: 'o1-preview',
+        name: 'o1 Preview'
+      },
+      {
+        id: 'o1-mini',
+        name: 'o1 Mini'
       }
     ]
   },

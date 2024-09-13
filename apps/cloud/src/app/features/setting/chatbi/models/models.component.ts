@@ -1,15 +1,15 @@
+import { CommonModule } from '@angular/common'
 import { Component, inject, signal } from '@angular/core'
-import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { TranslateModule } from '@ngx-translate/core'
-import { ChatBIModelService, Store, ToastrService, getErrorMessage, routeAnimations } from '../../../../@core'
-import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
-import { AsyncPipe, CommonModule } from '@angular/common'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { NgmConfirmDeleteComponent, NgmTableComponent, TableColumn } from '@metad/ocap-angular/common'
-import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { MatDialog } from '@angular/material/dialog'
+import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { ModelsService } from '@metad/cloud/state'
+import { NgmConfirmDeleteComponent, NgmTableComponent, TableColumn } from '@metad/ocap-angular/common'
+import { TranslateModule } from '@ngx-translate/core'
+import { BehaviorSubject, EMPTY } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
-import { EMPTY } from 'rxjs'
+import { ChatBIModelService, ToastrService, getErrorMessage, routeAnimations } from '../../../../@core'
+import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 
 @Component({
   standalone: true,
@@ -23,20 +23,22 @@ export class ChatBIModelsComponent extends TranslationBaseComponent {
   readonly modelsService = inject(ModelsService)
   readonly chatbiModelsService = inject(ChatBIModelService)
   readonly _toastrService = inject(ToastrService)
-  readonly #store = inject(Store)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly dialog = inject(MatDialog)
 
-  readonly organizationId$ = this.#store.selectOrganizationId()
-
-  readonly models = toSignal(this.chatbiModelsService.getAll({ relations: ['model'] }).pipe(map(({items}) => items)))
+  readonly refresh$ = new BehaviorSubject<void>(null)
+  readonly models = toSignal(
+    this.refresh$.pipe(
+      switchMap(() => this.chatbiModelsService.getAllInOrg({ relations: ['model'] }).pipe(map(({ items }) => items)))
+    )
+  )
   readonly allModels = toSignal(this.modelsService.getMy())
 
   readonly columns = signal<TableColumn[]>([
     {
       name: 'model',
-      caption: 'Model',
+      caption: 'Model'
     }
   ])
 
@@ -47,7 +49,7 @@ export class ChatBIModelsComponent extends TranslationBaseComponent {
   }
 
   refresh() {
-    this.chatbiModelsService.refresh()
+    this.refresh$.next()
   }
 
   editModel(id: string) {
