@@ -264,7 +264,7 @@ export class ChatService {
       if (prev) {
         prev.off('message', this.chatListener)
       }
-      curr.on('message', this.chatListener)
+      curr?.on('message', this.chatListener)
       return curr
     })
   ))
@@ -294,7 +294,10 @@ export class ChatService {
     )
 
     this.#destroyRef.onDestroy(() => {
-      this.websocket().off('message', this.chatListener)
+      this.websocket()?.off('message', this.chatListener)
+      if (this.answering() && this.conversation()?.id) {
+        this.cancelMessage()
+      }
     })
   }
 
@@ -335,10 +338,12 @@ export class ChatService {
   }
 
   setConversation(id: string) {
-    // const conversation = this.conversations().find((item) => item.id === id)
-    // this.role.set(conversation.role)
-    this.conversationId.set(id)
-    // this.conversation.set(conversation)
+    if (id !== this.conversationId()) {
+      if (this.answering() && this.conversation()?.id) {
+        this.cancelMessage()
+      }
+      this.conversationId.set(id)
+    }
   }
 
   deleteConversation(id: string) {

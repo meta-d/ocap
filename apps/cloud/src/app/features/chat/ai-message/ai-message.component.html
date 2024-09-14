@@ -41,7 +41,7 @@
             </div>
 
             @if (message.expanded) {
-              <div class="flex flex-col text-sm">
+              <div class="flex flex-col text-sm py-2">
                 @for (item of message.data; track $index) {
                   <p class="px-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10">
                     <markdown class="ngm-copilot-markdown"
@@ -84,7 +84,7 @@
               </span>
             </div>
             @if (message.expanded) {
-              <div class="flex flex-col text-sm">
+              <div class="flex flex-col text-sm py-2">
                 @for (item of message.messages; track $index) {
                   <p class="px-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10">
                     <markdown class="ngm-copilot-markdown"

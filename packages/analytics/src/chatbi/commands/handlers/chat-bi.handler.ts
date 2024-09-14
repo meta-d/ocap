@@ -21,6 +21,7 @@ import {
 	EntityType,
 	FilteringLogic,
 	getChartType,
+	getEntityDimensions,
 	isEntitySet,
 	makeCubeRulesPrompt,
 	markdownModelCube,
@@ -147,6 +148,7 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 			)
 
 			// let prevEvent = ''
+			const tools = {}
 			let chatContent = ''
 			for await (const { event, data, ...rest } of streamResults) {
 				// if (event === 'on_chat_model_stream') {
@@ -196,9 +198,14 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 					case 'on_tool_start': {
 						this.logger.debug(`Tool call '` + rest.name + '\':')
 						this.logger.debug(data)
+						tools[rest.run_id] = data.input.input
 						break
 					}
 					case 'on_tool_end': {
+						let content = `- Tool call: \`${rest.name}\``
+						if (tools[rest.run_id]) {
+							content += '\n```json\n' + tools[rest.run_id] + '\n```'
+						}
 						subscriber.next({
 							event: ChatGatewayEvent.Agent,
 							data: {
@@ -206,7 +213,7 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 								message: {
 									id: rest.run_id,
 									role: 'tool',
-									content: `- Tool call: \`${rest.name}\``,
+									content
 								}
 							}
 						})
@@ -452,6 +459,13 @@ ${members}
 		if (answer.orders) {
 			presentationVariant.sortOrder = answer.orders
 		}
+		presentationVariant.groupBy = getEntityDimensions(entityType)
+			.filter((property) => !chartAnnotation.dimensions?.some((item) => item.dimension === property.name))
+			.map((property) => ({
+				dimension: property.name,
+				hierarchy: property.defaultHierarchy,
+				level: null
+			}))
 
 		// ChartTypes
 		const chartTypes = [...CHART_TYPES]
@@ -486,7 +500,8 @@ ${members}
 								data: result.data,
 								dataSettings,
 								chartSettings,
-								slicers
+								slicers,
+								title: answer.preface
 							} as unknown as JSONValue
 						}
 					} as ChatGatewayMessage)
