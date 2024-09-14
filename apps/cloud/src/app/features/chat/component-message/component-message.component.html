@@ -1,5 +1,8 @@
 @switch (data().type) {
-    @case ('AnalyticalCard') {
-        <ngm-analytical-card [dataSettings]="data().dataSettings" [slicers]="data().slicers" />
-    }
+  @case ('AnalyticalCard') {
+    <ngm-analytical-card [dataSettings]="data().dataSettings"
+      [chartSettings]="data().chartSettings"
+      [slicers]="data().slicers"
+    />
+  }
 }

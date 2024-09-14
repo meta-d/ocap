@@ -1,6 +1,6 @@
 import { Location } from '@angular/common'
-import { effect, inject, Injectable, signal } from '@angular/core'
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
+import { DestroyRef, effect, inject, Injectable, signal } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotBaseMessage, CopilotChatMessage, CopilotMessageGroup } from '@metad/copilot'
 import { nonNullable } from '@metad/ocap-core'
@@ -14,8 +14,10 @@ import {
   filter,
   map,
   of,
+  pairwise,
   pipe,
   skip,
+  startWith,
   switchMap,
   tap,
   withLatestFrom
@@ -45,6 +47,7 @@ export class ChatService {
   readonly #route = inject(ActivatedRoute)
   readonly #toastr = inject(ToastrService)
   readonly #location = inject(Location)
+  readonly #destroyRef = inject(DestroyRef)
   readonly paramRole = injectParams('role')
   readonly paramId = injectParams('id')
 
@@ -182,79 +185,93 @@ export class ChatService {
       // }
     })
 
+  private chatListener = (result: ChatGatewayMessage) => {
+    console.log('message return:', result)
+    switch (result.event) {
+      case ChatGatewayEvent.ChainStart: {
+        this.messages.update((items) => [
+          ...items,
+          {
+            id: result.data.id,
+            role: 'assistant',
+            status: 'thinking'
+          }
+        ])
+        break
+      }
+      case ChatGatewayEvent.ConversationCreated: {
+        this.conversation.set({ ...result.data, messages: [...(this.messages() ?? [])] })
+        this.conversations.update((items) => [{ ...result.data }, ...items])
+        break
+      }
+      case ChatGatewayEvent.Message: {
+        this.appendMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.MessageStream: {
+        this.appendStreamMessage(result.data.content)
+        break
+      }
+      case ChatGatewayEvent.StepStart: {
+        this.appendMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.StepEnd: {
+        this.updateMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.ToolStart: {
+        this.appendMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.ToolEnd: {
+        this.updateMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.ChainEnd: {
+        this.answering.set(false)
+        this.updateMessage(result.data.id, {
+          status: 'done'
+        })
+        break
+      }
+      case ChatGatewayEvent.ChainAborted: {
+        this.answering.set(false)
+        if (this.conversation()?.id === result.data.conversationId) {
+          this.abortMessage(result.data.id)
+        }
+        break
+      }
+      case ChatGatewayEvent.Error: {
+        this.answering.set(false)
+        this.updateMessage(result.data.id, {
+          status: 'error',                                
+          content: result.data.error
+        })
+        break
+      }
+      case ChatGatewayEvent.Agent: {
+        this.appendStepMessage(result.data.id, result.data.message)
+        break
+      }
+    }
+  }
+
+  private websocket = toSignal(this.chatService.socket$.pipe(
+    startWith(null),
+    pairwise(),
+    map(([prev, curr]) => {
+      if (prev) {
+        prev.off('message', this.chatListener)
+      }
+      curr.on('message', this.chatListener)
+      return curr
+    })
+  ))
+
   constructor() {
     this.chatService.connect()
-    this.chatService.on('message', (result: ChatGatewayMessage) => {
-      console.log('message return:', result)
-      switch (result.event) {
-        case ChatGatewayEvent.ChainStart: {
-          this.messages.update((items) => [
-            ...items,
-            {
-              id: result.data.id,
-              role: 'assistant',
-              status: 'thinking'
-            }
-          ])
-          break
-        }
-        case ChatGatewayEvent.ConversationCreated: {
-          this.conversation.set({ ...result.data, messages: [...(this.messages() ?? [])] })
-          this.conversations.update((items) => [{ ...result.data }, ...items])
-          break
-        }
-        case ChatGatewayEvent.Message: {
-          this.appendMessageStep(result.data)
-          break
-        }
-        case ChatGatewayEvent.MessageStream: {
-          this.appendStreamMessage(result.data.content)
-          break
-        }
-        case ChatGatewayEvent.StepStart: {
-          this.appendMessageStep(result.data)
-          break
-        }
-        case ChatGatewayEvent.StepEnd: {
-          this.updateMessageStep(result.data)
-          break
-        }
-        case ChatGatewayEvent.ToolStart: {
-          this.appendMessageStep(result.data)
-          break
-        }
-        case ChatGatewayEvent.ToolEnd: {
-          this.updateMessageStep(result.data)
-          break
-        }
-        case ChatGatewayEvent.ChainEnd: {
-          this.answering.set(false)
-          this.updateMessage(result.data.id, {
-            status: 'done'
-          })
-          break
-        }
-        case ChatGatewayEvent.ChainAborted: {
-          this.answering.set(false)
-          if (this.conversation()?.id === result.data.conversationId) {
-            this.abortMessage(result.data.id)
-          }
-          break
-        }
-        case ChatGatewayEvent.Error: {
-          this.answering.set(false)
-          this.updateMessage(result.data.id, {
-            status: 'error',                                
-            content: result.data.error
-          })
-          break
-        }
-        case ChatGatewayEvent.Agent: {
-          this.appendStepMessage(result.data.id, result.data.message)
-          break
-        }
-      }
-    })
+    // this.chatService.on('message', this.chatListener)
 
     effect(
       () => {
@@ -275,6 +292,10 @@ export class ChatService {
       },
       { allowSignalWrites: true }
     )
+
+    this.#destroyRef.onDestroy(() => {
+      this.websocket().off('message', this.chatListener)
+    })
   }
 
   message(id: string, content: string) {

@@ -12,7 +12,7 @@
               @if (message.status === 'thinking') {
                 <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
               }
-              <mat-icon fontSet="material-icons-round" class="mr-2 rounded-full"
+              <mat-icon fontSet="material-icons-round" class="mr-2 rounded-md active:scale-95 transition-transform"
                 [cdkMenuTriggerFor]="docs"
                 [cdkMenuTriggerData]="message"
               >school</mat-icon>
@@ -61,7 +61,7 @@
               @if (message.status === 'thinking') {
                 <mat-progress-spinner [diameter]="16" [mode]="'indeterminate'" color="accent" />
               }
-              <mat-icon fontSet="material-icons-round" class="mr-2 rounded-full overflow-hidden"
+              <mat-icon fontSet="material-icons-round" class="mr-2 rounded-md active:scale-95 transition-transform"
                 [cdkMenuTriggerFor]="steps"
                 [cdkMenuTriggerData]="message"
               >construction</mat-icon>{{message.name}}
@@ -139,7 +139,7 @@
 <ng-template #docs let-data="data">
   <div class="ngm-cdk-menu max-h-96 max-w-lg text-sm overflow-x-hidden overflow-y-auto" cdkMenu>
     @for (item of data; track $index) {
-      <p class="px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10">
+      <p class="px-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10">
         <markdown class="ngm-copilot-markdown"
           lineNumbers
           [start]="5"
@@ -154,7 +154,7 @@
   <div class="ngm-cdk-menu max-h-96 max-w-lg overflow-x-hidden overflow-y-auto" cdkMenu>
     <div class="flex flex-col text-sm">
       @for (item of messages; track $index) {
-        <p class="px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10">
+        <p class="px-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10">
           <markdown class="ngm-copilot-markdown"
             lineNumbers
             [start]="5"

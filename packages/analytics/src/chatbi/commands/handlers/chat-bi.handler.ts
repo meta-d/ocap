@@ -7,8 +7,12 @@ import { AgentRecursionLimit, createAgentStepsInstructions, referencesCommandNam
 import {
 	Agent,
 	assignDeepOmitBlank,
+	C_MEASURES,
 	ChartBusinessService,
+	ChartMeasure,
 	ChartOrient,
+	ChartSettings,
+	ChartType,
 	ChartTypeEnum,
 	cloneDeep,
 	CubeVariablePrompt,
@@ -46,7 +50,6 @@ import { firstValueFrom, Subject, Subscriber, switchMap, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../../../chatbi-model/'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../../../model-member'
 import {
-	convertOcapSemanticModel,
 	NgmDSCoreService,
 	OCAP_AGENT_TOKEN,
 	OCAP_DATASOURCE_TOKEN,
@@ -389,18 +392,18 @@ ${createAgentStepsInstructions(
 
 					// Fetch data for chart or table or kpi
 					if (answer.dimensions?.length || answer.measures?.length) {
-						const { data, categoryMembers } = await this.drawChartMessage(
+						const { data } = await this.drawChartMessage(
 							answer as ChatAnswer,
 							{ ...context, entityType }
 						)
-						// Max limit 20 members
-						const members = categoryMembers
-							? JSON.stringify(Object.values(categoryMembers).slice(0, 20))
+						// Max limit 100 members
+						const members = data
+							? JSON.stringify(Object.values(data).slice(0, 100))
 							: 'Empty'
 
-						return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
-	${members}
-	Please give more analysis suggestions about other dimensions or filter by dimensioin members, 3 will be enough.`
+						return `The data are:
+${members}
+`
 					}
 
 					return `图表答案已经回复给用户了，请不要重复回答了。`
@@ -425,7 +428,7 @@ ${createAgentStepsInstructions(
 		const chartAnnotation = {
 			chartType: tryFixChartType(answer.chartType),
 			dimensions: answer.dimensions?.map((dimension) => tryFixDimension(dimension, entityType)),
-			measures: answer.measures?.map((measure) => tryFixDimension(measure, entityType))
+			measures: answer.measures?.map((measure) => fixMeasure(measure, entityType))
 		}
 
 		const slicers = []
@@ -450,6 +453,19 @@ ${createAgentStepsInstructions(
 			presentationVariant.sortOrder = answer.orders
 		}
 
+		// ChartTypes
+		const chartTypes = [...CHART_TYPES]
+		const index = chartTypes.findIndex(
+			({ type, orient }) => type === chartAnnotation.chartType.type && orient === chartAnnotation.chartType.orient
+		)
+		if (index > -1) {
+			chartAnnotation.chartType = chartTypes.splice(index, 1)[0]
+		}
+		const chartSettings: ChartSettings = {
+			universalTransition: true,
+			chartTypes
+		}
+
 		return new Promise((resolve, reject) => {
 			const dataSettings = {
 				...answer.dataSettings,
@@ -469,11 +485,12 @@ ${createAgentStepsInstructions(
 								type: 'AnalyticalCard',
 								data: result.data,
 								dataSettings,
+								chartSettings,
 								slicers
 							} as unknown as JSONValue
 						}
 					} as ChatGatewayMessage)
-					resolve({ data: result.data, categoryMembers: {} })
+					resolve({ data: result.data })
 				}
 				destroy$.next()
 				destroy$.complete()
@@ -569,12 +586,25 @@ const CHART_TYPES = [
         }
       }
     }
-  ]
+]
 
-function tryFixChartType(chartType) {
+function tryFixChartType(chartType: ChartType) {
 	return assignDeepOmitBlank(
 		cloneDeep(getChartType(upperFirst(chartType.type))?.value.chartType),
 		omit(chartType, 'type'),
 		5
 	)
+}
+
+function fixMeasure(measure: ChartMeasure, entityType: EntityType) {
+	return {
+		...tryFixDimension(measure, entityType),
+        dimension: C_MEASURES,
+        formatting: {
+          shortNumber: true
+        },
+        palette: {
+          name: 'Viridis'
+        }
+    }
 }
