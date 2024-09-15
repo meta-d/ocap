@@ -86,14 +86,6 @@ export class ChatConversationAgent {
 		const tools = []
 		toolsets.forEach((toolset) => {
 			switch (toolset.name) {
-				case 'TavilySearch': {
-					const tavilySearchTool = new TavilySearchResults({
-						apiKey: '',
-						maxResults: 2
-					})
-					tools.push(tavilySearchTool)
-					break
-				}
 				case 'Wikipedia': {
 					const wikiTool = new WikipediaQueryRun({
 						topKResults: 3,
@@ -109,7 +101,14 @@ export class ChatConversationAgent {
 				}
 				case 'SearchApi': {
 					tools.push(new SearchApi(process.env.SEARCHAPI_API_KEY, {
-						...toolset.tools[0].options,
+						...(toolset.tools?.[0]?.options ?? {}),
+					  }))
+					break
+				}
+				case 'TavilySearch': {
+					tools.push(new TavilySearchResults({
+						...(toolset.tools?.[0]?.options ?? {}),
+						apiKey: process.env.TAVILY_API_KEY
 					  }))
 					break
 				}
@@ -192,7 +191,7 @@ References documents:
 
 	streamGraphEvents(input: string, answerId: string) {
 		const eventStack: string[] = []
-		let toolName = ''
+		let toolId = ''
 		let stepMessage = null
 		// let prevEvent = ''
 		return new Observable((subscriber) => {
@@ -241,6 +240,7 @@ References documents:
 						}
 						case 'on_chain_end': {
 							const _event = eventStack.pop()
+							// 当调用 Tool 报错异常时会跳过 on_tool_end 事件，直接到此事件
 							if (_event === 'on_tool_start') {
 								eventStack.pop()
 								if (stepMessage) {
@@ -249,7 +249,9 @@ References documents:
 								return {
 									event: ChatGatewayEvent.ToolEnd,
 									data: {
-										name: toolName
+										id: toolId,
+										role: 'tool',
+										status: 'done'
 									}
 								}
 							}
@@ -295,7 +297,7 @@ References documents:
 							this.logger.debug(`Tool call '` + rest.name + '\':')
 							this.logger.debug(data)
 							eventStack.push(event)
-							toolName = rest.name
+							toolId = rest.run_id,
 							stepMessage = {
 								id: rest.run_id,
 								name: rest.name,

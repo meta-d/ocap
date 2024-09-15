@@ -165,4 +165,20 @@ export const TOOLSETS: ICopilotToolset[] = [
       }
     ]
   },
+  {
+    id: '6',
+    name: 'TavilySearch',
+    description: 'Tavily Search is a robust search API tailored specifically for LLM Agents.',
+    avatar: '/assets/icons/tavily.ico',
+    tools: [
+      {
+        name: 'TavilySearch',
+        description: 'Search tool tailored specifically for LLM Agents',
+        options: {
+          maxResults: 2,
+        }
+      }
+    ]
+  },
+  
 ]
