@@ -1,8 +1,9 @@
 import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
 import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
 import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_run'
+import { SearchApi } from "@langchain/community/tools/searchapi"
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
+import { AIMessageChunk, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
@@ -21,7 +22,7 @@ import {
 	IUser
 } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
-import { getErrorMessage } from '@metad/server-common'
+import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { Logger } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { jsonSchemaToZod } from 'json-schema-to-zod'
@@ -104,6 +105,12 @@ export class ChatConversationAgent {
 				case 'DuckDuckGo': {
 					const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
 					tools.push(duckTool)
+					break
+				}
+				case 'SearchApi': {
+					tools.push(new SearchApi(process.env.SEARCHAPI_API_KEY, {
+						...toolset.tools[0].options,
+					  }))
 					break
 				}
 				default: {
@@ -293,17 +300,19 @@ References documents:
 								id: rest.run_id,
 								name: rest.name,
 								role: 'tool',
-								status: 'thinking'
+								status: 'thinking',
+								messages: [
+									{
+										id: shortuuid(),
+										role: 'assistant',
+										content: '```json\n' + data.input.input + '\n```'
+									}
+								]
 							}
 							this.addStep(stepMessage)
 							return {
 								event: ChatGatewayEvent.ToolStart,
-								data: {
-									id: rest.run_id,
-									name: rest.name,
-									role: 'tool',
-									status: 'thinking'
-								}
+								data: stepMessage
 							}
 						}
 						case 'on_tool_end': {
@@ -318,6 +327,16 @@ References documents:
 								stepMessage.status = 'done'
 							}
 
+							const toolMessage = data.output as ToolMessage
+
+							const message: CopilotBaseMessage = {
+								id: shortuuid(),
+								role: 'assistant',
+								content: toolMessage.content
+							}
+							this.updateStep(rest.run_id, { status: 'done' })
+							this.addStepMessage(rest.run_id, message)
+
 							return {
 								event: ChatGatewayEvent.ToolEnd,
 								data: {
@@ -325,6 +344,9 @@ References documents:
 									name: rest.name,
 									role: 'tool',
 									status: 'done',
+									messages: [
+										message
+									]
 								}
 							} as ChatGatewayMessage
 						}
@@ -482,7 +504,14 @@ References documents:
 		this.message.messages.push(step)
 	}
 
-	addStepMessage(id: string, message: CopilotChatMessage) {
+	updateStep(id: string, step: Partial<CopilotChatMessage>) {
+		const index = this.message.messages.findIndex((message) => message.id === id)
+		if (index > -1) {
+			this.message.messages[index] = { ...this.message.messages[index], ...step }
+		}
+	}
+
+	addStepMessage(id: string, message: CopilotBaseMessage) {
 		const index = this.message.messages.findIndex((item) => item.id === id)
 		if (index > -1) {
 			const step = this.message.messages[index] as CopilotMessageGroup

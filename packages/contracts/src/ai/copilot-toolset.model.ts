@@ -34,6 +34,7 @@ export interface ICopilotToolset extends IBasePerTenantEntityModel {
 export type ICopilotTool = {
   name: string
   description: string
+  options?: Record<string, any>
   type?: 'command' | 'agent' | 'browser' | null
   schema?: string
 
@@ -148,5 +149,20 @@ export const TOOLSETS: ICopilotToolset[] = [
         )
       }
     ]
-  }
+  },
+  {
+    id: '5',
+    name: 'SearchApi',
+    description: 'SearchApi for Search',
+    avatar: '/assets/icons/search-api.png',
+    tools: [
+      {
+        name: 'SearchApi',
+        description: 'SearchApi for Search',
+        options: {
+          engine: 'google'
+        }
+      }
+    ]
+  },
 ]

@@ -181,17 +181,18 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 					}
 					case 'on_chat_model_end': {
 						if (chatContent) {
-							subscriber.next({
-								event: ChatGatewayEvent.Agent,
-								data: {
-									id: parentRunId,
-									message: {
-										id: shortuuid(),
-										role: 'assistant',
-										content: chatContent
-									}
-								}
-							})
+							// 最终的回答会在主 Agent 中被返回，在此处不用返回结果。
+							// subscriber.next({
+							// 	event: ChatGatewayEvent.Agent,
+							// 	data: {
+							// 		id: parentRunId,
+							// 		message: {
+							// 			id: shortuuid(),
+							// 			role: 'assistant',
+							// 			content: chatContent
+							// 		}
+							// 	}
+							// })
 						}
 						break
 					}

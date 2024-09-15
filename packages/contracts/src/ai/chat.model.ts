@@ -69,7 +69,7 @@ export type ChatGatewayMessage = {
   data: ChatUserMessage
 } | {
   event: ChatGatewayEvent.ToolStart | ChatGatewayEvent.ToolEnd
-  data: CopilotChatMessage
+  data: CopilotMessageGroup
 } | {
   event: ChatGatewayEvent.ChainStart | ChatGatewayEvent.ChainEnd
   data: {

@@ -225,7 +225,11 @@ export class ChatService {
         break
       }
       case ChatGatewayEvent.ToolEnd: {
-        this.updateMessageStep(result.data)
+        const { messages, ...step } = result.data
+        this.updateMessageStep(step)
+        if (messages?.length > 0) {
+          messages.forEach((m) => this.appendStepMessage(step.id, m))
+        }
         break
       }
       case ChatGatewayEvent.ChainEnd: {
