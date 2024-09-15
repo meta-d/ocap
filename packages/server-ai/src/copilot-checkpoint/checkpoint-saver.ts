@@ -113,7 +113,7 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
 	}
 
 	async put(config: RunnableConfig, checkpoint: Checkpoint, metadata: CheckpointMetadata): Promise<RunnableConfig> {
-		const { tenantId, organizationId } = config.configurable ?? {}
+		const { tenantId, organizationId, userId } = config.configurable ?? {}
 		const [type1, serializedCheckpoint] = this.serde.dumpsTyped(checkpoint)
 		const [type2, serializedMetadata] = this.serde.dumpsTyped(metadata)
 
@@ -124,6 +124,7 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
 		await this.repository.upsert({
 			tenantId,
 			organizationId,
+			createdById: userId,
 			thread_id: config.configurable?.thread_id?.toString(),
 			checkpoint_ns: config.configurable?.checkpoint_ns,
 			checkpoint_id: checkpoint.id,
@@ -145,7 +146,7 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
 	}
 
 	async putWrites(config: RunnableConfig, writes: PendingWrite[], taskId: string): Promise<void> {
-		const { tenantId, organizationId } = config.configurable ?? {}
+		const { tenantId, organizationId, userId } = config.configurable ?? {}
 
 		await this.wRepository.manager.transaction(async (transactionalEntityManager) => {
 			let idx = 0
@@ -156,6 +157,7 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
 					{
 						tenantId,
 						organizationId,
+						createdById: userId,
 						thread_id: config.configurable?.thread_id,
 						checkpoint_ns: config.configurable?.checkpoint_ns,
 						checkpoint_id: config.configurable?.checkpoint_id,

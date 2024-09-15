@@ -6,6 +6,7 @@ import {
 	ICopilotRole,
 	TOOLSETS
 } from '@metad/contracts'
+import { NgmLanguageEnum } from '@metad/copilot'
 import { shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { isNil } from 'lodash'
@@ -88,14 +89,10 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				const conversation = this.chatService.getConversation(chatConversation.id)
 
 				if (language) {
-					conversation.updateState({
-						language: `Please answer in language: ${language}`
-					})
+					conversation.updateState({ language: this.languagePrompt(language) })
 				}
 				if (copilotRole) {
-					conversation.updateState({
-						role: copilotRole.prompt
-					})
+					conversation.updateState({ role: copilotRole.prompt })
 				}
 
 				const answerId = shortuuid()
@@ -116,5 +113,9 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					.subscribe(subscriber)
 			})()
 		})
+	}
+
+	private languagePrompt(language: string) {
+		return `Please answer in language ${Object.entries(NgmLanguageEnum).find((item) => item[1] === language)?.[0] ?? 'English'}`
 	}
 }

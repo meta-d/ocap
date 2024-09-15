@@ -1,9 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { BusinessRoleType, CopilotService, DefaultBusinessRole } from '@metad/copilot'
+import { BusinessRoleType, CopilotService, DefaultBusinessRole, NgmLanguageEnum } from '@metad/copilot'
 import { TranslateService } from '@ngx-translate/core'
 import { combineLatest, map, shareReplay, startWith } from 'rxjs'
-import { NgmLanguageEnum } from '../types'
 import { createLLM } from '../core'
 
 @Injectable()

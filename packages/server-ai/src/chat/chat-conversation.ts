@@ -21,6 +21,8 @@ import {
 	IUser
 } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
+import { getErrorMessage } from '@metad/server-common'
+import { Logger } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { jsonSchemaToZod } from 'json-schema-to-zod'
 import { formatDocumentsAsString } from 'langchain/util/document'
@@ -33,8 +35,6 @@ import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { KnowledgeSearchQuery } from '../knowledgebase/queries'
 import { ChatService } from './chat.service'
 import { ChatAgentState, chatAgentState } from './types'
-import { Logger } from '@nestjs/common'
-import { getErrorMessage } from '@metad/server-common'
 
 
 export class ChatConversationAgent {
@@ -202,6 +202,7 @@ References documents:
 							checkpoint_ns: '',
 							tenantId: this.tenantId,
 							organizationId: this.organizationId,
+							userId: this.user.id,
 							subscriber
 						},
 						recursionLimit: AgentRecursionLimit,

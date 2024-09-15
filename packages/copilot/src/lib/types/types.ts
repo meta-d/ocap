@@ -168,6 +168,13 @@ export enum MessageDataType {
   ToolsCall = 'tools_call',
 }
 
+export enum NgmLanguageEnum {
+	Chinese = "zh-CN",
+	SimplifiedChinese = "zh-Hans",
+	TraditionalChinese = 'zh-Hant',
+	English = 'en',
+}
+
 // Type guards
 export function isMessageGroup<T extends CopilotChatMessage = CopilotChatMessage>(message: CopilotBaseMessage): message is CopilotMessageGroup<T> {
   return 'messages' in message;
