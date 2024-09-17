@@ -180,5 +180,20 @@ export const TOOLSETS: ICopilotToolset[] = [
       }
     ]
   },
+  {
+    id: '7',
+    name: 'ExaSearch',
+    description: 'Exa is a knowledge API for AI and developers.',
+    avatar: '/assets/icons/exa-ai.png',
+    tools: [
+      {
+        name: 'ExaSearch',
+        description: 'Search tool of Exa',
+        options: {
+          numResults: 2,
+        }
+      }
+    ]
+  },
   
 ]

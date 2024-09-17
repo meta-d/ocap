@@ -36,6 +36,10 @@ import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { KnowledgeSearchQuery } from '../knowledgebase/queries'
 import { ChatService } from './chat.service'
 import { ChatAgentState, chatAgentState } from './types'
+import { ExaSearchResults } from "@langchain/exa"
+import Exa from "exa-js"
+
+const exaClient = process.env.EXASEARCH_API_KEY ? new Exa(process.env.EXASEARCH_API_KEY) : null
 
 
 export class ChatConversationAgent {
@@ -110,6 +114,16 @@ export class ChatConversationAgent {
 						...(toolset.tools?.[0]?.options ?? {}),
 						apiKey: process.env.TAVILY_API_KEY
 					  }))
+					break
+				}
+				case 'ExaSearch': {
+					tools.push(new ExaSearchResults({
+						client: exaClient,
+						searchArgs: {
+						  ...(toolset.tools?.[0]?.options ?? {}),
+						} as any,
+					  })
+					)
 					break
 				}
 				default: {
