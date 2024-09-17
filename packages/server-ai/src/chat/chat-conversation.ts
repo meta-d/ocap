@@ -22,7 +22,7 @@ import {
 	IUser
 } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
-import { getErrorMessage, shortuuid } from '@metad/server-common'
+import { getErrorMessage, omit, shortuuid } from '@metad/server-common'
 import { Logger } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { jsonSchemaToZod } from 'json-schema-to-zod'
@@ -38,6 +38,7 @@ import { ChatService } from './chat.service'
 import { ChatAgentState, chatAgentState } from './types'
 import { ExaSearchResults } from "@langchain/exa"
 import Exa from "exa-js"
+import { SearxngSearch } from "@langchain/community/tools/searxng_search"
 
 const exaClient = process.env.EXASEARCH_API_KEY ? new Exa(process.env.EXASEARCH_API_KEY) : null
 
@@ -126,6 +127,21 @@ export class ChatConversationAgent {
 					)
 					break
 				}
+				case 'SearxngSearch': {
+					tools.push(new SearxngSearch({
+						apiBase: (toolset.tools?.[0]?.options ?? {}).apiBase,
+						params: {
+							engines: "google",
+							...omit(toolset.tools?.[0]?.options ?? {}, 'apiBase'),
+							format: "json", // Do not change this, format other than "json" is will throw error
+						},
+						// Custom Headers to support rapidAPI authentication Or any instance that requires custom headers
+						headers: {},
+					  })
+					)
+					break
+				}
+
 				default: {
 					toolset.tools.forEach((item) => {
 						switch (item.type) {

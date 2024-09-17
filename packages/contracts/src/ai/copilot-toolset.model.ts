@@ -195,5 +195,20 @@ export const TOOLSETS: ICopilotToolset[] = [
       }
     ]
   },
-  
+  {
+    id: '8',
+    name: 'SearxngSearch',
+    description: 'SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.',
+    avatar: '/assets/icons/searxng.svg',
+    tools: [
+      {
+        name: 'SearxngSearch',
+        description: 'This tool is useful for performing meta-search engine queries using the SearxNG API. It is particularly helpful in answering questions about current events.',
+        options: {
+          apiBase: 'https://search.inetol.net/',
+          engines: "google",
+        }
+      }
+    ]
+  },
 ]
