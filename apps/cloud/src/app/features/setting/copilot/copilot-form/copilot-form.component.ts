@@ -22,8 +22,42 @@ export class CopilotFormComponent {
     openai: 'https://platform.openai.com/account/api-keys',
     azure: 'https://azure.microsoft.com/en-us/free/cognitive-services/',
     dashscope: 'https://help.aliyun.com/zh/dashscope/developer-reference/activate-dashscope-and-create-an-api-key',
-    ollama: 'https://ollama.com/'
+    ollama: 'https://ollama.com/',
+    [AiProvider.Anthropic]: 'https://www.anthropic.com/api'
   }
+
+  readonly providers = [
+    {
+      name: AiProvider.OpenAI,
+      caption: 'OpenAI',
+      icon: 'openai.svg',
+      iconAlt: 'openai-logo'
+    },
+    {
+      name: AiProvider.Azure,
+      caption: 'Azure',
+      icon: 'azure.svg',
+      iconAlt: 'azure-logo'
+    },
+    {
+      name: AiProvider.Ollama,
+      caption: 'Ollama',
+      icon: 'ollama.svg',
+      iconAlt: 'ollama-logo'
+    },
+    {
+      name: AiProvider.DeepSeek,
+      caption: 'DeepSeek',
+      icon: 'deepseek.svg',
+      iconAlt: 'deepseek-logo'
+    },
+    {
+      name: AiProvider.Anthropic,
+      caption: 'Anthropic',
+      icon: 'claude.svg',
+      iconAlt: 'claude-logo'
+    }
+  ]
 
   readonly #store = inject(Store)
   readonly copilotService = inject(PACCopilotService)
@@ -46,6 +80,7 @@ export class CopilotFormComponent {
 
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
   readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
+  readonly providerInfo = computed(() => this.providers.find((item) => item.name === this.provider()))
 
   readonly saving = signal(false)
 

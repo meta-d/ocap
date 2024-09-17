@@ -1,12 +1,11 @@
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessage, BaseMessage, HumanMessage, isAIMessage, ToolMessage } from '@langchain/core/messages'
+import { JsonOutputToolsParser } from '@langchain/core/output_parsers/openai_tools'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
-import { DynamicStructuredTool } from '@langchain/core/tools'
+import { DynamicStructuredTool, Tool } from '@langchain/core/tools'
 import { END } from '@langchain/langgraph/web'
-import { ChatOpenAI } from '@langchain/openai'
-import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { AgentState, createCopilotAgentState } from './types'
-import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
 export const SUPERVISOR_NAME = 'Supervisor'
 export const TOOLS_NAME = 'tools'
@@ -125,7 +124,7 @@ export async function createSupervisor(
         tool_choice: { type: 'function', function: { name: 'route' } }
       })
     )
-    .pipe(new JsonOutputToolsParser())
+    .pipe(new JsonOutputToolsParser<Tool>())
     // select the first one
     .pipe((x) => x[0].args)
 

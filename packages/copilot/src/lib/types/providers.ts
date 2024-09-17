@@ -5,20 +5,29 @@
  */
 export enum AiProvider {
   /**
-   * - https://js.langchain.com/v0.2/docs/integrations/chat/openai
+   * - https://js.langchain.com/docs/integrations/chat/openai/
    */
   OpenAI = 'openai',
   /**
-   * - https://js.langchain.com/v0.2/docs/integrations/chat/azure
+   * - https://js.langchain.com/docs/integrations/chat/openai/
    */
   Azure = 'azure',
   DashScope = 'dashscope',
   /**
    * - https://ollama.com/
-   * - https://js.langchain.com/v0.2/docs/integrations/chat/ollama
+   * - https://js.langchain.com/docs/integrations/chat/ollama/
    */
   Ollama = 'ollama',
-  DeepSeek = 'deepseek'
+  /**
+   * - https://www.deepseek.com/zh
+   * - https://js.langchain.com/docs/integrations/chat/openai/
+   */
+  DeepSeek = 'deepseek',
+  /**
+   * - https://docs.anthropic.com/en/home
+   * - https://js.langchain.com/docs/integrations/chat/anthropic/
+   */
+  Anthropic = 'anthropic'
 }
 
 export enum AiProtocol {
@@ -233,6 +242,25 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'deepseek-coder',
         name: 'DeepSeek Coder'
+      },
+    ]
+  },
+  [AiProvider.Anthropic]: {
+    protocol: AiProtocol.Others,
+    apiHost: 'https://api.anthropic.com/v1',
+    isTools: true,
+    models: [
+      {
+        id: 'claude-3-opus',
+        name: 'Claude 3 Opus'
+      },
+      {
+        id: 'claude-3-sonnet',
+        name: 'Claude 3 Sonnet'
+      },
+      {
+        id: 'claude-2',
+        name: 'Claude 2'
       },
     ]
   }

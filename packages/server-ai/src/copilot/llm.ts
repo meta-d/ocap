@@ -1,11 +1,12 @@
 import { Embeddings } from '@langchain/core/embeddings'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessage, AIMessageChunk } from '@langchain/core/messages'
+import { AIMessage } from '@langchain/core/messages'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { ChatOllama, OllamaEmbeddings } from '@langchain/ollama'
 import { ChatOpenAI, ClientOptions, OpenAIEmbeddings } from '@langchain/openai'
 import { ICopilot, OllamaEmbeddingsProviders, OpenAIEmbeddingsProviders } from '@metad/contracts'
 import { AI_PROVIDERS, AiProtocol, AiProvider } from '@metad/copilot'
+import { ChatAnthropic } from "@langchain/anthropic"
 
 export function createLLM<T = ChatOpenAI | BaseChatModel>(
 	copilot: ICopilot,
@@ -43,6 +44,23 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 					}
 				]
 			}) as T
+		case AiProvider.Anthropic: {
+			return new ChatAnthropic({
+				anthropicApiUrl: copilot.apiHost || null,
+				apiKey: copilot.apiKey,
+				model: copilot.defaultModel,
+				temperature: 0,
+				maxTokens: undefined,
+				maxRetries: 2,
+				callbacks: [
+					{
+						handleLLMEnd(output) {
+							tokenRecord({ copilot, tokenUsed: output.llmOutput?.totalTokens ?? calculateTokenUsage(output) })
+						}
+					}
+				]
+			}) as T
+		}
 		default:
 			return null
 	}
