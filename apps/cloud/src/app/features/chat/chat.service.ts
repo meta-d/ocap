@@ -221,15 +221,21 @@ export class ChatService {
         break
       }
       case ChatGatewayEvent.ToolStart: {
-        this.appendMessageStep(result.data)
+        const toolCalls = Array.isArray(result.data) ? result.data : [result.data]
+        toolCalls.forEach((item) => {
+          this.appendMessageStep(item)
+        })
         break
       }
       case ChatGatewayEvent.ToolEnd: {
-        const { messages, ...step } = result.data
-        this.updateMessageStep(step)
-        if (messages?.length > 0) {
-          messages.forEach((m) => this.appendStepMessage(step.id, m))
-        }
+        const toolCalls = Array.isArray(result.data) ? result.data : [result.data]
+        toolCalls.forEach((item) => {
+          const { messages, ...step } = item
+          this.updateMessageStep(step)
+          if (messages?.length > 0) {
+            messages.forEach((m) => this.appendStepMessage(step.id, m))
+          }
+        })
         break
       }
       case ChatGatewayEvent.ChainEnd: {

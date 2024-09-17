@@ -205,9 +205,10 @@ References documents:
 
 	streamGraphEvents(input: string, answerId: string) {
 		const eventStack: string[] = []
-		let toolId = ''
+		// let toolId = ''
 		let stepMessage = null
-		// let prevEvent = ''
+		let prevEvent = ''
+		let toolCalls = null
 		return new Observable((subscriber) => {
 			from(
 				this.graph.streamEvents(
@@ -232,16 +233,16 @@ References documents:
 				)
 			).pipe(
 				map(({ event, data, ...rest }: any) => {
-					// if (event === 'on_chat_model_stream') {
-					// 	if (prevEvent === 'on_chat_model_stream') {
-					// 		process.stdout.write('.')
-					// 	} else {
-					// 		console.log('on_chat_model_stream')
-					// 	}
-					// } else {
-					// 	console.log(event)
-					// }
-					// prevEvent = event
+					if (event === 'on_chat_model_stream') {
+						if (prevEvent === 'on_chat_model_stream') {
+							process.stdout.write('.')
+						} else {
+							console.log('on_chat_model_stream')
+						}
+					} else {
+						console.log(event)
+					}
+					prevEvent = event
 					switch (event) {
 						case 'on_chain_start': {
 							eventStack.push(event)
@@ -253,27 +254,41 @@ References documents:
 							break
 						}
 						case 'on_chain_end': {
-							const _event = eventStack.pop()
-							// 当调用 Tool 报错异常时会跳过 on_tool_end 事件，直接到此事件
+							let _event = eventStack.pop()
 							if (_event === 'on_tool_start') {
-								eventStack.pop()
-								if (stepMessage) {
-									stepMessage.status = 'done'
+								// 当调用 Tool 报错异常时会跳过 on_tool_end 事件，直接到此事件
+								while(_event === 'on_tool_start') {
+									_event = eventStack.pop()
 								}
-								return {
-									event: ChatGatewayEvent.ToolEnd,
-									data: {
-										id: toolId,
-										role: 'tool',
-										status: 'done'
+								// Clear all error tool calls
+								const toolMessages: CopilotMessageGroup[] = []
+								if (toolCalls) {
+									Object.keys(toolCalls).filter((id) => !!toolCalls[id]).forEach((id) => {
+										this.updateStep(id, {status: 'error'})
+										toolMessages.push({
+											id,
+											role: 'tool',
+											status: 'error'
+										})
+									})
+									toolCalls = null
+									if (toolMessages.length) {
+										this.logger.debug(`Tool call error:`)
+										this.logger.debug(data, rest)
+
+										return {
+											event: ChatGatewayEvent.ToolEnd,
+											data: toolMessages
+										}
 									}
 								}
 							}
+							
+							// All chains end
 							if (_event !== 'on_chain_start') {
 								eventStack.pop()
 							}
 							if (!eventStack.length) {
-								
 								return {
 									event: ChatGatewayEvent.ChainEnd,
 									data: {
@@ -309,9 +324,14 @@ References documents:
 						}
 						case 'on_tool_start': {
 							this.logger.debug(`Tool call '` + rest.name + '\':')
-							this.logger.debug(data)
+							this.logger.debug(data, rest)
 							eventStack.push(event)
-							toolId = rest.run_id,
+							// toolId = rest.run_id,
+
+							// Tools currently called in parallel
+							toolCalls ??= {}
+							toolCalls[rest.run_id] = data
+
 							stepMessage = {
 								id: rest.run_id,
 								name: rest.name,
@@ -332,8 +352,11 @@ References documents:
 							}
 						}
 						case 'on_tool_end': {
-							this.logger.debug(`Tool call end'` + rest.name + '\':')
-							this.logger.debug(data)
+							this.logger.debug(`Tool call end '` + rest.name + '\':')
+							// this.logger.debug(data)
+
+							// Clear finished tool call
+							toolCalls[rest.run_id] = null
 
 							const _event = eventStack.pop()
 							if (_event !== 'on_tool_start') {
@@ -526,7 +549,12 @@ References documents:
 			this.message.messages[index] = { ...this.message.messages[index], ...step }
 		}
 	}
-
+	/**
+	 * Add messages to tool call step message
+	 * 
+	 * @param id 
+	 * @param message 
+	 */
 	addStepMessage(id: string, message: CopilotBaseMessage) {
 		const index = this.message.messages.findIndex((item) => item.id === id)
 		if (index > -1) {

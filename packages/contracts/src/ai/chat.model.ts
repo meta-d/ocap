@@ -69,7 +69,7 @@ export type ChatGatewayMessage = {
   data: ChatUserMessage
 } | {
   event: ChatGatewayEvent.ToolStart | ChatGatewayEvent.ToolEnd
-  data: CopilotMessageGroup
+  data: CopilotMessageGroup | CopilotMessageGroup[]
 } | {
   event: ChatGatewayEvent.ChainStart | ChatGatewayEvent.ChainEnd
   data: {
@@ -123,7 +123,7 @@ export type CopilotChatMessage = CopilotBaseMessage & {
 }
 
 export interface CopilotMessageGroup extends CopilotBaseMessage {
-  messages: CopilotChatMessage[]
+  messages?: CopilotChatMessage[]
 }
 
 export type JSONValue =
