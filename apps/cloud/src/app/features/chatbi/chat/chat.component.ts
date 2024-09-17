@@ -28,6 +28,7 @@ import { ChatbiService } from '../chatbi.service'
 import { injectExamplesAgent } from '../copilot'
 import { ChatbiInputComponent } from '../input/input.component'
 import { ChatLoadingComponent } from '../../../@shared/copilot'
+import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,
@@ -55,12 +56,14 @@ import { ChatLoadingComponent } from '../../../@shared/copilot'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatbiChatComponent {
+  readonly appService = inject(AppService)
   readonly translate = inject(TranslateService)
   readonly chatbiService = inject(ChatbiService)
   readonly examplesAgent = injectExamplesAgent()
 
   readonly chatContent = viewChild('chatContent', { read: ElementRef<HTMLDivElement> })
 
+  readonly lang = this.appService.lang
   readonly examples = this.chatbiService.examples
 
   readonly cube = this.chatbiService.entity
