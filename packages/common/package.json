@@ -4,6 +4,7 @@
   "type": "commonjs",
   "dependencies": {
     "@nestjs/typeorm": "^8.0.3",
+    "short-unique-id": "^4.4.4",
     "xlsx": "^0.18.5"
   }
 }
