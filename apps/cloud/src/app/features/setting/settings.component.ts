@@ -82,6 +82,14 @@ export class PACSettingComponent {
           }
         },
         {
+          link: 'integration',
+          label: 'Integration',
+          icon: 'hub',
+          data: {
+            permissionKeys: [PermissionsEnum.INTEGRATION_EDIT]
+          }
+        },
+        {
           link: 'users',
           label: 'User',
           icon: 'people',

@@ -27,6 +27,7 @@ import {
 	Language,
 	StorageFile,
 	SecretToken,
+	Integration
 } from './internal';
 
 export const coreEntities = [
@@ -58,4 +59,5 @@ export const coreEntities = [
 	CustomSmtp,
 	StorageFile,
 	SecretToken,
+	Integration
 ];

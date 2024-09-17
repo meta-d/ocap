@@ -37,4 +37,5 @@ export * from '../../storage-file/storage-file.entity'
 export * from '../../storage-file/storage-file.subscriber'
 export * from '../../secret-token/secret-token.entity'
 export * from '../../tags/tag.subscriber'
+export * from '../../integration/integration.entity'
 //core subscribers

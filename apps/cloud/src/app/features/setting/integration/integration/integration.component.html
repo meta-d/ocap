@@ -1,0 +1,36 @@
+<h2 class="pac-page-title">{{ 'PAC.Integration.Integrations' | translate: {Default: 'Integrations' } }}</h2>
+
+<div class="filter-bar p-2 flex items-center gap-4">
+    <span class="flex-1"></span>
+  
+    <div ngmButtonGroup >
+      <button mat-mini-fab [matTooltip]=" 'PAC.KEY_WORDS.Save' | translate: {Default: 'Save' }"
+        [disabled]="formGroup.invalid" 
+          (click)="upsert()">
+          <mat-icon fontSet="material-icons-outlined">save</mat-icon>
+      </button>
+    </div>
+</div>
+
+<div class="flex-1 overflow-auto">
+  <form class="flex flex-col gap-4 p-4" [formGroup]="formGroup">
+    <ngm-input class="flex-1" [label]="'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'}"
+      formControlName="name"
+    />
+    <ngm-select class="flex-1" [label]="'PAC.Copilot.Examples.BusinessRole' | translate: {Default: 'Business Role'}" valueKey="key"
+        [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+        formControlName="provider"
+        [selectOptions]="providers()"
+    />
+
+    @if (schema(); as fields) {
+      <formly-form [form]="options"
+        [fields]="fields"
+      />
+      } @else {
+        <list-content-loader />
+      }
+  </form>
+
+  <div>{{webhookUrl()}}</div>
+</div>

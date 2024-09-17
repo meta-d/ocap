@@ -23,7 +23,7 @@ const routes: Routes = [
         path: 'account',
         component: PACAccountComponent,
         data: {
-          title: 'settings/account',
+          title: 'settings/account'
         },
         children: [
           {
@@ -35,15 +35,15 @@ const routes: Routes = [
             path: 'profile',
             component: PACAccountProfileComponent,
             data: {
-              title: 'settings/account/profile',
-            },
+              title: 'settings/account/profile'
+            }
           },
           {
             path: 'password',
             component: PACAccountPasswordComponent,
             data: {
-              title: 'settings/account/password',
-            },
+              title: 'settings/account/password'
+            }
           }
         ]
       },
@@ -141,50 +141,62 @@ const routes: Routes = [
         path: 'tenant',
         loadChildren: () => import('./tenant/tenant.module').then((m) => m.TenantModule),
         data: {
-          title: 'settings/tenant',
+          title: 'settings/tenant'
         }
       },
       {
         path: 'organizations',
         loadChildren: () => import('./organizations/organizations.module').then((m) => m.OrganizationsModule),
         data: {
-          title: 'settings/organizations',
+          title: 'settings/organizations'
         }
       },
       {
         path: 'email-templates',
         loadChildren: () => import('./email-templates/email-templates.module').then((m) => m.EmailTemplatesModule),
         data: {
-          title: 'settings/email-templates',
+          title: 'settings/email-templates'
         }
       },
       {
         path: 'custom-smtp',
         loadChildren: () => import('./custom-smtp/custom-smtp.module').then((m) => m.CustomSmtpModule),
         data: {
-          title: 'settings/custom-smtp',
+          title: 'settings/custom-smtp'
         }
       },
       {
         path: 'copilot',
         loadChildren: () => import('./copilot/routing').then((m) => m.default),
         data: {
-          title: 'settings/copilot',
+          title: 'settings/copilot'
         }
       },
       {
         path: 'chatbi',
         loadChildren: () => import('./chatbi/routing').then((m) => m.default),
         data: {
-          title: 'settings/chatbi',
+          title: 'settings/chatbi'
         }
       },
       {
         path: 'knowledgebase',
         loadChildren: () => import('./knowledgebase/routing').then((m) => m.default),
         data: {
-          title: 'settings/knowledgebase',
+          title: 'settings/knowledgebase'
         }
+      },
+      {
+        path: 'integration',
+        loadChildren: () => import('./integration/routing').then((m) => m.default),
+        data: {
+          title: 'settings/integration',
+          permissions: {
+            only: [PermissionsEnum.INTEGRATION_EDIT],
+            redirectTo
+          }
+        },
+        canActivate: [NgxPermissionsGuard]
       }
     ]
   }

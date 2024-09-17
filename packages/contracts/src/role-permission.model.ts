@@ -52,7 +52,8 @@ export enum PermissionsEnum {
   ORG_CONTACT_VIEW = 'ORG_CONTACT_VIEW',
   // ORG_COPILOT_EDIT = 'ORG_COPILOT_EDIT',
   ORG_DEMO_EDIT = 'ORG_DEMO_EDIT', // Orgnization demo edit permission
-  // INTEGRATION_VIEW = 'INTEGRATION_VIEW',
+  INTEGRATION_EDIT = 'INTEGRATION_EDIT',
+  
   FILE_STORAGE_VIEW = 'FILE_STORAGE_VIEW',
   SMS_GATEWAY_VIEW = 'SMS_GATEWAY_VIEW',
   CUSTOM_SMTP_VIEW = 'CUSTOM_SMTP_VIEW',
@@ -72,7 +73,7 @@ export const PermissionGroups = {
     PermissionsEnum.VIEW_ALL_EMAILS,
     PermissionsEnum.VIEW_ALL_EMAIL_TEMPLATES,
     // PermissionsEnum.ORG_HELP_CENTER_EDIT,
-    // PermissionsEnum.ORG_CONTACT_EDIT,
+    PermissionsEnum.INTEGRATION_EDIT,
     // PermissionsEnum.ORG_CONTACT_VIEW,
     PermissionsEnum.ORG_DEMO_EDIT,
     // PermissionsEnum.VIEW_ALL_ACCOUNTING_TEMPLATES,

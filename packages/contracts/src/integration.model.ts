@@ -1,8 +1,7 @@
-import { IOrganizationUpdateInput } from './index';
 import {
-	IBaseEntityModel,
 	IBasePerTenantAndOrganizationEntityModel
 } from './base-entity.model';
+import { IOrganizationUpdateInput } from './index';
 import { IOrganizationProjectsUpdateInput } from './organization-projects.model';
 import { ITag } from './tag-entity.model';
 
@@ -44,24 +43,14 @@ export interface IIntegrationTenant extends IBasePerTenantAndOrganizationEntityM
 	settings?: IIntegrationSetting[];
 }
 
-export interface IIntegration {
+export interface IIntegration extends IBasePerTenantAndOrganizationEntityModel {
 	name: string;
-	imgSrc: string;
-	isComingSoon?: boolean;
-	isPaid?: boolean;
-	version?: string;
-	docUrl?: string;
-	isFreeTrial?: boolean;
-	freeTrialPeriod?: number;
-	order?: number;
-	integrationTypes?: IIntegrationType[];
-	tags?: ITag[];
-}
+	slug: string;
+	provider: IntegrationEnum
 
-export interface IIntegrationType extends IBaseEntityModel {
-	name: string;
-	groupName: string;
-	order: number;
+	options?: any
+
+	tags?: ITag[];
 }
 
 export interface IIntegrationFilter {
@@ -93,7 +82,8 @@ export interface IIntegrationTenantCreateDto
 
 export enum IntegrationEnum {
 	UPWORK = 'Upwork',
-	HUBSTAFF = 'Hubstaff'
+	HUBSTAFF = 'Hubstaff',
+	LARK = 'Lark'
 }
 
 export enum IntegrationEntity {
@@ -189,4 +179,21 @@ export interface IEntitySettingToSync {
 export interface IDateRangeActivityFilter {
 	start: Date;
 	end: Date;
+}
+
+export const INTEGRATION_PROVIDERS = {
+	[IntegrationEnum.LARK]: {
+		name: IntegrationEnum.LARK,
+		schema: {
+			type: 'object',
+			properties: {
+				apiKey: { type: 'string', },
+			},
+			required: ['apiKey', 'apiHost'],
+      		secret: ['apiKey']
+		},
+		webhookUrl: (integration: IIntegration, baseUrl: string) => {
+			return `${baseUrl}/api/lark/webhook/${integration.id}`
+		}
+	}
 }

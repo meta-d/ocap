@@ -304,6 +304,7 @@
       "AddCertifications": "添加认证",
       "UserProfile": "用户配置",
       "Logout": "退出账号",
+      "Integration": "集成",
       "HOME": {
         "TODAY": "今天",
         "Catalog": "目录",
@@ -1642,6 +1643,10 @@
       "Permission_Private": "私有",
       "Permission_Organization": "组织内",
       "Permission_Public": "公开"
+    },
+    "Integration": {
+      "Integrations": "集成",
+      "AddIntegration": "添加集成"
     },
     "title": {
       "short": "分析云"

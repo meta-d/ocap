@@ -37,6 +37,7 @@ import { TenantSettingModule } from './tenant/tenant-setting'
 import { TenantModule } from './tenant/tenant.module'
 import { UserOrganizationModule } from './user-organization/user-organization.module'
 import { UserModule } from './user/index'
+import { IntegrationModule } from './integration/integration.module'
 
 @Module({
 	imports: [
@@ -89,6 +90,7 @@ import { UserModule } from './user/index'
 		CustomSmtpModule,
 		LanguageModule,
 		StorageFileModule,
+		IntegrationModule,
 		IntegrationLarkModule,
 	],
 	controllers: [AppController],

@@ -61,8 +61,8 @@ export async function bootstrap() {
 	const analyticsService = app.select(AnalyticsModule).get(AnalyticsService)
 	await analyticsService.seedDBIfEmpty()
 	// Webhook for lark
-	const larkService = app.select(IntegrationLarkModule).get(LarkService)
-	app.use('/api/lark/webhook/event', larkService.webhookEventDispatcher)
+	// const larkService = app.select(IntegrationLarkModule).get(LarkService)
+	// app.use('/api/lark/webhook/:id', larkService.webhookEventMiddleware)
 
 	// const subscriptionService = app.select(ServerAppModule).get(SubscriptionService)
 	// subscriptionService.setupJobs()
