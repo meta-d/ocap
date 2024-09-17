@@ -25,7 +25,13 @@ module.exports = {
           700: '#455A64',
           800: '#37474F',
           900: '#263238'
-        }
+        },
+        'token-main-surface-primary': 'var(--main-surface-primary)',
+        'token-main-surface-secondary': 'var(--main-surface-secondary)',
+        'token-main-surface-low': 'var(--ngm-color-surface-container-low)',
+        'token-text-secondary': 'var(--text-secondary)',
+        'token-border-medium': 'var(--border-medium)',
+        'token-border-light': 'var(--border-light)',
       }
     },
     fontFamily: {

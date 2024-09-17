@@ -1,11 +1,12 @@
+import { CopilotRoleModule } from '@metad/server-ai'
 import { SharedModule, TenantModule } from '@metad/server-core'
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { RouterModule } from 'nest-router'
+import { ChatBIModelController } from './chatbi-model.controller'
 import { ChatBIModel } from './chatbi-model.entity'
 import { ChatBIModelService } from './chatbi-model.service'
-import { ChatBIModelController } from './chatbi-model.controller'
 
 @Module({
 	imports: [
@@ -13,16 +14,11 @@ import { ChatBIModelController } from './chatbi-model.controller'
 		forwardRef(() => TypeOrmModule.forFeature([ChatBIModel])),
 		forwardRef(() => TenantModule),
 		SharedModule,
-		CqrsModule
+		CqrsModule,
+		CopilotRoleModule
 	],
-	controllers: [
-        ChatBIModelController
-    ],
-	providers: [
-        ChatBIModelService
-    ],
-	exports: [
-		ChatBIModelService
-	]
+	controllers: [ChatBIModelController],
+	providers: [ChatBIModelService],
+	exports: [ChatBIModelService]
 })
 export class ChatBIModelModule {}

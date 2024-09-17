@@ -1,16 +1,23 @@
-import { Signal, inject } from '@angular/core'
+import { inject, Signal } from '@angular/core'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { HumanMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { ChatOpenAI } from '@langchain/openai'
-import { CalculationType, DataSettings, DataSettingsSchema, EntityType, markdownModelCube, MeasureControlProperty } from '@metad/ocap-core'
+import {
+  CalculationType,
+  DataSettings,
+  DataSettingsSchema,
+  EntityType,
+  markdownModelCube,
+  MeasureControlProperty
+} from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { Route } from 'apps/cloud/src/app/@core/copilot'
 import { nanoid } from 'nanoid'
-import { z } from 'zod'
 import { NGXLogger } from 'ngx-logger'
+import { z } from 'zod'
 import { MeasureControlSchema } from '../schema'
-import { MEASURE_CONTROL_AGENT_NAME, CalculationAgentState } from './types'
+import { CalculationAgentState, MEASURE_CONTROL_AGENT_NAME } from './types'
 
 export function injectCreateMeasureControlWorker(
   defaultModelCube: Signal<{ dataSource: string; modelId: string; cube: EntityType }>,
@@ -18,7 +25,7 @@ export function injectCreateMeasureControlWorker(
 ) {
   const createMeasureControlTool = injectCreateMeasureControlTool(defaultModelCube, callback)
 
-  return async ({ llm }: { llm: ChatOpenAI }) => {
+  return async ({ llm }: { llm: BaseChatModel }) => {
     const systemPrompt =
       `You are a data analyst. Given the following user request, please create a virtual measure that allows the selection among multiple measures.` +
       ` The name of new measure should be unique with existing measures.` +
@@ -51,10 +58,13 @@ export function injectCreateMeasureControlTool(
       dataSettings: DataSettingsSchema.optional(),
       property: MeasureControlSchema
     }),
-    func: async ({dataSettings, property}) => {
+    func: async ({ dataSettings, property }) => {
       const key = property.__id__ || nanoid()
       try {
-        const _dataSettings = (dataSettings as DataSettings) ?? {dataSource: defaultModelCube().dataSource, entitySet: defaultModelCube().cube?.name}
+        const _dataSettings = (dataSettings as DataSettings) ?? {
+          dataSource: defaultModelCube().dataSource,
+          entitySet: defaultModelCube().cube?.name
+        }
 
         storyService.addCalculationMeasure({
           dataSettings: _dataSettings,

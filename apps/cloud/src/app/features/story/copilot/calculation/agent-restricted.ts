@@ -1,16 +1,22 @@
 import { Signal, inject } from '@angular/core'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { ChatOpenAI } from '@langchain/openai'
 import { injectDimensionMemberTool, makeCubeRulesPrompt } from '@metad/core'
-import { CalculationType, DataSettings, DataSettingsSchema, EntityType, RestrictedMeasureProperty } from '@metad/ocap-core'
+import {
+  CalculationType,
+  DataSettings,
+  DataSettingsSchema,
+  EntityType,
+  RestrictedMeasureProperty
+} from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { Route } from 'apps/cloud/src/app/@core/copilot'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
 import { RestrictedMeasureSchema } from '../schema'
-import { MEMBER_RETRIEVER_PROMPT } from './types'
 import { injectPickCubeTool } from '../tools'
+import { MEMBER_RETRIEVER_PROMPT } from './types'
 
 export function injectCreateRestrictedMeasureWorker(
   defaultModelCube: Signal<{ dataSource: string; cube: EntityType }>,
@@ -22,17 +28,17 @@ export function injectCreateRestrictedMeasureWorker(
 
   const tools = [pickCubeTool, memberRetrieverTool, createRestrictedMeasureTool]
 
-  return async ({ llm }: { llm: ChatOpenAI }) => {
+  return async ({ llm }: { llm: BaseChatModel }) => {
     const systemPrompt =
-    `You are a data analyst. Please create a measure that aggregate values based on restrictions imposed by dimension members.` +
-    ` It is useful when you need to filter or limit the data aggregation to specific members of a dimension.` +
-    MEMBER_RETRIEVER_PROMPT +
-    ` The name of new calculation measure should be unique with existing measures.` +
-    ` Use the dimensions, hierarchy, level and other names accurately according to the cube information provided.` +
-    makeCubeRulesPrompt() +
-    `\nTry to perform derivative calculations based on existing measures.` +
-    `\n\n{role}` +
-    `\n\n{context}`
+      `You are a data analyst. Please create a measure that aggregate values based on restrictions imposed by dimension members.` +
+      ` It is useful when you need to filter or limit the data aggregation to specific members of a dimension.` +
+      MEMBER_RETRIEVER_PROMPT +
+      ` The name of new calculation measure should be unique with existing measures.` +
+      ` Use the dimensions, hierarchy, level and other names accurately according to the cube information provided.` +
+      makeCubeRulesPrompt() +
+      `\nTry to perform derivative calculations based on existing measures.` +
+      `\n\n{role}` +
+      `\n\n{context}`
 
     return await Route.createWorkerAgent(llm, tools, systemPrompt)
   }
@@ -55,7 +61,10 @@ export function injectCreateRestrictedMeasureTool(
     func: async ({ dataSettings, property }) => {
       const key = property.__id__ || nanoid()
       try {
-        const _dataSettings = (dataSettings as DataSettings) ?? {dataSource: defaultModelCube().dataSource, entitySet: defaultModelCube().cube?.name}
+        const _dataSettings = (dataSettings as DataSettings) ?? {
+          dataSource: defaultModelCube().dataSource,
+          entitySet: defaultModelCube().cube?.name
+        }
         storyService.addCalculationMeasure({
           dataSettings: _dataSettings,
           calculation: {

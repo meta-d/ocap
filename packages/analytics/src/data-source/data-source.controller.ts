@@ -3,9 +3,11 @@ import {
 	CrudController,
 	CurrentUser,
 	EmployeeId,
+	PaginationParams,
 	ParseJsonPipe,
 	PermissionGuard,
 	Permissions,
+	UseValidationPipe,
 	UUIDValidationPipe
 } from '@metad/server-core'
 import {
@@ -64,6 +66,7 @@ export class DataSourceController extends CrudController<DataSource> {
 	@UseGuards(PermissionGuard)
 	@Permissions(AnalyticsPermissionsEnum.DATA_SOURCE_VIEW)
 	@Get()
+	@UseValidationPipe({ transform: true })
 	async findAlls(
 		@Query('$query', ParseJsonPipe) data: any,
 		@CurrentUser() user: IUser,
@@ -95,9 +98,10 @@ export class DataSourceController extends CrudController<DataSource> {
 	@Get(':id')
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$relations', ParseJsonPipe) relations: PaginationParams<DataSource>['relations'],
 		@Query('$query', ParseJsonPipe) options: FindOneOptions<DataSource>
 	): Promise<DataSource> {
-		return this.dsService.findOne(id, options)
+		return this.dsService.findOne(id, {relations, ...options})
 	}
 
 	@Put(':id')

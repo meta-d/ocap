@@ -17,9 +17,11 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
 			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_EDIT,
 			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_VIEW,
-			AnalyticsPermissionsEnum.INSIGHT_EDIT,
-			AnalyticsPermissionsEnum.INSIGHT_VIEW,
-			AnalyticsPermissionsEnum.CERTIFICATION_EDIT
+			AnalyticsPermissionsEnum.CHATBI_VIEW,
+			AnalyticsPermissionsEnum.CHATBI_EDIT,
+			AnalyticsPermissionsEnum.CERTIFICATION_EDIT,
+			AnalyticsPermissionsEnum.DATA_FACTORY_VIEW,
+			AnalyticsPermissionsEnum.DATA_FACTORY_EDIT
         ],
 	},
 	{
@@ -38,9 +40,11 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
 			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_EDIT,
 			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_VIEW,
-			AnalyticsPermissionsEnum.INSIGHT_EDIT,
-			AnalyticsPermissionsEnum.INSIGHT_VIEW,
-			AnalyticsPermissionsEnum.CERTIFICATION_EDIT
+			AnalyticsPermissionsEnum.CHATBI_VIEW,
+			AnalyticsPermissionsEnum.CHATBI_EDIT,
+			AnalyticsPermissionsEnum.CERTIFICATION_EDIT,
+			AnalyticsPermissionsEnum.DATA_FACTORY_VIEW,
+			AnalyticsPermissionsEnum.DATA_FACTORY_EDIT
         ],
 	},
 	{
@@ -58,8 +62,9 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_VIEW,
 			AnalyticsPermissionsEnum.SUBSCRIPTION_EDIT,
 			AnalyticsPermissionsEnum.SUBSCRIPTION_VIEW,
-			AnalyticsPermissionsEnum.INSIGHT_EDIT,
-			AnalyticsPermissionsEnum.INSIGHT_VIEW,
+			AnalyticsPermissionsEnum.CHATBI_VIEW,
+			AnalyticsPermissionsEnum.DATA_FACTORY_VIEW,
+			AnalyticsPermissionsEnum.DATA_FACTORY_EDIT
 		]
 	},
 	{
@@ -69,7 +74,7 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.STORIES_VIEW,
 			AnalyticsPermissionsEnum.INDICATOR_VIEW,
 			AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
-			AnalyticsPermissionsEnum.INSIGHT_VIEW,
+			AnalyticsPermissionsEnum.CHATBI_VIEW,
 		]
 	},
     {
@@ -88,7 +93,11 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
 			AnalyticsPermissionsEnum.SUBSCRIPTION_EDIT,
 			AnalyticsPermissionsEnum.SUBSCRIPTION_VIEW,
-			AnalyticsPermissionsEnum.CERTIFICATION_EDIT
+			AnalyticsPermissionsEnum.CHATBI_VIEW,
+			AnalyticsPermissionsEnum.CHATBI_EDIT,
+			AnalyticsPermissionsEnum.CERTIFICATION_EDIT,
+			AnalyticsPermissionsEnum.DATA_FACTORY_VIEW,
+			AnalyticsPermissionsEnum.DATA_FACTORY_EDIT
         ]
     }
 ]

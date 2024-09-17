@@ -1,7 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EmployeeModule, SharedModule, TenantModule } from '@metad/server-core';
+import { SharedModule, TenantModule } from '@metad/server-core';
 import { RouterModule } from 'nest-router';
 import { IndicatorMarketController } from './indicator-market.controller';
 import { IndicatorMarket } from './indicator-market.entity';
@@ -17,7 +17,7 @@ import { IndicatorMarketService } from './indicator-market.service';
     forwardRef(() => TenantModule),
     SharedModule,
     CqrsModule,
-    EmployeeModule
+    
   ],
   controllers: [IndicatorMarketController],
   providers: [IndicatorMarketService]

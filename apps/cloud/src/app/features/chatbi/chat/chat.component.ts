@@ -22,13 +22,12 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 import { nonBlank, nonNullable } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
-import { debounceTime, distinctUntilChanged, filter, map, startWith } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs'
 import { ChatbiAnswerComponent } from '../answer/answer.component'
 import { ChatbiService } from '../chatbi.service'
 import { injectExamplesAgent } from '../copilot'
 import { ChatbiInputComponent } from '../input/input.component'
-import { ChatbiLoadingComponent } from '../loading/loading.component'
-import { AppService } from '../../../app.service'
+import { ChatLoadingComponent } from '../../../@shared/copilot'
 
 @Component({
   standalone: true,
@@ -48,7 +47,7 @@ import { AppService } from '../../../app.service'
 
     ChatbiInputComponent,
     ChatbiAnswerComponent,
-    ChatbiLoadingComponent
+    ChatLoadingComponent
   ],
   selector: 'pac-chatbi-chat',
   templateUrl: 'chat.component.html',
@@ -58,12 +57,10 @@ import { AppService } from '../../../app.service'
 export class ChatbiChatComponent {
   readonly translate = inject(TranslateService)
   readonly chatbiService = inject(ChatbiService)
-  readonly appService = inject(AppService)
   readonly examplesAgent = injectExamplesAgent()
 
   readonly chatContent = viewChild('chatContent', { read: ElementRef<HTMLDivElement> })
 
-  readonly lang = this.appService.lang
   readonly examples = this.chatbiService.examples
 
   readonly cube = this.chatbiService.entity

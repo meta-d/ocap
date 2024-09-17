@@ -1,6 +1,6 @@
 import { IUser } from '@metad/contracts'
 import { Exclude, Expose, Transform } from 'class-transformer'
-import { UserPublicDTO } from '../../user'
+import { UserPublicDTO } from '../../user/dto'
 import { Employee } from '../employee.entity'
 
 @Exclude()

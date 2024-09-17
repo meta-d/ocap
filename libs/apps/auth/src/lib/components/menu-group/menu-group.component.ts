@@ -30,6 +30,8 @@ export class PacMenuGroupComponent {
   @HostBinding('class.collapsed')
   @Input() isCollapsed = false
 
+  readonly isMobile = input<boolean>(false)
+
   readonly menus = input.required<PacMenuItem[]>()
 
   @Output() clicked = new EventEmitter()

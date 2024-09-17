@@ -29,7 +29,7 @@ export class NgmTagsComponent implements ControlValueAccessor {
 
   @Input() tags: ITagOption<string>[] = []
   @Input() exclude = false
-  @Input() color: string
+  @Input() color: 'primary' | 'blue' | 'green' | 'yellow' | 'red' | 'gray'
   @HostBinding('class.selectable')
   @Input() get selectable() {
     return this._selectable

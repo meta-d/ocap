@@ -1,7 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SharedModule, TenantModule, EmployeeModule, UserModule } from '@metad/server-core';
+import { SharedModule, TenantModule, UserModule } from '@metad/server-core';
 import { RouterModule } from 'nest-router';
 import { StoryWidgetController } from './story-widget.controller';
 import { StoryWidget } from './story-widget.entity';
@@ -17,7 +17,6 @@ import { BusinessAreaModule } from '../business-area';
     forwardRef(() => TenantModule),
     SharedModule,
     CqrsModule,
-    EmployeeModule,
     UserModule,
     BusinessAreaModule
   ],

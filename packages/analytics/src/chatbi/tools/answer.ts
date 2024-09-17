@@ -46,7 +46,7 @@ import { createDualAxisChart, createSeriesChart } from './charts/combination'
 
 const TABLE_PAGE_SIZE = 10
 
-type ChatAnswer = {
+export type ChatAnswer = {
 	preface: string
 	visualType: 'Chart' | 'Table' | 'KPI'
 	dataSettings: DataSettings

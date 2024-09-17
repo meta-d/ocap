@@ -1,4 +1,4 @@
-import { EmployeeModule, RedisModule, SharedModule, TenantModule, UserModule } from '@metad/server-core'
+import { RedisModule, SharedModule, TenantModule, UserModule } from '@metad/server-core'
 import { Module, forwardRef } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -26,7 +26,6 @@ import { SemanticModelRoleModule } from './role/role.module'
 		SharedModule,
 		CqrsModule,
 		UserModule,
-		EmployeeModule,
 		DataSourceModule,
 		SemanticModelRoleModule,
 		SemanticModelCacheModule,

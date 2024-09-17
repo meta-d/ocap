@@ -43,6 +43,7 @@
 
     <pac-menu class="flex-1 p-2 flex overflow-hidden hover:overflow-auto"
       [isCollapsed]="isCollapsed"
+      [isMobile]="isMobile()"
       [menus]="menus()"
       (clicked)="onMenuClicked($event, isMobile())">
       <pac-notification class="flex justify-end"/>

@@ -1,145 +1,28 @@
-<form [formGroup]="formGroup" class="w-full flex flex-col items-start p-4 overflow-hidden"
-    (ngSubmit)="onSubmit()">
-    <mat-slide-toggle class="my-8" formControlName="enabled">
-        {{ 'PAC.Copilot.EnableCopilot' | translate: {Default: 'Enable Copilot'} }}
-    </mat-slide-toggle>
+<mat-accordion >
+    <mat-expansion-panel hideToggle class="mat-elevation-z">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Primary' | translate: {Default: 'Primary'} }})</mat-panel-title>
+        <mat-panel-description></mat-panel-description>
+      </mat-expansion-panel-header>
+      
+      <pac-copilot-form [role]="AiProviderRole.Primary"></pac-copilot-form>
+    </mat-expansion-panel>
 
-    <mat-form-field appearance="fill">
-        <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
-        <mat-select formControlName="provider">
-          <mat-option [value]="AiProvider.OpenAI">OpenAI</mat-option>
-          <mat-option [value]="AiProvider.Azure">Azure</mat-option>
-          <mat-option [value]="AiProvider.Ollama">Ollama</mat-option>
-        </mat-select>
-    </mat-form-field>
+    <mat-expansion-panel hideToggle class="mat-elevation-z">
+        <mat-expansion-panel-header>
+            <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Secondary' | translate: {Default: 'Secondary'} }})</mat-panel-title>
+          <mat-panel-description></mat-panel-description>
+        </mat-expansion-panel-header>
+        
+        <pac-copilot-form [role]="AiProviderRole.Secondary"></pac-copilot-form>
+    </mat-expansion-panel>
 
-    <input type="text" id="ai-username" name="ai-username" aria-hidden="true" style="display: none;">
-    <div class="w-[600px] max-w-full flex justify-start items-center gap-4">
-        <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.APIKey' | translate: {Default: 'API Key'} }}
-            </mat-label>
-            <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password">
-        </mat-form-field>
-
-        <a mat-stroked-button [href]="providerHref[provider()]" target="_blank">
-            {{ 'PAC.Copilot.GetYourApiKey' | translate: {Default: 'Get your api key!'} }}
-        </a>
-    </div>
-
-    <div class="self-stretch flex justify-start items-center">
-        <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.APIHost' | translate: {Default: 'API Host'} }}
-            </mat-label>
-            <input name="copilot-apihost" id="copilot-apihost" matInput formControlName="apiHost" type="text">
-        </mat-form-field>
-    </div>
-
-    <div class="flex items-center gap-4">
-        <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
-            </mat-label>
-
-            <mat-select formControlName="defaultModel">
-            @for (model of models(); track model.id) {
-                <mat-option [value]="model.id">{{model.name}}</mat-option>
-            }
-            </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
-            </mat-label>
-            <input name="copilot-model" id="copilot-model" matInput formControlName="defaultModel" type="text">
-        </mat-form-field>
-    </div>
-
-    <div class="self-stretch flex justify-start items-center">
-        <mat-checkbox formControlName="showTokenizer">
-            {{ 'PAC.Copilot.ShowTokenizer' | translate: {Default: 'Show Tokenizer'} }}
-        </mat-checkbox>
-    </div>
-
-    <!-- <h2 class="text-lg py-4 mt-8">Secondary</h2> -->
-    <div formGroupName="secondary" class="w-full flex flex-col items-start">
-        <mat-slide-toggle class="my-8" formControlName="enabled">
-            {{ 'PAC.Copilot.EnableSecondaryProvider' | translate: {Default: 'Enable Secondary Provider'} }}
-        </mat-slide-toggle>
-
-      @if (enSecondary) {
-        <mat-form-field appearance="fill">
-            <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
-            <mat-select formControlName="provider">
-              <mat-option [value]="AiProvider.OpenAI">OpenAI</mat-option>
-              <mat-option [value]="AiProvider.Azure">Azure</mat-option>
-              <mat-option [value]="AiProvider.Ollama">Ollama</mat-option>
-              <mat-option [value]="AiProvider.DashScope">
-                {{ 'PAC.Copilot.Provider_DashScope' | translate: {Default: 'DashScope'} }}
-              </mat-option>
-            </mat-select>
-        </mat-form-field>
-
-        <input type="text" id="secondary-username" name="secondary-username" aria-hidden="true" style="display: none;">
-        <div class="w-[600px] max-w-full flex justify-start items-center gap-4">
-            <mat-form-field appearance="fill" class="flex-1">
-                <mat-label>
-                    {{ 'PAC.Copilot.APIKey' | translate: {Default: 'API Key'} }}
-                </mat-label>
-                <input name="secondary-apikey" id="secondary-apikey" matInput formControlName="apiKey" type="password" autocomplete="secondary-token">
-            </mat-form-field>
-
-            <a mat-stroked-button [href]="providerHref[secondaryProvider()]" target="_blank">
-                {{ 'PAC.Copilot.GetYourApiKey' | translate: {Default: 'Get your api key!'} }}
-            </a>
-        </div>
-
-        <div class="self-stretch flex justify-start items-center">
-            <mat-form-field appearance="fill" class="flex-1">
-                <mat-label>
-                    {{ 'PAC.Copilot.APIHost' | translate: {Default: 'API Host'} }}
-                </mat-label>
-                <input name="secondary-apihost" id="secondary-apihost" matInput formControlName="apiHost" type="text">
-            </mat-form-field>
-        </div>
-    
-        <div class="flex items-center gap-4">
-          <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
-            </mat-label>
-    
-            <mat-select formControlName="defaultModel">
-              @for (model of secondaryModels(); track model.id) {
-                <mat-option [value]="model.id">{{model.name}}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-          <span>Or</span>
-          <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
-            </mat-label>
-            <input name="secondary-model" id="secondary-model" matInput formControlName="defaultModel" type="text">
-          </mat-form-field>
-        </div>
-      }
-    </div>
-
-    <div class="self-stretch flex justify-start items-center mt-8">
-        <button mat-raised-button color="primary" class="ngm-rounded-full"
-            [disabled]="formGroup.invalid || formGroup.pristine"
-        >
-            <div class="flex items-center">
-              @if (saving()) {
-                <mat-spinner diameter="20" class="mr-2"></mat-spinner>
-              }
-                <span>
-                    {{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}
-                </span>
-            </div>
-            
-        </button>
-    </div>
-</form>
+    <mat-expansion-panel hideToggle class="mat-elevation-z">
+        <mat-expansion-panel-header>
+            <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Embedding' | translate: {Default: 'Embedding'} }})</mat-panel-title>
+            <mat-panel-description></mat-panel-description>
+        </mat-expansion-panel-header>
+        
+        <pac-copilot-form [role]="AiProviderRole.Embedding"></pac-copilot-form>
+    </mat-expansion-panel>
+</mat-accordion>

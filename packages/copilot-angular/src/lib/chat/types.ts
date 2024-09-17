@@ -1,5 +1,4 @@
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
-import { nanoid } from 'nanoid'
+import { CopilotChatMessageRoleEnum, nanoid } from '@metad/copilot'
 
 export const PlaceholderMessages = [
   {

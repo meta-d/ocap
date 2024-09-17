@@ -198,7 +198,7 @@ export class UserController extends CrudController<User> {
 	@Get('pagination')
 	@UsePipes(new ValidationPipe({ transform: true }))
 	async pagination(
-		@Query() filter: PaginationParams<IUser>
+		@Query() filter: PaginationParams<User>
 	): Promise<IPagination<User>> {
 		return this.userService.paginate(filter);
 	}

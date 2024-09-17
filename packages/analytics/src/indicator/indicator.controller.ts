@@ -1,6 +1,6 @@
 import { Body, ClassSerializerInterceptor, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, UseInterceptors } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { CrudController, ParseJsonPipe, UUIDValidationPipe } from '@metad/server-core';
+import { CrudController, PaginationParams, ParseJsonPipe, UUIDValidationPipe } from '@metad/server-core';
 import {
 	ApiTags,
 	ApiBearerAuth,
@@ -127,9 +127,10 @@ export class IndicatorController extends CrudController<Indicator> {
 	@Get(':id')
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$relations', ParseJsonPipe) relations: PaginationParams<Indicator>['relations'],
 		@Query('$query', ParseJsonPipe) options: FindOneOptions<Indicator>
 	): Promise<Indicator> {
-		return this.indicatorService.findOne(id, options);
+		return this.indicatorService.findOne(id, {relations, ...options});
 	}
 
 }

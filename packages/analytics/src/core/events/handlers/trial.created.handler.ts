@@ -23,8 +23,6 @@ export class TrialUserCreatedHandler
 	constructor(
 		@InjectRepository(DataSource)
 		private readonly dsRepository: Repository<DataSource>,
-		@InjectRepository(Employee)
-		private readonly employeeRepository: Repository<Employee>,
 		@InjectRepository(SemanticModel)
 		private readonly modelRepository: Repository<SemanticModel>,
 		@InjectRepository(Story)
@@ -44,9 +42,6 @@ export class TrialUserCreatedHandler
 	) {}
 
 	async handle(event: TrialUserCreatedEvent) {
-
-		// const employee = await this.employeeRepository.findOne(event.employeeId)
-
 		// await createLocalAgentDataSource(
 		// 	employee,
 		// 	this.dsRepository,

@@ -15,7 +15,6 @@ import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { CommandHandlers } from './commands/handlers'
 import { BasicStrategy, JwtStrategy, WsJwtStrategy, RefreshTokenStrategy } from './strategies'
-import { CopilotOrganizationModule } from '../copilot-organization'
 
 const providers = [AuthService, UserService, UserOrganizationService, EmailService]
 
@@ -39,7 +38,6 @@ const providers = [AuthService, UserService, UserOrganizationService, EmailServi
 		UserModule,
 		PasswordResetModule,
 		CqrsModule,
-		CopilotOrganizationModule
 	],
 	controllers: [AuthController],
 	providers: [

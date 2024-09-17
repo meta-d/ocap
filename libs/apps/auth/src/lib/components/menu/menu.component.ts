@@ -11,7 +11,9 @@ import { PacMenuItem } from '../types'
   imports: [CommonModule, PacMenuGroupComponent]
 })
 export class PacMenuComponent {
-  @Input() isCollapsed = false
+
+  readonly isMobile = input<boolean>(false)
+  readonly isCollapsed = input<boolean>(false)
 
   readonly menus = input.required<PacMenuItem[]>()
 

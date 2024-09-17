@@ -7,6 +7,7 @@ import {
 	setDefaultFeatures,
 	setDefaultRolePermissions
 } from '@metad/server-core'
+import { ALL_AI_ENTITIES, AiSubscribers, DEFAULT_ROLE_PERMISSIONS as AI_DEFAULT_ROLE_PERMISSIONS } from  '@metad/server-ai'
 import { Type } from '@nestjs/common'
 import { ALL_ENTITIES } from './entities/index'
 import { coreSubscribers as analyticsSubscribers } from './entities/subscribers'
@@ -15,11 +16,14 @@ import { ANALYTICS_ROLE_PERMISSIONS } from './role-permissions'
 
 export function prepare() {
 	const allEntities = coreEntities as Array<Type<any>>
-	allEntities.push(...ALL_ENTITIES)
+	allEntities.push(
+		...ALL_AI_ENTITIES,
+		...ALL_ENTITIES
+	)
 	setConfig({
 		dbConnectionOptions: {
 			entities: allEntities,
-			subscribers: [...coreSubscribers, ...analyticsSubscribers]
+			subscribers: [...coreSubscribers, ...AiSubscribers, ...analyticsSubscribers]
 		}
 	})
 
@@ -34,10 +38,10 @@ export function prepare() {
 			features.push(feature as IFeatureCreateInput)
 		}
 	})
-	setDefaultFeatures(features)
+	setDefaultFeatures(features);
 
 	// Append role permissions of analytics project into System default role permissions
-	ANALYTICS_ROLE_PERMISSIONS.forEach(({ role, defaultEnabledPermissions }) => {
+	[...AI_DEFAULT_ROLE_PERMISSIONS, ...ANALYTICS_ROLE_PERMISSIONS].forEach(({ role, defaultEnabledPermissions }) => {
 		setDefaultRolePermissions(role, defaultEnabledPermissions)
 	})
 }

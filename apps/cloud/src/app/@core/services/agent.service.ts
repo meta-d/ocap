@@ -7,6 +7,7 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { Socket, io } from 'socket.io-client'
 import { AuthStrategy } from '../auth'
+import { getWebSocketUrl } from '../utils'
 
 @Injectable({ providedIn: 'root' })
 export class AgentService {
@@ -103,8 +104,4 @@ export class AgentService {
       })
     )
   }
-}
-
-function getWebSocketUrl(url: string) {
-  return (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + url.replace('http:', '').replace('https:', '')
 }

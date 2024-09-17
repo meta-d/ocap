@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core'
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions'
 import { distinctUntilChanged, map } from 'rxjs/operators'
-import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Store, routeAnimations } from '../../@core'
+import { AIPermissionsEnum, AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Store, routeAnimations } from '../../@core'
 import { AppService } from '../../app.service'
 
 @Component({
@@ -43,7 +43,16 @@ export class PACSettingComponent {
           icon: 'assistant',
           data: {
             featureKey: FeatureEnum.FEATURE_COPILOT,
-            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
+            permissionKeys: [AIPermissionsEnum.COPILOT_EDIT]
+          }
+        },
+        {
+          link: 'knowledgebase',
+          label: 'Knowledgebase',
+          icon: 'school',
+          data: {
+            featureKey: FeatureEnum.FEATURE_COPILOT,
+            permissionKeys: [AIPermissionsEnum.KNOWLEDGEBASE_EDIT]
           }
         },
         {
@@ -52,13 +61,13 @@ export class PACSettingComponent {
           icon: 'try',
           data: {
             featureKey: FeatureEnum.FEATURE_COPILOT,
-            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
+            permissionKeys: [ AnalyticsPermissionsEnum.CHATBI_EDIT ]
           }
         },
         {
           link: 'business-area',
           label: 'Business Area',
-          icon: 'workspaces',
+          icon: 'business_center',
           data: {
             permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
           }
@@ -68,7 +77,7 @@ export class PACSettingComponent {
           label: 'Certification',
           icon: 'verified_user',
           data: {
-            permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
+            permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
             // permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
           }
         },
@@ -125,7 +134,7 @@ export class PACSettingComponent {
         {
           link: 'tenant',
           label: 'Tenant',
-          icon: 'storage',
+          icon: 'tenancy',
           data: {
             permissionKeys: [RolesEnum.SUPER_ADMIN]
           }

@@ -8,20 +8,26 @@
   }
 
   .tag {
+
+    @apply shadow-sm;
+
     &.primary {
       color: var(--ngm-color-on-primary-container);
     }
     &.blue {
-      @apply text-blue-500;
+      @apply text-blue-500 dark:text-blue-800;
     }
     &.green {
-      @apply text-green-500;
+      @apply text-green-500 dark:text-green-800;
     }
     &.red {
-      @apply text-red-500;
+      @apply text-red-500 dark:text-red-800;
     }
     &.yellow {
-      @apply text-yellow-500;
+      @apply text-yellow-500 dark:text-yellow-800;
+    }
+    &.gray {
+      @apply text-gray-500 dark:text-gray-800;
     }
   }
 
@@ -45,6 +51,9 @@
       &.yellow.selected {
         @apply bg-yellow-100;
       }
+      &.gray.selected {
+        @apply bg-gray-100;
+      }
     }
   }
 
@@ -54,23 +63,26 @@
         background-color: var(--ngm-color-primary-container);
       }
       &.blue {
-        @apply bg-blue-100;
+        @apply bg-blue-100 dark:bg-blue-100/80;
       }
       &.green {
-        @apply bg-green-100;
+        @apply bg-green-100 dark:bg-green-100/80;
       }
       &.red {
-        @apply bg-red-100;
+        @apply bg-red-100 dark:bg-red-100/80;
       }
       &.yellow {
-        @apply bg-yellow-100;
+        @apply bg-yellow-100 dark:bg-yellow-100/80;
+      }
+      &.gray {
+        @apply bg-gray-100 dark:bg-gray-100/80;
       }
     }
   }
 }
 
 .tag {
-  @apply px-3 py-1 rounded-lg text-base;
+  @apply px-3 py-1 rounded-lg;
 }
 
 ::ng-deep {

@@ -1,4 +1,4 @@
-import { BaseMessage, HumanMessage, isAIMessage, ToolMessage } from '@langchain/core/messages'
+import { AIMessage, BaseMessage, HumanMessage, isAIMessage, ToolMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
@@ -6,6 +6,7 @@ import { END } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { AgentState, createCopilotAgentState } from './types'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
 export const SUPERVISOR_NAME = 'Supervisor'
 export const TOOLS_NAME = 'tools'
@@ -98,7 +99,7 @@ export function createRouteFunctionDef(members: string[]) {
 }
 
 export async function createSupervisor(
-  llm: ChatOpenAI,
+  llm: BaseChatModel,
   members: { name: string; description: string }[],
   systemPrompt?: string
 ): Promise<Runnable> {
@@ -120,8 +121,7 @@ export async function createSupervisor(
 
   const supervisor = prompt
     .pipe(
-      llm.bind({
-        tools: [toolDef],
+      llm.bindTools([toolDef], {
         tool_choice: { type: 'function', function: { name: 'route' } }
       })
     )
@@ -133,7 +133,7 @@ export async function createSupervisor(
 }
 
 export async function createSupervisorAgent<S extends AgentState>(
-  llm: ChatOpenAI,
+  llm: BaseChatModel,
   members: { name: string; description: string }[],
   tools: DynamicStructuredTool[],
   system: string,
@@ -163,14 +163,15 @@ To perform a task, you can select one of the following:
 
   const callModel = async (state: S) => {
     // TODO: Auto-promote streaming.
-    const message = await modelRunnable.invoke(state)
+    const _message = await modelRunnable.invoke(state)
 
     const newState = {
-      messages: [message as BaseMessage]
+      messages: [_message as BaseMessage]
     } as State
 
-    if (isAIMessage(message) && message.tool_calls) {
-      if (message.tool_calls[0]?.name === RouteFunctionName) {
+    if (isAIMessage(_message)) {
+      const message = _message as AIMessage
+      if (message.tool_calls && message.tool_calls[0]?.name === RouteFunctionName) {
         newState.tool_call_id = message.tool_calls[0].id
         newState.next = message.tool_calls[0].args['next']
         newState.reasoning = message.tool_calls[0].args['reasoning']

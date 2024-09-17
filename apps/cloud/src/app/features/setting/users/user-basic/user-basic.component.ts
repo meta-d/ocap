@@ -3,9 +3,9 @@ import { ActivatedRoute } from '@angular/router'
 import { UsersService } from '@metad/cloud/state'
 import { IUserUpdateInput, LanguagesEnum } from '@metad/contracts'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { BasicInfoFormComponent, UserFormsModule } from 'apps/cloud/src/app/@shared/user/forms'
 import { ToastrService, User } from '../../../../@core'
 import { CreatedByPipe, MaterialModule, SharedModule, TranslationBaseComponent } from '../../../../@shared'
+import { BasicInfoFormComponent, UserFormsModule } from '../../../../@shared/user/forms'
 import { PACEditUserComponent } from '../edit-user/edit-user.component'
 
 @Component({
@@ -24,12 +24,13 @@ import { PACEditUserComponent } from '../edit-user/edit-user.component'
   ],
   imports: [SharedModule, MaterialModule, NgmCommonModule, UserFormsModule]
 })
-export class UserBasicComponent extends TranslationBaseComponent implements OnInit {
+export class UserBasicComponent extends TranslationBaseComponent {
   @Input() allowRoleChange: boolean
 
   @ViewChild('userBasicInfo') userBasicInfo: BasicInfoFormComponent
-  
+
   user: User
+
   constructor(
     private readonly userComponent: PACEditUserComponent,
     private readonly userService: UsersService,
@@ -43,12 +44,12 @@ export class UserBasicComponent extends TranslationBaseComponent implements OnIn
     })
   }
 
-  ngOnInit() {
-    this.allowRoleChange = this.route.snapshot.data['allowRoleChange']
-  }
+  // ngOnInit() {
+  //   this.allowRoleChange = this.route.snapshot.data['allowRoleChange']
+  // }
 
   async save() {
-    const { email, username, firstName, lastName, tags, preferredLanguage, password, imageUrl } = this.user
+    const { email, username, firstName, lastName, tags, preferredLanguage, password, imageUrl, roleId } = this.user
     let request: IUserUpdateInput = {
       email,
       username,

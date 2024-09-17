@@ -1,0 +1,19 @@
+<span class="flex" data-state="closed">
+  <button
+    aria-label="关闭边栏"
+    class="pac-chat-button"
+    (click)="sidenav().toggle()"
+  >
+    <pac-chat-sidemenu-svg />
+  </button>
+</span>
+
+<span class="flex" data-state="closed">
+  <button
+    aria-label="新聊天"
+    class="pac-chat-button"
+    (click)="newConversation()"
+  >
+    <pac-chat-new-chat-svg />
+  </button>
+</span>

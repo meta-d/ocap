@@ -1,6 +1,5 @@
 import { BusinessAreaRole, StoryStatusEnum } from '@metad/contracts'
 import {
-	Employee,
 	RequestContext,
 	TenantOrganizationAwareCrudService,
 } from '@metad/server-core'
@@ -26,8 +25,6 @@ export class StoryService extends TenantOrganizationAwareCrudService<Story> {
 	constructor(
 		@InjectRepository(Story)
 		storyRepository: Repository<Story>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>,
 		readonly commandBus: CommandBus
 	) {
 		super(storyRepository)

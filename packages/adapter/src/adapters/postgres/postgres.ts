@@ -118,8 +118,13 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
   }
 
   async runQuery(query: string, options?: QueryOptions) {
+    const { catalog } = options ?? {}
+
     await this.connect()
-    
+
+    if (catalog) {
+      query = `SET search_path TO ${catalog};` + query
+    }
     let res = await this.client.query(query)
 
     if (Array.isArray(res)) {

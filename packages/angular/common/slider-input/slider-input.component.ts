@@ -7,6 +7,7 @@ import {
   Input,
   ViewChild,
   forwardRef,
+  output,
   signal
 } from '@angular/core'
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
@@ -65,6 +66,8 @@ export class NgmSliderInputComponent
 
   @ViewChild(MatSlider, { static: true }) slider!: MatSlider
 
+  readonly changeEnd = output<number>()
+
   defaultDisplayWith = (value: number) => `${value}`
 
   private _model = signal<number | string>(null)
@@ -120,6 +123,7 @@ export class NgmSliderInputComponent
   }
 
   onSlicerEnd(event: MatSliderDragEvent) {
+    this.changeEnd.emit(event.value)
     this.onValueChange(event.value)
   }
 

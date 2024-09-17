@@ -1,13 +1,13 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { ChatOpenAI } from '@langchain/openai'
 import { Team } from '@metad/copilot'
 import { TABLE_CREATOR_NAME } from '../table/types'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
 export async function createSupervisorAgent({
   llm,
   tools,
 }: {
-  llm: ChatOpenAI
+  llm: BaseChatModel
   tools: DynamicStructuredTool[]
 }) {
   const agent = await Team.createSupervisorAgent(

@@ -1,3 +1,4 @@
 :host {
-  @apply w-full overflow-auto;
+  --mat-expansion-container-shape: 1rem;
+  @apply w-full p-4 overflow-auto;
 }

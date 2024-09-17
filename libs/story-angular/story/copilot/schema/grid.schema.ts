@@ -1,5 +1,4 @@
-import { DeepPartial } from '@metad/core'
-import { AnalyticsAnnotation, DimensionSchema, EntityType, MeasureSchema, tryFixDimension } from '@metad/ocap-core'
+import { AnalyticsAnnotation, DeepPartial, DimensionSchema, EntityType, MeasureSchema, tryFixDimension } from '@metad/ocap-core'
 import { z } from 'zod'
 
 export const AnalyticsAnnotationSchema = z

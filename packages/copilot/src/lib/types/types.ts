@@ -1,5 +1,4 @@
 import { BaseMessage, FunctionCall, OpenAIToolCall } from '@langchain/core/messages'
-import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
@@ -11,7 +10,8 @@ export enum AiProviderRole {
 }
 
 export interface ICopilot {
-  organizationId: string
+  id?: string
+  organizationId?: string
   enabled: boolean
   role: AiProviderRole
   provider?: AiProvider
@@ -57,18 +57,35 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
+export interface CopilotBaseMessage {
+  id: string
+  createdAt?: Date
+  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info' | 'component'
+  
+  /**
+   * Status of the message:
+   * - thinking: AI is thinking
+   * - answering: AI is answering
+   * - pending: AI is pending for confirm or more information
+   * - done: AI is done
+   * - aborted: AI is aborted
+   * - error: AI has error
+   */
+  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'aborted' | 'error'
+
+  content?: string
+}
+
 /**
  */
-export interface CopilotChatMessage {
-  id: string
+export interface CopilotChatMessage extends CopilotBaseMessage {
   tool_call_id?: string
-  createdAt?: Date
-  content: string
   /**
    * If the message has a role of `function`, the `name` field is the name of the function.
    * Otherwise, the name field should not be set.
    */
   name?: string
+
   /**
    * If the assistant role makes a function call, the `function_call` field
    * contains the function call name and arguments. Otherwise, the field should
@@ -87,28 +104,20 @@ export interface CopilotChatMessage {
   annotations?: JSONValue[] | undefined
 
   error?: string
-
-  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
+  
   /**
    * Command name
    */
   command?: string
 
-  /**
-   * Status of the message:
-   * - thinking: AI is thinking
-   * - answering: AI is answering
-   * - pending: AI is pending for confirm or more information
-   * - done: AI is done
-   * - error: AI has error
-   * - info: todo
-   */
-  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'error' | 'info'
-
-  lcMessage?: BaseMessage
-
   historyCursor?: number
   reverted?: boolean
+
+  lcMessage?: BaseMessage
+}
+
+export interface CopilotMessageGroup<T extends CopilotChatMessage = CopilotChatMessage> extends CopilotBaseMessage {
+  messages: T[]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -144,7 +153,10 @@ export type JSONValue =
     }
   | Array<JSONValue>
 
-export type AIOptions = ChatCompletionCreateParamsBase & {
+export type AIOptions = {
+  model?: string
+  temperature?: number | null;
+  n?: number
   useSystemPrompt?: boolean
   verbose?: boolean
   interactive?: boolean
@@ -154,4 +166,16 @@ export type AIOptions = ChatCompletionCreateParamsBase & {
 export enum MessageDataType {
   Route = 'route',
   ToolsCall = 'tools_call',
+}
+
+export enum NgmLanguageEnum {
+	Chinese = "zh-CN",
+	SimplifiedChinese = "zh-Hans",
+	TraditionalChinese = 'zh-Hant',
+	English = 'en',
+}
+
+// Type guards
+export function isMessageGroup<T extends CopilotChatMessage = CopilotChatMessage>(message: CopilotBaseMessage): message is CopilotMessageGroup<T> {
+  return 'messages' in message;
 }

@@ -178,6 +178,13 @@ const routes: Routes = [
         data: {
           title: 'settings/chatbi',
         }
+      },
+      {
+        path: 'knowledgebase',
+        loadChildren: () => import('./knowledgebase/routing').then((m) => m.default),
+        data: {
+          title: 'settings/knowledgebase',
+        }
       }
     ]
   }

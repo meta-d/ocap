@@ -17,7 +17,13 @@ export enum AiProvider {
    * - https://ollama.com/
    * - https://js.langchain.com/v0.2/docs/integrations/chat/ollama
    */
-  Ollama = 'ollama'
+  Ollama = 'ollama',
+  DeepSeek = 'deepseek'
+}
+
+export enum AiProtocol {
+  OpenAI = 'openai',
+  Others = 'others'
 }
 
 export type AiModelType = {
@@ -26,6 +32,7 @@ export type AiModelType = {
 }
 
 export type AiProviderType = {
+  protocol: AiProtocol
   apiHost: string
   chatCompletionsUrl: string
   modelsUrl: string | null
@@ -38,6 +45,7 @@ export type AiProviderType = {
 
 export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.OpenAI]: {
+    protocol: AiProtocol.OpenAI,
     apiHost: 'https://api.openai.com/v1',
     chatCompletionsUrl: '/chat/completions',
     modelsUrl: '/models',
@@ -70,10 +78,19 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'gpt-4-32k',
         name: 'GPT-4 32k'
+      },
+      {
+        id: 'o1-preview',
+        name: 'o1 Preview'
+      },
+      {
+        id: 'o1-mini',
+        name: 'o1 Mini'
       }
     ]
   },
   [AiProvider.Azure]: {
+    protocol: AiProtocol.OpenAI,
     apiHost: '',
     chatCompletionsUrl: '/chat/completions',
     modelsUrl: '/models',
@@ -199,6 +216,23 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'llama3-groq-tool-use',
         name: 'Llama3 Groq Tool Use'
+      },
+    ]
+  },
+  [AiProvider.DeepSeek]: {
+    protocol: AiProtocol.OpenAI,
+    apiHost: 'https://api.deepseek.com/v1',
+    chatCompletionsUrl: '/chat/completions',
+    modelsUrl: '/models',
+    isTools: true,
+    models: [
+      {
+        id: 'deepseek-chat',
+        name: 'DeepSeek Chat'
+      },
+      {
+        id: 'deepseek-coder',
+        name: 'DeepSeek Coder'
       },
     ]
   }

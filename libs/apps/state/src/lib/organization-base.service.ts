@@ -2,6 +2,9 @@ import { inject } from '@angular/core'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { Store } from './store.service'
 
+/**
+ * @deprecated use OrganizationBaseCrudService
+ */
 export class OrganizationBaseService {
   protected store = inject(Store)
 

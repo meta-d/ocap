@@ -25,10 +25,10 @@ import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/stat
 import { ConfirmCodeEditorComponent } from '@metad/components/editor'
 import { CopilotChatMessage } from '@metad/copilot'
 import { CommandDialogComponent } from '@metad/copilot-angular'
-import { CHARTS, DeepPartial, IsNilPipe } from '@metad/core'
+import { IsNilPipe } from '@metad/core'
 import { NgmConfirmUniqueComponent, NgmInputComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { cloneDeep, omit } from '@metad/ocap-core'
+import { CHARTS, cloneDeep, DeepPartial, omit } from '@metad/ocap-core'
 import { PreferencesComponent, QuerySettingComponent, ThemeBuilderComponent } from '@metad/story'
 import {
   EmulatedDevice,

@@ -1,4 +1,4 @@
-import { EmployeeModule, SharedModule, UserModule } from '@metad/server-core'
+import { SharedModule, UserModule } from '@metad/server-core'
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -15,7 +15,6 @@ import { QueryHandlers } from './queries/handlers'
 		SharedModule,
 		CqrsModule,
 		UserModule,
-		EmployeeModule
 	],
 	controllers: [CertificationController],
 	providers: [CertificationService, ...QueryHandlers],
