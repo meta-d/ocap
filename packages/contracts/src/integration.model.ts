@@ -180,20 +180,3 @@ export interface IDateRangeActivityFilter {
 	start: Date;
 	end: Date;
 }
-
-export const INTEGRATION_PROVIDERS = {
-	[IntegrationEnum.LARK]: {
-		name: IntegrationEnum.LARK,
-		schema: {
-			type: 'object',
-			properties: {
-				apiKey: { type: 'string', },
-			},
-			required: ['apiKey', 'apiHost'],
-      		secret: ['apiKey']
-		},
-		webhookUrl: (integration: IIntegration, baseUrl: string) => {
-			return `${baseUrl}/api/lark/webhook/${integration.id}`
-		}
-	}
-}

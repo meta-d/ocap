@@ -1,9 +1,11 @@
+import { ICopilotRole, IIntegration } from '@metad/contracts'
 import { CopilotRoleService } from '@metad/server-ai'
-import { TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { IntegrationService, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository } from 'typeorm'
+import { In, Repository, UpdateResult } from 'typeorm'
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 import { ChatBIModel } from './chatbi-model.entity'
 
 @Injectable()
@@ -14,6 +16,7 @@ export class ChatBIModelService extends TenantOrganizationAwareCrudService<ChatB
 		@InjectRepository(ChatBIModel)
 		repository: Repository<ChatBIModel>,
 		private readonly roleService: CopilotRoleService,
+		private readonly integrationService: IntegrationService,
 		readonly commandBus: CommandBus
 	) {
 		super(repository)
@@ -38,4 +41,29 @@ export class ChatBIModelService extends TenantOrganizationAwareCrudService<ChatB
 		return await this.repository.save(model)
 	}
 
+	async update(modelId: string, entity: QueryDeepPartialEntity<ChatBIModel>): Promise<UpdateResult | ChatBIModel> {
+		const { integrations, roles, ...updateEntity } = entity
+		const model = await super.findOne({ where: { id: modelId }, relations: ['roles', 'integrations'] })
+		if (integrations) {
+			const _integrations = await this.integrationService.findAll({
+				where: {
+					id: In((<QueryDeepPartialEntity<IIntegration>[]>integrations).map(({ id }) => id))
+				}
+			})
+
+			model.integrations = _integrations.items
+		}
+
+		if (roles) {
+			const _roles = await this.roleService.findAll({
+				where: {
+					id: In((<QueryDeepPartialEntity<ICopilotRole>[]>roles).map(({ id }) => id))
+				}
+			})
+
+			model.roles = _roles.items
+		}
+		await this.repository.save(model)
+		return await super.update(modelId, updateEntity)
+	}
 }

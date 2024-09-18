@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
-import { PermissionsEnum } from '../../../@core'
+import { DirtyCheckGuard, PermissionsEnum } from '../../../@core'
 import { IntegrationHomeComponent } from './home.component'
 import { IntegrationComponent } from './integration/integration.component'
 
@@ -21,11 +21,12 @@ export default [
     path: 'create',
     component: IntegrationComponent,
     canActivate: [NgxPermissionsGuard],
+    canDeactivate: [ DirtyCheckGuard ],
     data: {
       title: 'Settings / Integration New',
       permissions: {
         only: [PermissionsEnum.INTEGRATION_EDIT],
-        redirectTo: '/settings/integration'
+        redirectTo: '/settings/new-integration'
       }
     },
   },
@@ -33,6 +34,7 @@ export default [
     path: ':id',
     component: IntegrationComponent,
     canActivate: [NgxPermissionsGuard],
+    canDeactivate: [ DirtyCheckGuard ],
     data: {
       title: 'Settings / Integration Edit',
       permissions: {

@@ -1436,7 +1436,8 @@
       "AddModel": "添加模型",
       "AnotherBatch": "换一批",
       "TryFollowing": "您还可以尝试以下分析",
-      "RolesWithPermission": "有权限的角色"
+      "RolesWithPermission": "有权限的角色",
+      "IntegrationsWithPermission": "有权限的集成"
     },
     "Home": {
       "Insight": {
@@ -1598,6 +1599,10 @@
         "FEATURE_EMAIL_TEMPLATE": {
           "Name": "自定义电子邮件模版",
           "Description": "管理租户组织的电子邮件模版"
+        },
+        "FEATURE_INTEGRATION": {
+          "Name": "集成",
+          "Description": "管理组织内的集成连接"
         }
       }
     },
@@ -1646,7 +1651,9 @@
     },
     "Integration": {
       "Integrations": "集成",
-      "AddIntegration": "添加集成"
+      "AddIntegration": "添加集成",
+      "Provider": "提供商",
+      "ConfirmDeleteIntegration": "确定删除此集成"
     },
     "title": {
       "short": "分析云"

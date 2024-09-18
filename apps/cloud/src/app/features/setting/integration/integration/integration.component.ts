@@ -5,17 +5,18 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angul
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmInputComponent, NgmSelectComponent } from '@metad/ocap-angular/common'
-import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { DisplayBehaviour } from '@metad/ocap-core'
+import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { assign, DisplayBehaviour } from '@metad/ocap-core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { FormlyModule } from '@ngx-formly/core'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
-import { BehaviorSubject, EMPTY, map, pipe, startWith, switchMap } from 'rxjs'
+import { BehaviorSubject, distinctUntilChanged, EMPTY, map, pipe, startWith, switchMap } from 'rxjs'
 import {
   convertConfigurationSchema,
+  getErrorMessage,
   INTEGRATION_PROVIDERS,
   IntegrationEnum,
   IntegrationService,
@@ -24,6 +25,8 @@ import {
   ToastrService
 } from '../../../../@core'
 import { MaterialModule } from '../../../../@shared'
+import { IsDirty } from '@metad/core'
+import omit from 'lodash-es/omit'
 
 @Component({
   standalone: true,
@@ -39,6 +42,7 @@ import { MaterialModule } from '../../../../@shared'
     FormlyModule,
     ContentLoaderModule,
     MaterialModule,
+    ButtonGroupDirective,
     AppearanceDirective,
     DensityDirective,
     NgmSelectComponent,
@@ -46,7 +50,7 @@ import { MaterialModule } from '../../../../@shared'
   ],
   animations: [routeAnimations]
 })
-export class IntegrationComponent {
+export class IntegrationComponent implements IsDirty {
   DisplayBehaviour = DisplayBehaviour
 
   readonly integrationService = inject(IntegrationService)
@@ -55,6 +59,8 @@ export class IntegrationComponent {
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
   readonly #dialog = inject(MatDialog)
+  readonly #translate = inject(TranslateService)
+
   readonly paramId = injectParams('id')
 
   readonly organizationId$ = this.#store.selectOrganizationId()
@@ -76,7 +82,7 @@ export class IntegrationComponent {
     options: new FormGroup({})
   })
 
-  get options() {
+  get optionsForm() {
     return this.formGroup.get('options') as FormGroup
   }
 
@@ -88,13 +94,17 @@ export class IntegrationComponent {
     )
   )
 
+  readonly i18n = toSignal(this.#translate.stream('PAC.Integration'))
   readonly schema = computed(() =>
-    this.integrationProvider() ? convertConfigurationSchema(this.integrationProvider().schema, {}) : null
+    this.integrationProvider() ? convertConfigurationSchema(this.integrationProvider().schema, this.i18n()) : null
   )
 
   readonly integration = derivedFrom(
     [this.paramId],
-    pipe(switchMap(([id]) => (id ? this.integrationService.getById(id) : EMPTY))),
+    pipe(
+      distinctUntilChanged(),
+      switchMap(([id]) => (id ? this.integrationService.getById(id) : EMPTY))
+    ),
     {
       initialValue: null
     }
@@ -103,14 +113,19 @@ export class IntegrationComponent {
   readonly loading = signal(true)
 
   readonly webhookUrl = computed(() =>
-    this.integrationProvider()?.webhookUrl(this.integration(), environment.API_BASE_URL)
+    this.integration() ?
+    this.integrationProvider()?.webhookUrl(this.integration(), environment.API_BASE_URL) : null
   )
+
+  optionsModel = {}
+  formOptions = {}
 
   constructor() {
     effect(
       () => {
         if (this.integration()) {
           this.formGroup.patchValue(this.integration())
+          assign(this.optionsModel, this.integration().options)
         } else {
           this.formGroup.reset()
         }
@@ -121,23 +136,36 @@ export class IntegrationComponent {
     )
   }
 
+  isDirty(): boolean {
+    return this.formGroup.dirty
+  }
+
   refresh() {
     this.refresh$.next(true)
   }
 
   upsert() {
     ;(this.formGroup.value.id
-      ? this.integrationService.create({
-          ...this.formGroup.value
-        })
-      : this.integrationService.update(this.formGroup.value.id, {
-          ...this.formGroup.value
-        })
+      ? this.integrationService.update(this.formGroup.value.id, {
+        ...this.formGroup.value
+      }) : this.integrationService.create(omit(this.formGroup.value, 'id'))
     ).subscribe({
       next: () => {
-        this.#toastr.success('Integration created')
+        this.formGroup.markAsPristine()
+        this.#toastr.success('PAC.MODEL.CreatedSuccessfully', { Default: 'Created Successfully!' })
         this.#router.navigate(['..'], { relativeTo: this.#route })
+      },
+      error: (error) => {
+        this.#toastr.error(getErrorMessage(error))
       }
     })
+  }
+  
+  cancel() {
+    this.close()
+  }
+
+  close(refresh = false) {
+    this.#router.navigate(['../'], { relativeTo: this.#route })
   }
 }

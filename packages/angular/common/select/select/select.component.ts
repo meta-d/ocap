@@ -5,7 +5,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
-  Input,
+  HostBinding,
   TemplateRef,
   booleanAttribute,
   computed,
@@ -40,7 +40,8 @@ import { NgmOptionContent } from '../../input/option-content'
   styleUrls: [`select.component.scss`],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'ngm-select'
+    class: 'ngm-select',
+    '[attr.disabled]': 'isDisabled || null'
   },
   providers: [
     {
@@ -205,5 +206,10 @@ export class NgmSelectComponent implements ControlValueAccessor
       this.formControl.setValue(value)
       this.searchControl.setValue(null)
     }
+  }
+
+  @HostBinding('attr.disabled')
+  get isDisabled() {
+    return this.formControl.disabled
   }
 }

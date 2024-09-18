@@ -7,6 +7,7 @@
 @if (!searchable()) {
   <div class="relative">
     <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity() === 'compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity() === 'cosy' ? 'ngm-density__cosy' : '')"
+      [attr.disabled]="isDisabled"
       [formControl]="formControl"
       [placeholder]="placeholder()"
       [panelWidth]="panelWidth() || 'auto'"

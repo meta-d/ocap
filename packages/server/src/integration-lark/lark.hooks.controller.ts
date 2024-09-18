@@ -12,14 +12,13 @@ export class LarkHooksController {
 		private readonly integrationService: IntegrationService
 	) {}
 
-	@Post(':integrationId')
+	@Post(':id')
 	async webhook(
-		@Param(':integrationId') integrationId: string,
+		@Param('id') integrationId: string,
 		@Request() req: express.Request,
 		@Response() res: express.Response
 	) {
-		const integration = await this.integrationService.findOne(integrationId)
-		console.log(integration)
-		return this.larkService.webhookEventDispatcher(req, res)
+		const integration = await this.integrationService.findOne(integrationId, { relations: ['tenant'] })
+		return this.larkService.webhookEventDispatcher(integration, req, res)
 	}
 }

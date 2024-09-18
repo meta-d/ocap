@@ -55,6 +55,9 @@ export class ChatBIConversation implements IChatBIConversation {
 	private destroy$: Subject<void> = new Subject<void>()
 	public graph: CompiledStateGraph<AgentState, Partial<AgentState>, typeof START | 'agent' | 'tools'>
 
+	get integrationId() {
+		return this.chatContext.integrationId
+	}
 	get userId() {
 		return this.chatContext.userId
 	}
@@ -183,7 +186,7 @@ export class ChatBIConversation implements IChatBIConversation {
 
 		const { items } = await this.modelService.findAll({
 			where: { tenantId: this.chatContext.tenant.id, organizationId: this.chatContext.organizationId },
-			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators'],
+			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators', 'roles', 'integrations'],
 			order: {
 				visits: OrderTypeEnum.DESC
 			}
@@ -193,7 +196,7 @@ export class ChatBIConversation implements IChatBIConversation {
 
 		this.logger.debug(`Chat models visits:`, items.map(({ visits }) => visits).join(', '))
 
-		this.models = items
+		this.models = items.filter((item) => item.integrations.some((_) => _.id === this.integrationId))
 		this.indicators$.next([])
 
 		this.graph.updateState(
@@ -521,7 +524,7 @@ ${createAgentStepsInstructions(
 			]
 		}
 
-		this.chatContext.larkService.createAction(this.chatContext.chatId, message).subscribe({
+		this.chatContext.larkService.createAction(this.chatContext, message).subscribe({
 			next: async (action) => {
 				if (action?.value === C_CHATBI_END_CONVERSATION || action?.value === `"${C_CHATBI_END_CONVERSATION}"`) {
 					await this.end()

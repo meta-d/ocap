@@ -3,10 +3,11 @@ import { Component, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { NgmConfirmDeleteComponent, NgmTagsComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, map } from 'rxjs'
-import { IntegrationService, routeAnimations, Store, ToastrService } from '../../../@core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { BehaviorSubject, EMPTY, map, switchMap } from 'rxjs'
+import { getErrorMessage, IIntegration, IntegrationService, routeAnimations, ToastrService } from '../../../@core'
 import { AvatarComponent, MaterialModule, UserProfileInlineComponent } from '../../../@shared'
 
 @Component({
@@ -22,23 +23,27 @@ import { AvatarComponent, MaterialModule, UserProfileInlineComponent } from '../
     AppearanceDirective,
     DensityDirective,
     AvatarComponent,
-    UserProfileInlineComponent
+    UserProfileInlineComponent,
+    NgmTagsComponent
   ],
   animations: [routeAnimations]
 })
 export class IntegrationHomeComponent {
   readonly integrationService = inject(IntegrationService)
   readonly #toastr = inject(ToastrService)
-  readonly #store = inject(Store)
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
   readonly #dialog = inject(MatDialog)
+  readonly #translate = inject(TranslateService)
 
-  readonly organizationId$ = this.#store.selectOrganizationId()
+  readonly refresh$ = new BehaviorSubject<void>(null)
 
-  readonly refresh$ = new BehaviorSubject<boolean>(true)
-
-  readonly integrations = toSignal(this.integrationService.getAllInOrg().pipe(map(({ items }) => items)))
+  readonly integrations = toSignal(
+    this.refresh$.pipe(
+      switchMap(() => this.integrationService.getAllInOrg({ relations: ['createdBy'] })),
+      map(({ items }) => items)
+    )
+  )
 
   newIntegration() {
     this.#router.navigate(['create'], { relativeTo: this.#route })
@@ -46,5 +51,36 @@ export class IntegrationHomeComponent {
 
   open(id: string) {
     this.#router.navigate([id], { relativeTo: this.#route })
+  }
+
+  refresh() {
+    this.refresh$.next()
+  }
+
+  edit(item: IIntegration) {
+    this.#router.navigate([item.id], { relativeTo: this.#route })
+  }
+
+  remove(item: IIntegration) {
+    this.#dialog
+      .open(NgmConfirmDeleteComponent, {
+        data: {
+          value: item.name,
+          information: this.#translate.instant('PAC.Integration.ConfirmDeleteIntegration', {
+            Default: `Confirm delete the integration?`
+          })
+        }
+      })
+      .afterClosed()
+      .pipe(switchMap((confirm) => (confirm ? this.integrationService.delete(item.id) : EMPTY)))
+      .subscribe({
+        next: () => {
+          this.refresh()
+          this.#toastr.success('PAC.Messages.DeletedSuccessfully', 'Deleted Successfully')
+        },
+        error: (error) => {
+          this.#toastr.error(getErrorMessage(error), 'Error')
+        }
+      })
   }
 }

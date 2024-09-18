@@ -16,6 +16,7 @@ export type LarkMessage = {
 export type ChatLarkContext<T = any> = {
 	tenant: ITenant
 	organizationId: string
+	integrationId: string
 	larkService: LarkService
 	chatId: string
 	chatType: 'p2p' | 'group' | string

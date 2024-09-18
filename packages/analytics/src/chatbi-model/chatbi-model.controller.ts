@@ -17,4 +17,5 @@ export class ChatBIModelController extends CrudController<ChatBIModel> {
 	async updateRoles(@Param('id') id: string, @Body('roles') roles: string[]): Promise<IChatBIModel> {
 		return await this.service.updateRoles(id, roles)
 	}
+
 }

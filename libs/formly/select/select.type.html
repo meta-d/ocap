@@ -1,4 +1,6 @@
-<ngm-select displayDensity="compact" [label]="props?.label" [placeholder]="props?.placeholder"
+<ngm-select [displayDensity]="props?.displayDensity"
+  [label]="props?.label"
+  [placeholder]="props?.placeholder"
   [valueKey]="props?.valueKey ?? 'value'"
   [searchable]="props?.searchable"
   [virtualScroll]="props?.virtualScroll"
@@ -17,7 +19,7 @@
   <div ngmSuffix class="flex items-center">
     <mat-progress-spinner class="hidden" color="primary" mode="indeterminate" diameter="16"></mat-progress-spinner>
     @if (props?.info) {
-      <mat-icon fontSet="material-icons-outlined" class="opacity-50" displayDensity="compact"
+      <mat-icon fontSet="material-icons-outlined" class="opacity-50" [displayDensity]="props?.displayDensity"
         [matTooltip]="props.info"
       >info</mat-icon>
     }

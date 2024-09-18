@@ -669,6 +669,18 @@ export class FeaturesComponent implements OnInit {
             }
           },
           {
+            title: 'Integration',
+            matIcon: 'hub',
+            link: '/settings/integration',
+            pathMatch: 'prefix',
+            data: {
+              translationKey: 'Integration',
+              featureKey: FeatureEnum.FEATURE_INTEGRATION,
+              permissionKeys: [PermissionsEnum.INTEGRATION_EDIT]
+            }
+          },
+          
+          {
             title: 'Email Templates',
             matIcon: 'email',
             link: '/settings/email-templates',

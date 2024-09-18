@@ -12,8 +12,8 @@ import { omit } from 'lodash-es'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { EMPTY, map, of, pipe, startWith, switchMap } from 'rxjs'
-import { ChatBIModelService, CopilotRoleService, IChatBIModel, ToastrService, routeAnimations } from '../../../../@core'
-import { CopilotRoleListComponent, MaterialModule, UpsertEntityComponent } from '../../../../@shared'
+import { ChatBIModelService, CopilotRoleService, IChatBIModel, IntegrationService, ToastrService, routeAnimations } from '../../../../@core'
+import { CopilotRoleListComponent, IntegrationListComponent, MaterialModule, UpsertEntityComponent } from '../../../../@shared'
 import { ChatBIModelsComponent } from '../models/models.component'
 
 @Component({
@@ -28,7 +28,8 @@ import { ChatBIModelsComponent } from '../models/models.component'
     TranslateModule,
     MaterialModule,
     NgmCommonModule,
-    CopilotRoleListComponent
+    CopilotRoleListComponent,
+    IntegrationListComponent
   ],
   animations: [routeAnimations]
 })
@@ -38,6 +39,7 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
   readonly modelsService = inject(ModelsService)
   readonly chatbiModelService = inject(ChatBIModelService)
   readonly roleService = inject(CopilotRoleService)
+  readonly integrationService = inject(IntegrationService)
   readonly _toastrService = inject(ToastrService)
   readonly fb = inject(FormBuilder)
   readonly router = inject(Router)
@@ -48,7 +50,7 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
 
   readonly chatbiModel = derivedFrom(
     [this.paramId],
-    pipe(switchMap(([id]) => (id ? this.chatbiModelService.getOneById(id, { relations: ['roles'] }) : EMPTY))),
+    pipe(switchMap(([id]) => (id ? this.chatbiModelService.getOneById(id, { relations: ['roles', 'integrations'] }) : EMPTY))),
     {
       initialValue: null
     }
@@ -59,7 +61,8 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
     entity: new FormControl(null),
     entityCaption: new FormControl(null),
     entityDescription: new FormControl(null),
-    roles: new FormControl(null)
+    roles: new FormControl(null),
+    integrations: new FormControl(null),
   })
 
   get roles() {
@@ -68,6 +71,14 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
   set roles(value) {
     this.formGroup.patchValue({ roles: value })
     this.formGroup.get('roles').markAsDirty()
+  }
+
+  get integrations() {
+    return this.formGroup.get('integrations').value
+  }
+  set integrations(value) {
+    this.formGroup.patchValue({ integrations: value })
+    this.formGroup.get('integrations').markAsDirty()
   }
 
   readonly modelId = toSignal(this.formGroup.get('modelId').valueChanges.pipe(startWith(this.formGroup.value?.modelId)))
@@ -87,6 +98,7 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
   readonly cubeName = toSignal(this.formGroup.get('entity').valueChanges.pipe(startWith(this.formGroup.value?.entity)))
   readonly selectedCube = computed(() => this.entities()?.find((item) => item.key === this.cubeName())?.value)
   readonly roleList = toSignal(this.roleService.getAllInOrg().pipe(map(({ items }) => items)))
+  readonly integrationList = toSignal(this.integrationService.getAllInOrg().pipe(map(({ items }) => items)))
 
   readonly loading = signal(true)
 
@@ -142,6 +154,7 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
         )
       )
       .subscribe(() => {
+        this.formGroup.markAsPristine()
         this.close()
       })
   }

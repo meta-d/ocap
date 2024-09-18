@@ -1,36 +1,43 @@
 <h2 class="pac-page-title">{{ 'PAC.Integration.Integrations' | translate: {Default: 'Integrations' } }}</h2>
 
-<div class="filter-bar p-2 flex items-center gap-4">
-    <span class="flex-1"></span>
-  
-    <div ngmButtonGroup >
-      <button mat-mini-fab [matTooltip]=" 'PAC.KEY_WORDS.Save' | translate: {Default: 'Save' }"
-        [disabled]="formGroup.invalid" 
-          (click)="upsert()">
-          <mat-icon fontSet="material-icons-outlined">save</mat-icon>
-      </button>
-    </div>
-</div>
-
 <div class="flex-1 overflow-auto">
-  <form class="flex flex-col gap-4 p-4" [formGroup]="formGroup">
+  <form class="flex flex-col gap-2 p-4 max-w-full lg:max-w-lg" [formGroup]="formGroup">
     <ngm-input class="flex-1" [label]="'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'}"
       formControlName="name"
     />
-    <ngm-select class="flex-1" [label]="'PAC.Copilot.Examples.BusinessRole' | translate: {Default: 'Business Role'}" valueKey="key"
+    <ngm-select class="flex-1" [label]="'PAC.Integration.Provider' | translate: {Default: 'Provider'}" valueKey="key"
         [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         formControlName="provider"
         [selectOptions]="providers()"
     />
 
     @if (schema(); as fields) {
-      <formly-form [form]="options"
+      <formly-form [form]="optionsForm"
+        [options]="formOptions"
         [fields]="fields"
+        [model]="optionsModel"
       />
-      } @else {
-        <list-content-loader />
-      }
-  </form>
+    } @else {
+      <list-content-loader />
+    }
 
-  <div>{{webhookUrl()}}</div>
+    <div>{{webhookUrl()}}</div>
+
+    <div class="filter-bar p-2 flex items-center gap-4">
+      <span class="flex-1"></span>
+      <div ngmButtonGroup class="flex items-center gap-2">
+        <button mat-flat-button (click)="cancel()">
+          {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}
+        </button>
+        <button mat-raised-button color="primary" [matTooltip]=" 'PAC.KEY_WORDS.Save' | translate: {Default: 'Save' }"
+          [disabled]="formGroup.invalid || formGroup.pristine" 
+          (click)="upsert()"
+        >
+          <mat-icon fontSet="material-icons-outlined">save</mat-icon>
+          {{ 'PAC.KEY_WORDS.Save' | translate: {Default: 'Save'} }}
+        </button>
+      </div>
+    </div>
+  </form>
+  
 </div>

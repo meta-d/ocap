@@ -127,7 +127,7 @@ export class ChatLarkMessage {
 		}
 		if (this.id) {
 			this.larkService
-				.patchAction(this.id, {
+				.patchAction(this.chatContext, this.id, {
 					...this.getCard(),
 					header: this.header ?? this.getHeader()
 				})

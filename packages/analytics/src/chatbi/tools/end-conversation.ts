@@ -57,7 +57,7 @@ export async function errorWithEndMessage(context: ChatLarkContext, error: strin
 		]
 	}
 
-	larkService.createAction(context.chatId, data)
+	larkService.createAction(context, data)
 		.pipe(take(1))
 		.subscribe(() => {
 			conversation.end()

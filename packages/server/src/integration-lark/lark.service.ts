@@ -1,10 +1,10 @@
 import * as lark from '@larksuiteoapi/node-sdk'
 import { nonNullable } from '@metad/copilot'
-import { environment } from '@metad/server-config'
+import { IIntegration } from '@metad/contracts'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
+import express from 'express'
 import { filter, Observable, Observer, Subject, Subscriber } from 'rxjs'
-import { TenantService } from '../tenant'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
 import { ChatLarkContext, LarkMessage } from './types'
 
@@ -12,214 +12,250 @@ import { ChatLarkContext, LarkMessage } from './types'
 export class LarkService {
 	private readonly logger = new Logger(LarkService.name)
 
-	private client = environment.larkConfig.appId
-		? new lark.Client({
-				appId: environment.larkConfig.appId,
-				appSecret: environment.larkConfig.appSecret,
-				appType: lark.AppType.SelfBuild,
-				domain: lark.Domain.Feishu
-			})
-		: null
-
 	private actions = new Map<string, Subject<any>>()
-	private bot: {
-		app_name: string
-		avatar_url: string
-		ip_white_list: string[]
-		open_id: string
-	} = null
 
-	eventDispatcher = new lark.EventDispatcher({
-		verificationToken: environment.larkConfig.verificationToken,
-		encryptKey: environment.larkConfig.encryptKey,
-		loggerLevel: lark.LoggerLevel.debug
-	}).register({
-		'im.message.receive_v1': async (data) => {
-			/**
-			 * {
-				schema: '2.0',
-				event_id: 'b47ff4f15c86d5af497d75da76f90a84',
-				token: '',
-				create_time: '1723552741302',
-				event_type: 'im.message.receive_v1',
-				tenant_key: '',
-				app_id: '',
-				message: {
-					chat_id: 'oc_3d8956dd83110e5e88f319613db55d94',
-					chat_type: 'p2p' | 'group',
-					content: '{"text":"HI"}',
-					create_time: '1723552740951',
-					message_id: 'om_d6c3ef63049d7a7d5963f02b72f5d5b8',
-					message_type: 'text',
-					update_time: '1723552740951'
-				},
-				sender: {
-					sender_id: {
-					open_id: '',
-					union_id: '',
-					user_id: '327b132g'
-					},
-					sender_type: 'user',
-					tenant_key: ''
-				},
-				[Symbol(event-type)]: 'im.message.receive_v1'
-			  }
-			 */
-
-			const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
-			const organizationId = environment.larkConfig.organizationId
-			const chatId = data.message.chat_id
-
-			if (
-				!(
-					data.message.chat_type === 'p2p' ||
-					data.message.mentions?.some((mention) => mention.id.open_id === this.bot.open_id)
-				)
-			) {
-				return true
+	private eventDispatchers = new Map<
+		string,
+		{
+			integration: IIntegration
+			client: lark.Client
+			dispatcher: (req: any, res: any) => Promise<void>
+			bot: {
+				app_name: string
+				avatar_url: string
+				ip_white_list: string[]
+				open_id: string
 			}
+		}
+	>()
 
-			// if (data.message.chat_type === 'p2p') {
-			// 	const result = await this.interactiveMessage({ chatId } as ChatLarkContext, {
-			// 		elements: []
-			// 	})
-			// 	return true
-			// }
+	constructor(
+		private readonly commandBus: CommandBus
+	) {
+	}
 
-			this.logger.debug('im.message.receive_v1:')
-			this.logger.debug(data)
-			const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
-				new LarkMessageCommand({
-					tenant,
-					organizationId,
-					message: data as any,
-					chatId,
-					chatType: data.message.chat_type,
-					larkService: this
-				})
-			)
-			result.subscribe({
-				next: () => {
-					//
-				},
-				error: () => {
-					//
-				}
-			})
+	webhookEventDispatcher(integration: IIntegration, req: express.Request, res: express.Response) {
+		let item = this.eventDispatchers.get(integration.id)
+		if (!item || item.integration.updatedAt !== integration.updatedAt) {
+			const client = this.createClient(integration)
+			item = {
+				integration,
+				client,
+				dispatcher: lark.adaptExpress(this.createEventDispatcher(integration, client), { autoChallenge: true }),
+				bot: null
+			}
+			this.eventDispatchers.set(integration.id, item)
+			this.getBotInfo(client).then((bot) => (item.bot = bot))
+		}
 
-			return true
-		},
-		'application.bot.menu_v6': async (data) => {
-			/**
-			 * {
-				schema: '2.0',
-				event_id: '3632caaa3c0143c072b2149c5b58ae8f',
-				token: '',
-				create_time: '1723551863000',
-				event_type: 'application.bot.menu_v6',
-				tenant_key: '',
-				app_id: 'cli_a6300438b435100b',
-				event_key: 'select_cube_sales',
-				operator: {
-					operator_id: {
+		item.dispatcher(req, res).catch((err) => {
+			//
+			console.error(err)
+		})
+	}
+
+	createClient(integration: IIntegration) {
+		return new lark.Client({
+			appId: integration.options.appId,
+			appSecret: integration.options.appSecret,
+			appType: lark.AppType.SelfBuild,
+			domain: lark.Domain.Feishu
+		})
+	}
+
+	createEventDispatcher(integration: IIntegration, client: lark.Client,) {
+		return new lark.EventDispatcher({
+			verificationToken: integration.options.verificationToken,
+			encryptKey: integration.options.encryptKey,
+			loggerLevel: lark.LoggerLevel.debug
+		}).register({
+			'im.message.receive_v1': async (data) => {
+				/**
+				 * {
+					schema: '2.0',
+					event_id: 'b47ff4f15c86d5af497d75da76f90a84',
+					token: '',
+					create_time: '1723552741302',
+					event_type: 'im.message.receive_v1',
+					tenant_key: '',
+					app_id: '',
+					message: {
+						chat_id: 'oc_3d8956dd83110e5e88f319613db55d94',
+						chat_type: 'p2p' | 'group',
+						content: '{"text":"HI"}',
+						create_time: '1723552740951',
+						message_id: 'om_d6c3ef63049d7a7d5963f02b72f5d5b8',
+						message_type: 'text',
+						update_time: '1723552740951'
+					},
+					sender: {
+						sender_id: {
 						open_id: '',
 						union_id: '',
 						user_id: '327b132g'
-					}
-				},
-				timestamp: 1723551863,
-				[Symbol(event-type)]: 'application.bot.menu_v6'
-			  }
-			 * 
-			 */
-			const { event_key } = data
-			this.logger.debug('application.bot.menu_v6:')
-			this.logger.debug(data)
-			const organizationId = environment.larkConfig.organizationId
-			const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
-			const result = await this.commandBus.execute<LarkBotMenuCommand, Observable<any>>(
-				new LarkBotMenuCommand({
-					tenant,
-					organizationId,
-					message: data as any
-				})
-			)
+						},
+						sender_type: 'user',
+						tenant_key: ''
+					},
+					[Symbol(event-type)]: 'im.message.receive_v1'
+				  }
+				 */
 
-			result.pipe(filter(nonNullable)).subscribe(async (message) => {
-				await this.client.im.message.create(message)
-			})
+				// const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
+				// const organizationId = environment.larkConfig.organizationId
+				const tenant = integration.tenant
+				const organizationId = integration.organizationId
+				const bot = this.eventDispatchers.get(integration.id).bot
+				const chatId = data.message.chat_id
 
-			return true
-		},
-		'card.action.trigger': async (data) => {
-			/**
-			 * {
-				schema: '2.0',
-				event_id: 'd972d3653c29ef5307e80e9a08cf099f',
-				token: 'c-t',
-				create_time: '1723625509226706',
-				event_type: 'card.action.trigger',
-				tenant_key: '',
-				app_id: '',
-				operator: {
-					tenant_key: '',
-					open_id: '',
-					union_id: ''
-				},
-				action: { tag: 'select_static', option: '1' },
-				host: 'im_message',
-				context: {
-					open_message_id: 'om_dd02538d5ecaf1b861c7d748deb3f189',
-					open_chat_id: 'oc_f1a6cd3129de01656f2e9f4c3083b3a0'
-				},
-				[Symbol(event-type)]: 'card.action.trigger'
-			  }
-			 */
-			this.logger.debug('card.action.trigger:')
-			this.logger.debug(data)
-			const messageId = data.context.open_message_id
-			if (messageId) {
-				if (this.actions.get(messageId)) {
-					this.actions.get(messageId).next(data)
+				if (
+					!(
+						data.message.chat_type === 'p2p' ||
+						data.message.mentions?.some((mention) => mention.id.open_id === bot?.open_id)
+					)
+				) {
 					return true
-				} else {
-					this.errorMessage({ chatId: data.context.open_chat_id }, new Error(`响应动作不存在或已超时！`))
 				}
+
+				// if (data.message.chat_type === 'p2p') {
+				// 	const result = await this.interactiveMessage({ chatId } as ChatLarkContext, {
+				// 		elements: []
+				// 	})
+				// 	return true
+				// }
+
+				this.logger.debug('im.message.receive_v1:')
+				this.logger.debug(data)
+				const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
+					new LarkMessageCommand({
+						tenant,
+						organizationId,
+						integrationId: integration.id,
+						message: data as any,
+						chatId,
+						chatType: data.message.chat_type,
+						larkService: this
+					})
+				)
+				result.subscribe({
+					next: () => {
+						//
+					},
+					error: () => {
+						//
+					}
+				})
+
+				return true
+			},
+			'application.bot.menu_v6': async (data) => {
+				/**
+				 * {
+					schema: '2.0',
+					event_id: '3632caaa3c0143c072b2149c5b58ae8f',
+					token: '',
+					create_time: '1723551863000',
+					event_type: 'application.bot.menu_v6',
+					tenant_key: '',
+					app_id: 'cli_a6300438b435100b',
+					event_key: 'select_cube_sales',
+					operator: {
+						operator_id: {
+							open_id: '',
+							union_id: '',
+							user_id: '327b132g'
+						}
+					},
+					timestamp: 1723551863,
+					[Symbol(event-type)]: 'application.bot.menu_v6'
+				  }
+				 * 
+				 */
+				const { event_key } = data
+				this.logger.debug('application.bot.menu_v6:')
+				this.logger.debug(data)
+				// const organizationId = environment.larkConfig.organizationId
+				// const tenant = await this.tenantService.findOne({ id: environment.larkConfig.tenantId })
+				const tenant = integration.tenant
+				const organizationId = integration.organizationId
+				const result = await this.commandBus.execute<LarkBotMenuCommand, Observable<any>>(
+					new LarkBotMenuCommand({
+						tenant,
+						organizationId,
+						message: data as any
+					})
+				)
+
+				result.pipe(filter(nonNullable)).subscribe(async (message) => {
+					await client.im.message.create(message)
+				})
+
+				return true
+			},
+			'card.action.trigger': async (data) => {
+				/**
+				 * {
+					schema: '2.0',
+					event_id: 'd972d3653c29ef5307e80e9a08cf099f',
+					token: 'c-t',
+					create_time: '1723625509226706',
+					event_type: 'card.action.trigger',
+					tenant_key: '',
+					app_id: '',
+					operator: {
+						tenant_key: '',
+						open_id: '',
+						union_id: ''
+					},
+					action: { tag: 'select_static', option: '1' },
+					host: 'im_message',
+					context: {
+						open_message_id: 'om_dd02538d5ecaf1b861c7d748deb3f189',
+						open_chat_id: 'oc_f1a6cd3129de01656f2e9f4c3083b3a0'
+					},
+					[Symbol(event-type)]: 'card.action.trigger'
+				  }
+				 */
+				this.logger.debug('card.action.trigger:')
+				this.logger.debug(data)
+				const messageId = data.context.open_message_id
+				if (messageId) {
+					if (this.actions.get(messageId)) {
+						this.actions.get(messageId).next(data)
+						return true
+					} else {
+						this.errorMessage({ integrationId: integration.id, chatId: data.context.open_chat_id }, new Error(`响应动作不存在或已超时！`))
+					}
+				}
+				return false
 			}
-			return false
-		}
-	})
-
-	webhookEventDispatcher = lark.adaptExpress(this.eventDispatcher, { autoChallenge: true })
-
-	constructor(
-		private readonly tenantService: TenantService,
-		private readonly commandBus: CommandBus
-	) {
-		if (this.client) {
-			this.getBotInfo()
-		}
+		})
 	}
 
-	async getBotInfo() {
-		const res = await this.client.request({
+	async getBotInfo(client: lark.Client) {
+		const res = await client.request({
 			method: 'GET',
 			url: 'https://open.feishu.cn/open-apis/bot/v3/info',
 			data: {},
 			params: {}
 		})
-		this.bot = res.bot
+
+		return res.bot
 	}
 
-	async createMessage(message: LarkMessage) {
+	getClient(id: string) {
+		return this.eventDispatchers.get(id)?.client
+	}
+
+	async createMessage(integrationId: string, message: LarkMessage) {
 		try {
-			return await this.client.im.message.create(message)
+			return await this.getClient(integrationId).im.message.create(message)
 		} catch (err) {
 			this.logger.error(err)
 		}
 	}
 
-	async patchMessage(payload?: {
+	async patchMessage(integrationId: string, payload?: {
 		data: {
 			content: string
 		}
@@ -228,14 +264,14 @@ export class LarkService {
 		}
 	}) {
 		try {
-			return await this.client.im.message.patch(payload)
+			return await this.getClient(integrationId).im.message.patch(payload)
 		} catch (err) {
 			this.logger.error(err)
 		}
 	}
 
-	async errorMessage({ chatId }: { chatId: string }, err: Error) {
-		await this.createMessage({
+	async errorMessage({ integrationId, chatId }: { integrationId: string; chatId: string }, err: Error) {
+		await this.createMessage(integrationId, {
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -247,10 +283,10 @@ export class LarkService {
 		} as LarkMessage)
 	}
 
-	async textMessage(context: { chatId: string; messageId: string }, content: string) {
+	async textMessage(context: { integrationId: string; chatId: string; messageId: string }, content: string) {
 		const { chatId, messageId } = context
 		if (messageId) {
-			return await this.patchMessage({
+			return await this.patchMessage(context.integrationId, {
 				data: {
 					content: JSON.stringify({ text: content })
 				},
@@ -259,7 +295,7 @@ export class LarkService {
 				}
 			})
 		}
-		return await this.createMessage({
+		return await this.createMessage(context.integrationId,{
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -272,7 +308,7 @@ export class LarkService {
 	}
 
 	async interactiveMessage(context: ChatLarkContext, data: any) {
-		return await this.createMessage({
+		return await this.createMessage(context.integrationId, {
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -285,7 +321,7 @@ export class LarkService {
 	}
 
 	async markdownMessage(context: ChatLarkContext, content: string) {
-		await this.createMessage({
+		await this.createMessage(context.integrationId, {
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -304,8 +340,8 @@ export class LarkService {
 		} as LarkMessage)
 	}
 
-	async patchInteractiveMessage(messageId: string, data: any) {
-		return await this.patchMessage({
+	async patchInteractiveMessage(integrationId: string, messageId: string, data: any) {
+		return await this.patchMessage(integrationId, {
 			data: {
 				content: JSON.stringify(data)
 			},
@@ -320,7 +356,7 @@ export class LarkService {
 		data: any,
 		subscriber?: Partial<Observer<any>> | ((value: any) => void)
 	) {
-		const message = await this.createMessage({
+		const message = await this.createMessage(context.integrationId, {
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -330,6 +366,10 @@ export class LarkService {
 				msg_type: 'interactive'
 			}
 		} as LarkMessage)
+
+		if (!message) {
+			throw new Error(`Can't send lark message`)
+		}
 
 		const messageId = message.data.message_id
 		const response = new Subject<any>()
@@ -346,9 +386,9 @@ export class LarkService {
 		return message
 	}
 
-	createAction(chatId: string, content: any) {
+	createAction({integrationId, chatId}: ChatLarkContext, content: any) {
 		return new Observable<{ value: any }>((subscriber: Subscriber<unknown>) => {
-			this.client.im.message
+			this.getClient(integrationId).im.message
 				.create({
 					data: {
 						receive_id: chatId,
@@ -387,9 +427,9 @@ export class LarkService {
 		})
 	}
 
-	patchAction(messageId: string, content: any) {
+	patchAction({integrationId}: ChatLarkContext, messageId: string, content: any) {
 		return new Observable<{ value: any }>((subscriber: Subscriber<unknown>) => {
-			this.client.im.message
+			this.getClient(integrationId).im.message
 				.patch({
 					data: {
 						content: JSON.stringify(content)

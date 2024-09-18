@@ -173,6 +173,16 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 				status: 'info'
 			},
 		]
+	},
+	{
+		name: 'Integration',
+		code: FeatureEnum.FEATURE_INTEGRATION,
+		description: 'Enable Integration',
+		image: 'integration.png',
+		link: 'settings/integration',
+		isEnabled: features.FEATURE_INTEGRATION,
+		icon: 'assistant',
+		status: 'accent',
 	}
 ];
 
