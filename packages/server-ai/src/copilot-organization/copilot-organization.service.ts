@@ -36,7 +36,7 @@ export class CopilotOrganizationService extends TenantAwareCrudService<CopilotOr
 				organizationId: input.organizationId,
 				provider: input.provider,
 				tokenUsed: input.tokenUsed ?? 0,
-				tokenLimit: input.tokenLimit
+				tokenLimit: input.tokenLimit,
 			})
 		}
 	}

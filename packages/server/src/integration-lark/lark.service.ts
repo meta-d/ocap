@@ -1,14 +1,15 @@
 import * as lark from '@larksuiteoapi/node-sdk'
-import { nonNullable } from '@metad/copilot'
 import { IIntegration, IUser } from '@metad/contracts'
+import { nonNullable } from '@metad/copilot'
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import express from 'express'
 import { Cache } from 'cache-manager'
+import { isEqual } from 'date-fns'
+import express from 'express'
 import { filter, Observable, Observer, Subject, Subscriber } from 'rxjs'
+import { UserService } from '../user'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
 import { ChatLarkContext, LarkMessage } from './types'
-import { UserService } from '../user'
 
 @Injectable()
 export class LarkService {
@@ -35,13 +36,19 @@ export class LarkService {
 		private readonly userService: UserService,
 		private readonly commandBus: CommandBus,
 		@Inject(CACHE_MANAGER)
-		private readonly cacheManager: Cache,
-	) {
-	}
+		private readonly cacheManager: Cache
+	) {}
 
 	webhookEventDispatcher(integration: IIntegration, req: express.Request, res: express.Response) {
 		let item = this.eventDispatchers.get(integration.id)
-		if (!item || item.integration.updatedAt !== integration.updatedAt) {
+		if (!item || !isEqual(item.integration.updatedAt, integration.updatedAt)) {
+			if (item) { // debug
+				console.log(
+					item.integration.updatedAt,
+					integration.updatedAt,
+					!isEqual(item.integration.updatedAt, integration.updatedAt)
+				)
+			}
 			const client = this.createClient(integration)
 			item = {
 				integration,
@@ -68,7 +75,7 @@ export class LarkService {
 		})
 	}
 
-	createEventDispatcher(integration: IIntegration, client: lark.Client,) {
+	createEventDispatcher(integration: IIntegration, client: lark.Client) {
 		return new lark.EventDispatcher({
 			verificationToken: integration.options.verificationToken,
 			encryptKey: integration.options.encryptKey,
@@ -233,7 +240,10 @@ export class LarkService {
 						this.actions.get(messageId).next(data)
 						return true
 					} else {
-						this.errorMessage({ integrationId: integration.id, chatId: data.context.open_chat_id }, new Error(`响应动作不存在或已超时！`))
+						this.errorMessage(
+							{ integrationId: integration.id, chatId: data.context.open_chat_id },
+							new Error(`响应动作不存在或已超时！`)
+						)
 					}
 				}
 				return false
@@ -258,18 +268,20 @@ export class LarkService {
 
 	async getUser(tenantId: string, unionId: string) {
 		// From cache
-		let user = await this.cacheManager.get<IUser>(tenantId + '/'  + unionId)
-		if (user) { return user }
+		let user = await this.cacheManager.get<IUser>(tenantId + '/' + unionId)
+		if (user) {
+			return user
+		}
 
 		try {
 			user = await this.userService.findOneByConditions({
 				tenantId,
 				thirdPartyId: unionId
 			})
-		} catch(err) {
-			// 
+		} catch (err) {
+			//
 		}
-		
+
 		if (!user) {
 			user = await this.userService.create({
 				tenantId,
@@ -278,7 +290,7 @@ export class LarkService {
 		}
 
 		if (user) {
-			await this.cacheManager.set(tenantId + '/'  + unionId, user)
+			await this.cacheManager.set(tenantId + '/' + unionId, user)
 		}
 		return user
 	}
@@ -291,14 +303,17 @@ export class LarkService {
 		}
 	}
 
-	async patchMessage(integrationId: string, payload?: {
-		data: {
-			content: string
+	async patchMessage(
+		integrationId: string,
+		payload?: {
+			data: {
+				content: string
+			}
+			path: {
+				message_id: string
+			}
 		}
-		path: {
-			message_id: string
-		}
-	}) {
+	) {
 		try {
 			return await this.getClient(integrationId).im.message.patch(payload)
 		} catch (err) {
@@ -331,7 +346,7 @@ export class LarkService {
 				}
 			})
 		}
-		return await this.createMessage(context.integrationId,{
+		return await this.createMessage(context.integrationId, {
 			params: {
 				receive_id_type: 'chat_id'
 			},
@@ -422,10 +437,10 @@ export class LarkService {
 		return message
 	}
 
-	createAction({integrationId, chatId}: ChatLarkContext, content: any) {
+	createAction({ integrationId, chatId }: ChatLarkContext, content: any) {
 		return new Observable<{ value: any }>((subscriber: Subscriber<unknown>) => {
-			this.getClient(integrationId).im.message
-				.create({
+			this.getClient(integrationId)
+				.im.message.create({
 					data: {
 						receive_id: chatId,
 						content: JSON.stringify(content),
@@ -463,10 +478,10 @@ export class LarkService {
 		})
 	}
 
-	patchAction({integrationId}: ChatLarkContext, messageId: string, content: any) {
+	patchAction({ integrationId }: ChatLarkContext, messageId: string, content: any) {
 		return new Observable<{ value: any }>((subscriber: Subscriber<unknown>) => {
-			this.getClient(integrationId).im.message
-				.patch({
+			this.getClient(integrationId)
+				.im.message.patch({
 					data: {
 						content: JSON.stringify(content)
 					},

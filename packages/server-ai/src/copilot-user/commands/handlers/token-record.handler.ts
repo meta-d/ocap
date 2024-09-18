@@ -20,7 +20,8 @@ export class CopilotTokenRecordHandler implements ICommandHandler<CopilotTokenRe
 				...input,
 				organizationId,
 				orgId: copilot.organizationId,
-				provider: input.copilot.provider
+				provider: input.copilot.provider,
+				tokenLimit: copilot.tokenBalance
 			})
 			// 使用全局 Copilot 时记录该用户所在组织的 token 使用
 			if (!copilot.organizationId) {
@@ -28,7 +29,8 @@ export class CopilotTokenRecordHandler implements ICommandHandler<CopilotTokenRe
 					tenantId: input.tenantId,
 					tokenUsed: input.tokenUsed,
 					organizationId,
-					provider: input.copilot.provider
+					provider: input.copilot.provider,
+					tokenLimit: copilot.tokenBalance
 				})
 			}
 		}

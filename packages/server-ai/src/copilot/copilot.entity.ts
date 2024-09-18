@@ -1,6 +1,6 @@
 import { AiProvider, AiProviderRole, ICopilot } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsOptional, IsString, IsBoolean, IsJSON } from 'class-validator'
+import { IsOptional, IsString, IsBoolean, IsJSON, IsNumber } from 'class-validator'
 import { AfterLoad, Column, Entity } from 'typeorm'
 import { Exclude, Expose } from 'class-transformer'
 import { IsSecret, TenantOrganizationBaseEntity, WrapSecrets } from '@metad/server-core'
@@ -60,6 +60,12 @@ export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
 	@Expose({ toPlainOnly: true, name: 'apiKey' })
 	@IsSecret()
 	secretKey?: string;
+
+	@ApiPropertyOptional({ type: () => Number })
+	@IsNumber()
+	@IsOptional()
+	@Column({ nullable: true })
+	tokenBalance?: number
 
 	@AfterLoad()
 	afterLoadEntity?() {

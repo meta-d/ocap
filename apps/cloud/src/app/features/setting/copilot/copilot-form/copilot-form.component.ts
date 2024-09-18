@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common'
 import { Component, computed, effect, inject, input, model, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
@@ -13,7 +14,7 @@ import { MaterialModule } from '../../../../@shared'
   selector: 'pac-copilot-form',
   templateUrl: './copilot-form.component.html',
   styleUrls: ['./copilot-form.component.scss'],
-  imports: [TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule]
+  imports: [DecimalPipe, TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule]
 })
 export class CopilotFormComponent {
   AiProvider = AiProvider
@@ -75,8 +76,13 @@ export class CopilotFormComponent {
     apiHost: new FormControl(null),
     defaultModel: new FormControl<string | null>(null),
 
-    showTokenizer: new FormControl(null)
+    showTokenizer: new FormControl(null),
+    tokenBalance: new FormControl(null)
   })
+
+  get tokenBalance() {
+    return this.formGroup.get('tokenBalance').value
+  }
 
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
   readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
@@ -145,5 +151,16 @@ export class CopilotFormComponent {
       : {
           ...rest
         }
+  }
+
+  formatBalanceLabel(value: number): string {
+    if (value >= 1000000) {
+      return Math.round(value / 1000000) + 'm'
+    }
+    if (value >= 1000) {
+      return Math.round(value / 1000) + 'k'
+    }
+
+    return `${value}`
   }
 }

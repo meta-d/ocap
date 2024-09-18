@@ -71,6 +71,13 @@
         </mat-checkbox>
     </div>
 
+    <div class="w-full flex flex-col justify-start items-stretch mt-4">
+      <label>{{ 'PAC.Copilot.TokenBalance' | translate: {Default: 'Token Balance'} }}: {{tokenBalance | number}}</label>
+      <mat-slider min="0" max="10000000" step="10000" showTickMarks discrete [displayWith]="formatBalanceLabel">
+        <input matSliderThumb formControlName="tokenBalance">
+      </mat-slider>
+    </div>
+
     <div class="self-stretch flex justify-start items-center mt-8">
         <button mat-raised-button color="primary" class="ngm-rounded-full"
             [disabled]="(formGroup.invalid || formGroup.pristine) && enabled() === formGroup.value.enabled"
