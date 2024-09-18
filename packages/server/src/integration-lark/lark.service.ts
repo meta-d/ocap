@@ -1,12 +1,14 @@
 import * as lark from '@larksuiteoapi/node-sdk'
 import { nonNullable } from '@metad/copilot'
-import { IIntegration } from '@metad/contracts'
-import { Injectable, Logger } from '@nestjs/common'
+import { IIntegration, IUser } from '@metad/contracts'
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import express from 'express'
+import { Cache } from 'cache-manager'
 import { filter, Observable, Observer, Subject, Subscriber } from 'rxjs'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
 import { ChatLarkContext, LarkMessage } from './types'
+import { UserService } from '../user'
 
 @Injectable()
 export class LarkService {
@@ -30,7 +32,10 @@ export class LarkService {
 	>()
 
 	constructor(
-		private readonly commandBus: CommandBus
+		private readonly userService: UserService,
+		private readonly commandBus: CommandBus,
+		@Inject(CACHE_MANAGER)
+		private readonly cacheManager: Cache,
 	) {
 	}
 
@@ -90,9 +95,9 @@ export class LarkService {
 					},
 					sender: {
 						sender_id: {
-						open_id: '',
-						union_id: '',
-						user_id: '327b132g'
+						  open_id: '',
+						  union_id: '',
+						  user_id: '327b132g'
 						},
 						sender_type: 'user',
 						tenant_key: ''
@@ -126,11 +131,15 @@ export class LarkService {
 
 				this.logger.debug('im.message.receive_v1:')
 				this.logger.debug(data)
+
+				const user = await this.getUser(tenant.id, data.sender.sender_id.union_id)
+
 				const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
 					new LarkMessageCommand({
 						tenant,
 						organizationId,
 						integrationId: integration.id,
+						user,
 						message: data as any,
 						chatId,
 						chatType: data.message.chat_type,
@@ -245,6 +254,33 @@ export class LarkService {
 
 	getClient(id: string) {
 		return this.eventDispatchers.get(id)?.client
+	}
+
+	async getUser(tenantId: string, unionId: string) {
+		// From cache
+		let user = await this.cacheManager.get<IUser>(tenantId + '/'  + unionId)
+		if (user) { return user }
+
+		try {
+			user = await this.userService.findOneByConditions({
+				tenantId,
+				thirdPartyId: unionId
+			})
+		} catch(err) {
+			// 
+		}
+		
+		if (!user) {
+			user = await this.userService.create({
+				tenantId,
+				thirdPartyId: unionId
+			})
+		}
+
+		if (user) {
+			await this.cacheManager.set(tenantId + '/'  + unionId, user)
+		}
+		return user
 	}
 
 	async createMessage(integrationId: string, message: LarkMessage) {

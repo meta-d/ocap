@@ -1,6 +1,7 @@
 import { IntegrationEnum } from '@metad/contracts'
-import { Injectable, NestMiddleware } from '@nestjs/common'
 import { NextFunction, Request, Response } from 'express'
+import { Injectable, NestMiddleware } from '@nestjs/common'
+
 
 @Injectable()
 export class LarkMiddleware implements NestMiddleware {

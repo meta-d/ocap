@@ -73,10 +73,10 @@ export class ChatBIConversation implements IChatBIConversation {
 	get tenantId() {
 		return this.chatContext.tenant.id
 	}
-	// 知识库跟着 copilot 的配置
-	get organizationId() {
-		return this.copilot.organizationId
-	}
+	// // 知识库跟着 copilot 的配置
+	// get organizationId() {
+	// 	return this.copilot.organizationId
+	// }
 
 	public context: string = null
 
@@ -95,13 +95,14 @@ export class ChatBIConversation implements IChatBIConversation {
 	private chatStack: ChatStack[] = []
 	constructor(
 		private readonly chatContext: ChatBILarkContext,
-		private readonly copilot: Copilot,
+		private readonly chatModel: BaseChatModel,
 		private readonly modelService: ChatBIModelService,
 		private readonly semanticModelMemberService: SemanticModelMemberService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly dsCoreService: NgmDSCoreService,
 		private readonly copilotKnowledgeService: CopilotKnowledgeService,
-		private readonly chatBIService: ChatBIService
+		private readonly chatBIService: ChatBIService,
+		private readonly organizationId: string
 	) {
 		this.exampleFewShotPrompt = createExampleFewShotPrompt(this.copilotKnowledgeService, {
 			tenantId: this.tenantId,
@@ -268,10 +269,7 @@ ${markdownCubes(this.models.slice(3))}
 		const welcomeTool = createWelcomeTool({ conversation: this })
 		const moreQuestionsTool = createMoreQuestionsTool({ conversation: this })
 
-		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
-			//
-		})
-		const indicatorTool = createIndicatorTool(llm, this.referencesRetrieverTool, {
+		const indicatorTool = createIndicatorTool(this.chatModel, this.referencesRetrieverTool, {
 			logger: this.logger,
 			conversation: this,
 			larkService: chatContext.larkService
@@ -289,7 +287,7 @@ ${markdownCubes(this.models.slice(3))}
 		
 		return createReactAgent({
 			state: insightAgentState,
-			llm,
+			llm: this.chatModel,
 			checkpointSaver: this.copilotCheckpointSaver,
 			// interruptBefore,
 			// interruptAfter,
@@ -378,7 +376,7 @@ ${createAgentStepsInstructions(
 		await this.initThread()
 		// Model context
 		let context = null
-		const session = this.chatBIService.userSessions[this.userId]
+		const session = null // this.chatBIService.userSessions[this.userId]
 		if (this.chatType === 'p2p' && session?.chatModelId) {
 			const chatModel = this.models.find((item) => item.id === session.chatModelId)
 			context = markdownCubes([chatModel])
@@ -490,6 +488,7 @@ ${createAgentStepsInstructions(
 			return null
 		}
 	}
+
 	async getCubeCache(modelId: string, cubeName: string) {
 		return await this.chatBIService.cacheManager.get<EntityType>(modelId + '/' + cubeName)
 	}

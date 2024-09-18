@@ -1,4 +1,4 @@
-import { ITenant } from "@metad/contracts"
+import { ITenant, IUser } from "@metad/contracts"
 import { LarkService } from "./lark.service"
 
 export type LarkMessage = {
@@ -17,6 +17,7 @@ export type ChatLarkContext<T = any> = {
 	tenant: ITenant
 	organizationId: string
 	integrationId: string
+	user: IUser
 	larkService: LarkService
 	chatId: string
 	chatType: 'p2p' | 'group' | string
