@@ -1,7 +1,7 @@
 <div class="flex items-end p-2 rounded-3xl bg-black/5 dark:bg-white/10">
     <textarea #userInput matInput class="ngm-colpilot__input flex-1 w-full px-1.5 m-2 z-10 resize-none overflow-visible"
       id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
-      [placeholder]="'Copilot.SendPrompt' | translate: {Default: 'send prompt'}"
+      [placeholder]="'Copilot.SendPrompt' | translate: {Default: 'Send prompt'}"
       [formControl]="promptControl"
       (keydown)="triggerFun($event)"
 

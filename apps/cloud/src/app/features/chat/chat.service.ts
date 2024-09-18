@@ -36,6 +36,7 @@ import {
 import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { COMMON_COPILOT_ROLE } from './types'
+import { TranslateService } from '@ngx-translate/core'
 
 @Injectable()
 export class ChatService {
@@ -43,6 +44,7 @@ export class ChatService {
   readonly conversationService = inject(ChatConversationService)
   readonly copilotRoleService = inject(CopilotRoleService)
   readonly appService = inject(AppService)
+  readonly #translate = inject(TranslateService)
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
   readonly #toastr = inject(ToastrService)
@@ -84,7 +86,10 @@ export class ChatService {
     pipe(
       map(([role, lang]) => {
         if (!role) {
-          role = COMMON_COPILOT_ROLE
+          role = {
+            ...COMMON_COPILOT_ROLE,
+            description: this.#translate.instant('PAC.Chat.CommonRoleDescription', {Default: 'Hi, how can I help? I can chat and search the knowledge base. Please select the appropriate role if you would like to use the tools.'})
+          }
         }
         if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
           return { ...role, title: role.titleCN }

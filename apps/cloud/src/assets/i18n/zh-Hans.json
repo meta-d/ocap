@@ -1386,7 +1386,8 @@
     "Chat": {
       "DeleteConversation": "删除会话",
       "RetrievingDocuments": "检索文档",
-      "RetrievedDocuments": "检索到{{value}}个相关文档块"
+      "RetrievedDocuments": "检索到{{value}}个相关文档块",
+      "CommonRoleDescription": "嗨，我能帮什么忙吗？我可以聊天，检索知识库。想要使用工具请选择相应的角色。"
     },
     "ChatBI": {
       "Title": "ChatBI-数据分析与洞察",
@@ -1813,7 +1814,8 @@
         "COPILOT_VIEW": "使用智能助理",
         "COPILOT_EDIT": "维护智能助理配置",
         "KNOWLEDGEBASE_EDIT": "维护知识库",
-        "CHAT_VIEW": "使用智能对话"
+        "CHAT_VIEW": "使用智能对话",
+        "INTEGRATION_EDIT": "维护集成连接"
       },
       "Organization": {
         "AllOrganizations": "所有组织",
