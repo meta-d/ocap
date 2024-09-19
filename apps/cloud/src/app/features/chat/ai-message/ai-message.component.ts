@@ -47,7 +47,12 @@ export class ChatAiMessageComponent {
   readonly chatService = inject(ChatService)
 
   readonly message = input<CopilotBaseMessage>()
-  readonly content = computed(() => this.message()?.content)
+  readonly content = computed(() => {
+    if (['thinking', 'answering'].includes(this.message().status) && this.answering()) {
+      return (this.message()?.content ?? '') + '<span class="thinking-placeholder"></span>'
+    }
+    return this.message()?.content
+  })
 
   readonly role = this.chatService.role
   readonly answering = this.chatService.answering
