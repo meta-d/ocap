@@ -1,14 +1,15 @@
 import { CacheModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
+import { IntegrationModule } from '../integration/integration.module'
+import { RoleModule } from '../role/role.module'
 import { TenantModule } from '../tenant'
+import { UserModule } from '../user'
 import { LarkHooksController } from './lark.hooks.controller'
 import { LarkMiddleware } from './lark.middleware'
 import { LarkService } from './lark.service'
-import { IntegrationModule } from '../integration/integration.module'
-import { UserModule } from '../user'
 
 @Module({
-	imports: [CacheModule.register(), CqrsModule, TenantModule, UserModule, IntegrationModule],
+	imports: [CacheModule.register(), CqrsModule, TenantModule, UserModule, RoleModule, IntegrationModule],
 	controllers: [LarkHooksController],
 	providers: [LarkService],
 	exports: [LarkService]

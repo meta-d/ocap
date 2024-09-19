@@ -10,6 +10,8 @@ import { filter, Observable, Observer, Subject, Subscriber } from 'rxjs'
 import { UserService } from '../user'
 import { LarkBotMenuCommand, LarkMessageCommand } from './commands'
 import { ChatLarkContext, LarkMessage } from './types'
+import { ConfigService, IEnvironment } from '@metad/server-config'
+import { RoleService } from '../role/role.service'
 
 @Injectable()
 export class LarkService {
@@ -34,6 +36,8 @@ export class LarkService {
 
 	constructor(
 		private readonly userService: UserService,
+		private readonly roleService: RoleService,
+		private readonly configService: ConfigService,
 		private readonly commandBus: CommandBus,
 		@Inject(CACHE_MANAGER)
 		private readonly cacheManager: Cache
@@ -139,7 +143,7 @@ export class LarkService {
 				this.logger.debug('im.message.receive_v1:')
 				this.logger.debug(data)
 
-				const user = await this.getUser(tenant.id, data.sender.sender_id.union_id)
+				const user = await this.getUser(client, tenant.id, data.sender.sender_id.union_id)
 
 				const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
 					new LarkMessageCommand({
@@ -266,7 +270,7 @@ export class LarkService {
 		return this.eventDispatchers.get(id)?.client
 	}
 
-	async getUser(tenantId: string, unionId: string) {
+	async getUser(client: lark.Client, tenantId: string, unionId: string) {
 		// From cache
 		let user = await this.cacheManager.get<IUser>(tenantId + '/' + unionId)
 		if (user) {
@@ -283,9 +287,28 @@ export class LarkService {
 		}
 
 		if (!user) {
+			const larkUser = await client.contact.user.get({
+				params: {
+                    user_id_type: "union_id",
+                },
+                path: {
+                    user_id: unionId
+                }
+			})
+
+			// Lark user role
+			const larkConfig = this.configService.get('larkConfig') as IEnvironment['larkConfig']
+			const _role = await this.roleService.findOneOrFail({where: {tenantId: tenantId, name: larkConfig.roleName }})
+
 			user = await this.userService.create({
 				tenantId,
-				thirdPartyId: unionId
+				thirdPartyId: unionId,
+				username: larkUser.data.user.user_id,
+				email: larkUser.data.user.email,
+				mobile: larkUser.data.user.mobile,
+				imageUrl: larkUser.data.user.avatar?.avatar_240,
+				firstName: larkUser.data.user.name,
+				roleId: _role.record?.id
 			})
 		}
 
