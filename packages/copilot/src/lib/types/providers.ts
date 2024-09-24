@@ -1,7 +1,7 @@
 /**
  * Providers for LLMs
  * 
- * - https://js.langchain.com/v0.2/docs/integrations/chat/
+ * - https://js.langchain.com/docs/integrations/chat/
  */
 export enum AiProvider {
   /**
@@ -32,7 +32,17 @@ export enum AiProvider {
    * - https://www.aliyun.com/product/bailian
    * - https://js.langchain.com/docs/integrations/chat/alibaba_tongyi/
    */
-  AlibabaTongyi = 'alibaba_tongyi'
+  AlibabaTongyi = 'alibaba_tongyi',
+  /**
+   * - https://open.bigmodel.cn/
+   * - https://js.langchain.com/docs/integrations/chat/openai/
+   */
+  Zhipu = 'zhipu',
+  /**
+   * - https://qianfan.cloud.baidu.com/
+   * - https://js.langchain.com/docs/integrations/chat/baidu_qianfan/
+   */
+  BaiduQianfan = 'baidu_qianfan',
 }
 
 export enum AiProtocol {
@@ -272,6 +282,52 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'claude-2',
         name: 'Claude 2'
+      },
+    ]
+  },
+  [AiProvider.Zhipu]: {
+    caption: 'Zhipu',
+    protocol: AiProtocol.OpenAI,
+    apiHost: 'https://open.bigmodel.cn/api/paas/v4',
+    isTools: true,
+    models: [
+      {
+        id: 'GLM-4-Plus',
+        name: 'GLM-4-Plus'
+      },
+      {
+        id: 'GLM-4-Long',
+        name: 'GLM-4-Long'
+      },
+      {
+        id: 'GLM-4-AirX',
+        name: 'GLM-4-AirX'
+      },
+      {
+        id: 'GLM-4-Air',
+        name: 'GLM-4-Air'
+      },
+      {
+        id: 'GLM-4-Flash',
+        name: 'GLM-4-Flash'
+      },
+      {
+        id: 'GLM-4-AllTools',
+        name: 'GLM-4-AllTools'
+      },
+      {
+        id: 'GLM-4V',
+        name: 'GLM-4V'
+      },
+    ]
+  },
+  [AiProvider.BaiduQianfan]: {
+    caption: 'Baidu Qianfan',
+    protocol: AiProtocol.Others,
+    models: [
+      {
+        id: 'ERNIE-4.0-8K',
+        name: 'ERNIE 4.0 8K'
       },
     ]
   }

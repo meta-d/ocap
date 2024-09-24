@@ -1,4 +1,5 @@
 // 同步与：`@metad/server-ai`/copilot/llm.ts
+import { ChatBaiduQianfan } from '@langchain/baidu-qianfan'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatOpenAI, ClientOptions } from '@langchain/openai'
 import { ChatAnthropic } from '@langchain/anthropic'
@@ -67,6 +68,13 @@ export function createLLM<T = BaseChatModel>(
         ]
       }) as T
     }
+    case AiProvider.BaiduQianfan: {
+			return new ChatBaiduQianfan({
+				qianfanAccessKey: copilot.apiKey,
+				qianfanSecretKey: copilot.apiKey,
+				model: copilot.defaultModel
+			}) as T
+		}
     default:
       return null
   }

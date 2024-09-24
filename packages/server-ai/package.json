@@ -5,6 +5,7 @@
   "dependencies": {
     "@langchain/anthropic": "0.3.1",
     "@langchain/exa": "0.1.0",
+    "@langchain/baidu-qianfan": "0.1.0",
     "duck-duck-scrape": "^2.2.5",
     "epub2": "^3.0.2",
     "html-to-text": "^7.1.2",

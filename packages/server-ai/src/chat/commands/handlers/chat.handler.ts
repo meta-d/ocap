@@ -7,7 +7,7 @@ import {
 	TOOLSETS
 } from '@metad/contracts'
 import { NgmLanguageEnum } from '@metad/copilot'
-import { shortuuid } from '@metad/server-common'
+import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { isNil } from 'lodash'
 import { Observable } from 'rxjs'
@@ -73,18 +73,31 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				if (!this.chatService.getConversation(chatConversation.id)) {
 					await this.chatService.fetchCopilots(tenantId, organizationId)
 
-					this.chatService.setConversation(
-						chatConversation.id,
-						new ChatConversationAgent(
-							chatConversation,
-							organizationId,
-							user,
-							this.copilotCheckpointSaver,
-							this.chatService,
-							this.commandBus,
-							this.queryBus
-						).createAgentGraph(copilotRole, TOOLSETS.filter((item) => role?.toolsets?.includes(item.id)))
-					)
+					try {
+						this.chatService.setConversation(
+							chatConversation.id,
+							new ChatConversationAgent(
+								chatConversation,
+								organizationId,
+								user,
+								this.copilotCheckpointSaver,
+								this.chatService,
+								this.commandBus,
+								this.queryBus
+							).createAgentGraph(copilotRole, TOOLSETS.filter((item) => role?.toolsets?.includes(item.id)))
+						)
+					} catch (error) {
+						subscriber.next({
+							event: ChatGatewayEvent.Error,
+							data: {
+								id: shortuuid(),
+								role: 'info',
+								error: getErrorMessage(error),
+							}
+						})
+						subscriber.complete()
+						return
+					}
 				}
 				const conversation = this.chatService.getConversation(chatConversation.id)
 

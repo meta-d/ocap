@@ -1,5 +1,7 @@
 import { ChatAnthropic } from '@langchain/anthropic'
+import { ChatBaiduQianfan, BaiduQianfanEmbeddings } from '@langchain/baidu-qianfan'
 import { AlibabaTongyiEmbeddings } from '@langchain/community/embeddings/alibaba_tongyi'
+import { ZhipuAIEmbeddings } from '@langchain/community/embeddings/zhipuai'
 import { Embeddings } from '@langchain/core/embeddings'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatOllama, OllamaEmbeddings } from '@langchain/ollama'
@@ -66,12 +68,18 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 				]
 			}) as T
 		}
+		case AiProvider.BaiduQianfan: {
+			const [accessKey, secretKey] = copilot.apiKey?.split('/') ?? []
+			return new ChatBaiduQianfan({
+				qianfanAccessKey: accessKey,
+				qianfanSecretKey: secretKey,
+				model: copilot.defaultModel
+			}) as T
+		}
 		default:
 			return null
 	}
 }
-
-
 
 export function createEmbeddings(
 	copilot: ICopilot,
@@ -98,8 +106,19 @@ export function createEmbeddings(
 			case AiProvider.AlibabaTongyi:
 				return new AlibabaTongyiEmbeddings({
 					apiKey: copilot.apiKey,
-					batchSize: batchSize || 25,
+					batchSize: batchSize || 25
 				})
+			case AiProvider.Zhipu:
+				return new ZhipuAIEmbeddings({
+					apiKey: copilot.apiKey
+				})
+			case AiProvider.BaiduQianfan: {
+				const [accessKey, secretKey] = copilot.apiKey?.split('/') ?? []
+				return new BaiduQianfanEmbeddings({
+					qianfanAccessKey: accessKey,
+					qianfanSecretKey: secretKey,
+				})
+			}
 			default:
 				throw new Error(`Unimplemented copilot provider '${copilot.provider}' for embeddings`)
 		}

@@ -45,7 +45,19 @@ const PROVIDERS = [
     icon: 'tongyi.svg',
     iconAlt: 'tongyi-logo',
     embedding: true
-  }
+  },
+  {
+    name: AiProvider.Zhipu,
+    icon: 'zhipu.svg',
+    iconAlt: 'zhipu-logo',
+    embedding: true
+  },
+  // {
+  //   name: AiProvider.BaiduQianfan,
+  //   icon: 'qianfan.svg',
+  //   iconAlt: 'qianfan-logo',
+  //   embedding: true
+  // }
 ]
 
 @Component({

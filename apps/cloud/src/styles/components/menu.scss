@@ -15,7 +15,7 @@
 }
 
 .cdk-menu.cdk-menu-group {
-  @apply inline-flex flex-col p-2 rounded-xl shadow-lg overflow-auto border border-solid 
+  @apply mt-2 inline-flex flex-col p-2 rounded-xl shadow-lg overflow-auto border border-solid 
     border-neutral-200 dark:border-neutral-700 dark:shadow-neutral-800;
   background-color: var(--ngm-color-surface);
 

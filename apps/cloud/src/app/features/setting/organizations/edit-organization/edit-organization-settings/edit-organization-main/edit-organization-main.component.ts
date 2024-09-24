@@ -36,7 +36,7 @@ export class EditOrganizationMainComponent {
         this.form.patchValue(org)
         this.model = { ...org }
       }
-    })
+    }, { allowSignalWrites: true })
   }
 
   handleImageUploadError(event: any) {}
