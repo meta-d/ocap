@@ -19,7 +19,7 @@ export interface FormlyTextAreaFieldConfig extends FormlyFieldConfig<TextAreaPro
 @Component({
   selector: 'pac-formly-textarea',
   template: `
-<label *ngIf="props?.label" class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{to.label}}</label>
+<label *ngIf="props?.label" class="p-1 text-ellipsis whitespace-nowrap overflow-hidden">{{to.label}}</label>
 <textarea class="ngm-input-element"
   matInput
   [id]="id"
@@ -57,7 +57,7 @@ export interface FormlyTextAreaFieldConfig extends FormlyFieldConfig<TextAreaPro
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./textarea.type.scss'],
   host: {
-    'class': 'pac-formly-textarea ngm-density__compact'
+    'class': 'pac-formly-textarea'
   }
 })
 export class FormlyFieldTextAreaComponent extends FieldType<FieldTypeConfig<TextAreaProps>> {
