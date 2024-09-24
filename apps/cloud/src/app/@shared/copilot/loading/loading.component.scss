@@ -4,12 +4,13 @@
     border-radius: 50%;
     width: 1rem;
     height: 1rem;
-    animation: simple 2000ms infinite linear;
+    animation: simple 1000ms infinite linear;
   }
 }
 
 @keyframes simple {
   50% {
     opacity: 0;
+    transform: scale(.9);
   }
 }

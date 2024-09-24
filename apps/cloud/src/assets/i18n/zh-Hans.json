@@ -1338,7 +1338,8 @@
       "Prompt": "提示",
       "SendPrompt": "发送提示",
       "CommandChartDesc": "描述图形的业务逻辑",
-      "TokenBalance": "代币余额",
+      "TokenBalancePerUser": "代币余额/用户",
+      "Provider_Alibaba Tongyi": "阿里云百炼",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",
@@ -1649,7 +1650,8 @@
       "Input": "输入",
       "Permission_Private": "私有",
       "Permission_Organization": "组织内",
-      "Permission_Public": "公开"
+      "Permission_Public": "公开",
+      "AddKnowledgebase": "添加知识库"
     },
     "Integration": {
       "Integrations": "集成",

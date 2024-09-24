@@ -1,28 +1,28 @@
 <mat-accordion >
-    <mat-expansion-panel hideToggle class="mat-elevation-z">
-      <mat-expansion-panel-header>
-        <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Primary' | translate: {Default: 'Primary'} }})</mat-panel-title>
-        <mat-panel-description></mat-panel-description>
-      </mat-expansion-panel-header>
-      
-      <pac-copilot-form [role]="AiProviderRole.Primary"></pac-copilot-form>
-    </mat-expansion-panel>
+  <mat-expansion-panel hideToggle class="mat-elevation-z">
+    <mat-expansion-panel-header>
+      <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Primary' | translate: {Default: 'Primary'} }})</mat-panel-title>
+      <mat-panel-description></mat-panel-description>
+    </mat-expansion-panel-header>
+    
+    <pac-copilot-form [role]="AiProviderRole.Primary"></pac-copilot-form>
+  </mat-expansion-panel>
 
-    <mat-expansion-panel hideToggle class="mat-elevation-z">
-        <mat-expansion-panel-header>
-            <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Secondary' | translate: {Default: 'Secondary'} }})</mat-panel-title>
-          <mat-panel-description></mat-panel-description>
-        </mat-expansion-panel-header>
-        
-        <pac-copilot-form [role]="AiProviderRole.Secondary"></pac-copilot-form>
-    </mat-expansion-panel>
+  <mat-expansion-panel hideToggle class="mat-elevation-z">
+    <mat-expansion-panel-header>
+      <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Secondary' | translate: {Default: 'Secondary'} }})</mat-panel-title>
+      <mat-panel-description></mat-panel-description>
+    </mat-expansion-panel-header>
+    
+    <pac-copilot-form [role]="AiProviderRole.Secondary"></pac-copilot-form>
+  </mat-expansion-panel>
 
-    <mat-expansion-panel hideToggle class="mat-elevation-z">
-        <mat-expansion-panel-header>
-            <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Embedding' | translate: {Default: 'Embedding'} }})</mat-panel-title>
-            <mat-panel-description></mat-panel-description>
-        </mat-expansion-panel-header>
-        
-        <pac-copilot-form [role]="AiProviderRole.Embedding"></pac-copilot-form>
-    </mat-expansion-panel>
+  <mat-expansion-panel hideToggle class="mat-elevation-z">
+    <mat-expansion-panel-header>
+      <mat-panel-title>{{'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}({{'PAC.KEY_WORDS.Embedding' | translate: {Default: 'Embedding'} }})</mat-panel-title>
+      <mat-panel-description></mat-panel-description>
+    </mat-expansion-panel-header>
+    
+    <pac-copilot-form [role]="AiProviderRole.Embedding" embedding></pac-copilot-form>
+  </mat-expansion-panel>
 </mat-accordion>

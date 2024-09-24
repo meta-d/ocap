@@ -38,7 +38,7 @@ import { KnowledgebaseComponent } from '../knowledgebase.component'
 })
 export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   KnowledgebasePermission = KnowledgebasePermission
-  
+
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)
   readonly #store = inject(Store)
@@ -65,31 +65,48 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
       chunkOverlap: new FormControl(null)
     }),
 
-    similarityThreshold: new FormControl(null),
+    similarityThreshold: new FormControl(null)
   })
 
   readonly copilots = computed(() =>
     this.copilotService.copilots()?.filter((item) => item.enabled && item.organizationId === this.organizationId())
   )
   readonly copilotOptions = computed(() =>
-    this.copilots()?.map((copilot) => ({
-      key: copilot.id,
-      caption: copilot.provider + `(${copilot.role})`
-    }))
+    this.copilots()?.map((copilot) => {
+      const provider = AI_PROVIDERS[copilot.provider]
+      return {
+        key: copilot.id,
+        caption:
+          this.getTranslation('PAC.Copilot.Provider_' + provider?.caption, { Default: provider?.caption }) +
+          `(${copilot.role})`
+      }
+    })
   )
 
   readonly copilotId = toSignal(
     this.formGroup.get('copilotId').valueChanges.pipe(startWith(this.formGroup.value.copilotId))
   )
 
-  readonly provider = computed(() => this.copilots()?.find((item) => item.id === this.copilotId())?.provider)
+  readonly copilot = computed(() => this.copilots()?.find((item) => item.id === this.copilotId()))
+  readonly provider = computed(() => this.copilot()?.provider)
 
-  readonly models = computed(() =>
-    (AI_PROVIDERS[this.provider()]?.models || []).map((item) => ({
-      key: item.id,
-      caption: item.name
-    }))
-  )
+  readonly models = computed(() => {
+    const copilot = this.copilot()
+    const items = []
+    if (copilot) {
+      items.push({
+        key: copilot.defaultModel,
+        caption: copilot.defaultModel,
+      })
+      items.push(
+        ...(AI_PROVIDERS[this.copilot()?.provider]?.models || []).map((item) => ({
+          key: item.id,
+          caption: item.name
+        }))
+      )
+    }
+    return items
+  })
 
   readonly loading = signal(false)
 

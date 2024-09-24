@@ -37,5 +37,6 @@ markdown.ngm-copilot-markdown .thinking-placeholder {
 @keyframes twinkling {
   50% {
     opacity: 0;
+    transform: scale(.9);
   }
 }

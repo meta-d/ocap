@@ -36,7 +36,7 @@
     <label class="px-2 pb-2">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
     <div class="max-h-64 w-56 overflow-y-auto" (click)="$event.stopPropagation()">
       @if (knowledgebaseList()?.length) {
-        <pac-knowledgebase-list class="w-full" [knowledgebaseList]="knowledgebaseList()" [(knowledgebases)]="knowledgebases" />
+        <pac-knowledgebase-list class="w-full" [disabled]="disabled()" [knowledgebaseList]="knowledgebaseList()" [(knowledgebases)]="knowledgebases" />
       } @else {
         <div class="flex justify-center p-4 text-token-text-secondary">
           <mat-icon fontSet="material-icons-round">battery_horiz_000</mat-icon> {{ 'PAC.KEY_WORDS.Empty' | translate: {Default: 'Empty'}  }}</div>
@@ -46,7 +46,7 @@
     <label class="p-2">{{'PAC.KEY_WORDS.Toolset' | translate: {Default: 'Toolset'} }}</label>
     <div class="max-h-64 w-56 mb-2" (click)="$event.stopPropagation()">
       @if (toolsetList()?.length) {
-        <pac-toolset-list class="w-full" [toolsetList]="toolsetList()" [(toolsets)]="toolsets" />
+        <pac-toolset-list class="w-full" [disabled]="disabled()" [toolsetList]="toolsetList()" [(toolsets)]="toolsets" />
       } @else {
         <div class="flex justify-center p-4 text-token-text-secondary">
           <mat-icon fontSet="material-icons-outlined">battery_horiz_000</mat-icon> {{ 'PAC.KEY_WORDS.Empty' | translate: {Default: 'Empty'}  }}</div>

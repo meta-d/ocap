@@ -1,12 +1,11 @@
+import { ChatAnthropic } from '@langchain/anthropic'
+import { AlibabaTongyiEmbeddings } from '@langchain/community/embeddings/alibaba_tongyi'
 import { Embeddings } from '@langchain/core/embeddings'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessage } from '@langchain/core/messages'
-import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { ChatOllama, OllamaEmbeddings } from '@langchain/ollama'
 import { ChatOpenAI, ClientOptions, OpenAIEmbeddings } from '@langchain/openai'
 import { ICopilot, OllamaEmbeddingsProviders, OpenAIEmbeddingsProviders } from '@metad/contracts'
-import { AI_PROVIDERS, AiProtocol, AiProvider } from '@metad/copilot'
-import { ChatAnthropic } from "@langchain/anthropic"
+import { AI_PROVIDERS, AiProtocol, AiProvider, sumTokenUsage } from '@metad/copilot'
 
 export function createLLM<T = ChatOpenAI | BaseChatModel>(
 	copilot: ICopilot,
@@ -17,7 +16,7 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 		return new ChatOpenAI({
 			apiKey: copilot.apiKey,
 			configuration: {
-				baseURL: copilot.apiHost || null,
+				baseURL: copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost || null,
 				...(clientOptions ?? {})
 			},
 			model: copilot.defaultModel,
@@ -25,7 +24,10 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 			callbacks: [
 				{
 					handleLLMEnd(output) {
-						tokenRecord({ copilot, tokenUsed: output.llmOutput?.totalTokens ?? calculateTokenUsage(output) })
+						tokenRecord({
+							copilot,
+							tokenUsed: output.llmOutput?.totalTokens ?? sumTokenUsage(output)
+						})
 					}
 				}
 			]
@@ -39,7 +41,7 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 				callbacks: [
 					{
 						handleLLMEnd(output) {
-							tokenRecord({ copilot, tokenUsed: calculateTokenUsage(output) })
+							tokenRecord({ copilot, tokenUsed: sumTokenUsage(output) })
 						}
 					}
 				]
@@ -55,7 +57,10 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 				callbacks: [
 					{
 						handleLLMEnd(output) {
-							tokenRecord({ copilot, tokenUsed: output.llmOutput?.totalTokens ?? calculateTokenUsage(output) })
+							tokenRecord({
+								copilot,
+								tokenUsed: output.llmOutput?.totalTokens ?? sumTokenUsage(output)
+							})
 						}
 					}
 				]
@@ -66,22 +71,14 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 	}
 }
 
-function calculateTokenUsage(output) {
-	let tokenUsed = 0
-	output.generations?.forEach((generation) => {
-		generation.forEach((item) => {
-			tokenUsed += (<AIMessage>(<ChatGenerationChunk>item).message).usage_metadata.total_tokens
-		})
-	})
-	return tokenUsed
-}
+
 
 export function createEmbeddings(
 	copilot: ICopilot,
-	options?: {model: string},
+	options?: { model: string; batchSize?: number },
 	tokenRecord?: (input: { copilot: ICopilot; tokenUsed: number }) => void
 ): Embeddings {
-	const { model } = options ?? {}
+	const { model, batchSize } = options ?? {}
 	if (OpenAIEmbeddingsProviders.includes(copilot.provider)) {
 		return new OpenAIEmbeddings({
 			verbose: true,
@@ -96,7 +93,15 @@ export function createEmbeddings(
 			baseUrl: copilot.apiHost,
 			model: model ?? copilot.defaultModel
 		})
+	} else {
+		switch (copilot.provider) {
+			case AiProvider.AlibabaTongyi:
+				return new AlibabaTongyiEmbeddings({
+					apiKey: copilot.apiKey,
+					batchSize: batchSize || 25,
+				})
+			default:
+				throw new Error(`Unimplemented copilot provider '${copilot.provider}' for embeddings`)
+		}
 	}
-
-	throw new Error(`Unimplemented copilot provider '${copilot.provider}' for embeddings`)
 }

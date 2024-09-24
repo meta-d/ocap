@@ -423,16 +423,18 @@ References documents:
 					this.upsertMessageWithStatus('done')
 				}
 			}),
-			catchError((err) => {
-				console.error(err)
-				return of({
-					event: ChatGatewayEvent.ChainAborted,
-					data: {
-						conversationId: this.conversation.id,
-						id: answerId
-					}
-				})
-			})
+			// catchError((err) => {
+			// 	// todo 区分 aborted 与 error
+			// 	console.error(err)
+			// 	return of({
+			// 		event: ChatGatewayEvent.Error,
+			// 		data: {
+			// 			conversationId: this.conversation.id,
+			// 			id: answerId,
+			// 			error: getErrorMessage(err)
+			// 		}
+			// 	})
+			// })
 		)
 	}
 

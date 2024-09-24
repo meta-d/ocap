@@ -4,7 +4,7 @@
   <span class="flex-1"></span>
 
   <div ngmButtonGroup >
-    <button mat-mini-fab [matTooltip]=" 'PAC.Copilot.Roles.AddRole' | translate: {Default: 'Add new role' }"
+    <button mat-mini-fab [matTooltip]=" 'PAC.Knowledgebase.AddKnowledgebase' | translate: {Default: 'Add Knowledgebase' }"
         (click)="newKnowledgebase()">
         <mat-icon fontSet="material-icons-outlined">add</mat-icon>
     </button>
@@ -52,7 +52,7 @@
 
         <a class="inline-block cursor-pointer" (click)="openKnowledgebase(item.id)">
           <button
-            class="flex items-center gap-2 px-4 py-2 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-lg select-none disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none hover:bg-gray-900/10 active:bg-gray-900/20
+            class="flex items-center gap-2 px-4 py-2 font-sans text-xs font-bold text-center whitespace-nowrap text-gray-900 uppercase align-middle transition-all rounded-lg select-none disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none hover:bg-gray-900/10 active:bg-gray-900/20
               dark:text-zinc-200 dark:hover:bg-neutral-700 dark:active:bg-neutral-500"
             type="button">
             {{'PAC.KEY_WORDS.Open' | translate: {Default: 'Open'} }}

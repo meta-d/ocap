@@ -52,7 +52,7 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
   readonly knowledgebases = toSignal(
     this.refresh$.pipe(
       switchMap(() =>
-        this.knowledgebaseService.getAllInOrg({ relations: ['createdBy'], order: { createdAt: OrderTypeEnum.DESC } })
+        this.knowledgebaseService.getAllInOrg({ relations: ['createdBy'], order: { updatedAt: OrderTypeEnum.DESC } })
       ),
       map(({ items }) => items)
     )

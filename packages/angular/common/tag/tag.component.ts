@@ -7,7 +7,6 @@ import { ISelectOption } from '@metad/ocap-angular/core'
 import { map } from 'rxjs/operators'
 import { ITagOption } from './types'
 
-
 @Component({
   standalone: true,
   imports: [CommonModule],
@@ -15,6 +14,9 @@ import { ITagOption } from './types'
   selector: 'ngm-tags',
   templateUrl: './tag.component.html',
   styleUrls: ['./tag.component.scss'],
+  host: {
+    class: 'ngm-tags'
+  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -24,14 +26,14 @@ import { ITagOption } from './types'
   ]
 })
 export class NgmTagsComponent implements ControlValueAccessor {
-
-  @HostBinding('class.ngm-tags') isTagsComponent = true
+  // @HostBinding('class.ngm-tags') isTagsComponent = true
 
   @Input() tags: ITagOption<string>[] = []
   @Input() exclude = false
   @Input() color: 'primary' | 'blue' | 'green' | 'yellow' | 'red' | 'gray'
   @HostBinding('class.selectable')
-  @Input() get selectable() {
+  @Input()
+  get selectable() {
     return this._selectable
   }
   set selectable(value: string | boolean) {
@@ -40,7 +42,8 @@ export class NgmTagsComponent implements ControlValueAccessor {
   private _selectable = false
 
   @HostBinding('class.disabled')
-  @Input() get disabled() {
+  @Input()
+  get disabled() {
     return this._disabled
   }
   set disabled(value: string | boolean) {
@@ -69,9 +72,11 @@ export class NgmTagsComponent implements ControlValueAccessor {
   })
 
   toggleTag(tag: ISelectOption<string>) {
-    this.selection.selected.filter((item) => item !== (tag.key ?? tag.value)).forEach((key) => {
-      this.selection.deselect(key)
-    })
+    this.selection.selected
+      .filter((item) => item !== (tag.key ?? tag.value))
+      .forEach((key) => {
+        this.selection.deselect(key)
+      })
     this.selection.toggle(tag.key ?? tag.value)
   }
 

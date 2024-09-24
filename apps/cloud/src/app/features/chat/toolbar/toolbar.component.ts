@@ -64,10 +64,11 @@ export class ChatToolbarComponent {
   readonly toolsets = this.chatService.toolsets
 
   readonly role = this.chatService.role
+  readonly disabled = computed(() => !!this.chatService.conversation()?.id)
 
-  constructor() {
-    effect(() => console.log(this._role()))
-  }
+  // constructor() {
+  //   effect(() => console.log(this._role()))
+  // }
 
   openAbout() {
     this.#dialog

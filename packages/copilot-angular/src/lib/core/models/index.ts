@@ -1,7 +1,8 @@
+// 同步与：`@metad/server-ai`/copilot/llm.ts
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessage } from '@langchain/core/messages'
 import { ChatOpenAI, ClientOptions } from '@langchain/openai'
-import { AiProvider, ICopilot } from '@metad/copilot'
+import { ChatAnthropic } from '@langchain/anthropic'
+import { AI_PROVIDERS, AiProtocol, AiProvider, ICopilot, sumTokenUsage } from '@metad/copilot'
 import { NgmChatOllama } from './chat-ollama'
 
 export function createLLM<T = BaseChatModel>(
@@ -9,31 +10,28 @@ export function createLLM<T = BaseChatModel>(
   clientOptions: ClientOptions,
   tokenRecord: (input: { copilot: ICopilot; tokenUsed: number }) => void
 ): T {
-  switch (copilot?.provider) {
-    case AiProvider.OpenAI:
-    case AiProvider.Azure:
-      return new ChatOpenAI({
-        apiKey: copilot.apiKey,
-        configuration: {
-          baseURL: copilot.apiHost || null,
-          ...(clientOptions ?? {})
-        },
-        model: copilot.defaultModel,
-        temperature: 0,
-        callbacks: [
-          {
-            handleLLMEnd(output) {
-              let tokenUsed = 0
-              output.generations?.forEach((generation) => {
-                generation.forEach((item) => {
-                  tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
-                })
-              })
-              tokenRecord({ copilot, tokenUsed })
-            }
+  if (AI_PROVIDERS[copilot?.provider]?.protocol === AiProtocol.OpenAI) {
+    return new ChatOpenAI({
+      apiKey: copilot.apiKey,
+      configuration: {
+        baseURL: copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost || null,
+        ...(clientOptions ?? {})
+      },
+      model: copilot.defaultModel,
+      temperature: 0,
+      callbacks: [
+        {
+          handleLLMEnd(output) {
+            tokenRecord({
+							copilot,
+							tokenUsed: output.llmOutput?.['totalTokens'] ?? sumTokenUsage(output)
+						})
           }
-        ]
-      }) as T
+        }
+      ]
+    }) as T
+  }
+  switch (copilot?.provider) {
     case AiProvider.Ollama:
       return new NgmChatOllama({
         baseUrl: copilot.apiHost || null,
@@ -44,17 +42,31 @@ export function createLLM<T = BaseChatModel>(
         callbacks: [
           {
             handleLLMEnd(output) {
-              let tokenUsed = 0
-              output.generations?.forEach((generation) => {
-                generation.forEach((item) => {
-                  tokenUsed += (<AIMessage>(item as any).message).usage_metadata.total_tokens
-                })
-              })
-              tokenRecord({ copilot, tokenUsed })
+              tokenRecord({ copilot, tokenUsed: sumTokenUsage(output) })
             }
           }
         ]
       }) as T
+    case AiProvider.Anthropic: {
+      return new ChatAnthropic({
+        anthropicApiUrl: copilot.apiHost || null,
+        apiKey: copilot.apiKey,
+        model: copilot.defaultModel,
+        temperature: 0,
+        maxTokens: undefined,
+        maxRetries: 2,
+        callbacks: [
+          {
+            handleLLMEnd(output) {
+              tokenRecord({
+                copilot,
+                tokenUsed: output.llmOutput?.['totalTokens'] ?? sumTokenUsage(output)
+              })
+            }
+          }
+        ]
+      }) as T
+    }
     default:
       return null
   }

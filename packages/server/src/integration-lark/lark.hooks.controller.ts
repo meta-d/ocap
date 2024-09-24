@@ -17,8 +17,8 @@ export class LarkHooksController {
 		@Param('id') integrationId: string,
 		@Request() req: express.Request,
 		@Response() res: express.Response
-	) {
+	): Promise<void> {
 		const integration = await this.integrationService.findOne(integrationId, { relations: ['tenant'] })
-		return this.larkService.webhookEventDispatcher(integration, req, res)
+		this.larkService.webhookEventDispatcher(integration, req, res)
 	}
 }

@@ -1,4 +1,4 @@
-import { AiBusinessRole, IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
+import { IKnowledgeDocument } from '@metad/contracts'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Pool } from 'pg'

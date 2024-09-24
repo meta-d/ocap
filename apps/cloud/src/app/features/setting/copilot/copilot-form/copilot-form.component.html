@@ -10,25 +10,25 @@
           <mat-select-trigger class="flex items-center">
             @if (providerInfo(); as provider) {
               <img [src]="'/assets/icons/llm/' + provider.icon" [alt]="provider.iconAlt" class="inline-block w-6 h-6 mr-1 rounded-full" />
-              <span>{{provider.caption}}</span>
+              <span>{{ 'PAC.Copilot.Provider_' + provider.caption | translate: {Default: provider.caption} }}</span>
             }
           </mat-select-trigger>
-          @for (option of providers; track option.name) {
+          @for (option of providers(); track option.name) {
             <mat-option [value]="option.name">
               <img [src]="'/assets/icons/llm/' + option.icon" [alt]="option.iconAlt" class="inline-block w-8 h-8 mr-2 rounded-full" />
-              <span>{{option.caption}}</span>
+              <span>{{ 'PAC.Copilot.Provider_' + option.caption | translate: {Default: option.caption} }}</span>
             </mat-option>
           }
         </mat-select>
     </mat-form-field>
 
-    <input type="text" id="ai-username" name="ai-username" aria-hidden="true" style="display: none;">
+    <input type="text" name="ai-username" aria-hidden="true" style="display: none;">
     <div class="w-[600px] max-w-full flex justify-start items-center gap-4">
         <mat-form-field appearance="fill" class="flex-1">
             <mat-label>
                 {{ 'PAC.Copilot.APIKey' | translate: {Default: 'API Key'} }}
             </mat-label>
-            <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password">
+            <input name="copilot-apikey" matInput formControlName="apiKey" type="password">
         </mat-form-field>
 
         <a mat-stroked-button [href]="providerHref[provider()]" target="_blank">
@@ -41,7 +41,7 @@
             <mat-label>
                 {{ 'PAC.Copilot.APIHost' | translate: {Default: 'API Host'} }}
             </mat-label>
-            <input name="copilot-apihost" id="copilot-apihost" matInput formControlName="apiHost" type="text">
+            <input name="copilot-apihost" matInput formControlName="apiHost" type="text">
         </mat-form-field>
     </div>
 
@@ -61,7 +61,7 @@
             <mat-label>
                 {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
             </mat-label>
-            <input name="copilot-model" id="copilot-model" matInput formControlName="defaultModel" type="text">
+            <input name="copilot-model" matInput formControlName="defaultModel" type="text">
         </mat-form-field>
     </div>
 
@@ -72,8 +72,8 @@
     </div>
 
     <div class="w-full flex flex-col justify-start items-stretch mt-4">
-      <label>{{ 'PAC.Copilot.TokenBalance' | translate: {Default: 'Token Balance'} }}: {{tokenBalance | number}}</label>
-      <mat-slider min="0" max="10000000" step="10000" showTickMarks discrete [displayWith]="formatBalanceLabel">
+      <label>{{ 'PAC.Copilot.TokenBalancePerUser' | translate: {Default: 'Token Balance/User'} }}: {{tokenBalance | number}}</label>
+      <mat-slider min="0" max="10000000" step="10000" discrete [displayWith]="formatBalanceLabel">
         <input matSliderThumb formControlName="tokenBalance">
       </mat-slider>
     </div>

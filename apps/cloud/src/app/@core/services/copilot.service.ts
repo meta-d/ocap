@@ -5,14 +5,14 @@ import { Router } from '@angular/router'
 import { API_PREFIX, AuthService } from '@metad/cloud/state'
 import { AiProviderRole, BusinessRoleType, ICopilot } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/copilot-angular'
+import { pick } from '@metad/ocap-core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
 import { combineLatest, distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { ICopilot as IServerCopilot } from '../types'
+import { AgentService } from './agent.service'
 import { CopilotRoleService } from './copilot-role.service'
 import { Store } from './store.service'
-import { AgentService } from './agent.service'
-import { pick } from '@metad/ocap-core'
 
 const baseUrl = environment.API_BASE_URL
 const API_CHAT = constructUrl(baseUrl) + '/api/ai/chat'
@@ -47,8 +47,9 @@ export class PACCopilotService extends NgmCopilotService {
   private roleSub = this.roleService
     .getAll()
     .pipe(
-      map(({items}) => items),
-      takeUntilDestroyed())
+      map(({ items }) => items),
+      takeUntilDestroyed()
+    )
     .subscribe((roles) => {
       this.roles.set(roles as BusinessRoleType[])
     })
@@ -84,9 +85,7 @@ export class PACCopilotService extends NgmCopilotService {
     )
     .subscribe((options) => this.clientOptions$.next(options))
 
-  private tokenSub = this.tokenUsage$.pipe(
-    takeUntilDestroyed(),
-  ).subscribe((usage) => {
+  private tokenSub = this.tokenUsage$.pipe(takeUntilDestroyed()).subscribe((usage) => {
     this.#agentService.emit('copilot', {
       organizationId: this.#store.organizationId,
       copilot: pick(usage.copilot, 'organizationId', 'provider', 'id'),
@@ -153,7 +152,15 @@ export class PACCopilotService extends NgmCopilotService {
       )
     )
 
-    this.copilots.set(items as ICopilot[])
+    this.copilots.update((copilots) => {
+      items.forEach((item) => {
+        if (item.id) {
+          copilots = copilots.filter((_) => _.id !== item.id)
+        }
+        copilots.push(item as ICopilot)
+      })
+      return copilots
+    })
   }
 
   enableCopilot(): void {

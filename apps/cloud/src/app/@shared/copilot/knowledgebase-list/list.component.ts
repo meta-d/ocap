@@ -1,6 +1,6 @@
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
-import { Component, input, model } from '@angular/core'
+import { booleanAttribute, Component, input, model } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -27,7 +27,7 @@ import { MaterialModule } from '../../material.module'
 })
 export class KnowledgebaseListComponent {
   readonly knowledgebaseList = input<IKnowledgebase[]>()
-  
+  readonly disabled = input<boolean, string | boolean>(false, { transform: booleanAttribute })
   readonly knowledgebases = model()
 
   compareId(a: IKnowledgebase, b: IKnowledgebase): boolean {

@@ -6,6 +6,7 @@
     @for (item of knowledgebaseList(); track item.id) {
       <li [cdkOption]="item" #option="cdkOption" class="ngm-cdk-option flex items-center cursor-pointer rounded-md hover:bg-black/5 dark:hover:bg-white/10"
         [class.cdk-option-selected]="option.isSelected()"
+        [cdkOptionDisabled]="disabled()"
       >
         @if (option.isSelected()) {
           <mat-icon class="absolute left-1" fontSet="material-icons-outlined" color="accent">check_small</mat-icon>

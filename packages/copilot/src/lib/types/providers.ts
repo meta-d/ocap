@@ -12,7 +12,7 @@ export enum AiProvider {
    * - https://js.langchain.com/docs/integrations/chat/openai/
    */
   Azure = 'azure',
-  DashScope = 'dashscope',
+  // DashScope = 'dashscope',
   /**
    * - https://ollama.com/
    * - https://js.langchain.com/docs/integrations/chat/ollama/
@@ -27,7 +27,12 @@ export enum AiProvider {
    * - https://docs.anthropic.com/en/home
    * - https://js.langchain.com/docs/integrations/chat/anthropic/
    */
-  Anthropic = 'anthropic'
+  Anthropic = 'anthropic',
+  /**
+   * - https://www.aliyun.com/product/bailian
+   * - https://js.langchain.com/docs/integrations/chat/alibaba_tongyi/
+   */
+  AlibabaTongyi = 'alibaba_tongyi'
 }
 
 export enum AiProtocol {
@@ -41,6 +46,7 @@ export type AiModelType = {
 }
 
 export type AiProviderType = {
+  caption?: string
   protocol: AiProtocol
   apiHost: string
   chatCompletionsUrl: string
@@ -54,6 +60,7 @@ export type AiProviderType = {
 
 export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.OpenAI]: {
+    caption: 'OpenAI',
     protocol: AiProtocol.OpenAI,
     apiHost: 'https://api.openai.com/v1',
     chatCompletionsUrl: '/chat/completions',
@@ -99,6 +106,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     ]
   },
   [AiProvider.Azure]: {
+    caption: 'Azure OpenAI',
     protocol: AiProtocol.OpenAI,
     apiHost: '',
     chatCompletionsUrl: '/chat/completions',
@@ -131,11 +139,11 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       }
     ]
   },
-  [AiProvider.DashScope]: {
-    apiHost: 'https://dashscope.aliyuncs.com/api/v1',
-    chatCompletionsUrl: '/services/aigc/text-generation/generation',
-    modelsUrl: null,
-    isTools: false,
+  [AiProvider.AlibabaTongyi]: {
+    caption: 'Alibaba Tongyi',
+    protocol: AiProtocol.OpenAI,
+    apiHost: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    isTools: true,
     models: [
       {
         id: 'qwen-turbo',
@@ -192,6 +200,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     ]
   },
   [AiProvider.Ollama]: {
+    caption: 'Ollama',
     isTools: true,
     models: [
       {
@@ -229,6 +238,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     ]
   },
   [AiProvider.DeepSeek]: {
+    caption: 'DeepSeek',
     protocol: AiProtocol.OpenAI,
     apiHost: 'https://api.deepseek.com/v1',
     chatCompletionsUrl: '/chat/completions',
@@ -246,6 +256,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     ]
   },
   [AiProvider.Anthropic]: {
+    caption: 'Anthropic',
     protocol: AiProtocol.Others,
     apiHost: 'https://api.anthropic.com/v1',
     isTools: true,

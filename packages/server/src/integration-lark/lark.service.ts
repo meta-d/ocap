@@ -57,14 +57,20 @@ export class LarkService {
 			item = {
 				integration,
 				client,
-				dispatcher: lark.adaptExpress(this.createEventDispatcher(integration, client), { autoChallenge: true }),
+				dispatcher: lark.adaptExpress(
+					this.createEventDispatcher(integration, client),
+					{
+						logger: {...this.logger, info: this.logger.log, debug: this.logger.debug} as any,
+						autoChallenge: true,
+					}
+				),
 				bot: null
 			}
 			this.eventDispatchers.set(integration.id, item)
 			this.getBotInfo(client).then((bot) => (item.bot = bot))
 		}
 
-		item.dispatcher(req, res).catch((err) => {
+		item.dispatcher(req, res).then((data) => console.log(data)).catch((err) => {
 			//
 			console.error(err)
 		})
@@ -75,7 +81,9 @@ export class LarkService {
 			appId: integration.options.appId,
 			appSecret: integration.options.appSecret,
 			appType: lark.AppType.SelfBuild,
-			domain: lark.Domain.Feishu
+			domain: lark.Domain.Feishu,
+			logger: {...this.logger, info: this.logger.log, debug: this.logger.debug} as any,
+			loggerLevel: lark.LoggerLevel.debug
 		})
 	}
 
@@ -166,7 +174,8 @@ export class LarkService {
 					}
 				})
 
-				return true
+				this.logger.debug('Return for message:' + data.event_id)
+				return 'ok'
 			},
 			'application.bot.menu_v6': async (data) => {
 				/**
@@ -287,14 +296,20 @@ export class LarkService {
 		}
 
 		if (!user) {
-			const larkUser = await client.contact.user.get({
-				params: {
-                    user_id_type: "union_id",
-                },
-                path: {
-                    user_id: unionId
-                }
-			})
+			// 对于外部用户可能会无权获取用户信息
+			let larkUser = null
+			try {
+				larkUser = await client.contact.user.get({
+					params: {
+						user_id_type: "union_id",
+					},
+					path: {
+						user_id: unionId
+					}
+				})
+			} catch(err) {
+				//
+			}
 
 			// Lark user role
 			const larkConfig = this.configService.get('larkConfig') as IEnvironment['larkConfig']
@@ -303,11 +318,11 @@ export class LarkService {
 			user = await this.userService.create({
 				tenantId,
 				thirdPartyId: unionId,
-				username: larkUser.data.user.user_id,
-				email: larkUser.data.user.email,
-				mobile: larkUser.data.user.mobile,
-				imageUrl: larkUser.data.user.avatar?.avatar_240,
-				firstName: larkUser.data.user.name,
+				username: larkUser?.data.user.user_id,
+				email: larkUser?.data.user.email,
+				mobile: larkUser?.data.user.mobile,
+				imageUrl: larkUser?.data.user.avatar?.avatar_240,
+				firstName: larkUser?.data.user.name,
 				roleId: _role.record?.id
 			})
 		}

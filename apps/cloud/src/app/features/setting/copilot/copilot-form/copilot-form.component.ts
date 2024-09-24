@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common'
-import { Component, computed, effect, inject, input, model, signal } from '@angular/core'
+import { booleanAttribute, Component, computed, effect, inject, input, model, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { AiProviderRole } from '@metad/contracts'
@@ -8,6 +8,45 @@ import { TranslateModule } from '@ngx-translate/core'
 import { startWith } from 'rxjs/operators'
 import { getErrorMessage, PACCopilotService, Store, ToastrService } from '../../../../@core'
 import { MaterialModule } from '../../../../@shared'
+
+const PROVIDERS = [
+  {
+    name: AiProvider.OpenAI,
+    icon: 'openai.svg',
+    iconAlt: 'openai-logo',
+    embedding: true
+  },
+  {
+    name: AiProvider.Azure,
+    icon: 'azure.svg',
+    iconAlt: 'azure-logo',
+    embedding: true
+  },
+  {
+    name: AiProvider.Ollama,
+    icon: 'ollama.svg',
+    iconAlt: 'ollama-logo',
+    embedding: true
+  },
+  {
+    name: AiProvider.DeepSeek,
+    icon: 'deepseek.svg',
+    iconAlt: 'deepseek-logo',
+    embedding: false
+  },
+  {
+    name: AiProvider.Anthropic,
+    icon: 'claude.svg',
+    iconAlt: 'claude-logo',
+    embedding: true
+  },
+  {
+    name: AiProvider.AlibabaTongyi,
+    icon: 'tongyi.svg',
+    iconAlt: 'tongyi-logo',
+    embedding: true
+  }
+]
 
 @Component({
   standalone: true,
@@ -27,39 +66,6 @@ export class CopilotFormComponent {
     [AiProvider.Anthropic]: 'https://www.anthropic.com/api'
   }
 
-  readonly providers = [
-    {
-      name: AiProvider.OpenAI,
-      caption: 'OpenAI',
-      icon: 'openai.svg',
-      iconAlt: 'openai-logo'
-    },
-    {
-      name: AiProvider.Azure,
-      caption: 'Azure',
-      icon: 'azure.svg',
-      iconAlt: 'azure-logo'
-    },
-    {
-      name: AiProvider.Ollama,
-      caption: 'Ollama',
-      icon: 'ollama.svg',
-      iconAlt: 'ollama-logo'
-    },
-    {
-      name: AiProvider.DeepSeek,
-      caption: 'DeepSeek',
-      icon: 'deepseek.svg',
-      iconAlt: 'deepseek-logo'
-    },
-    {
-      name: AiProvider.Anthropic,
-      caption: 'Anthropic',
-      icon: 'claude.svg',
-      iconAlt: 'claude-logo'
-    }
-  ]
-
   readonly #store = inject(Store)
   readonly copilotService = inject(PACCopilotService)
   readonly #toastrService = inject(ToastrService)
@@ -67,6 +73,9 @@ export class CopilotFormComponent {
   readonly role = input<AiProviderRole>()
 
   readonly enabled = model<boolean>(false)
+  readonly embedding = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   readonly formGroup = new FormGroup({
     id: new FormControl(null),
@@ -84,9 +93,15 @@ export class CopilotFormComponent {
     return this.formGroup.get('tokenBalance').value
   }
 
+  readonly providers = computed(() =>
+    (this.embedding() ? PROVIDERS.filter((p) => p.embedding) : PROVIDERS).map((provider) => ({
+      ...provider,
+      caption: AI_PROVIDERS[provider.name].caption
+    }))
+  )
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
   readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
-  readonly providerInfo = computed(() => this.providers.find((item) => item.name === this.provider()))
+  readonly providerInfo = computed(() => this.providers().find((item) => item.name === this.provider()))
 
   readonly saving = signal(false)
 

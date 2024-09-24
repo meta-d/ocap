@@ -4,6 +4,11 @@
   @apply flex flex-col relative;
 }
 
+.mat-mdc-standard-chip {
+  --mdc-chip-container-shape-radius: .5rem;
+  --mdc-chip-with-avatar-avatar-size: 20px;
+}
+
 .ngm-copilot-chat__command-tag {
   @apply bg-gray-200 text-neutral-800 dark:bg-gray-100/10 dark:text-neutral-300;
 }

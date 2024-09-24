@@ -29,6 +29,7 @@ import { injectExamplesAgent } from '../copilot'
 import { ChatbiInputComponent } from '../input/input.component'
 import { ChatLoadingComponent } from '../../../@shared/copilot'
 import { AppService } from '../../../app.service'
+import { UserAvatarComponent } from '../../../@shared'
 
 @Component({
   standalone: true,
@@ -45,6 +46,7 @@ import { AppService } from '../../../app.service'
     MatDividerModule,
     DensityDirective,
     NgmDisplayBehaviourComponent,
+    UserAvatarComponent,
 
     ChatbiInputComponent,
     ChatbiAnswerComponent,
@@ -71,6 +73,7 @@ export class ChatbiChatComponent {
 
   readonly prompt = model<string>(null)
   readonly conversation = this.chatbiService.conversation
+  readonly createdBy = computed(() => this.conversation()?.createdBy)
 
   readonly examplesEmpty = computed(() => !this.examples()?.length)
   readonly examplesLoading = signal<boolean>(false)

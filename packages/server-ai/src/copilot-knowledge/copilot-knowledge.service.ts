@@ -1,17 +1,13 @@
-import { OllamaEmbeddings } from '@langchain/ollama'
 import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { MaxMarginalRelevanceSearchOptions } from '@langchain/core/vectorstores'
-import { OpenAIEmbeddings } from '@langchain/openai'
 import {
 	AiBusinessRole,
 	AiProviderRole,
 	ICopilot,
 	ICopilotKnowledge,
 	ICopilotRole,
-	OllamaEmbeddingsProviders,
-	OpenAIEmbeddingsProviders
 } from '@metad/contracts'
 import { DATABASE_POOL_TOKEN, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -25,6 +21,7 @@ import { CopilotRoleCreateCommand } from '../copilot-role/commands'
 import { CopilotService } from '../copilot/copilot.service'
 import { CopilotKnowledge } from './copilot-knowledge.entity'
 import { createEmbeddings } from '../copilot/llm'
+import { isEqual } from 'date-fns/isEqual'
 
 @Injectable()
 export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<CopilotKnowledge> {
@@ -213,7 +210,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 			throw new Error('No embedding copilot found')
 		}
 
-		if (!this.vectorStores.has(id) || this.vectorStores.get(id).copilot.updatedAt !== copilot.updatedAt) {
+		if (!this.vectorStores.has(id) || !isEqual(this.vectorStores.get(id).copilot.updatedAt, copilot.updatedAt)) {
 			
 			const embeddings = await this.getEmbeddings(copilot)
 

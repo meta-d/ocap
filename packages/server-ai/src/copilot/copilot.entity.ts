@@ -1,17 +1,17 @@
 import { AiProvider, AiProviderRole, ICopilot } from '@metad/contracts'
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsOptional, IsString, IsBoolean, IsJSON, IsNumber } from 'class-validator'
-import { AfterLoad, Column, Entity } from 'typeorm'
-import { Exclude, Expose } from 'class-transformer'
 import { IsSecret, TenantOrganizationBaseEntity, WrapSecrets } from '@metad/server-core'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Exclude, Expose } from 'class-transformer'
+import { IsBoolean, IsJSON, IsNumber, IsOptional, IsString } from 'class-validator'
+import { AfterLoad, Column, Entity } from 'typeorm'
 
 @Entity('copilot')
 export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
-    @ApiPropertyOptional({ type: () => Boolean })
+	@ApiPropertyOptional({ type: () => Boolean })
 	@IsBoolean()
 	@IsOptional()
 	@Column({ default: false })
-    enabled?: boolean
+	enabled?: boolean
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -22,7 +22,7 @@ export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@IsOptional()
-	@Column({ nullable: true, length: 10 })
+	@Column({ nullable: true, length: 20 })
 	provider?: AiProvider
 
 	@ApiPropertyOptional({ type: () => String })
@@ -59,7 +59,7 @@ export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
 	@ApiProperty({ type: () => String })
 	@Expose({ toPlainOnly: true, name: 'apiKey' })
 	@IsSecret()
-	secretKey?: string;
+	secretKey?: string
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
@@ -69,7 +69,7 @@ export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
 
 	@AfterLoad()
 	afterLoadEntity?() {
-		this.secretKey = this.apiKey;
-		WrapSecrets(this, this);
+		this.secretKey = this.apiKey
+		WrapSecrets(this, this)
 	}
 }

@@ -1,6 +1,10 @@
 .ngm-cdk-listbox {
   .ngm-cdk-option {
     @apply relative px-4 py-3;
+
+    &[aria-disabled="true"] {
+      @apply opacity-80 cursor-not-allowed;
+    }
   }
   &[aria-multiselectable='true'] {
     .ngm-cdk-option {

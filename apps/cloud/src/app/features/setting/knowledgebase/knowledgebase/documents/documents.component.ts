@@ -227,8 +227,9 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
       })
   }
 
-  startParsing(id: string) {
-    this.knowledgeDocumentService.startParsing(id).subscribe({
+  startParsing(row: IKnowledgeDocument) {
+    row.status = 'running'
+    this.knowledgeDocumentService.startParsing(row.id).subscribe({
       next: () => {
         this.refresh()
       },
