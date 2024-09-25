@@ -1318,7 +1318,7 @@
       "Provider": "提供商",
       "Provider_DashScope": "阿里云灵积",
       "DefaultModel": "默认模型",
-      "EnterDefaultModel": "输入默认模型",
+      "SelectDefaultModel": "选择或输入一个默认模型",
       "ShowTokenizer": "显示词数",
       "YourAIPairProgrammer": "你的 AI 配对程序员!",
       "LetYourAIPairProgrammerEdits": "让你的 AI 配对程序员修改一下!",

@@ -3,7 +3,7 @@ import { booleanAttribute, Component, computed, effect, inject, input, model, si
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { AiProviderRole } from '@metad/contracts'
-import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
+import { AI_PROVIDERS, AiProvider, isNil } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { startWith } from 'rxjs/operators'
 import { getErrorMessage, PACCopilotService, Store, ToastrService } from '../../../../@core'
@@ -70,6 +70,24 @@ const PROVIDERS = [
     iconAlt: 'moonshot-logo',
     embedding: false
   },
+  {
+    name: AiProvider.Groq,
+    icon: 'groq.svg',
+    iconAlt: 'groq-logo',
+    embedding: false
+  },
+  {
+    name: AiProvider.Mistral,
+    icon: 'mistral.svg',
+    iconAlt: 'mistral-logo',
+    embedding: true
+  },
+  {
+    name: AiProvider.Cohere,
+    icon: 'cohere.svg',
+    iconAlt: 'cohere-logo',
+    embedding: true
+  },
 ]
 
 @Component({
@@ -116,7 +134,10 @@ export class CopilotFormComponent {
     }))
   )
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
-  readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
+  readonly models = computed(() => {
+    const models = AI_PROVIDERS[this.provider()]?.models || []
+    return this.embedding() ? models.filter((_) => isNil(_.embed) || _.embed) : models.filter((_) => !_.embed)
+  })
   readonly providerHomepage = computed(() => AI_PROVIDERS[this.provider()]?.homepage || '')
   readonly providerInfo = computed(() => this.providers().find((item) => item.name === this.provider()))
 

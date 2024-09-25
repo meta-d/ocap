@@ -1,10 +1,12 @@
 import { ChatAnthropic } from '@langchain/anthropic'
 import { BaiduQianfanEmbeddings, ChatBaiduQianfan } from '@langchain/baidu-qianfan'
+import { ChatCohere, CohereEmbeddings } from '@langchain/cohere'
 import { AlibabaTongyiEmbeddings } from '@langchain/community/embeddings/alibaba_tongyi'
 import { TogetherAIEmbeddings } from '@langchain/community/embeddings/togetherai'
 import { ZhipuAIEmbeddings } from '@langchain/community/embeddings/zhipuai'
 import { Embeddings } from '@langchain/core/embeddings'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { MistralAIEmbeddings } from '@langchain/mistralai'
 import { ChatOllama, OllamaEmbeddings } from '@langchain/ollama'
 import { ChatOpenAI, ClientOptions, OpenAIEmbeddings } from '@langchain/openai'
 import { ICopilot, OllamaEmbeddingsProviders, OpenAIEmbeddingsProviders } from '@metad/contracts'
@@ -77,6 +79,15 @@ export function createLLM<T = ChatOpenAI | BaseChatModel>(
 				model: copilot.defaultModel
 			}) as T
 		}
+		case AiProvider.Cohere: {
+			return new ChatCohere({
+				apiKey: copilot.apiKey,
+				model: copilot.defaultModel,
+				temperature: 0,
+				maxRetries: copilot.options?.maxRetries ?? 2
+				// other params...
+			}) as T
+		}
 		default:
 			return null
 	}
@@ -123,6 +134,18 @@ export function createEmbeddings(
 			case AiProvider.Together: {
 				return new TogetherAIEmbeddings({
 					model: model || copilot.defaultModel || 'togethercomputer/m2-bert-80M-8k-retrieval' // Default value
+				})
+			}
+			case AiProvider.Mistral: {
+				return new MistralAIEmbeddings({
+					apiKey: copilot.apiKey,
+					model: model || copilot.defaultModel || 'mistral-embed' // Default value
+				})
+			}
+			case AiProvider.Cohere: {
+				return new CohereEmbeddings({
+					apiKey: copilot.apiKey,
+					model: model || copilot.defaultModel || 'embed-english-v3.0'
 				})
 			}
 			default:

@@ -50,7 +50,7 @@
         <mat-form-field class="w-64 max-w-full flex-1">
             <mat-label>{{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}</mat-label>
             <input type="text"
-                   placeholder="Pick one default model"
+                   [placeholder]="'PAC.Copilot.SelectDefaultModel' | translate: {Default: 'Select or input a default model'}"
                    aria-label="Default Model"
                    matInput
                    formControlName="defaultModel"
@@ -65,24 +65,6 @@
         <mat-checkbox formControlName="showTokenizer">
             {{ 'PAC.Copilot.ShowTokenizer' | translate: {Default: 'Show Tokenizer'} }}
         </mat-checkbox>
-
-        <!-- <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
-            </mat-label>
-
-            <mat-select formControlName="defaultModel">
-            @for (model of models(); track model.id) {
-                <mat-option [value]="model.id">{{model.name}}</mat-option>
-            }
-            </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="fill" class="flex-1">
-            <mat-label>
-                {{ 'PAC.Copilot.EnterDefaultModel' | translate: {Default: 'Enter Default Model'} }}
-            </mat-label>
-            <input name="copilot-model" matInput formControlName="defaultModel" type="text">
-        </mat-form-field> -->
     </div>
 
     <div class="w-full flex flex-col justify-start items-stretch mt-4">

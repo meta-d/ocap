@@ -52,7 +52,22 @@ export enum AiProvider {
    * - https://platform.moonshot.cn/console
    * - https://js.langchain.com/docs/integrations/chat/openai/
    */
-  Moonshot = 'moonshot'
+  Moonshot = 'moonshot',
+  /**
+   * - https://groq.com/
+   * - https://js.langchain.com/docs/integrations/chat/openai/
+   */
+  Groq = 'groq',
+  /**
+   * - https://mistral.ai/
+   * 
+   */
+  Mistral = 'mistral',
+  /**
+   * - https://cohere.com/
+   */
+  Cohere = 'cohere',
+  
 }
 
 export enum AiProtocol {
@@ -63,6 +78,7 @@ export enum AiProtocol {
 export type AiModelType = {
   id: string
   name: string
+  embed?: boolean
 }
 
 export type AiProviderType = {
@@ -124,6 +140,21 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'o1-mini',
         name: 'o1 Mini'
+      },
+      {
+        id: 'text-embedding-3-small',
+        name: 'Text Embedding 3 small',
+        embed: true
+      },
+      {
+        id: 'text-embedding-3-large',
+        name: 'Text Embedding 3 large',
+        embed: true
+      },
+      {
+        id: 'text-embedding-ada-002',
+        name: 'Text Embedding ada 002',
+        embed: true
       }
     ]
   },
@@ -243,6 +274,22 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'llama3.1:405b',
         name: 'LLama 3.1 405b'
+      },
+      {
+        id: 'qwen2.5',
+        name: 'Qwen 2.5 7b'
+      },
+      {
+        id: 'qwen2.5:14b',
+        name: 'Qwen 2.5 14b'
+      },
+      {
+        id: 'qwen2.5:32b',
+        name: 'Qwen 2.5 32b'
+      },
+      {
+        id: 'qwen2.5:72b',
+        name: 'Qwen 2.5 72b'
       },
       {
         id: 'qwen2',
@@ -395,6 +442,89 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
         id: 'moonshot-v1-128k',
         name: 'v1 128k'
       },
+    ]
+  },
+  [AiProvider.Groq]: {
+    caption: 'Groq',
+    protocol: AiProtocol.OpenAI,
+    apiHost: 'https://api.groq.com/openai/v1',
+    modelsUrl: '/models',
+    homepage: 'https://groq.com/',
+    isTools: true,
+    models: [
+      {
+        id: 'mixtral-8x7b-32768',
+        name: 'Mixtral 8x7b 32768'
+      },
+    ]
+  },
+  [AiProvider.Mistral]: {
+    caption: 'Mistral',
+    protocol: AiProtocol.OpenAI,
+    apiHost: 'https://api.mistral.ai/v1',
+    modelsUrl: '/models',
+    homepage: 'https://mistral.ai/',
+    isTools: true,
+    models: [
+      {
+        id: 'mistral-large-latest',
+        name: 'Mistral Large 128k'
+      },
+      {
+        id: 'mistral-small-latest',
+        name: 'Mistral Small 32k'
+      },
+      {
+        id: 'codestral-latest',
+        name: 'Codestral 32k'
+      },
+      {
+        id: 'mistral-embed',
+        name: 'Mistral Embed 8k',
+        embed: true
+      }
+    ]
+  },
+  [AiProvider.Cohere]: {
+    caption: 'Cohere',
+    protocol: AiProtocol.Others,
+    apiHost: 'https://api.cohere.com/v1',
+    modelsUrl: '/models',
+    homepage: 'https://cohere.com/',
+    isTools: true,
+    models: [
+      {
+        id: 'command-r-plus',
+        name: 'Command R Plus 128k'
+      },
+      {
+        id: 'command-r',
+        name: 'Command R 128k'
+      },
+      {
+        id: 'command',
+        name: 'Command 4k'
+      },
+      {
+        id: 'embed-english-v3.0',
+        name: 'Embed English 1024D 512k',
+        embed: true
+      },
+      {
+        id: 'embed-english-light-v3.0',
+        name: 'Embed English light 384D 512k',
+        embed: true
+      },
+      {
+        id: 'embed-multilingual-v3.0',
+        name: 'Embed 1024D 512k',
+        embed: true
+      },
+      {
+        id: 'embed-multilingual-light-v3.0',
+        name: 'Embed light 384D 512k',
+        embed: true
+      }
     ]
   }
 }
