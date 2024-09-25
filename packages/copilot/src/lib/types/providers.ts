@@ -43,6 +43,11 @@ export enum AiProvider {
    * - https://js.langchain.com/docs/integrations/chat/baidu_qianfan/
    */
   BaiduQianfan = 'baidu_qianfan',
+  /**
+   * - https://www.together.ai/
+   * - https://js.langchain.com/docs/integrations/chat/togetherai/
+   */
+  Together = 'together'
 }
 
 export enum AiProtocol {
@@ -66,6 +71,7 @@ export type AiProviderType = {
    * If the provider has tools function
    */
   isTools: boolean
+  homepage?: string
 }
 
 export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
@@ -73,6 +79,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     caption: 'OpenAI',
     protocol: AiProtocol.OpenAI,
     apiHost: 'https://api.openai.com/v1',
+    homepage: 'https://platform.openai.com/',
     chatCompletionsUrl: '/chat/completions',
     modelsUrl: '/models',
     isTools: true,
@@ -119,6 +126,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     caption: 'Azure OpenAI',
     protocol: AiProtocol.OpenAI,
     apiHost: '',
+    homepage: 'https://azure.microsoft.com/en-us/products/ai-services/openai-service/',
     chatCompletionsUrl: '/chat/completions',
     modelsUrl: '/models',
     isTools: true,
@@ -153,6 +161,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     caption: 'Alibaba Tongyi',
     protocol: AiProtocol.OpenAI,
     apiHost: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    homepage: 'https://bailian.console.aliyun.com/',
     isTools: true,
     models: [
       {
@@ -212,6 +221,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.Ollama]: {
     caption: 'Ollama',
     isTools: true,
+    homepage: 'https://ollama.com/',
     models: [
       {
         id: 'llama3',
@@ -251,6 +261,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     caption: 'DeepSeek',
     protocol: AiProtocol.OpenAI,
     apiHost: 'https://api.deepseek.com/v1',
+    homepage: 'https://platform.deepseek.com/',
     chatCompletionsUrl: '/chat/completions',
     modelsUrl: '/models',
     isTools: true,
@@ -269,6 +280,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     caption: 'Anthropic',
     protocol: AiProtocol.Others,
     apiHost: 'https://api.anthropic.com/v1',
+    homepage: 'https://www.anthropic.com/',
     isTools: true,
     models: [
       {
@@ -289,6 +301,7 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     caption: 'Zhipu',
     protocol: AiProtocol.OpenAI,
     apiHost: 'https://open.bigmodel.cn/api/paas/v4',
+    homepage: 'https://open.bigmodel.cn/',
     isTools: true,
     models: [
       {
@@ -324,10 +337,36 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.BaiduQianfan]: {
     caption: 'Baidu Qianfan',
     protocol: AiProtocol.Others,
+    homepage: 'https://qianfan.cloud.baidu.com/',
     models: [
       {
         id: 'ERNIE-4.0-8K',
         name: 'ERNIE 4.0 8K'
+      },
+    ]
+  },
+  [AiProvider.Together]: {
+    caption: 'Together',
+    protocol: AiProtocol.OpenAI,
+    apiHost: 'https://api.together.xyz/v1',
+    homepage: 'https://www.together.ai/',
+    isTools: true,
+    models: [
+      {
+        id: 'meta-llama/Llama-3-70b-chat-hf',
+        name: 'LLaMA-3 Chat (70B)'
+      },
+      {
+        id: 'Qwen/Qwen2-72B-Instruct',
+        name: 'Qwen 2 Instruct (72B)'
+      },
+      {
+        id: 'google/gemma-7b-it',
+        name: 'Gemma Instruct (7B)'
+      },
+      {
+        id: 'deepseek-ai/deepseek-llm-67b-chat',
+        name: 'DeepSeek LLM Chat (67B)'
       },
     ]
   }

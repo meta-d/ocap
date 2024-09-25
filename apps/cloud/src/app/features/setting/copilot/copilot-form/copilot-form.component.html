@@ -31,7 +31,7 @@
             <input name="copilot-apikey" matInput formControlName="apiKey" type="password">
         </mat-form-field>
 
-        <a mat-stroked-button [href]="providerHref[provider()]" target="_blank">
+        <a mat-stroked-button [href]="providerHomepage()" target="_blank">
             {{ 'PAC.Copilot.GetYourApiKey' | translate: {Default: 'Get your api key!'} }}
         </a>
     </div>
@@ -46,7 +46,27 @@
     </div>
 
     <div class="flex items-center gap-4">
-        <mat-form-field appearance="fill" class="flex-1">
+
+        <mat-form-field class="w-64 max-w-full flex-1">
+            <mat-label>{{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}</mat-label>
+            <input type="text"
+                   placeholder="Pick one default model"
+                   aria-label="Default Model"
+                   matInput
+                   formControlName="defaultModel"
+                   [matAutocomplete]="auto">
+            <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+              @for (model of models(); track model.id) {
+                <mat-option [value]="model.id">{{model.name}}</mat-option>
+              }
+            </mat-autocomplete>
+        </mat-form-field>
+
+        <mat-checkbox formControlName="showTokenizer">
+            {{ 'PAC.Copilot.ShowTokenizer' | translate: {Default: 'Show Tokenizer'} }}
+        </mat-checkbox>
+
+        <!-- <mat-form-field appearance="fill" class="flex-1">
             <mat-label>
                 {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
             </mat-label>
@@ -59,16 +79,10 @@
         </mat-form-field>
         <mat-form-field appearance="fill" class="flex-1">
             <mat-label>
-                {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
+                {{ 'PAC.Copilot.EnterDefaultModel' | translate: {Default: 'Enter Default Model'} }}
             </mat-label>
             <input name="copilot-model" matInput formControlName="defaultModel" type="text">
-        </mat-form-field>
-    </div>
-
-    <div class="self-stretch flex justify-start items-center">
-        <mat-checkbox formControlName="showTokenizer">
-            {{ 'PAC.Copilot.ShowTokenizer' | translate: {Default: 'Show Tokenizer'} }}
-        </mat-checkbox>
+        </mat-form-field> -->
     </div>
 
     <div class="w-full flex flex-col justify-start items-stretch mt-4">
@@ -78,17 +92,19 @@
       </mat-slider>
     </div>
 
-    <div class="self-stretch flex justify-start items-center mt-8">
+    <div class="self-stretch flex justify-start items-center gap-2 mt-8">
+        <button mat-flat-button type="button" class="ngm-rounded-full" [disabled]="formGroup.pristine"
+            (click)="cancel()">
+            {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}
+        </button>
         <button mat-raised-button color="primary" class="ngm-rounded-full"
             [disabled]="(formGroup.invalid || formGroup.pristine) && enabled() === formGroup.value.enabled"
         >
             <div class="flex items-center">
               @if (saving()) {
-                <mat-spinner diameter="20" class="mr-2"></mat-spinner>
+                <mat-spinner diameter="20" class="mr-2" />
               }
-                <span>
-                    {{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}
-                </span>
+              <span>{{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}</span>
             </div>
             
         </button>

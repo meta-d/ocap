@@ -58,6 +58,12 @@ const PROVIDERS = [
   //   iconAlt: 'qianfan-logo',
   //   embedding: true
   // }
+  {
+    name: AiProvider.Together,
+    icon: 'together-ai.svg',
+    iconAlt: 'together-logo',
+    embedding: true
+  },
 ]
 
 @Component({
@@ -69,14 +75,6 @@ const PROVIDERS = [
 })
 export class CopilotFormComponent {
   AiProvider = AiProvider
-
-  providerHref = {
-    openai: 'https://platform.openai.com/account/api-keys',
-    azure: 'https://azure.microsoft.com/en-us/free/cognitive-services/',
-    dashscope: 'https://help.aliyun.com/zh/dashscope/developer-reference/activate-dashscope-and-create-an-api-key',
-    ollama: 'https://ollama.com/',
-    [AiProvider.Anthropic]: 'https://www.anthropic.com/api'
-  }
 
   readonly #store = inject(Store)
   readonly copilotService = inject(PACCopilotService)
@@ -91,7 +89,7 @@ export class CopilotFormComponent {
 
   readonly formGroup = new FormGroup({
     id: new FormControl(null),
-    enabled: new FormControl(null),
+    enabled: new FormControl(false),
     provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
     apiKey: new FormControl(null),
     apiHost: new FormControl(null),
@@ -99,7 +97,7 @@ export class CopilotFormComponent {
 
     showTokenizer: new FormControl(null),
     tokenBalance: new FormControl(null)
-  })
+  }, {})
 
   get tokenBalance() {
     return this.formGroup.get('tokenBalance').value
@@ -113,6 +111,7 @@ export class CopilotFormComponent {
   )
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
   readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
+  readonly providerHomepage = computed(() => AI_PROVIDERS[this.provider()]?.homepage || '')
   readonly providerInfo = computed(() => this.providers().find((item) => item.name === this.provider()))
 
   readonly saving = signal(false)
@@ -138,6 +137,7 @@ export class CopilotFormComponent {
         if (this.copilot()) {
           this.enabled.set(this.copilot().enabled)
           this.formGroup.patchValue(this.copilot())
+          this.formGroup.markAsPristine()
         }
       },
       { allowSignalWrites: true }
@@ -189,5 +189,14 @@ export class CopilotFormComponent {
     }
 
     return `${value}`
+  }
+
+  cancel() {
+    if (this.copilot()) {
+      this.formGroup.patchValue(this.copilot())
+    } else {
+      this.formGroup.reset()
+    }
+    this.formGroup.markAsPristine()
   }
 }
