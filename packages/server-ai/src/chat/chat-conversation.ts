@@ -56,6 +56,10 @@ export class ChatConversationAgent {
 
 	private message: CopilotMessageGroup = null
 	private abortController: AbortController
+
+	// knowledges
+	private knowledges = null
+
 	constructor(
 		public conversation: IChatConversation,
 		public readonly organizationId: string,
@@ -230,7 +234,8 @@ References documents:
 				this.graph.streamEvents(
 					{
 						input,
-						messages: [new HumanMessage(input)]
+						messages: [new HumanMessage(input)],
+						context: this.knowledges
 					},
 					{
 						version: 'v2',
@@ -470,8 +475,9 @@ References documents:
 				)
 				.then((items) => {
 					if (!subscriber.closed) {
-						const context = formatDocumentsAsString(items.map(({ doc }) => doc))
-						this.updateState({ context })
+						const knowledges = formatDocumentsAsString(items.map(({ doc }) => doc))
+						// this.updateState({ context })
+						this.knowledges = knowledges
 						completed = true
 
 						stepMessage.status = 'done'

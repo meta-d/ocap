@@ -160,7 +160,7 @@ export class CopilotCheckpointSaver extends BaseCheckpointSaver {
 						createdById: userId,
 						thread_id: config.configurable?.thread_id,
 						checkpoint_ns: config.configurable?.checkpoint_ns,
-						checkpoint_id: config.configurable?.checkpoint_id,
+						checkpoint_id: config.configurable?.checkpoint_id ?? '',
 						task_id: taskId,
 						idx,
 						channel: write[0],
