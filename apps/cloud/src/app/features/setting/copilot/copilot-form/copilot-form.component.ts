@@ -38,7 +38,7 @@ const PROVIDERS = [
     name: AiProvider.Anthropic,
     icon: 'claude.svg',
     iconAlt: 'claude-logo',
-    embedding: true
+    embedding: false
   },
   {
     name: AiProvider.AlibabaTongyi,
@@ -63,6 +63,12 @@ const PROVIDERS = [
     icon: 'together-ai.svg',
     iconAlt: 'together-logo',
     embedding: true
+  },
+  {
+    name: AiProvider.Moonshot,
+    icon: 'moonshot.svg',
+    iconAlt: 'moonshot-logo',
+    embedding: false
   },
 ]
 

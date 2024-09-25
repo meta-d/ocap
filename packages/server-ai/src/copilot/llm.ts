@@ -1,6 +1,7 @@
 import { ChatAnthropic } from '@langchain/anthropic'
-import { ChatBaiduQianfan, BaiduQianfanEmbeddings } from '@langchain/baidu-qianfan'
+import { BaiduQianfanEmbeddings, ChatBaiduQianfan } from '@langchain/baidu-qianfan'
 import { AlibabaTongyiEmbeddings } from '@langchain/community/embeddings/alibaba_tongyi'
+import { TogetherAIEmbeddings } from '@langchain/community/embeddings/togetherai'
 import { ZhipuAIEmbeddings } from '@langchain/community/embeddings/zhipuai'
 import { Embeddings } from '@langchain/core/embeddings'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
@@ -116,7 +117,12 @@ export function createEmbeddings(
 				const [accessKey, secretKey] = copilot.apiKey?.split('/') ?? []
 				return new BaiduQianfanEmbeddings({
 					qianfanAccessKey: accessKey,
-					qianfanSecretKey: secretKey,
+					qianfanSecretKey: secretKey
+				})
+			}
+			case AiProvider.Together: {
+				return new TogetherAIEmbeddings({
+					model: model || copilot.defaultModel || 'togethercomputer/m2-bert-80M-8k-retrieval' // Default value
 				})
 			}
 			default:

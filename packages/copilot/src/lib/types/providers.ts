@@ -47,7 +47,12 @@ export enum AiProvider {
    * - https://www.together.ai/
    * - https://js.langchain.com/docs/integrations/chat/togetherai/
    */
-  Together = 'together'
+  Together = 'together',
+  /**
+   * - https://platform.moonshot.cn/console
+   * - https://js.langchain.com/docs/integrations/chat/openai/
+   */
+  Moonshot = 'moonshot'
 }
 
 export enum AiProtocol {
@@ -367,6 +372,28 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'deepseek-ai/deepseek-llm-67b-chat',
         name: 'DeepSeek LLM Chat (67B)'
+      },
+    ]
+  },
+  [AiProvider.Moonshot]: {
+    caption: 'Moonshot',
+    protocol: AiProtocol.OpenAI,
+    apiHost: 'https://api.moonshot.cn/v1',
+    modelsUrl: '/models',
+    homepage: 'https://platform.moonshot.cn/',
+    isTools: true,
+    models: [
+      {
+        id: 'moonshot-v1-8k',
+        name: 'v1 8k'
+      },
+      {
+        id: 'moonshot-v1-32k',
+        name: 'v1 32k'
+      },
+      {
+        id: 'moonshot-v1-128k',
+        name: 'v1 128k'
       },
     ]
   }

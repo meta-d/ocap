@@ -7,7 +7,7 @@
   
   <div class="w-full flex flex-col items-start mb-8">
     <label class="text-lg font-bold">{{'PAC.KEY_WORDS.ConversationStarters' | translate: {Default: 'Conversation Starters'} }}</label>
-    <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
+    <div class="w-full mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
     @for (statement of role.starters; track statement) {
       @if (statement) {
         <div class="flex" tabindex="0">
@@ -52,7 +52,7 @@
   @if (role.knowledgebases?.length) {
     <div class="w-full flex flex-col mb-8">
       <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
-      <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
+      <div class="w-full mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
         @for (knowledgebase of role.knowledgebases; track knowledgebase) {
           <pac-knowledgebase-card [knowledgebase]="knowledgebase" />
         }
