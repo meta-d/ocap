@@ -78,7 +78,12 @@ export enum AiProtocol {
 export type AiModelType = {
   id: string
   name: string
-  embed?: boolean
+  capabilities?: AiModelCapability[]
+}
+
+export enum AiModelCapability {
+  Embed = 'embed',
+  Chat = 'chat',
 }
 
 export type AiProviderType = {
@@ -107,54 +112,63 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'gpt-3.5-turbo',
-        name: 'GPT-3.5 Turbo'
+        name: 'GPT-3.5 Turbo',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-3.5-turbo-16k',
-        name: 'GPT-3.5 Turbo 16k'
+        name: 'GPT-3.5 Turbo 16k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4o',
-        name: 'GPT-4 Omni'
+        name: 'GPT-4 Omni',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4o-mini',
-        name: 'GPT-4 O mini'
+        name: 'GPT-4 O mini',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4-turbo',
-        name: 'GPT-4 Turbo'
+        name: 'GPT-4 Turbo',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4',
-        name: 'GPT-4'
+        name: 'GPT-4',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4-32k',
-        name: 'GPT-4 32k'
+        name: 'GPT-4 32k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'o1-preview',
-        name: 'o1 Preview'
+        name: 'o1 Preview',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'o1-mini',
-        name: 'o1 Mini'
+        name: 'o1 Mini',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'text-embedding-3-small',
         name: 'Text Embedding 3 small',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       },
       {
         id: 'text-embedding-3-large',
         name: 'Text Embedding 3 large',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       },
       {
         id: 'text-embedding-ada-002',
         name: 'Text Embedding ada 002',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       }
     ]
   },
@@ -169,27 +183,33 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'gpt-3.5-turbo',
-        name: 'GPT-3.5 Turbo'
+        name: 'GPT-3.5 Turbo',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-3.5-turbo-16k',
-        name: 'GPT-3.5 Turbo 16k'
+        name: 'GPT-3.5 Turbo 16k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4o',
-        name: 'GPT-4 Omni'
+        name: 'GPT-4 Omni',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4-turbo',
-        name: 'GPT-4 Turbo'
+        name: 'GPT-4 Turbo',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4',
-        name: 'GPT-4'
+        name: 'GPT-4',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'gpt-4-32k',
-        name: 'GPT-4 32k'
+        name: 'GPT-4 32k',
+        capabilities: [AiModelCapability.Chat]
       }
     ]
   },
@@ -202,55 +222,73 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'qwen-turbo',
-        name: '通义千问 Turbo'
+        name: '通义千问 Turbo',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'qwen-plus',
-        name: '通义千问 Plus'
+        name: '通义千问 Plus',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'qwen-max',
-        name: '通义千问 Max'
+        name: '通义千问 Max',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'qwen-1.8b-chat',
-        name: '通义千问 1.8b'
+        name: '通义千问 1.8b',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'qwen-7b-chat',
-        name: '通义千问 7b'
+        name: '通义千问 7b',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'qwen-14b-chat',
-        name: '通义千问 14b'
+        name: '通义千问 14b',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'qwen-72b-chat',
-        name: '通义千问 72b'
+        name: '通义千问 72b',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'llama2-7b-chat-v2',
-        name: 'LLaMa2 7b v2'
+        name: 'LLaMa2 7b v2',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'llama2-13b-chat-v2',
-        name: 'LLaMa2 13b v2'
+        name: 'LLaMa2 13b v2',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'chatglm-6b-v2',
-        name: 'ChatGLM 6b v2'
+        name: 'ChatGLM 6b v2',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'chatglm3-6b',
-        name: 'ChatGLM3 6b'
+        name: 'ChatGLM3 6b',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'baichuan-7b-v1',
-        name: '百川 7b v1'
+        name: '百川 7b v1',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'baichuan2-7b-chat-v1',
-        name: '百川2 7b v1'
+        name: '百川2 7b v1',
+        capabilities: [AiModelCapability.Chat]
+      },
+      {
+        id: 'text-embedding-v3',
+        name: 'Text Embedding v3',
+        capabilities: [AiModelCapability.Embed]
       }
     ]
   },
@@ -320,11 +358,13 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'deepseek-chat',
-        name: 'DeepSeek Chat'
+        name: 'DeepSeek Chat',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'deepseek-coder',
-        name: 'DeepSeek Coder'
+        name: 'DeepSeek Coder',
+        capabilities: [AiModelCapability.Chat]
       },
     ]
   },
@@ -337,15 +377,18 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'claude-3-opus',
-        name: 'Claude 3 Opus'
+        name: 'Claude 3 Opus',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'claude-3-sonnet',
-        name: 'Claude 3 Sonnet'
+        name: 'Claude 3 Sonnet',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'claude-2',
-        name: 'Claude 2'
+        name: 'Claude 2',
+        capabilities: [AiModelCapability.Chat]
       },
     ]
   },
@@ -358,31 +401,38 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'GLM-4-Plus',
-        name: 'GLM-4-Plus'
+        name: 'GLM-4-Plus',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'GLM-4-Long',
-        name: 'GLM-4-Long'
+        name: 'GLM-4-Long',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'GLM-4-AirX',
-        name: 'GLM-4-AirX'
+        name: 'GLM-4-AirX',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'GLM-4-Air',
-        name: 'GLM-4-Air'
+        name: 'GLM-4-Air',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'GLM-4-Flash',
-        name: 'GLM-4-Flash'
+        name: 'GLM-4-Flash',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'GLM-4-AllTools',
-        name: 'GLM-4-AllTools'
+        name: 'GLM-4-AllTools',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'GLM-4V',
-        name: 'GLM-4V'
+        name: 'GLM-4V',
+        capabilities: [AiModelCapability.Chat]
       },
     ]
   },
@@ -393,7 +443,8 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'ERNIE-4.0-8K',
-        name: 'ERNIE 4.0 8K'
+        name: 'ERNIE 4.0 8K',
+        capabilities: [AiModelCapability.Chat]
       },
     ]
   },
@@ -406,19 +457,23 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'meta-llama/Llama-3-70b-chat-hf',
-        name: 'LLaMA-3 Chat (70B)'
+        name: 'LLaMA-3 Chat (70B)',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'Qwen/Qwen2-72B-Instruct',
-        name: 'Qwen 2 Instruct (72B)'
+        name: 'Qwen 2 Instruct (72B)',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'google/gemma-7b-it',
-        name: 'Gemma Instruct (7B)'
+        name: 'Gemma Instruct (7B)',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'deepseek-ai/deepseek-llm-67b-chat',
-        name: 'DeepSeek LLM Chat (67B)'
+        name: 'DeepSeek LLM Chat (67B)',
+        capabilities: [AiModelCapability.Chat]
       },
     ]
   },
@@ -432,15 +487,18 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'moonshot-v1-8k',
-        name: 'v1 8k'
+        name: 'v1 8k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'moonshot-v1-32k',
-        name: 'v1 32k'
+        name: 'v1 32k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'moonshot-v1-128k',
-        name: 'v1 128k'
+        name: 'v1 128k',
+        capabilities: [AiModelCapability.Chat]
       },
     ]
   },
@@ -454,7 +512,8 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'mixtral-8x7b-32768',
-        name: 'Mixtral 8x7b 32768'
+        name: 'Mixtral 8x7b 32768',
+        capabilities: [AiModelCapability.Chat]
       },
     ]
   },
@@ -468,20 +527,23 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'mistral-large-latest',
-        name: 'Mistral Large 128k'
+        name: 'Mistral Large 128k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'mistral-small-latest',
-        name: 'Mistral Small 32k'
+        name: 'Mistral Small 32k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'codestral-latest',
-        name: 'Codestral 32k'
+        name: 'Codestral 32k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'mistral-embed',
         name: 'Mistral Embed 8k',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       }
     ]
   },
@@ -495,35 +557,38 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
     models: [
       {
         id: 'command-r-plus',
-        name: 'Command R Plus 128k'
+        name: 'Command R Plus 128k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'command-r',
-        name: 'Command R 128k'
+        name: 'Command R 128k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'command',
-        name: 'Command 4k'
+        name: 'Command 4k',
+        capabilities: [AiModelCapability.Chat]
       },
       {
         id: 'embed-english-v3.0',
         name: 'Embed English 1024D 512k',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       },
       {
         id: 'embed-english-light-v3.0',
         name: 'Embed English light 384D 512k',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       },
       {
         id: 'embed-multilingual-v3.0',
         name: 'Embed 1024D 512k',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       },
       {
         id: 'embed-multilingual-light-v3.0',
         name: 'Embed light 384D 512k',
-        embed: true
+        capabilities: [AiModelCapability.Embed]
       }
     ]
   }
