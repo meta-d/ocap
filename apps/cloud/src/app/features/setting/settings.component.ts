@@ -40,7 +40,16 @@ export class PACSettingComponent {
         {
           link: 'copilot',
           label: 'AI Copilot',
-          icon: 'assistant',
+          icon: 'psychology',
+          data: {
+            featureKey: FeatureEnum.FEATURE_COPILOT,
+            permissionKeys: [AIPermissionsEnum.COPILOT_EDIT]
+          }
+        },
+        {
+          link: 'xpert',
+          label: 'AI Xpert',
+          icon: 'robot_2',
           data: {
             featureKey: FeatureEnum.FEATURE_COPILOT,
             permissionKeys: [AIPermissionsEnum.COPILOT_EDIT]

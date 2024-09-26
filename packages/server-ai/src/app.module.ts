@@ -8,12 +8,12 @@ import { CopilotModule } from './copilot'
 import { CopilotCheckpointModule } from './copilot-checkpoint'
 import { CopilotKnowledgeModule } from './copilot-knowledge'
 import { CopilotOrganizationModule } from './copilot-organization'
-import { CopilotRoleModule } from './copilot-role/copilot-role.module'
 import { CopilotUserModule } from './copilot-user'
 import { EventHandlers } from './core/events'
 import { GraphragModule } from './graphrag/graphrag.module'
 import { KnowledgeDocumentModule } from './knowledge-document/document.module'
 import { KnowledgebaseModule } from './knowledgebase'
+import { XpertRoleModule } from './xpert-role'
 
 @Module({
 	imports: [
@@ -27,10 +27,10 @@ import { KnowledgebaseModule } from './knowledgebase'
 		AIModule,
 		CopilotModule,
 		CopilotKnowledgeModule,
-		CopilotRoleModule,
 		CopilotUserModule,
 		CopilotOrganizationModule,
-		GraphragModule
+		GraphragModule,
+		XpertRoleModule
 	],
 	controllers: [],
 	providers: [...EventHandlers]

@@ -1,10 +1,10 @@
-import { ChatBIModelOptions, IChatBIModel, ICopilotRole, IIntegration, ISemanticModel } from '@metad/contracts'
-import { CopilotRole } from '@metad/server-ai'
+import { ChatBIModelOptions, IChatBIModel, IIntegration, ISemanticModel, IXpertRole } from '@metad/contracts'
 import { Integration, TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNumber, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm'
 import { SemanticModel, SemanticModelEntity } from '../core/entities/internal'
+import { XpertRole } from '@metad/server-ai'
 
 @Entity('chatbi_model')
 @Index(['modelId', 'entity'], { unique: true })
@@ -62,14 +62,14 @@ export class ChatBIModel extends TenantOrganizationBaseEntity implements IChatBI
     |--------------------------------------------------------------------------
     */
 	// Copilot role's chat models
-	@ManyToMany(() => CopilotRole, {
+	@ManyToMany(() => XpertRole, {
 		onUpdate: 'CASCADE',
 		onDelete: 'CASCADE'
 	})
 	@JoinTable({
-		name: 'copilot_role_chat_model'
+		name: 'xpert_role_chat_model'
 	})
-	roles?: ICopilotRole[]
+	roles?: IXpertRole[]
 
 	@ManyToMany(() => Integration, {
 		onUpdate: 'CASCADE',

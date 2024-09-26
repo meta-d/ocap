@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog'
-import { ICopilotRole } from '@metad/contracts'
+import { IXpertRole } from '@metad/contracts'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { AvatarComponent } from '../../files/avatar/avatar.component'
@@ -33,7 +33,7 @@ import { ToolsetCardComponent } from '../toolset-card/toolset.component'
 export class AboutRoleComponent {
   private readonly _dialog = inject(MatDialog)
   readonly #dialogRef = inject(MatDialogRef)
-  private readonly _data = inject<{ role: ICopilotRole }>(MAT_DIALOG_DATA)
+  private readonly _data = inject<{ role: IXpertRole }>(MAT_DIALOG_DATA)
 
   get role() {
     return this._data.role

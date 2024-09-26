@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatIconModule } from '@angular/material/icon'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilotRole } from '../../../@core/types'
+import { IXpertRole } from '../../../@core/types'
 import { AvatarComponent } from '../../files'
 
 @Component({
@@ -25,11 +25,11 @@ import { AvatarComponent } from '../../files'
   styleUrls: ['list.component.scss']
 })
 export class CopilotRoleListComponent {
-  readonly roleList = input<ICopilotRole[]>()
+  readonly roleList = input<IXpertRole[]>()
 
   readonly roles = model()
 
-  compareId(a: ICopilotRole, b: ICopilotRole): boolean {
+  compareId(a: IXpertRole, b: IXpertRole): boolean {
     return a?.id === b?.id
   }
 }

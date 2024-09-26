@@ -1,4 +1,4 @@
-import { CopilotRoleModule } from '@metad/server-ai'
+import { XpertRoleModule } from '@metad/server-ai'
 import { IntegrationModule, SharedModule, TenantModule } from '@metad/server-core'
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
@@ -15,7 +15,7 @@ import { ChatBIModelService } from './chatbi-model.service'
 		forwardRef(() => TenantModule),
 		SharedModule,
 		CqrsModule,
-		CopilotRoleModule,
+		XpertRoleModule,
 		IntegrationModule,
 	],
 	controllers: [ChatBIModelController],

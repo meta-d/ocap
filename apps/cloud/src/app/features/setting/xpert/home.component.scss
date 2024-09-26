@@ -1,0 +1,9 @@
+:host {
+  @apply w-full flex flex-col;
+}
+
+:host::ng-deep {
+  pac-settings-xpert-roles {
+    @apply w-full overflow-hidden;
+  }
+}

@@ -173,6 +173,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'xpert',
+        loadChildren: () => import('./xpert/routing').then((m) => m.default),
+        data: {
+          title: 'settings/xpert'
+        }
+      },
+      {
         path: 'chatbi',
         loadChildren: () => import('./chatbi/routing').then((m) => m.default),
         data: {

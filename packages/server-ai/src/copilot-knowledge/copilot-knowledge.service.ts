@@ -7,7 +7,7 @@ import {
 	AiProviderRole,
 	ICopilot,
 	ICopilotKnowledge,
-	ICopilotRole,
+	IXpertRole,
 } from '@metad/contracts'
 import { DATABASE_POOL_TOKEN, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -17,11 +17,11 @@ import { compact, uniq } from 'lodash'
 import { Pool } from 'pg'
 import { DeleteResult, FindManyOptions, FindOneOptions, Repository, UpdateResult } from 'typeorm'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
-import { CopilotRoleCreateCommand } from '../copilot-role/commands'
 import { CopilotService } from '../copilot/copilot.service'
 import { CopilotKnowledge } from './copilot-knowledge.entity'
 import { createEmbeddings } from '../copilot/llm'
 import { isEqual } from 'date-fns/isEqual'
+import { XpertRoleCreateCommand } from '../xpert-role'
 
 @Injectable()
 export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<CopilotKnowledge> {
@@ -254,7 +254,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 	async createBulk(
 		entities: ICopilotKnowledge[],
-		roles: ICopilotRole[],
+		roles: IXpertRole[],
 		options: { createRole: boolean; clearRole: boolean }
 	) {
 		const tenantId = RequestContext.currentTenantId()
@@ -265,7 +265,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		if (roles) {
 			for await (const role of roles) {
 				try {
-					await this.commandBus.execute(new CopilotRoleCreateCommand(role))
+					await this.commandBus.execute(new XpertRoleCreateCommand(role))
 				} catch (error) {}
 			}
 		}
@@ -274,7 +274,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		if (createRole) {
 			for await (const role of compact(roleNames).filter((role) => !roles.find((r) => r.name === role))) {
 				try {
-					await this.commandBus.execute(new CopilotRoleCreateCommand({ name: role }))
+					await this.commandBus.execute(new XpertRoleCreateCommand({ name: role }))
 				} catch (error) {}
 			}
 		}

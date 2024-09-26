@@ -11,8 +11,8 @@ import { omit } from 'lodash-es'
 import { combineLatest, distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { ICopilot as IServerCopilot } from '../types'
 import { AgentService } from './agent.service'
-import { CopilotRoleService } from './copilot-role.service'
 import { Store } from './store.service'
+import { XpertRoleService } from './xpert-role.service'
 
 const baseUrl = environment.API_BASE_URL
 const API_CHAT = constructUrl(baseUrl) + '/api/ai/chat'
@@ -23,7 +23,7 @@ export class PACCopilotService extends NgmCopilotService {
   readonly #store = inject(Store)
   readonly httpClient = inject(HttpClient)
   readonly authService = inject(AuthService)
-  readonly roleService = inject(CopilotRoleService)
+  readonly roleService = inject(XpertRoleService)
   readonly router = inject(Router)
   readonly #agentService = inject(AgentService)
 

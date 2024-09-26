@@ -27,13 +27,13 @@ import {
   ChatGatewayMessage,
   getErrorMessage,
   IChatConversation,
-  ICopilotRole,
+  IXpertRole,
   ICopilotToolset,
   IKnowledgebase,
   LanguagesEnum,
   OrderTypeEnum
 } from '../../@core'
-import { ChatConversationService, ChatService as ChatServerService, CopilotRoleService, ToastrService } from '../../@core/services'
+import { ChatConversationService, ChatService as ChatServerService, XpertRoleService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { COMMON_COPILOT_ROLE } from './types'
 import { TranslateService } from '@ngx-translate/core'
@@ -42,7 +42,7 @@ import { TranslateService } from '@ngx-translate/core'
 export class ChatService {
   readonly chatService = inject(ChatServerService)
   readonly conversationService = inject(ChatConversationService)
-  readonly copilotRoleService = inject(CopilotRoleService)
+  readonly copilotRoleService = inject(XpertRoleService)
   readonly appService = inject(AppService)
   readonly #translate = inject(TranslateService)
   readonly #router = inject(Router)
@@ -54,7 +54,7 @@ export class ChatService {
   readonly paramId = injectParams('id')
 
   readonly conversationId = signal<string>(null)
-  readonly role$ = new BehaviorSubject<ICopilotRole>(null)
+  readonly role$ = new BehaviorSubject<IXpertRole>(null)
   readonly conversation = signal<IChatConversation>(null)
 
   readonly messages = signal<CopilotBaseMessage[]>([])
@@ -343,7 +343,7 @@ export class ChatService {
     })
   }
 
-  async newConversation(role?: ICopilotRole) {
+  async newConversation(role?: IXpertRole) {
     if (this.answering() && this.conversation()?.id) {
       this.cancelMessage()
     }

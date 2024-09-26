@@ -3,7 +3,7 @@ import {
 	ChatGatewayMessage,
 	ChatUserMessage,
 	IChatConversation,
-	ICopilotRole,
+	IXpertRole,
 	TOOLSETS
 } from '@metad/contracts'
 import { NgmLanguageEnum } from '@metad/copilot'
@@ -11,9 +11,9 @@ import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { isNil } from 'lodash'
 import { Observable } from 'rxjs'
+import { FindXpertRoleQuery } from '../../../xpert-role'
 import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
-import { FindCopilotRoleQuery } from '../../../copilot-role/index'
 import { ChatConversationAgent } from '../../chat-conversation'
 import { ChatService } from '../../chat.service'
 import { ChatCommand } from '../chat.command'
@@ -63,10 +63,10 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					)
 				}
 
-				let copilotRole: ICopilotRole = null
+				let copilotRole: IXpertRole = null
 				if (role?.id) {
-					copilotRole = await this.queryBus.execute<FindCopilotRoleQuery, ICopilotRole>(
-						new FindCopilotRoleQuery({ tenantId, organizationId, id: role.id })
+					copilotRole = await this.queryBus.execute<FindXpertRoleQuery, IXpertRole>(
+						new FindXpertRoleQuery({ tenantId, organizationId, id: role.id })
 					)
 				}
 

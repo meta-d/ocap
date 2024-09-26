@@ -17,9 +17,9 @@ import {
 	CopilotToolContext,
 	IChatConversation,
 	ICopilot,
-	ICopilotRole,
 	ICopilotToolset,
-	IUser
+	IUser,
+	IXpertRole
 } from '@metad/contracts'
 import { AgentRecursionLimit } from '@metad/copilot'
 import { getErrorMessage, omit, shortuuid } from '@metad/server-common'
@@ -86,7 +86,7 @@ export class ChatConversationAgent {
 		})
 	}
 
-	createAgentGraph(role: ICopilotRole, toolsets: ICopilotToolset[]) {
+	createAgentGraph(role: IXpertRole, toolsets: ICopilotToolset[]) {
 		const llm = this.createLLM(this.copilot)
 		if (!llm) {
 			throw new Error(`Can't create chatModel for provider '${this.copilot.provider}'`)

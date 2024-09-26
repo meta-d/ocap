@@ -5,14 +5,14 @@ import { MaxMarginalRelevanceSearchOptions, VectorStoreInterface } from '@langch
 import { NGXLogger } from 'ngx-logger'
 import { map, tap } from 'rxjs'
 import { API_COPILOT_KNOWLEDGE } from '../constants/app.constants'
-import { ICopilotKnowledge, ICopilotRole } from '../types'
-import { CopilotRoleService } from './copilot-role.service'
+import { ICopilotKnowledge, IXpertRole } from '../types'
+import { XpertRoleService } from './xpert-role.service'
 
 @Injectable({ providedIn: 'root' })
 export class CopilotExampleService {
   readonly #logger = inject(NGXLogger)
   readonly httpClient = inject(HttpClient)
-  readonly roleService = inject(CopilotRoleService)
+  readonly roleService = inject(XpertRoleService)
 
   similaritySearch(
     query: string,
@@ -69,7 +69,7 @@ export class CopilotExampleService {
       .pipe(map((items) => items.map(({ command }) => command)))
   }
 
-  createBulk(entities: ICopilotKnowledge[], roles: ICopilotRole[], options: { clearRole: boolean }) {
+  createBulk(entities: ICopilotKnowledge[], roles: IXpertRole[], options: { clearRole: boolean }) {
     return this.httpClient
       .post<ICopilotKnowledge[]>(`${API_COPILOT_KNOWLEDGE}/bulk`, {
         examples: entities,

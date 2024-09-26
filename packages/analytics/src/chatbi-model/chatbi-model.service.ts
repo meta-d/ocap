@@ -1,5 +1,5 @@
-import { ICopilotRole, IIntegration } from '@metad/contracts'
-import { CopilotRoleService } from '@metad/server-ai'
+import { IXpertRole, IIntegration } from '@metad/contracts'
+import { XpertRoleService } from '@metad/server-ai'
 import { IntegrationService, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
@@ -15,7 +15,7 @@ export class ChatBIModelService extends TenantOrganizationAwareCrudService<ChatB
 	constructor(
 		@InjectRepository(ChatBIModel)
 		repository: Repository<ChatBIModel>,
-		private readonly roleService: CopilotRoleService,
+		private readonly roleService: XpertRoleService,
 		private readonly integrationService: IntegrationService,
 		readonly commandBus: CommandBus
 	) {
@@ -57,7 +57,7 @@ export class ChatBIModelService extends TenantOrganizationAwareCrudService<ChatB
 		if (roles) {
 			const _roles = await this.roleService.findAll({
 				where: {
-					id: In((<QueryDeepPartialEntity<ICopilotRole>[]>roles).map(({ id }) => id))
+					id: In((<QueryDeepPartialEntity<IXpertRole>[]>roles).map(({ id }) => id))
 				}
 			})
 

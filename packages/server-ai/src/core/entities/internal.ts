@@ -1,6 +1,6 @@
 export * from '../../copilot/copilot.entity'
 export * from '../../copilot-knowledge/copilot-knowledge.entity'
-export * from '../../copilot-role/copilot-role.entity'
+export * from '../../xpert-role/xpert-role.entity'
 export * from '../../copilot-organization/copilot-organization.entity'
 export * from '../../copilot-user/copilot-user.entity'
 export * from '../../copilot-checkpoint/copilot-checkpoint.entity'

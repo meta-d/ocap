@@ -16,7 +16,7 @@ import { isYesterday } from 'date-fns/isYesterday'
 import { subDays } from 'date-fns/subDays'
 import { NGXLogger } from 'ngx-logger'
 import { switchMap, tap } from 'rxjs/operators'
-import { ChatBIModelService, ChatConversationService, IChatConversation, ICopilotRole, OrderTypeEnum, registerModel, routeAnimations } from '../../@core'
+import { ChatBIModelService, ChatConversationService, IChatConversation, IXpertRole, OrderTypeEnum, registerModel, routeAnimations } from '../../@core'
 import { AvatarComponent, MaterialModule } from '../../@shared'
 import { AppService } from '../../app.service'
 import { ChatAiMessageComponent } from './ai-message/ai-message.component'
@@ -162,7 +162,7 @@ export class ChatHomeComponent {
     this.chatService.deleteConversation(id)
   }
 
-  selectRole(role: ICopilotRole) {
+  selectRole(role: IXpertRole) {
     this.chatService.newConversation(role)
   }
 
