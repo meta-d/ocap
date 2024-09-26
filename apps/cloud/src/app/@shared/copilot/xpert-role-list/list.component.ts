@@ -20,11 +20,11 @@ import { AvatarComponent } from '../../files'
     DensityDirective,
     AvatarComponent
   ],
-  selector: 'pac-copilot-role-list',
+  selector: 'pac-xpert-role-list',
   templateUrl: 'list.component.html',
   styleUrls: ['list.component.scss']
 })
-export class CopilotRoleListComponent {
+export class XpertRoleListComponent {
   readonly roleList = input<IXpertRole[]>()
 
   readonly roles = model()

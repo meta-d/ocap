@@ -48,7 +48,7 @@ export class PACSettingComponent {
         },
         {
           link: 'xpert',
-          label: 'AI Xpert',
+          label: 'Digital Xpert',
           icon: 'robot_2',
           data: {
             featureKey: FeatureEnum.FEATURE_COPILOT,

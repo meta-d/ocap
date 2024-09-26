@@ -20,7 +20,7 @@ export default [
     children: [
       {
         path: '',
-        redirectTo: 'basic',
+        redirectTo: 'roles',
         pathMatch: 'full'
       },
       {

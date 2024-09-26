@@ -606,6 +606,16 @@ export class FeaturesComponent implements OnInit {
             }
           },
           {
+            title: 'Digital Xpert',
+            matIcon: 'robot_2',
+            link: '/settings/xpert',
+            data: {
+              translationKey: 'Digital Xpert',
+              permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
+              featureKey: FeatureEnum.FEATURE_COPILOT
+            }
+          },
+          {
             title: 'Knowledgebase',
             matIcon: 'school',
             link: '/settings/knowledgebase',

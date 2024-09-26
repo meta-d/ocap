@@ -144,11 +144,11 @@ export class KnowledgeDocumentConsumer {
 	async splitDocuments(document: IKnowledgeDocument, data: Document[]) {
 		let chunkSize: number, chunkOverlap: number
 		if (document.parserConfig?.chunkSize) {
-			chunkSize = document.parserConfig.chunkSize
-			chunkOverlap = document.parserConfig.chunkOverlap ?? chunkSize / 10
+			chunkSize = Number(document.parserConfig.chunkSize)
+			chunkOverlap = Number(document.parserConfig.chunkOverlap ?? chunkSize / 10)
 		} else if (this.knowledgebase.parserConfig?.chunkSize) {
-			chunkSize = this.knowledgebase.parserConfig.chunkSize
-			chunkOverlap = this.knowledgebase.parserConfig.chunkOverlap ?? chunkSize / 10
+			chunkSize = Number(this.knowledgebase.parserConfig.chunkSize)
+			chunkOverlap = Number(this.knowledgebase.parserConfig.chunkOverlap ?? chunkSize / 10)
 		} else {
 			chunkSize = 1000
 			chunkOverlap = 100

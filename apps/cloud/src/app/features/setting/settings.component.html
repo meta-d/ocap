@@ -13,7 +13,7 @@
             #rla="routerLinkActive"
             [class.active]="rla.isActive"
           >
-            <mat-icon *ngIf="e.icon" displayDensity="cosy" fontSet="material-icons-outlined">{{ e.icon }}</mat-icon>
+            <mat-icon *ngIf="e.icon" displayDensity="cosy" fontSet="material-icons-round">{{ e.icon }}</mat-icon>
             <span class="ml-2">
               {{ 'PAC.MENU.' + e.label | translate: { Default: e.label } }}
             </span>

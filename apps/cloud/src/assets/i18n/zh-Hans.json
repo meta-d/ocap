@@ -232,6 +232,7 @@
       "Certification": "认证",
       "Copilot": "智能助理",
       "AI Copilot": "AI 智能助理",
+      "Digital Xpert": "数字专家",
       "Dashboard": "仪表板",
       "Semantic Model": "语义模型",
       "Story": "故事",
@@ -1343,6 +1344,7 @@
       "Provider_Alibaba Tongyi": "阿里云百炼",
       "Provider_Zhipu": "智谱",
       "Provider_Baidu Qianfan": "百度千帆",
+      "DigitalXpert": "数字专家",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",
