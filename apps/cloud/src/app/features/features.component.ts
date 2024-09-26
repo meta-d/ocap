@@ -448,7 +448,7 @@ export class FeaturesComponent implements OnInit {
       },
       {
         title: 'Chat',
-        matIcon: 'voice_chat',
+        matIcon: 'robot_2',
         link: '/chat',
         pathMatch: 'prefix',
         data: {

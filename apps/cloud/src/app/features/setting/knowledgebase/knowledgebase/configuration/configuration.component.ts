@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { AI_PROVIDERS } from '@metad/copilot'
+import { AI_PROVIDERS, AiModelCapability, AiProviderRole, isNil } from '@metad/copilot'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { startWith } from 'rxjs'
@@ -19,6 +19,8 @@ import {
 } from '../../../../../@core'
 import { AvatarEditorComponent, MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { KnowledgebaseComponent } from '../knowledgebase.component'
+import { DisplayBehaviour } from '@metad/ocap-core'
+import { upperFirst } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -38,6 +40,7 @@ import { KnowledgebaseComponent } from '../knowledgebase.component'
 })
 export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   KnowledgebasePermission = KnowledgebasePermission
+  DisplayBehaviour = DisplayBehaviour
 
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)
@@ -74,11 +77,12 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   readonly copilotOptions = computed(() =>
     this.copilots()?.map((copilot) => {
       const provider = AI_PROVIDERS[copilot.provider]
+      const roleName = upperFirst(copilot.role || AiProviderRole.Primary)
       return {
         key: copilot.id,
         caption:
           this.getTranslation('PAC.Copilot.Provider_' + provider?.caption, { Default: provider?.caption }) +
-          `(${copilot.role})`
+          `(${this.getTranslation('PAC.KEY_WORDS.' + roleName, { Default: roleName })})`
       }
     })
   )
@@ -92,14 +96,17 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
 
   readonly models = computed(() => {
     const copilot = this.copilot()
+    const models = AI_PROVIDERS[this.copilot()?.provider]?.models || []
     const items = []
     if (copilot) {
       items.push({
         key: copilot.defaultModel,
-        caption: copilot.defaultModel,
+        caption: models.find((_) => _.id === copilot.defaultModel)?.name
       })
       items.push(
-        ...(AI_PROVIDERS[this.copilot()?.provider]?.models || []).map((item) => ({
+        ...models
+        .filter((_) => _.id !== copilot.defaultModel && (isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Embed)))
+        .map((item) => ({
           key: item.id,
           caption: item.name
         }))

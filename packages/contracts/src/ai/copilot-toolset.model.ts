@@ -104,7 +104,7 @@ export const TOOLSETS: ICopilotToolset[] = [
   },
   {
     id: '4',
-    name: 'ChatSQL',
+    name: 'ChatDB',
     description: 'Chat with SQL DB',
     avatar: '/assets/images/chatbi.jpg',
     providerRole: AiProviderRole.Primary,

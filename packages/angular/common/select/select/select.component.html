@@ -35,14 +35,23 @@
       type="text"
       [placeholder]="placeholder()"
       matInput
+      [matAutocomplete]="auto"
       [ngModel]="autoInput()"
       (ngModelChange)="onAutoInput($event)"
       (blur)="onBlur($event)"
-      [matAutocomplete]="auto"
+      (keydown)="onKeydown($event)"
     />
   
-    <div class="absolute right-0 top-0 h-full flex items-center">
+    <div class="absolute right-0 top-0 h-full flex items-center mr-1">
       <ng-container *ngTemplateOutlet="suffixTemplate"></ng-container>
+      @if (value()) {
+        <button type="button" class="ngm-input-element__clear w-8 h-8 flex justify-center items-center rounded-lg border border-transparent text-center text-sm transition-all active:scale-95
+          disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none opacity-30 hover:opacity-100
+          hover:bg-white focus:bg-neutral-50 active:bg-neutral-50 dark:hover:bg-neutral-600 dark:focus:bg-neutral-700 dark:active:bg-neutral-700"
+          (click)="clear()">
+          <i class="material-icons">close</i>
+        </button>
+      }
     </div>
   </div>
 }

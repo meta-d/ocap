@@ -123,6 +123,8 @@ export class NgmSelectComponent implements ControlValueAccessor
 
   readonly autoInput = signal(null)
 
+  readonly inputDirty = signal(false)
+
   onChange: (input: any) => void
   onTouched: () => void
 
@@ -154,7 +156,7 @@ export class NgmSelectComponent implements ControlValueAccessor
         if (nonNullable(selectedOption?.[this.valueKey()])) {
           this.autoInput.set(selectedOption)
         } else {
-          this.autoInput.set(null)
+          this.autoInput.set(this.allowInput() ? this.value() : null)
         }
       } else {
         this.autoInput.set(null)
@@ -180,8 +182,8 @@ export class NgmSelectComponent implements ControlValueAccessor
     return item?.key
   }
 
-  displayWith(option: any) {
-    return option?.caption || option?.label || option?.key
+  displayWith(option: ISelectOption) {
+    return option?.caption || option?.label || option?.key || option as string
   }
 
   onAutoInput(event: any) {
@@ -194,7 +196,11 @@ export class NgmSelectComponent implements ControlValueAccessor
   }
 
   onOptionSelected(event: any) {
-    //
+    this.inputDirty.set(false)
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    this.inputDirty.set(true)
   }
 
   onBlur(event: FocusEvent) {
@@ -202,10 +208,14 @@ export class NgmSelectComponent implements ControlValueAccessor
       return
     }
     const value = (<HTMLInputElement>event.target).value.trim()
-    if (!this.formControl.value && value) {
+    if (this.inputDirty()) {
       this.formControl.setValue(value)
       this.searchControl.setValue(null)
     }
+  }
+
+  clear() {
+    this.formControl.setValue(null)
   }
 
   @HostBinding('attr.disabled')

@@ -1385,14 +1385,19 @@
         "Avatar": "头像",
         "Prompt": "提示语",
         "Starters": "开场白",
-        "ToolOptions": "工具选项"
+        "ToolOptions": "工具选项",
+        "FrequentlyQuestion": "用户可能常问的问题"
       }
     },
     "Chat": {
       "DeleteConversation": "删除会话",
       "RetrievingDocuments": "检索文档",
       "RetrievedDocuments": "检索到{{value}}个相关文档块",
-      "CommonRoleDescription": "嗨，我能帮什么忙吗？我可以聊天，检索知识库。想要使用工具请选择相应的角色。"
+      "CommonRoleDescription": "嗨，我能帮什么忙吗？我可以聊天，检索知识库。想要使用工具请选择相应的角色。",
+      "CloseSidebar": "关闭边栏",
+      "OpenSidebar": "打开边栏",
+      "NewChat": "新聊天",
+      "MessageDigitalExpert": "提问数字专家"
     },
     "ChatBI": {
       "Title": "ChatBI-数据分析与洞察",

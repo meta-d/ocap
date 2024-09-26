@@ -12,7 +12,7 @@
           [(ngModel)]="modelId"
           [matTooltip]=" 'PAC.KEY_WORDS.SelectSemanticModel' | translate: {Default: 'Select Semantic Model'} "
           matTooltipPosition="right"
-          [ngClass]="modelId ? 'border-transparent' : 'border-neutral-500'"
+          [ngClass]="modelId ? 'border-transparent' : 'border-neutral-300'"
         />
 
         @if (isMobile() && modelId) {
