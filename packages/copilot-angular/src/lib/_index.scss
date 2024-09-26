@@ -1,0 +1,50 @@
+markdown.ngm-copilot-markdown {
+  --ngm-copilot-table-radius: .375rem;
+
+  table {
+    @apply w-full my-4 text-left border-separate border-spacing-0;
+
+    tr {
+      td,
+      th {
+        @apply p-1 pl-2;
+      }
+    }
+
+    th {
+      @apply bg-neutral-100 border-neutral-200 dark:bg-neutral-700 dark:border-neutral-600;
+
+      border-bottom-width: 1px;
+      border-top-width: 1px;
+      border-left-width: 1px;
+      border-right-width: 0;
+    }
+
+    th:first-child {
+      border-top-left-radius: var(--ngm-copilot-table-radius);
+    }
+    th:last-child {
+      border-top-right-radius: var(--ngm-copilot-table-radius);
+      border-right-width: 1px;
+    }
+
+    td {
+      @apply border-neutral-200 dark:border-neutral-600;
+      border-left-width: 1px;
+      border-bottom-width: 1px;
+    }
+    td:last-child {
+      border-right-width: 1px;
+    }
+
+    tbody tr:last-child {
+      td:first-child {
+        border-bottom-left-radius: var(--ngm-copilot-table-radius);
+      }
+
+      td:last-child {
+        border-bottom-right-radius: var(--ngm-copilot-table-radius);
+      }
+    }
+  }
+}
