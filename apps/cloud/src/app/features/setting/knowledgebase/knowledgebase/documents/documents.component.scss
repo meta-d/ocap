@@ -2,6 +2,14 @@
   @apply w-full flex-1 flex flex-col overflow-hidden;
 }
 
+.cdk-header-cell, .cdk-cell {
+  white-space: nowrap;
+}
+
+.cdk-column-name {
+  max-width: 280px;
+}
+
 tr.example-detail-row {
   height: 0;
 }

@@ -45,7 +45,7 @@ const exaClient = process.env.EXASEARCH_API_KEY ? new Exa(process.env.EXASEARCH_
 
 export class ChatConversationAgent {
 	private logger = new Logger(ChatConversationAgent.name)
-	private copilot: ICopilot = null
+	public copilot: ICopilot = null
 	public graph: CompiledStateGraph<ChatAgentState, Partial<ChatAgentState>, typeof START | 'agent' | 'tools'>
 	get id() {
 		return this.conversation.id
@@ -73,16 +73,27 @@ export class ChatConversationAgent {
 	}
 
 	createLLM(copilot: ICopilot) {
-		return createLLM<BaseChatModel>(copilot, {}, (input) => {
-			this.commandBus.execute(
-				new CopilotTokenRecordCommand({
-					...input,
-					tenantId: this.tenantId,
-					organizationId: this.organizationId,
-					userId: this.user.id,
-					copilot: copilot
-				})
-			)
+		return createLLM<BaseChatModel>(copilot, {}, async (input) => {
+			try {
+				await this.commandBus.execute(
+					new CopilotTokenRecordCommand({
+						...input,
+						tenantId: this.tenantId,
+						organizationId: this.organizationId,
+						userId: this.user.id,
+						copilot: copilot
+					})
+				)
+			} catch(err) {
+				if (this.abortController && !this.abortController.signal.aborted) {
+					try {
+						this.abortController.abort(err.message)
+					} catch(err) {
+						//
+					}
+				}
+				
+			}
 		})
 	}
 

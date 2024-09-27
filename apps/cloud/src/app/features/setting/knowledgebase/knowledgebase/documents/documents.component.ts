@@ -28,6 +28,7 @@ import {
   switchMap
 } from 'rxjs'
 import {
+  getDateLocale,
   IKnowledgeDocument,
   IStorageFile,
   KnowledgeDocumentService,
@@ -37,6 +38,7 @@ import {
 } from '../../../../../@core'
 import { FilesUploadDialogComponent, MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { KnowledgebaseComponent } from '../knowledgebase.component'
+import { formatRelative } from 'date-fns/formatRelative'
 
 @Component({
   standalone: true,
@@ -90,7 +92,7 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
       caption: 'Type'
     },
     {
-      name: 'createdAt',
+      name: 'createdAtRelative',
       caption: 'Created At'
     },
     {
@@ -150,7 +152,13 @@ export class KnowledgeDocumentsComponent extends TranslationBaseComponent {
           })
         )
         .subscribe((data) =>
-          this.data.set(data.map((item) => ({ ...item, parserConfig: item.parserConfig ?? {} }) as IKnowledgeDocument))
+          this.data.set(data.map((item) => ({
+            ...item,
+            createdAtRelative: formatRelative(new Date(item.updatedAt), new Date(), {
+              locale: getDateLocale(this.translateService.currentLang)
+            }),
+            parserConfig: item.parserConfig ?? {}
+          }) as IKnowledgeDocument))
         )
     })
 

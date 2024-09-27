@@ -16,22 +16,31 @@ export class CopilotTokenRecordHandler implements ICommandHandler<CopilotTokenRe
 
 		if (tokenUsed > 0) {
 			// 记录该用户所使用组织或全局的 token
-			await this.copilotUserService.upsert({
+			const record = await this.copilotUserService.upsert({
 				...input,
 				organizationId,
 				orgId: copilot.organizationId,
 				provider: input.copilot.provider,
 				tokenLimit: copilot.tokenBalance
 			})
+
+			if (record.tokenLimit && record.tokenUsed >= record.tokenLimit) {
+				throw new Error('Token usage exceeds limit')
+			}
+
 			// 使用全局 Copilot 时记录该用户所在组织的 token 使用
 			if (!copilot.organizationId) {
-				await this.copilotOrganizationService.upsert({
+				const orgRecord = await this.copilotOrganizationService.upsert({
 					tenantId: input.tenantId,
 					tokenUsed: input.tokenUsed,
 					organizationId,
 					provider: input.copilot.provider,
 					tokenLimit: copilot.tokenBalance
 				})
+
+				if (orgRecord.tokenLimit && orgRecord.tokenUsed >= orgRecord.tokenLimit) {
+					throw new Error('Token usage of org exceeds limit')
+				}
 			}
 		}
 	}

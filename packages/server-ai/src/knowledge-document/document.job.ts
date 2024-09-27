@@ -5,6 +5,7 @@ import { IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { JOB_REF, Process, Processor } from '@nestjs/bull'
 import { Inject, Logger, Scope } from '@nestjs/common'
+import { CommandBus } from '@nestjs/cqrs'
 import { Job } from 'bull'
 import { Document } from 'langchain/document'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
@@ -12,6 +13,7 @@ import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { FileStorage, Provider } from '@metad/server-core'
 import { KnowledgebaseService, KnowledgeDocumentVectorStore } from '../knowledgebase/index'
 import { KnowledgeDocumentService } from './document.service'
+import { CopilotTokenRecordCommand } from '../copilot-user'
 
 @Processor({
 	name: 'embedding-document',
@@ -25,11 +27,13 @@ export class KnowledgeDocumentConsumer {
 	constructor(
 		@Inject(JOB_REF) jobRef: Job,
 		private readonly knowledgebaseService: KnowledgebaseService,
-		private readonly service: KnowledgeDocumentService
+		private readonly service: KnowledgeDocumentService,
+		private readonly commandBus: CommandBus,
 	) {}
 
 	@Process({ concurrency: 5 })
-	async process(job: Job<{ docs: IKnowledgeDocument[] }>) {
+	async process(job: Job<{ userId: string; docs: IKnowledgeDocument[] }>) {
+		const userId = job.data.userId
 		const knowledgebaseId = job.data.docs[0]?.knowledgebaseId
 		this.knowledgebase = await this.knowledgebaseService.findOne(knowledgebaseId)
 		let vectorStore: KnowledgeDocumentVectorStore
@@ -82,6 +86,17 @@ export class KnowledgeDocumentConsumer {
 					let count = 0
 					while (batchSize * count < data.length) {
 						const batch = data.slice(batchSize * count, batchSize * (count + 1))
+						// Record token usage
+						const tokenUsed = batch.reduce((total, doc) => total + estimateTokenUsage(doc.pageContent), 0)
+						await this.commandBus.execute(
+							new CopilotTokenRecordCommand({
+								tenantId: this.knowledgebase.tenantId,
+								organizationId: this.knowledgebase.organizationId,
+								userId,
+								copilot: vectorStore.copilot,
+								tokenUsed
+							})
+						)
 						await vectorStore.addKnowledgeDocument(document, batch)
 						count++
 						const progress =
@@ -162,4 +177,10 @@ export class KnowledgeDocumentConsumer {
 
 		return await textSplitter.splitDocuments(data)
 	}
+}
+
+function estimateTokenUsage(text: string) {
+    const characterCount = text?.length ?? 0 // 获取字符数
+    const tokens = Math.ceil(characterCount / 4) // 估算token数（以4为基准）
+    return tokens
 }

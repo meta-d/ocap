@@ -19,19 +19,18 @@ export class CopilotOrganizationService extends TenantAwareCrudService<CopilotOr
     }
 
 
-	async upsert(input: Partial<CopilotOrganization>): Promise<void> {
+	async upsert(input: Partial<CopilotOrganization>): Promise<ICopilotOrganization> {
 		const existing = await this.findOneOrFail({
 			tenantId: input.tenantId,
 			organizationId: input.organizationId,
 			provider: input.provider
 		})
 		if (existing.success) {
-			await this.update(existing.record.id, {
-				tokenUsed: (existing.record.tokenUsed ?? 0) + (input.tokenUsed ?? 0),
-				tokenLimit: input.tokenLimit ?? existing.record.tokenLimit
-			})
+			existing.record.tokenUsed = (existing.record.tokenUsed ?? 0) + (input.tokenUsed ?? 0)
+			existing.record.tokenLimit = input.tokenLimit ?? existing.record.tokenLimit
+			return await this.repository.save(existing.record)
 		} else {
-			await this.create({
+			return await this.create({
 				tenantId: input.tenantId,
 				organizationId: input.organizationId,
 				provider: input.provider,

@@ -19,7 +19,7 @@ export class CopilotUserService extends TenantOrganizationAwareCrudService<Copil
 	/**
 	 * Record usage of copilot for user in organization
 	 */
-	async upsert(user: Partial<CopilotUser>): Promise<void> {
+	async upsert(user: Partial<CopilotUser>): Promise<ICopilotUser> {
 		const existing = await this.findOneOrFail({
 			tenantId: user.tenantId,
 			organizationId: user.organizationId,
@@ -28,11 +28,10 @@ export class CopilotUserService extends TenantOrganizationAwareCrudService<Copil
 			provider: user.provider
 		})
 		if (existing.success) {
-			await this.update(existing.record.id, {
-				tokenUsed: (existing.record.tokenUsed ?? 0) + (user.tokenUsed ?? 0)
-			})
+			existing.record.tokenUsed = (existing.record.tokenUsed ?? 0) + (user.tokenUsed ?? 0)
+			return await this.repository.save(existing.record)
 		} else {
-			await this.create({
+			return await this.create({
 				tenantId: user.tenantId,
 				organizationId: user.organizationId,
 				orgId: user.orgId,

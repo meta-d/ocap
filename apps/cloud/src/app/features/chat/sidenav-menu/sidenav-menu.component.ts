@@ -32,6 +32,6 @@ export class ChatSidenavMenuComponent {
   readonly sidenav = input<MatSidenav>()
 
   async newConversation() {
-    await this.chatService.newConversation(COMMON_COPILOT_ROLE)
+    await this.chatService.newConversation()
   }
 }

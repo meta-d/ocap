@@ -15,7 +15,7 @@ import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Queue } from 'bull'
 import { In } from 'typeorm'
-import { CrudController, TransformInterceptor } from '@metad/server-core'
+import { CrudController, RequestContext, TransformInterceptor } from '@metad/server-core'
 import { KnowledgeDocument } from './document.entity'
 import { KnowledgeDocumentService } from './document.service'
 import { DocumentChunkDTO } from './dto'
@@ -41,6 +41,7 @@ export class KnowledgeDocumentController extends CrudController<KnowledgeDocumen
 
 	@Post('process')
 	async start(@Body() body: { ids: string[] }) {
+		const userId = RequestContext.currentUserId()
 		const { items } = await this.service.findAll({
 			where: {
 				id: In(body.ids)
@@ -50,6 +51,7 @@ export class KnowledgeDocumentController extends CrudController<KnowledgeDocumen
 		const docs = items.filter((doc) => doc.status !== 'running')
 
 		const job = await this.docQueue.add({
+			userId,
 			docs
 		})
 

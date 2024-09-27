@@ -14,6 +14,7 @@ import { Observable } from 'rxjs'
 import { FindXpertRoleQuery } from '../../../xpert-role'
 import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
+import { CopilotCheckLimitCommand } from '../../../copilot-user'
 import { ChatConversationAgent } from '../../chat-conversation'
 import { ChatService } from '../../chat.service'
 import { ChatCommand } from '../chat.command'
@@ -101,6 +102,8 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				}
 				const conversation = this.chatService.getConversation(chatConversation.id)
 
+				
+
 				if (language) {
 					conversation.updateState({ language: this.languagePrompt(language) })
 				}
@@ -120,6 +123,28 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				conversation.newMessage(answerId)
 				// Update conversation messages
 				await conversation.saveMessage({ id, content, role: 'user' })
+
+				// Check token limit
+				try {
+					await this.commandBus.execute(new CopilotCheckLimitCommand({
+						tenantId,
+						organizationId,
+						userId: user.id,
+						copilot: conversation.copilot
+					}))
+				} catch(err) {
+					await conversation.saveMessage({ id, content: err.message, role: 'assistant' })
+					subscriber.next({
+						event: ChatGatewayEvent.Error,
+						data: {
+							id: answerId,
+							role: 'info',
+							error: err.message,
+						}
+					})
+					subscriber.complete()
+					return
+				}
 
 				conversation
 					.chat(content, answerId)
