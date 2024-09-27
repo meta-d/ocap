@@ -24,7 +24,7 @@ import {
   Store,
   ToastrService
 } from '../../../../@core'
-import { MaterialModule } from '../../../../@shared'
+import { AvatarEditorComponent, MaterialModule } from '../../../../@shared'
 import { IsDirty } from '@metad/core'
 import omit from 'lodash-es/omit'
 
@@ -46,7 +46,8 @@ import omit from 'lodash-es/omit'
     AppearanceDirective,
     DensityDirective,
     NgmSelectComponent,
-    NgmInputComponent
+    NgmInputComponent,
+    AvatarEditorComponent
   ],
   animations: [routeAnimations]
 })
@@ -77,6 +78,7 @@ export class IntegrationComponent implements IsDirty {
   readonly formGroup = new FormGroup({
     id: new FormControl(null),
     name: new FormControl(null, [Validators.required]),
+    avatar: new FormControl(null),
     description: new FormControl(null),
     slug: new FormControl(null),
     provider: new FormControl(null),
@@ -143,6 +145,21 @@ export class IntegrationComponent implements IsDirty {
 
   refresh() {
     this.refresh$.next(true)
+  }
+
+  test() {
+    this.loading.set(true)
+    this.integrationService.test(this.formGroup.value).subscribe({
+      next: (result) => {
+        this.formGroup.patchValue(result)
+        this.formGroup.markAsDirty()
+        this.loading.set(false)
+      },
+      error: (error) => {
+        this.#toastr.danger(getErrorMessage(error))
+        this.loading.set(false)
+      }
+    })
   }
 
   upsert() {

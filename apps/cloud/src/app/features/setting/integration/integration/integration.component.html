@@ -2,6 +2,8 @@
 
 <div class="flex-1 overflow-auto">
   <form class="flex flex-col gap-2 p-4 max-w-full lg:max-w-lg" [formGroup]="formGroup">
+    <pac-avatar-editor formControlName="avatar" class="w-24 h-24 self-center" />
+    
     <ngm-input class="flex-1" [label]="'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'}"
       formControlName="name"
     />
@@ -38,8 +40,10 @@
       </div>
     }
 
-    <div class="filter-bar p-2 flex items-center gap-4">
-      <span class="flex-1"></span>
+    <div class="w-full filter-bar p-2 flex justify-between items-center gap-4">
+      <button mat-flat-button type="button" (click)="test()">
+        {{ 'PAC.KEY_WORDS.Test' | translate: {Default: 'Test'} }}
+      </button>
       <div ngmButtonGroup class="flex items-center gap-2">
         <button mat-flat-button type="button" (click)="cancel()">
           {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}
@@ -56,3 +60,9 @@
   </form>
   
 </div>
+
+@if (loading()) {
+  <div class="absolute left-0 top-0 w-full h-full flex justify-center items-center">
+    <mat-progress-spinner [mode]="'indeterminate'" [diameter]="22" color="accent" />
+  </div>
+}

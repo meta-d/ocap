@@ -46,6 +46,10 @@ export interface IIntegrationTenant extends IBasePerTenantAndOrganizationEntityM
 export interface IIntegration extends IBasePerTenantAndOrganizationEntityModel {
 	name: string
 	description?: string
+	/**
+     * avatar url
+     */
+	avatar?: string
 	slug: string;
 	provider: IntegrationEnum
 

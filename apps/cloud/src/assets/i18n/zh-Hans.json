@@ -226,7 +226,8 @@
       "Date_Last7Days": "前 7 天",
       "Date_Last30Days": "前 30 天",
       "Options": "选项",
-      "Permission": "权限"
+      "Permission": "权限",
+      "Test": "测试"
     },
     "MENU": {
       "Certification": "认证",

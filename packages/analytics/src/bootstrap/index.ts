@@ -1,5 +1,5 @@
 import { environment as env } from '@metad/server-config'
-import { AppService, AuthGuard, IntegrationLarkModule, LarkService, ServerAppModule } from '@metad/server-core'
+import { AppService, AuthGuard, ServerAppModule } from '@metad/server-core'
 import { Logger, LogLevel } from '@nestjs/common'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'

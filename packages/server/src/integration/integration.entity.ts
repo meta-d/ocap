@@ -20,6 +20,12 @@ export class Integration extends TenantOrganizationBaseEntity implements IIntegr
 	@Column({ nullable: true })
 	description?: string
 
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@Optional()
+	@Column({ nullable: true })
+	avatar?: string
+
 	@ApiProperty({ type: () => String, minLength: 10, maxLength: 100 })
 	@IsString()
 	@Index({ unique: true })

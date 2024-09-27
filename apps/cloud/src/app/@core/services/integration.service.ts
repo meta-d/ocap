@@ -13,5 +13,7 @@ export class IntegrationService extends OrganizationBaseCrudService<IIntegration
     super(API_INTEGRATION)
   }
 
-  
+  test(integration: Partial<IIntegration>) {
+    return this.httpClient.post(API_PREFIX + `/${integration.provider}/test`, integration)
+  }
 }

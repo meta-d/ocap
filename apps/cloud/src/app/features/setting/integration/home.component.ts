@@ -1,4 +1,4 @@
-import { AsyncPipe } from '@angular/common'
+import { AsyncPipe, DatePipe } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
@@ -17,6 +17,7 @@ import { AvatarComponent, MaterialModule, UserProfileInlineComponent } from '../
   styleUrls: ['./home.component.scss'],
   imports: [
     AsyncPipe,
+    DatePipe,
     RouterModule,
     TranslateModule,
     MaterialModule,

@@ -70,8 +70,8 @@ export class LarkService {
 			this.getBotInfo(client).then((bot) => (item.bot = bot))
 		}
 
-		item.dispatcher(req, res).then((data) => console.log(data)).catch((err) => {
-			//
+		item.dispatcher(req, res).catch((err) => {
+			// Error
 			console.error(err)
 		})
 	}
@@ -277,6 +277,11 @@ export class LarkService {
 
 	getClient(id: string) {
 		return this.eventDispatchers.get(id)?.client
+	}
+
+	async test(integration: IIntegration,) {
+		const client = this.createClient(integration)
+		return await this.getBotInfo(client)
 	}
 
 	async getUser(client: lark.Client, tenantId: string, unionId: string) {
