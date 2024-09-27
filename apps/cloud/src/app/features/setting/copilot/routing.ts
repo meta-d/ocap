@@ -26,7 +26,7 @@ export default [
         loadComponent: () => import('./basic/basic.component').then((m) => m.CopilotBasicComponent)
       },
       {
-        path: 'knowledges',
+        path: 'examples',
         loadComponent: () => import('./examples/examples.component').then((m) => m.CopilotExamplesComponent),
         children: [
           {

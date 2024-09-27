@@ -44,13 +44,14 @@ export interface IIntegrationTenant extends IBasePerTenantAndOrganizationEntityM
 }
 
 export interface IIntegration extends IBasePerTenantAndOrganizationEntityModel {
-	name: string;
+	name: string
+	description?: string
 	slug: string;
 	provider: IntegrationEnum
 
 	options?: any
 
-	tags?: ITag[];
+	tags?: ITag[]
 }
 
 export interface IIntegrationFilter {

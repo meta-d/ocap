@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common'
 import { Component, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmInputComponent, NgmSelectComponent } from '@metad/ocap-angular/common'
@@ -76,7 +76,8 @@ export class IntegrationComponent implements IsDirty {
 
   readonly formGroup = new FormGroup({
     id: new FormControl(null),
-    name: new FormControl(null),
+    name: new FormControl(null, [Validators.required]),
+    description: new FormControl(null),
     slug: new FormControl(null),
     provider: new FormControl(null),
     options: new FormGroup({})

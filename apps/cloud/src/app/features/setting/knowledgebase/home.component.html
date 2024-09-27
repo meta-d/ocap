@@ -13,9 +13,9 @@
 
 <div class="flex flex-wrap p-4 gap-4 overflow-y-auto">
   @for (item of knowledgebases(); track item.id) {
-    <div class="pac-knowledgebase-card relative flex-1 flex flex-col max-w-sm w-full lg:max-w-md lg:w-[360px] p-4 group">
+    <div class="ngm-card flex-1 flex flex-col max-w-sm w-full lg:max-w-md lg:w-[360px] p-4 group">
 
-      <button mat-icon-button class="pac-card__menu transition-opacity opacity-0 group-hover:opacity-100" displayDensity="cosy"
+      <button mat-icon-button class="ngm-card__menu transition-opacity opacity-0 group-hover:opacity-100" displayDensity="cosy"
         [matMenuTriggerFor]="menu"
         [matMenuTriggerData]="{item: item}"
         #mt="matMenuTrigger"

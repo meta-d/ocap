@@ -21,12 +21,12 @@
       {{ 'PAC.KEY_WORDS.Roles' | translate: {Default: "Roles"} }}
     </span> -->
 
-    <span mat-tab-link [routerLink]="['./knowledges']"
+    <span mat-tab-link [routerLink]="['./examples']"
       routerLinkActive #rla2="routerLinkActive"
       [active]="rla2.isActive"
     >
       <mat-icon fontSet="material-icons-outlined">tips_and_updates</mat-icon>
-      {{ 'PAC.KEY_WORDS.Knowledges' | translate: {Default: "Knowledges"} }}
+      {{ 'PAC.KEY_WORDS.Examples' | translate: {Default: "Examples"} }}
     </span>
 
     @if (organizationId$ | async) {

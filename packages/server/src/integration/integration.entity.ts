@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, Index, ManyToMany } from 'typeorm'
 import { Tag, TenantOrganizationBaseEntity } from '../core/entities/internal'
+import { Optional } from '@nestjs/common'
 
 @Entity('integration')
 export class Integration extends TenantOrganizationBaseEntity implements IIntegration {
@@ -12,6 +13,12 @@ export class Integration extends TenantOrganizationBaseEntity implements IIntegr
 	@Index()
 	@Column()
 	name: string
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@Optional()
+	@Column({ nullable: true })
+	description?: string
 
 	@ApiProperty({ type: () => String, minLength: 10, maxLength: 100 })
 	@IsString()

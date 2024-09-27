@@ -59,7 +59,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
         },
         {
           name: 'role',
-          caption: i18n?.BusinessRole || 'Business Role'
+          caption: i18n?.ExpertRole || 'Expert Role'
         },
         {
           name: 'command',
