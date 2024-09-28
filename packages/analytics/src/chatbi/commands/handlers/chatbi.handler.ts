@@ -11,7 +11,6 @@ import {
 } from '@metad/server-ai'
 import { Inject, Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { EMPTY, from, Observable } from 'rxjs'
 import { IsNull } from 'typeorm'
 import { ChatBIModelService } from '../../../chatbi-model'
 import { SemanticModelMemberService } from '../../../model-member'
@@ -43,17 +42,15 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 		private readonly commandBus: CommandBus
 	) {}
 
-	public async execute(command: ChatBICommand): Promise<Observable<any>> {
+	public async execute(command: ChatBICommand): Promise<any> {
 		const { input } = command
 		const { tenant, organizationId, user, larkService } = input
 
 		const conversation = await this.getUserConversation(input)
 		if (!conversation) {
-			return from(
-				larkService.errorMessage(
-					input,
-					new Error(`Failed to create chat conversation for user: ${input.userId}`)
-				)
+			return await larkService.errorMessage(
+				input,
+				new Error(`Failed to create chat conversation for user: ${input.userId}`)
 			)
 		}
 
@@ -65,18 +62,17 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 				userId: user.id,
 				copilot: conversation.copilot
 			}))
-			return EMPTY
 		} catch(err) {
-			//
+			return await larkService.errorMessage(
+				input,
+				err
+			)
 		}
 
-		return new Observable((subscriber) => {
-			conversation.ask(input.text).then()
-			return () => {
-				// when cancel
-				conversation.destroy()
-			}
-		})
+		// Ask
+		conversation.ask(input.text).then()
+
+		return
 	}
 
 	async getUserConversation(input: ChatBILarkContext): Promise<ChatBIConversation> {

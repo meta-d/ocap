@@ -149,28 +149,23 @@ export class LarkService {
 				this.logger.debug('im.message.receive_v1:')
 				this.logger.debug(data)
 
-				const user = await this.getUser(client, tenant.id, data.sender.sender_id.union_id)
-
-				const result = await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
-					new LarkMessageCommand({
-						tenant,
-						organizationId,
-						integrationId: integration.id,
-						user,
-						message: data as any,
-						chatId,
-						chatType: data.message.chat_type,
-						larkService: this
-					})
-				)
-				result.subscribe({
-					next: () => {
-						//
-					},
-					error: () => {
-						//
-					}
-				})
+				try {
+				    const user = await this.getUser(client, tenant.id, data.sender.sender_id.union_id)
+					await this.commandBus.execute<LarkMessageCommand, Observable<any>>(
+						new LarkMessageCommand({
+							tenant,
+							organizationId,
+							integrationId: integration.id,
+							user,
+							message: data as any,
+							chatId,
+							chatType: data.message.chat_type,
+							larkService: this
+						})
+					)
+				} catch(err) {
+					console.error(err)
+				}
 
 				this.logger.debug('Return for message:' + data.event_id)
 				return 'ok'

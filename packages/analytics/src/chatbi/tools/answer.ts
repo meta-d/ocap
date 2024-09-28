@@ -3,10 +3,7 @@ import {
 	ChartAnnotation,
 	ChartBusinessService,
 	ChartDimensionRoleType,
-	ChartDimensionSchema,
-	ChartMeasureSchema,
 	DataSettings,
-	DataSettingsSchema,
 	Dimension,
 	EntityType,
 	FilteringLogic,
@@ -23,14 +20,11 @@ import {
 	isTimeRangesSlicer,
 	Measure,
 	OrderBy,
-	OrderBySchema,
 	PresentationVariant,
 	PropertyMeasure,
 	slicerAsString,
-	SlicerSchema,
 	TimeRangesSlicer,
 	timeRangesSlicerAsString,
-	TimeSlicerSchema,
 	toAdvancedFilter,
 	tryFixDimension,
 	tryFixSlicer,
@@ -38,7 +32,6 @@ import {
 	workOutTimeRangeSlicers
 } from '@metad/ocap-core'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
-import { z } from 'zod'
 import { ChatLarkMessage } from '../message'
 import { ChatAnswerSchema, ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
 import { createBaseChart } from './charts/chart'
@@ -62,25 +55,6 @@ export type ChatAnswer = {
 	orders: OrderBy[]
 }
 
-// export const ChatAnswerSchema = z.object({
-// 	preface: z.string().describe('preface of the answer'),
-// 	visualType: z.enum(['Chart', 'Table', 'KPI']).describe('Visual type of result'),
-// 	dataSettings: DataSettingsSchema.optional().describe('The data settings of the widget'),
-// 	chartType: z
-// 		.object({
-// 			type: z.enum(['Column', 'Line', 'Pie', 'Bar']).describe('The type of chart')
-// 		})
-// 		.optional()
-// 		.describe('Chart configuration'),
-// 	dimensions: z.array(ChartDimensionSchema).optional().describe('The dimensions used by the chart'),
-// 	measures: z.array(ChartMeasureSchema).optional().describe('The measures used by the chart'),
-// 	orders: z.array(OrderBySchema).optional().describe('The orders used by the chart'),
-// 	top: z.number().optional().describe('The number of top members'),
-// 	slicers: z.array(SlicerSchema).optional().describe('The slicers to filter data'),
-// 	timeSlicers: z.array(TimeSlicerSchema).optional().describe('The time slicers to filter data'),
-// 	variables: z.array(VariableSchema).optional().describe('The variables to the query of cube'),
-// 	conclusion: z.string().optional().describe('conclusion of the answer')
-// })
 
 export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILarkContext) {
 	const { chatId, logger, dsCoreService, conversation } = context
@@ -242,7 +216,8 @@ const colors = [
 	'carmine' //洋红色
 ]
 
-function createSlicersTitle(slicers: ISlicer[]) {
+export function createSlicersTitle(slicers: ISlicer[]) {
+	// console.log(JSON.stringify(slicers, null, 2))
 	return slicers.map((slicer) => {
 		return {
 			tag: 'text_tag',
