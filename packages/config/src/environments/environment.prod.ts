@@ -296,5 +296,11 @@ export const pacToggleFeatures: IPACFeatures = {
 		process.env.FEATURE_SMS_GATEWAY === 'false' ? false : true,
 	FEATURE_SMTP: process.env.FEATURE_SMTP === 'false' ? false : true,
 	FEATURE_ROLES_PERMISSION:
-		process.env.FEATURE_ROLES_PERMISSION === 'false' ? false : true
+		process.env.FEATURE_ROLES_PERMISSION === 'false' ? false : true,
+	// Ai module
+	FEATURE_COPILOT: process.env.FEATURE_COPILOT === 'false' ? false : true,
+	FEATURE_COPILOT_CHAT: process.env.FEATURE_COPILOT_CHAT === 'false' ? false : true,
+	FEATURE_COPILOT_XPERT: process.env.FEATURE_COPILOT_XPERT === 'false' ? false : true,
+	FEATURE_COPILOT_KNOWLEDGEBASE: process.env.FEATURE_COPILOT_KNOWLEDGEBASE === 'false' ? false : true,
+	FEATURE_COPILOT_CHATBI: process.env.FEATURE_COPILOT_CHATBI === 'false' ? false : true,
 };

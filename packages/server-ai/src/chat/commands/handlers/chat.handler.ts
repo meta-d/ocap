@@ -102,8 +102,6 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				}
 				const conversation = this.chatService.getConversation(chatConversation.id)
 
-				
-
 				if (language) {
 					conversation.updateState({ language: this.languagePrompt(language) })
 				}

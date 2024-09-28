@@ -3,7 +3,7 @@ import { BaseMessage, HumanMessage, isAIMessage, SystemMessage, ToolMessage } fr
 import { FewShotPromptTemplate, SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool, ToolInputParsingException } from '@langchain/core/tools'
 import { CompiledStateGraph, END, GraphValueError, START } from '@langchain/langgraph'
-import { IChatBIModel, ISemanticModel, OrderTypeEnum } from '@metad/contracts'
+import { IChatBIModel, ICopilot, ISemanticModel, OrderTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, nanoid, referencesCommandName } from '@metad/copilot'
 import {
 	CubeVariablePrompt,
@@ -47,6 +47,9 @@ import { createWelcomeTool } from './tools/welcome'
 import { ChatLarkMessage, ChatStack } from './message'
 import { createIndicatorTool } from './tools/indicator'
 
+/**
+ * ChatBI conversation for Lark
+ */
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
 	readonly commandName = 'chatbi'
@@ -73,10 +76,10 @@ export class ChatBIConversation implements IChatBIConversation {
 	get tenantId() {
 		return this.chatContext.tenant.id
 	}
-	// // 知识库跟着 copilot 的配置
-	// get organizationId() {
-	// 	return this.copilot.organizationId
-	// }
+	// 知识库跟着 copilot 的配置
+	get organizationId() {
+		return this.copilot.organizationId
+	}
 
 	public context: string = null
 
@@ -102,7 +105,7 @@ export class ChatBIConversation implements IChatBIConversation {
 		private readonly dsCoreService: NgmDSCoreService,
 		private readonly copilotKnowledgeService: CopilotKnowledgeService,
 		private readonly chatBIService: ChatBIService,
-		private readonly organizationId: string
+		public readonly copilot: ICopilot
 	) {
 		this.exampleFewShotPrompt = createExampleFewShotPrompt(this.copilotKnowledgeService, {
 			tenantId: this.tenantId,

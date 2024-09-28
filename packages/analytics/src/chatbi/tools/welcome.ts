@@ -24,6 +24,9 @@ export function createWelcomeTool(context: Partial<ChatContext>) {
 						const chatModel = conversation.models.find(
 							(model) => model.modelId === modelId && model.entity === cubeName
 						)
+						if (!chatModel) {
+							return []
+						}
 						return [
 							{
 								tag: 'markdown',

@@ -8,14 +8,13 @@ import {
 import { Body, Controller, Get, HttpStatus, Post, Query, UseGuards } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { getFeatureToggleDefinitions } from 'unleash-client'
-import { FeatureInterface } from 'unleash-client/lib/feature'
 import { Public, Roles } from './../shared/decorators'
 import { RoleGuard, TenantPermissionGuard } from './../shared/guards'
 import { FeatureToggleUpdateCommand } from './commands'
 import { FeatureOrganizationService } from './feature-organization.service'
 import { Feature } from './feature.entity'
 import { FeatureService } from './feature.service'
+import { getFeatureToggleDefinitions } from './default-features'
 
 @ApiTags('Feature')
 @Controller()
@@ -29,14 +28,14 @@ export class FeatureToggleController {
 	@Get('definition')
 	@Public()
 	async getFeatureToggleDefinitions() {
-		let featureToggles: FeatureInterface[] = getFeatureToggleDefinitions()
+		// let featureToggles: FeatureInterface[] = getFeatureToggleDefinitions()
 
-		//only support metad feature and removed other
-		const featureEnums: string[] = Object.values(FeatureEnum)
-		if (featureToggles) {
-			featureToggles = featureToggles.filter((toggle: FeatureInterface) => featureEnums.includes(toggle.name))
-		}
-		return featureToggles
+		// //only support metad feature and removed other
+		// const featureEnums: string[] = Object.values(FeatureEnum)
+		// if (featureToggles) {
+		// 	featureToggles = featureToggles.filter((toggle: FeatureInterface) => featureEnums.includes(toggle.name))
+		// }
+		return getFeatureToggleDefinitions()
 	}
 
 	@ApiOperation({ summary: 'Find all parent features.' })

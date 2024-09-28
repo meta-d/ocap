@@ -38,10 +38,11 @@ import {
   AIPermissionsEnum,
   AbilityActions,
   AnalyticsFeatures,
-  AnalyticsFeatures as AnalyticsFeaturesEnum,
+  AnalyticsFeatures as AnalyticsFeatureEnum,
   AnalyticsPermissionsEnum,
   EmployeesService,
   FeatureEnum,
+  AiFeatureEnum,
   IOrganization,
   IRolePermission,
   IUser,
@@ -453,7 +454,7 @@ export class FeaturesComponent implements OnInit {
         pathMatch: 'prefix',
         data: {
           translationKey: 'Chat',
-          featureKey: FeatureEnum.FEATURE_COPILOT,
+          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
           permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
         }
       },
@@ -464,7 +465,7 @@ export class FeaturesComponent implements OnInit {
         pathMatch: 'prefix',
         data: {
           translationKey: 'ChatBI',
-          featureKey: FeatureEnum.FEATURE_COPILOT,
+          featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
           permissionKeys: [AnalyticsPermissionsEnum.CHATBI_VIEW]
         }
       },
@@ -475,7 +476,7 @@ export class FeaturesComponent implements OnInit {
         pathMatch: 'prefix',
         data: {
           translationKey: 'DataFactory',
-          featureKey: AnalyticsFeatures.FEATURE_MODEL,
+          featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
           permissionKeys: [AnalyticsPermissionsEnum.DATA_FACTORY_VIEW]
         }
       },
@@ -497,7 +498,7 @@ export class FeaturesComponent implements OnInit {
         pathMatch: 'prefix',
         data: {
           translationKey: 'Project',
-          featureKey: AnalyticsFeatures.FEATURE_STORY,
+          featureKey: AnalyticsFeatures.FEATURE_PROJECT,
           permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
         },
         children: [
@@ -517,8 +518,8 @@ export class FeaturesComponent implements OnInit {
             link: '/project/indicators',
             data: {
               translationKey: 'Indicators',
-              featureKey: AnalyticsFeatures.FEATURE_STORY,
-              permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
+              featureKey: AnalyticsFeatures.FEATURE_INDICATOR,
+              permissionKeys: [AnalyticsPermissionsEnum.INDICATOR_EDIT]
             }
           }
         ]
@@ -529,7 +530,7 @@ export class FeaturesComponent implements OnInit {
         link: '/indicator/market',
         data: {
           translationKey: 'Indicator Market',
-          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR_MARKET,
+          featureKey: AnalyticsFeatureEnum.FEATURE_INDICATOR_MARKET,
           permissionKeys: [AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW]
         }
       },
@@ -540,7 +541,8 @@ export class FeaturesComponent implements OnInit {
         link: '/indicator-app',
         data: {
           translationKey: 'Indicator App',
-          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR
+          featureKey: AnalyticsFeatureEnum.FEATURE_INDICATOR_APP,
+          permissionKeys: [AnalyticsPermissionsEnum.INDICATOR_VIEW]
         }
       },
       // {
@@ -602,7 +604,7 @@ export class FeaturesComponent implements OnInit {
             data: {
               translationKey: 'AI Copilot',
               permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
-              featureKey: FeatureEnum.FEATURE_COPILOT
+              featureKey: AiFeatureEnum.FEATURE_COPILOT
             }
           },
           {
@@ -612,7 +614,7 @@ export class FeaturesComponent implements OnInit {
             data: {
               translationKey: 'Digital Xpert',
               permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
-              featureKey: FeatureEnum.FEATURE_COPILOT
+              featureKey: AiFeatureEnum.FEATURE_COPILOT_XPERT
             }
           },
           {
@@ -622,7 +624,7 @@ export class FeaturesComponent implements OnInit {
             data: {
               translationKey: 'Knowledgebase',
               permissionKeys: [AIPermissionsEnum.KNOWLEDGEBASE_EDIT],
-              featureKey: FeatureEnum.FEATURE_COPILOT
+              featureKey: AiFeatureEnum.FEATURE_COPILOT_KNOWLEDGEBASE
             }
           },
           {
@@ -632,7 +634,7 @@ export class FeaturesComponent implements OnInit {
             data: {
               translationKey: 'Chat BI',
               permissionKeys: [AnalyticsPermissionsEnum.CHATBI_EDIT],
-              featureKey: FeatureEnum.FEATURE_COPILOT
+              featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI
             }
           },
           {

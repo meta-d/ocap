@@ -2,6 +2,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AiProviderRole } from '@metad/copilot'
 import { Agent, DataSourceFactory } from '@metad/ocap-core'
 import {
+	CopilotCheckLimitCommand,
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	CopilotService,
@@ -10,7 +11,7 @@ import {
 } from '@metad/server-ai'
 import { Inject, Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { from, Observable } from 'rxjs'
+import { EMPTY, from, Observable } from 'rxjs'
 import { IsNull } from 'typeorm'
 import { ChatBIModelService } from '../../../chatbi-model'
 import { SemanticModelMemberService } from '../../../model-member'
@@ -44,7 +45,7 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 
 	public async execute(command: ChatBICommand): Promise<Observable<any>> {
 		const { input } = command
-		const { larkService } = input
+		const { tenant, organizationId, user, larkService } = input
 
 		const conversation = await this.getUserConversation(input)
 		if (!conversation) {
@@ -54,6 +55,19 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 					new Error(`Failed to create chat conversation for user: ${input.userId}`)
 				)
 			)
+		}
+
+		// Check token limit
+		try {
+			await this.commandBus.execute(new CopilotCheckLimitCommand({
+				tenantId: tenant.id,
+				organizationId,
+				userId: user.id,
+				copilot: conversation.copilot
+			}))
+			return EMPTY
+		} catch(err) {
+			//
 		}
 
 		return new Observable((subscriber) => {
@@ -97,16 +111,20 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 			)
 		}
 
-		const chatModel = createLLM<BaseChatModel>(copilot, {}, (input) => {
-			this.commandBus.execute(
-				new CopilotTokenRecordCommand({
-					...input,
-					tenantId: tenantId,
-					organizationId: organizationId,
-					userId: user?.id,
-					copilot: copilot
-				})
-			)
+		const chatModel = createLLM<BaseChatModel>(copilot, {}, async (input) => {
+			try {
+				await this.commandBus.execute(
+					new CopilotTokenRecordCommand({
+						...input,
+						tenantId: tenantId,
+						organizationId: organizationId,
+						userId: user?.id,
+						copilot: copilot
+					})
+				)
+			} catch(err) {
+				//
+			}
 		})
 
 		return new ChatBIConversation(
@@ -119,7 +137,7 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 			new NgmDSCoreService(this.agent, this.dataSourceFactory),
 			this.copilotKnowledgeService,
 			this.chatBIService,
-			copilot.organizationId
+			copilot
 		)
 	}
 }

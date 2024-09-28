@@ -5,7 +5,8 @@ import {
   DataSettingsSchema,
   OrderBySchema,
   SlicerSchema,
-  TimeSlicerSchema
+  TimeSlicerSchema,
+  VariableSchema
 } from '@metad/ocap-core'
 import { EChartsOptions } from '@metad/story/story'
 import { z } from 'zod'
@@ -31,6 +32,6 @@ export const ChatAnswerSchema = z.object({
   top: z.number().optional().describe('The number of top members'),
   slicers: z.array(SlicerSchema).optional().describe('The slicers to filter data'),
   timeSlicers: z.array(TimeSlicerSchema).optional().describe('The time slicers to filter data'),
-  variables: z.array(SlicerSchema).optional().describe('The variables to the query of cube'),
+  variables: z.array(VariableSchema).optional().describe('The variables to the query of cube'),
   questions: z.array(z.string().describe('More suggestion prompts, 3 will be enough.')).describe(`Give user more question prompts about how to drilldown other dimensions or one of dimension members, for examples: '分析<某维度1>成员<xxx>在<某维度2>上的<度量>分布'`)
 })

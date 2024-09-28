@@ -1556,6 +1556,22 @@
           "Name": "AI 智能助理",
           "Description": "配置和使用 AI 智能助理功能"
         },
+        "FEATURE_COPILOT_KNOWLEDGEBASE": {
+          "Name": "AI 知识库",
+          "Description": "高效地存储、检索和生成与特定领域相关的知识内容。"
+        },
+        "FEATURE_COPILOT_CHAT": {
+          "Name": "对话 AI",
+          "Description": "对话界面，与智能助理、数字专家、工具集交互。"
+        },
+        "FEATURE_COPILOT_XPERT": {
+          "Name": "数字专家",
+          "Description": "利用人工智能技术提供个性化、实时且精准的咨询、分析和决策支持的虚拟助手。"
+        },
+        "FEATURE_COPILOT_CHATBI": {
+          "Name": "对话 BI",
+          "Description": "对话界面，通过自然语言交互来实现数据查询、分析和可视化。"
+        },
         "FEATURE_MODEL": {
           "Name": "语义模型",
           "Description": "启用语义模型功能"
@@ -1619,6 +1635,10 @@
         "FEATURE_INTEGRATION": {
           "Name": "集成",
           "Description": "管理组织内的集成连接"
+        },
+        "FEATURE_DATA_FACTORY": {
+          "Name": "数据工厂",
+          "Description": "负责自动化、标准化和高效地处理、转换和存储数据，以支持数据分析、应用和决策。"
         }
       }
     },
@@ -1828,12 +1848,14 @@
         "DATA_SOURCE_EDIT": "维护数据源",
         "CERTIFICATION_EDIT": "维护认证",
         "CHATBI_VIEW": "使用 ChatBI",
-        "CHATBI_EDIT": "维护 ChatBI 配置",
+        "CHATBI_EDIT": "管理 ChatBI 配置",
         "COPILOT_VIEW": "使用智能助理",
         "COPILOT_EDIT": "维护智能助理配置",
         "KNOWLEDGEBASE_EDIT": "维护知识库",
         "CHAT_VIEW": "使用智能对话",
-        "INTEGRATION_EDIT": "维护集成连接"
+        "INTEGRATION_EDIT": "维护集成连接",
+        "DATA_FACTORY_VIEW": "使用数据工厂",
+        "DATA_FACTORY_EDIT": "管理数据工厂配置"
       },
       "Organization": {
         "AllOrganizations": "所有组织",

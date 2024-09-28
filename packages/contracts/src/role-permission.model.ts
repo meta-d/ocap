@@ -102,6 +102,9 @@ export const PermissionGroups = {
     AnalyticsPermissionsEnum.INDICATOR_VIEW,
     AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
     AnalyticsPermissionsEnum.INDICATOR_EDIT,
+    // Data Factory
+    AnalyticsPermissionsEnum.DATA_FACTORY_VIEW,
+    AnalyticsPermissionsEnum.DATA_FACTORY_EDIT,
     // ChatBI
     AnalyticsPermissionsEnum.CHATBI_VIEW,
     AnalyticsPermissionsEnum.CHATBI_EDIT,

@@ -60,7 +60,6 @@ export class LarkService {
 				dispatcher: lark.adaptExpress(
 					this.createEventDispatcher(integration, client),
 					{
-						logger: {...this.logger, info: this.logger.log, debug: this.logger.debug} as any,
 						autoChallenge: true,
 					}
 				),
@@ -82,7 +81,6 @@ export class LarkService {
 			appSecret: integration.options.appSecret,
 			appType: lark.AppType.SelfBuild,
 			domain: lark.Domain.Feishu,
-			logger: {...this.logger, info: this.logger.log, debug: this.logger.debug} as any,
 			loggerLevel: lark.LoggerLevel.debug
 		})
 	}

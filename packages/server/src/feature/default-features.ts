@@ -152,28 +152,7 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 		icon: 'home-outline',
 		status: 'primary'
 	},
-	{
-		name: 'Copilot',
-		code: FeatureEnum.FEATURE_COPILOT,
-		description: 'Enable Copilot',
-		image: 'copilot.png',
-		link: 'settings/copilot',
-		isEnabled: features.FEATURE_COPILOT,
-		icon: 'assistant',
-		status: 'accent',
-		children: [
-			{
-				name: 'Copilot Knowledgebase',
-				code: 'FEATURE_COPILOT_KNOWLEDGEBASE',
-				description: 'Manage Knowledgebase of Copilot',
-				image: 'file-storage.png',
-				link: 'settings/knowledgebase',
-				isEnabled: features.FEATURE_COPILOT_KNOWLEDGEBASE,
-				icon: 'file-text-outline',
-				status: 'info'
-			},
-		]
-	},
+
 	{
 		name: 'Integration',
 		code: FeatureEnum.FEATURE_INTEGRATION,
@@ -188,4 +167,8 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 
 export function setDefaultFeatures(features: IFeatureCreateInput[]) {
 	DEFAULT_FEATURES = features
+}
+
+export function getFeatureToggleDefinitions(): IFeatureCreateInput[] {
+	return DEFAULT_FEATURES
 }
