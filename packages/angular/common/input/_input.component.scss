@@ -69,6 +69,12 @@ $prefix: (ngm, color);
   .ngm-input__suffix {
     @apply absolute right-1;
   }
+  .ngm-input-element__clear {
+    @apply w-6 h-6;
+    .material-icons {
+      font-size: 20px;
+    }
+  }
 }
 
 .ngm-density__compact {

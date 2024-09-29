@@ -52,6 +52,7 @@ import { createIndicatorTool } from './tools/indicator'
  */
 export class ChatBIConversation implements IChatBIConversation {
 	private readonly logger = new Logger(ChatBIConversation.name)
+	static readonly toolCallTimeout = 10000
 	readonly commandName = 'chatbi'
 
 	public id: string = null
@@ -96,6 +97,7 @@ export class ChatBIConversation implements IChatBIConversation {
 
 	private status: 'init' | 'idle' | 'running' | 'error' = 'init'
 	private chatStack: ChatStack[] = []
+	
 	constructor(
 		private readonly chatContext: ChatBILarkContext,
 		private readonly chatModel: BaseChatModel,
@@ -388,7 +390,9 @@ ${createAgentStepsInstructions(
 		}
 
 		// Few-shot prompt
+		this.logger.verbose(`ExampleFewShot start for user input: ${text}`)
 		const content = await this.exampleFewShotPrompt.format({ input: text })
+		this.logger.verbose(`ExampleFewShot got content: ${content}`)
 
 		const streamResults = await this.graph.stream(
 			{
@@ -466,7 +470,7 @@ ${createAgentStepsInstructions(
 				end = true
 			} else {
 				// larkService.errorMessage(input, err)
-				errorWithEndMessage(this.chatContext, err.message, this)
+				await errorWithEndMessage(this.chatContext, err.message, this)
 			}
 		}
 

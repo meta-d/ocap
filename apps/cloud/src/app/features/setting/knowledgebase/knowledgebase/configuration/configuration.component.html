@@ -63,8 +63,8 @@
         >💡</span>
     </ngm-slider-input>
 
-    <div class="flex justify-end">
-      <button mat-flat-button (click)="cancel()">
+    <div class="flex justify-end gap-2">
+      <button mat-flat-button type="button" (click)="cancel()">
         {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}
       </button>
       <button mat-raised-button color="primary" [disabled]="loading() || formGroup.invalid || formGroup.pristine" (click)="save()">

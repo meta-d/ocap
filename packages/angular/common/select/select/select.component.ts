@@ -5,14 +5,18 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
+  ElementRef,
   HostBinding,
+  Renderer2,
   TemplateRef,
   booleanAttribute,
   computed,
   effect,
   forwardRef,
+  inject,
   input,
-  signal
+  signal,
+  viewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import {
@@ -97,6 +101,7 @@ export class NgmSelectComponent implements ControlValueAccessor
 
   @ContentChild(NgmOptionContent, { read: TemplateRef, static: true })
   _explicitContent: TemplateRef<any> = undefined!
+  readonly searInput = viewChild('searInput', { read: ElementRef })
 
   formControl = new FormControl<string>(null)
   readonly value = signal<string | number>(null)
@@ -197,6 +202,9 @@ export class NgmSelectComponent implements ControlValueAccessor
 
   onOptionSelected(event: any) {
     this.inputDirty.set(false)
+    // this.autoInput.set(event.option.value)
+    this.searchControl.setValue(null)
+    // this.searInput().nativeElement.value = null
   }
 
   onKeydown(event: KeyboardEvent) {

@@ -22,6 +22,7 @@ import { CopilotKnowledge } from './copilot-knowledge.entity'
 import { createEmbeddings } from '../copilot/llm'
 import { isEqual } from 'date-fns/isEqual'
 import { XpertRoleCreateCommand } from '../xpert-role'
+import { pick } from '@metad/server-common'
 
 @Injectable()
 export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<CopilotKnowledge> {
@@ -211,6 +212,8 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		}
 
 		if (!this.vectorStores.has(id) || !isEqual(this.vectorStores.get(id).copilot.updatedAt, copilot.updatedAt)) {
+
+			this.#logger.verbose(`Found embedding model for (tenantId: ${tenantId}, organizationId: ${organizationId}, role: ${role}):`, JSON.stringify(pick(copilot,  'role', 'provider', 'defaultModel'), null, 2))
 			
 			const embeddings = await this.getEmbeddings(copilot)
 
@@ -234,7 +237,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 				return this.vectorStores.get(id)
 			}
 
-			console.error(`can't get copilot for tenantId ${tenantId} organizationId ${organizationId}`)
+			this.#logger.error(`Can't get copilot for (tenantId= ${tenantId}, organizationId= ${organizationId})`)
 
 			return null
 		}

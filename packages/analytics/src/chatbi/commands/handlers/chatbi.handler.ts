@@ -70,7 +70,12 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 		}
 
 		// Ask
-		conversation.ask(input.text).then()
+		conversation.ask(input.text).then().catch((err) => {
+			larkService.errorMessage(
+				input,
+				new Error(`Internal Error!`)
+			).catch((err) => console.error(err))
+		})
 
 		return
 	}

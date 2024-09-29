@@ -5,7 +5,9 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { AI_PROVIDERS, AiModelCapability, AiProviderRole, isNil } from '@metad/copilot'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
+import { upperFirst } from 'lodash-es'
 import { startWith } from 'rxjs'
 import {
   IKnowledgebase,
@@ -19,8 +21,6 @@ import {
 } from '../../../../../@core'
 import { AvatarEditorComponent, MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { KnowledgebaseComponent } from '../knowledgebase.component'
-import { DisplayBehaviour } from '@metad/ocap-core'
-import { upperFirst } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -105,11 +105,15 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
       })
       items.push(
         ...models
-        .filter((_) => _.id !== copilot.defaultModel && (isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Embed)))
-        .map((item) => ({
-          key: item.id,
-          caption: item.name
-        }))
+          .filter(
+            (_) =>
+              _.id !== copilot.defaultModel &&
+              (isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Embed))
+          )
+          .map((item) => ({
+            key: item.id,
+            caption: item.name
+          }))
       )
     }
     return items
@@ -161,6 +165,6 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   }
 
   cancel() {
-    this.#router.navigate(['..', '..'], { relativeTo: this.#route })
+    this.#router.navigate(['../..'], { relativeTo: this.#route })
   }
 }
