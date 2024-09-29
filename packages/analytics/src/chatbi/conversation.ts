@@ -18,11 +18,9 @@ import {
 } from '@metad/ocap-core'
 import {
 	AgentState,
-	Copilot,
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	createExampleFewShotPrompt,
-	createLLM,
 	createReactAgent,
 	createReferencesRetrieverTool,
 } from '@metad/server-ai'
@@ -51,8 +49,9 @@ import { createIndicatorTool } from './tools/indicator'
  * ChatBI conversation for Lark
  */
 export class ChatBIConversation implements IChatBIConversation {
+	static readonly toolCallTimeout = 30 * 1000 // 30s
+
 	private readonly logger = new Logger(ChatBIConversation.name)
-	static readonly toolCallTimeout = 10000
 	readonly commandName = 'chatbi'
 
 	public id: string = null
@@ -339,7 +338,7 @@ ${createAgentStepsInstructions(
 						if (isString(content) && content.startsWith('Error:')) {
 							this.logger.error(content)
 							const toolCallMessage = state.messages[state.messages.length - 2]
-							this.logger.debug((<ToolMessage>toolCallMessage).lc_kwargs)
+							this.logger.verbose((<ToolMessage>toolCallMessage).lc_kwargs)
 							return 'agent'
 						}
 
@@ -443,7 +442,7 @@ ${createAgentStepsInstructions(
 
 					if (content) {
 						verboseContent = content
-						this.logger.debug(`[ChatBI] [Graph]: verbose content`, verboseContent)
+						this.logger.debug(`[ChatBI] [Graph] verbose content: `, verboseContent)
 						// 对话结束时还有正在思考的消息，则意味着出现错误
 						if (['thinking', 'continuing', 'waiting'].includes(this.message?.status)) {
 							this.message.update({
@@ -462,7 +461,7 @@ ${createAgentStepsInstructions(
 			this.status = 'idle'
 
 		} catch (err: any) {
-			console.error(err)
+			this.logger.error(err)
 			this.status = 'error'
 			if (err instanceof ToolInputParsingException) {
 				this.chatContext.larkService.errorMessage(this.chatContext, err)

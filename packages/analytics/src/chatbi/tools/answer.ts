@@ -31,7 +31,7 @@ import {
 	tryFixVariableSlicer,
 	workOutTimeRangeSlicers
 } from '@metad/ocap-core'
-import { race } from '@metad/server-common'
+import { getErrorMessage, race } from '@metad/server-common'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
 import { ChatBIConversation } from '../conversation'
 import { ChatLarkMessage } from '../message'
@@ -63,52 +63,46 @@ export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILa
 		async (answer): Promise<string> => {
 			logger.debug(`Execute copilot action 'answerQuestion':`, JSON.stringify(answer, null, 2))
 			try {
-				try {
-					// 限制总体超时时间
-					return await race(
-						ChatBIConversation.toolCallTimeout,
-						(async () => {
-							let entityType = null
-							if (answer.dataSettings) {
-								// Make sure datasource exists
-								const _dataSource = await dsCoreService._getDataSource(answer.dataSettings.dataSource)
-								const entity = await firstValueFrom(
-									dsCoreService.selectEntitySet(
-										answer.dataSettings.dataSource,
-										answer.dataSettings.entitySet
-									)
+				// 限制总体超时时间
+				return await race(
+					ChatBIConversation.toolCallTimeout,
+					(async () => {
+						let entityType = null
+						if (answer.dataSettings) {
+							// Make sure datasource exists
+							const _dataSource = await dsCoreService._getDataSource(answer.dataSettings.dataSource)
+							const entity = await firstValueFrom(
+								dsCoreService.selectEntitySet(
+									answer.dataSettings.dataSource,
+									answer.dataSettings.entitySet
 								)
-								entityType = entity.entityType
-							}
+							)
+							entityType = entity.entityType
+						}
 
-							// Fetch data for chart or table or kpi
-							if (answer.dimensions?.length || answer.measures?.length) {
-								const { categoryMembers } = await drawChartMessage(
-									{ ...context, entityType: entityType || context.entityType },
-									conversation,
-									answer as ChatAnswer
-								)
-								// Max limit 20 members
-								const members = categoryMembers
-									? JSON.stringify(Object.values(categoryMembers).slice(0, 20))
-									: 'Empty'
+						// Fetch data for chart or table or kpi
+						if (answer.dimensions?.length || answer.measures?.length) {
+							const { categoryMembers } = await drawChartMessage(
+								{ ...context, entityType: entityType || context.entityType },
+								conversation,
+								answer as ChatAnswer
+							)
+							// Max limit 20 members
+							const members = categoryMembers
+								? JSON.stringify(Object.values(categoryMembers).slice(0, 20))
+								: 'Empty'
 
-								return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
+							return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
 ${members}
 Please give more analysis suggestions about other dimensions or filter by dimensioin members, 3 will be enough.`
-							}
+						}
 
-							return `图表答案已经回复给用户了，请不要重复回答了。`
-						})()
-					)
-				} catch (err) {
-					throw new Error(
-						`Timeout in getting cube context (dataSource=${answer.dataSettings.dataSource}, cube=${answer.dataSettings.entitySet})`
-					)
-				}
+						return `图表答案已经回复给用户了，请不要重复回答了。`
+					})()
+				)
 			} catch (err) {
-				logger.error(err)
-				return `Error: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
+				logger.debug(getErrorMessage(err))
+				return `Error: ${getErrorMessage(err)}; If more information is needed from the user, remind the user directly.`
 			}
 		},
 		{

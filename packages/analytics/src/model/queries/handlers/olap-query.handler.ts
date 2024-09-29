@@ -1,4 +1,4 @@
-import { ITryRequest, RequestContext } from '@metad/server-core'
+import { ITryRequest } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs'
@@ -26,7 +26,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 		const { id, sessionId, modelId, body, forceRefresh, acceptLanguage } = query.input
 		const user = query.user
 
-		this.logger.debug(`Executing OLAP query [${id}] for model: ${modelId}`)
+		this.logger.verbose(`Executing OLAP query [${id}] for model: ${modelId}`)
 
 		let key = ''
 		const model = await this.semanticModelService.findOne(modelId, {

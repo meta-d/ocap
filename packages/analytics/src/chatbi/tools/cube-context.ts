@@ -1,6 +1,6 @@
 import { tool } from '@langchain/core/tools'
 import { isEntitySet, markdownModelCube } from '@metad/ocap-core'
-import { race } from '@metad/server-common'
+import { getErrorMessage, race } from '@metad/server-common'
 import { firstValueFrom, switchMap } from 'rxjs'
 import { ChatBIModelService } from '../../chatbi-model/'
 import { ChatContext, GetCubesContextSchema } from '../types'
@@ -17,7 +17,7 @@ export function createCubeContextTool(context: ChatContext, modelService: ChatBI
 					(async () => {
 						let context = ''
 						for await (const item of cubes) {
-							logger.debug(`  get context for:`, item.modelId, item.name)
+							logger.debug(`  get context for (modelId=${item.modelId}, cube=${item.name})`)
 
 							let entityType = await conversation.getCubeCache(item.modelId, item.name)
 							if (!entityType) {
@@ -53,7 +53,9 @@ export function createCubeContextTool(context: ChatContext, modelService: ChatBI
 					})()
 				)
 			} catch (err) {
-				return 'Error:' + err.message
+				const errorInfo = 'Error: ' + getErrorMessage(err)
+				logger.debug(`Call getCubeContext: ` + errorInfo)
+				return errorInfo
 			}
 		},
 		{

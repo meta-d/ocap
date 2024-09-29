@@ -27,7 +27,7 @@ export class OlapQueryHandler implements IQueryHandler<DataSourceOlapQuery> {
 		const { id, sessionId, dataSourceId, body, forceRefresh, acceptLanguage } = query.input
 		const user = query.user
 
-		this.logger.debug(`Executing OLAP query [${id}] for dataSource: ${dataSourceId}`)
+		this.logger.verbose(`Executing OLAP query [${id}] for dataSource: ${dataSourceId}`)
 
 		let dataSource = await this.dsService.findOne(dataSourceId, {
 			relations: ['type', 'authentications']
