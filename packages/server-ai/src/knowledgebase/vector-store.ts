@@ -7,6 +7,10 @@ import { createEmbeddings } from '../copilot'
 export class KnowledgeDocumentVectorStore extends PGVectorStore {
 	private model: string | null= null
 
+	get embeddingModel() {
+		return this.knowledgebase.embeddingModelId || this.copilot?.defaultModel
+	}
+
 	constructor(
 		public knowledgebase: IKnowledgebase,
 		public pgPool: Pool,

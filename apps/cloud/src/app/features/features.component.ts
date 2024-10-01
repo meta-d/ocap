@@ -378,7 +378,6 @@ export class FeaturesComponent implements OnInit {
     if (event instanceof NavigationError) {
       this.loading.set(false)
     }
-    // this._cdr.detectChanges()
   }
 
   back(): void {
@@ -436,15 +435,6 @@ export class FeaturesComponent implements OnInit {
               featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
-          // {
-          //   title: 'Insights',
-          //   matIcon: 'insights',
-          //   link: '/home/insight',
-          //   data: {
-          //     translationKey: 'Insights',
-          //     featureKey: AnalyticsFeatures.FEATURE_INSIGHT
-          //   }
-          // }
         ]
       },
       {
@@ -469,17 +459,17 @@ export class FeaturesComponent implements OnInit {
           permissionKeys: [AnalyticsPermissionsEnum.CHATBI_VIEW]
         }
       },
-      {
-        title: 'Data Factory',
-        matIcon: 'data_table',
-        link: '/data',
-        pathMatch: 'prefix',
-        data: {
-          translationKey: 'DataFactory',
-          featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
-          permissionKeys: [AnalyticsPermissionsEnum.DATA_FACTORY_VIEW]
-        }
-      },
+      // {
+      //   title: 'Data Factory',
+      //   matIcon: 'data_table',
+      //   link: '/data',
+      //   pathMatch: 'prefix',
+      //   data: {
+      //     translationKey: 'DataFactory',
+      //     featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
+      //     permissionKeys: [AnalyticsPermissionsEnum.DATA_FACTORY_VIEW]
+      //   }
+      // },
       {
         title: 'Semantic Model',
         matIcon: 'database',
@@ -545,17 +535,6 @@ export class FeaturesComponent implements OnInit {
           permissionKeys: [AnalyticsPermissionsEnum.INDICATOR_VIEW]
         }
       },
-      // {
-      //   title: 'Subscription',
-      //   icon: 'alert',
-      //   pathMatch: 'prefix',
-      //   link: '/subscription',
-      //   data: {
-      //     translationKey: 'MENU.INSIGHT',
-      //     featureKey: AnalyticsFeatures.FEATURE_SUBSCRIPTION
-      //   }
-      // },
-
       {
         title: 'Data Sources',
         matIcon: 'settings_remote',
@@ -567,18 +546,6 @@ export class FeaturesComponent implements OnInit {
           featureKey: AnalyticsFeatures.FEATURE_MODEL
         }
       },
-      // {
-      //   title: 'Notification Destinations',
-      //   icon: 'robot',
-      //   link: '/settings/notification-destinations',
-      //   admin: true,
-      //   data: {
-      //     translationKey: 'PAC.KEY_WORDS.NOTIFICATION_DESTINATION',
-      //     permissionKeys: [AnalyticsPermissionsEnum.DATA_SOURCE_EDIT]
-      //     // featureKey: AnalyticsFeatures.FEATURE_A
-      //   }
-      // },
-
       {
         title: 'Settings',
         matIcon: 'settings',

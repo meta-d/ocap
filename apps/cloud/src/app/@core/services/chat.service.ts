@@ -56,6 +56,7 @@ export class ChatService {
       })
 
       this.socket.on('exception', (data) => {
+        console.error('chat socket exception message:', data)
         if (data.status === 401 && socketId === this.socket.id) {
           this.setStatus(false)
           if (!this.refreshTokening()) {

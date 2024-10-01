@@ -9,7 +9,7 @@ export class ChatLarkMessage {
 		tag: 'custom_icon',
 		img_key: ChatLarkMessage.logoImgKey
 	}
-	static readonly helpUrl = 'https://mtda.cloud/docs/chatbi/'
+	static readonly helpUrl = 'https://mtda.cloud/docs/chatbi/feishu/bot/'
 
 	private id: string = null
 	public status: ChatLarkMessageStatus = 'thinking'

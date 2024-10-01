@@ -50,7 +50,7 @@ export class VisitService extends TenantOrganizationAwareCrudService<Visit> {
 					.addGroupBy('visit.entityId')
 			}, 'visit', `v."tenantId" = visit."tenantId" AND v."entityId" = visit."entityId" AND v."updatedAt" = visit."updatedAt"`)
 		
-		this.logger.debug('My Recent query:', subQb.getSql())
+		this.logger.verbose('My Recent query: ' + subQb.getSql())
 		
 		const [items] = await this.repository.findAndCount({
 			relations: ['story', 'model', 'indicator', 'createdBy'],

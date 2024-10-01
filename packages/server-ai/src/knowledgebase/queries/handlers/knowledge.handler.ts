@@ -1,5 +1,6 @@
 import { DocumentInterface } from '@langchain/core/documents'
 import { RequestContext } from '@metad/server-core'
+import { Logger } from '@nestjs/common'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { sortBy } from 'lodash'
 import { In, IsNull, Not } from 'typeorm'
@@ -8,6 +9,8 @@ import { KnowledgeSearchQuery } from '../knowledge.query'
 
 @QueryHandler(KnowledgeSearchQuery)
 export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearchQuery> {
+	private readonly logger = new Logger(KnowledgeSearchQueryHandler.name)
+
 	constructor(private readonly knowledgebaseService: KnowledgebaseService) {}
 
 	public async execute(command: KnowledgeSearchQuery): Promise<{ doc: DocumentInterface; score: number }[]> {
@@ -25,11 +28,18 @@ export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearc
 
 		const documents: { doc: DocumentInterface<Record<string, any>>; score: number }[] = []
 		const kbs = await Promise.all(
-			_knowledgebases.map((kb) => {
-				return this.knowledgebaseService.getVectorStore(kb, tenantId, organizationId)
-					.then((vectorStore) => vectorStore.similaritySearchWithScore(query, 30, filter))
-					.then((docs) => docs.map(([doc, score]) => ({ doc, score }))
-						.filter(({ score: _score }) => 1 - _score >= (score || kb.similarityThreshold || .5)))
+			_knowledgebases.map(async (kb) => {
+				return this.knowledgebaseService
+					.getVectorStore(kb, tenantId, organizationId)
+					.then((vectorStore) => {
+						this.logger.debug(`SimilaritySearch question='${query}' kb='${kb.name}' in ai provider='${kb.aiProvider}' and model='${vectorStore.embeddingModel}'`)
+						return vectorStore.similaritySearchWithScore(query, k, filter)
+					})
+					.then((docs) =>
+						docs
+							.map(([doc, score]) => ({ doc, score }))
+							.filter(({ score: _score }) => 1 - _score >= (score || kb.similarityThreshold || 0.5))
+					)
 			})
 		)
 
@@ -39,8 +49,10 @@ export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearc
 			})
 		})
 
-		return sortBy(documents, 'score', 'desc')
-			// .filter(({ score: _score }) => 1 - _score >= (score ?? 0.1))
-			.slice(0, k)
+		return (
+			sortBy(documents, 'score', 'desc')
+				// .filter(({ score: _score }) => 1 - _score >= (score ?? 0.1))
+				.slice(0, k)
+		)
 	}
 }

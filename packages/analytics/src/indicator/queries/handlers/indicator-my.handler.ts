@@ -100,7 +100,7 @@ export class IndicatorMyHandler implements IQueryHandler<IndicatorMyQuery> {
 				})
 			)
 
-		this.logger.debug(queryBuilder.getSql())
+		this.logger.verbose(`Query my indicators: ` + queryBuilder.getSql())
         
 		const [items, total] = await queryBuilder.getManyAndCount()
 
