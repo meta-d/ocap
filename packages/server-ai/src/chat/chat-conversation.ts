@@ -265,14 +265,19 @@ References documents:
 				)
 			).pipe(
 				map(({ event, data, ...rest }: any) => {
-					if (event === 'on_chat_model_stream') {
-						if (prevEvent === 'on_chat_model_stream') {
-							process.stdout.write('.')
+					if (Logger.isLevelEnabled('verbose')) {
+						if (event === 'on_chat_model_stream') {
+							if (prevEvent === 'on_chat_model_stream') {
+								process.stdout.write('.')
+							} else {
+								this.logger.verbose('on_chat_model_stream')
+							}
 						} else {
-							console.log('on_chat_model_stream')
+							if (prevEvent === 'on_chat_model_stream') {
+								process.stdout.write('\n')
+							}
+							this.logger.verbose(event)
 						}
-					} else {
-						console.log(event)
 					}
 					prevEvent = event
 					switch (event) {
