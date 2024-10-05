@@ -16,6 +16,7 @@ import {
 	ChartTypeEnum,
 	cloneDeep,
 	CubeVariablePrompt,
+	DataSettings,
 	DataSourceFactory,
 	DSCoreService,
 	EntityType,
@@ -60,10 +61,12 @@ import { ChatBIService } from '../../chatbi.service'
 import { ChatAnswer, createDimensionMemberRetrieverTool } from '../../tools'
 import { ChatAnswerSchema, GetCubesContextSchema, insightAgentState } from '../../types'
 import { ChatBINewCommand } from '../chat-bi.command'
-import { getErrorMessage, shortuuid } from '@metad/server-common'
+import { getErrorMessage, race, shortuuid, TimeoutError } from '@metad/server-common'
 import { markdownCubes } from '../../graph'
 import { CallbackManager } from '@langchain/core/callbacks/manager'
 import { omit, upperFirst } from 'lodash'
+
+const DefaultToolMaximumWaitTime = 30 * 1000 // 30s
 
 @CommandHandler(ChatBINewCommand)
 export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
@@ -283,7 +286,7 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 			createDimensionMemberRetriever({ logger: this.logger }, this.semanticModelMemberService)
 		)
 
-		const getCubeContext = this.createCubeContextTool(dsCoreService)
+		const getCubeContext = this.createCubeContextTool(context, dsCoreService)
 
 		const answerTool = this.createChatAnswerTool({
 			dsCoreService,
@@ -333,45 +336,65 @@ ${createAgentStepsInstructions(
 		})
 	}
 
-	createCubeContextTool(dsCoreService: DSCoreService) {
+	/**
+	 * Create tool for get context of cube.
+	 * 
+	 * @param dsCoreService 
+	 * @returns 
+	 */
+	createCubeContextTool(context: CopilotToolContext, dsCoreService: DSCoreService) {
+		// Maximum waiting time of tool call
+		const { toolMaximumWaitTime = DefaultToolMaximumWaitTime } = context.roleContext
 		return tool(
 			async ({ cubes }): Promise<string> => {
 				this.logger.debug(`Tool 'getCubeContext' params:`, JSON.stringify(cubes))
-				let context = ''
-				for await (const item of cubes) {
-					this.logger.debug(`  get context for:`, item.modelId, item.name)
+				try {
+					return await race(
+						toolMaximumWaitTime,
+						async () => {
+							let context = ''
+							for await (const item of cubes) {
+								this.logger.debug(`Start get context for (modelId='${item.modelId}', cube='${item.name}')`)
 
-					let entityType = await this.getCubeCache(item.modelId, item.name)
-					if (!entityType) {
-						const entitySet = await firstValueFrom(
-							dsCoreService
-								.getDataSource(item.modelId)
-								.pipe(switchMap((dataSource) => dataSource.selectEntitySet(item.name)))
-						)
-						if (isEntitySet(entitySet)) {
-							entityType = entitySet.entityType
-							await this.setCubeCache(item.modelId, item.name, entityType)
-						} else {
-							this.logger.error(`  get context error: `, entitySet.message)
+								let entityType = await this.getCubeCache(item.modelId, item.name)
+								if (!entityType) {
+									const entitySet = await firstValueFrom(
+										dsCoreService
+											.getDataSource(item.modelId)
+											.pipe(switchMap((dataSource) => dataSource.selectEntitySet(item.name)))
+									)
+									if (isEntitySet(entitySet)) {
+										entityType = entitySet.entityType
+										await this.setCubeCache(item.modelId, item.name, entityType)
+									} else {
+										this.logger.error(`Get context error: `, entitySet.message)
+									}
+								}
+								if (entityType) {
+									if (context) {
+										context += '\n'
+									}
+
+									context += markdownModelCube({
+										modelId: item.modelId,
+										dataSource: item.modelId,
+										cube: entityType
+									})
+
+									// Record visit
+									await this.modelService.visit(item.modelId, item.name)
+								}
+							}
+							return context
 						}
-					}
-					if (entityType) {
-						if (context) {
-							context += '\n'
-						}
-
-						context += markdownModelCube({
-							modelId: item.modelId,
-							dataSource: item.modelId,
-							cube: entityType
-						})
-
-						// Record visit
-						await this.modelService.visit(item.modelId, item.name)
+					)
+				} catch(err) {
+					if (err instanceof TimeoutError) {
+						return `Error: Timeout for getting cube context, please confirm whether the model information is correct.`
+					} else {
+						return `Error: ` + getErrorMessage(err)
 					}
 				}
-
-				return context
 			},
 			{
 				name: 'getCubeContext',
@@ -491,21 +514,45 @@ ${members}
 				if (result.error) {
 					reject(result.error)
 				} else {
-					subscriber.next({
-						event: ChatGatewayEvent.Message,
-						data: {
-							id: shortuuid(),
-							role: 'component',
+					if (answer.visualType === 'KPI') {
+						subscriber.next({
+							event: ChatGatewayEvent.Message,
 							data: {
-								type: 'AnalyticalCard',
-								data: result.data,
-								dataSettings,
-								chartSettings,
-								slicers,
-								title: answer.preface
-							} as unknown as JSONValue
-						}
-					} as ChatGatewayMessage)
+								id: shortuuid(),
+								role: 'component',
+								data: {
+									type: 'KPI',
+									data: result.data,
+									dataSettings: {
+										...omit(dataSettings, 'chartAnnotation'),
+										KPIAnnotation: {
+											DataPoint: {
+												Value: chartAnnotation.measures[0]
+											}
+										}
+									} as DataSettings,
+									slicers,
+									title: answer.preface
+								} as unknown as JSONValue
+							}
+						} as ChatGatewayMessage)
+					} else {
+						subscriber.next({
+							event: ChatGatewayEvent.Message,
+							data: {
+								id: shortuuid(),
+								role: 'component',
+								data: {
+									type: 'AnalyticalCard',
+									data: result.data,
+									dataSettings,
+									chartSettings,
+									slicers,
+									title: answer.preface
+								} as unknown as JSONValue
+							}
+						} as ChatGatewayMessage)
+					}
 					resolve({ data: result.data })
 				}
 				destroy$.next()
@@ -525,6 +572,7 @@ ${members}
 			chartService.dataSettings = dataSettings
 		})
 	}
+	
 }
 
 type ChatBIContext = {

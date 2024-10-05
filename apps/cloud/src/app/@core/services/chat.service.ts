@@ -6,8 +6,9 @@ import { distinctUntilChanged, filter } from 'rxjs/operators'
 import { Socket, io } from 'socket.io-client'
 import { environment } from '../../../environments/environment'
 import { AuthStrategy } from '../auth'
+import { ChatGatewayEvent, ChatGatewayMessage } from '../types'
 import { getWebSocketUrl } from '../utils'
-import { ChatGatewayMessage } from '../types'
+
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
@@ -29,6 +30,9 @@ export class ChatService {
   readonly connected$ = this.#connected$.asObservable().pipe(distinctUntilChanged())
   readonly disconnected$ = this.#disconnected$.asObservable().pipe(distinctUntilChanged())
   readonly refreshTokening = signal(false)
+
+  #retryMessage = null
+  readonly #response = new Subject<ChatGatewayMessage>()
 
   refreshToken() {
     this.refreshTokening.set(true)
@@ -68,6 +72,14 @@ export class ChatService {
       this.socket.on('disconnect', () => {
         this.setStatus(false)
       })
+
+      this.socket.on('message', (data) => {
+        if (data.event === ChatGatewayEvent.ACK) {
+          this.clearRetryMessage()
+        } else {
+          this.#response.next(data)
+        }
+      })
     }
 
     return this.socket
@@ -80,9 +92,7 @@ export class ChatService {
   }
 
   emit(event: string, ...args: any[]) {
-    this.socket.emit(event, ...args, (val) => {
-      console.log('ack', val)
-    })
+    this.socket.emit(event, ...args)
   }
 
   on(event: string, callback: (...args: any[]) => void) {
@@ -97,6 +107,29 @@ export class ChatService {
   }
 
   message(data: Omit<ChatGatewayMessage, 'organizationId'>) {
-    this.emit('message', {...data, organizationId: this.#store.selectedOrganization.id})
+    const event = { ...data, organizationId: this.#store.selectedOrganization.id }
+    // If the retry message is not cleared within a certain period of time by return message,
+    // it means an error has occurred for example the token expires.
+    // The message will be resent.
+    this.resetRetryMessage(
+      setTimeout(() => {
+        this.message(data)
+      }, 2000)
+    )
+    this.emit('message', event)
+  }
+
+  resetRetryMessage(id: any) {
+    this.clearRetryMessage()
+    this.#retryMessage = id
+  }
+
+  clearRetryMessage() {
+    this.#retryMessage && clearTimeout(this.#retryMessage)
+    this.#retryMessage = null
+  }
+
+  onMessage() {
+    return this.#response.asObservable()
   }
 }

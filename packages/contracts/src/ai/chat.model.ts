@@ -28,6 +28,7 @@ export type ChatUserMessage = ChatMessage & {
 }
 
 export enum ChatGatewayEvent {
+  ACK = 'ack', // acknowledgment for received message
   ConversationCreated = 'conversation_created',
   Message = 'message',
   MessageStream = 'message_stream',

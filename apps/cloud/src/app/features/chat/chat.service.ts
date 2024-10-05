@@ -1,7 +1,6 @@
 import { Location } from '@angular/common'
 import { DestroyRef, effect, inject, Injectable, signal } from '@angular/core'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, Router } from '@angular/router'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { CopilotBaseMessage, CopilotChatMessage, CopilotMessageGroup } from '@metad/copilot'
 import { nonNullable } from '@metad/ocap-core'
 import { derivedFrom } from 'ngxtension/derived-from'
@@ -14,10 +13,8 @@ import {
   filter,
   map,
   of,
-  pairwise,
   pipe,
   skip,
-  startWith,
   switchMap,
   tap,
   withLatestFrom
@@ -37,6 +34,7 @@ import { ChatConversationService, ChatService as ChatServerService, XpertRoleSer
 import { AppService } from '../../app.service'
 import { COMMON_COPILOT_ROLE } from './types'
 import { TranslateService } from '@ngx-translate/core'
+import { NGXLogger } from 'ngx-logger'
 
 @Injectable()
 export class ChatService {
@@ -45,8 +43,7 @@ export class ChatService {
   readonly copilotRoleService = inject(XpertRoleService)
   readonly appService = inject(AppService)
   readonly #translate = inject(TranslateService)
-  readonly #router = inject(Router)
-  readonly #route = inject(ActivatedRoute)
+  readonly #logger = inject(NGXLogger)
   readonly #toastr = inject(ToastrService)
   readonly #location = inject(Location)
   readonly #destroyRef = inject(DestroyRef)
@@ -191,7 +188,7 @@ export class ChatService {
     })
 
   private chatListener = (result: ChatGatewayMessage) => {
-    console.log('message return:', result)
+    this.#logger.trace('message return:', result)
     switch (result.event) {
       case ChatGatewayEvent.ChainStart: {
         this.messages.update((items) => [
@@ -272,17 +269,21 @@ export class ChatService {
     }
   }
 
-  private websocket = toSignal(this.chatService.socket$.pipe(
-    startWith(null),
-    pairwise(),
-    map(([prev, curr]) => {
-      if (prev) {
-        prev.off('message', this.chatListener)
-      }
-      curr?.on('message', this.chatListener)
-      return curr
-    })
-  ))
+  // private websocket = toSignal(this.chatService.socket$.pipe(
+  //   startWith(null),
+  //   pairwise(),
+  //   map(([prev, curr]) => {
+  //     if (prev) {
+  //       prev.off('message', this.chatListener)
+  //     }
+  //     curr?.on('message', this.chatListener)
+  //     return curr
+  //   })
+  // ))
+
+  private onMessageSub = this.chatService.onMessage().pipe(takeUntilDestroyed()).subscribe((data) => {
+    this.chatListener(data)
+  })
 
   constructor() {
     this.chatService.connect()
@@ -309,7 +310,6 @@ export class ChatService {
     )
 
     this.#destroyRef.onDestroy(() => {
-      this.websocket()?.off('message', this.chatListener)
       if (this.answering() && this.conversation()?.id) {
         this.cancelMessage()
       }

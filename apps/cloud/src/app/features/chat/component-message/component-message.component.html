@@ -6,4 +6,15 @@
       [slicers]="data().slicers"
     />
   }
+  @case ('KPI') {
+    <pac-widget-kpi displayDensity="compact" [title]="data().title"
+      [dataSettings]="data().dataSettings"
+      [slicers]="data().slicers"
+      [options]="{
+        showToolbar: true,
+        shortNumber: true,
+        digitsInfo: '0.0-2'
+      }"
+    />
+  }
 }

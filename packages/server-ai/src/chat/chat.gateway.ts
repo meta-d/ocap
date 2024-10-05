@@ -37,6 +37,13 @@ export class ChatEventsGateway implements OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket,
 		@WsUser() user: IUser
 	): Observable<WsResponse<ChatMessage>> {
+		// Confirm receipt of the message immediately.
+		client.emit('message', {
+			event: ChatGatewayEvent.ACK,
+			data
+		})
+
+		// Cancel the chat conversation
 		if (data.event === ChatGatewayEvent.CancelChain) {
 			return from(this.commandBus.execute(
 				new CancelChatCommand({
@@ -47,6 +54,7 @@ export class ChatEventsGateway implements OnGatewayDisconnect {
 			))
 		}
 
+		// Chat
 		return from(
 			this.commandBus.execute(
 				new ChatCommand({

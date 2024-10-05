@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router'
 import { CopilotChatMessage } from '@metad/copilot'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
 import { TranslateModule } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
 import { Store } from '../../../@core'
@@ -30,7 +31,8 @@ import { ChatService } from '../chat.service'
     NgmCommonModule,
     AvatarComponent,
     ChatLoadingComponent,
-    AnalyticalCardModule
+    AnalyticalCardModule,
+    NxWidgetKpiComponent
   ],
   selector: 'pac-chat-component-message',
   templateUrl: './component-message.component.html',

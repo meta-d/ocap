@@ -262,13 +262,6 @@ ${markdownCubes(this.models.slice(3))}
 			conversation: this,
 			larkService: chatContext.larkService
 		})
-		// const createFormula = createFormulaTool(
-		// 	{
-		// 		logger: this.logger,
-		// 		conversation: this,
-		// 		larkService: chatContext.larkService
-		// 	},
-		// )
 
 		const welcomeTool = createWelcomeTool({ conversation: this })
 		const moreQuestionsTool = createMoreQuestionsTool({ conversation: this })

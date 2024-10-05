@@ -11,7 +11,6 @@ import {
 } from '@metad/server-ai'
 import { Inject, Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { IsNull } from 'typeorm'
 import { ChatBIModelService } from '../../../chatbi-model'
 import { SemanticModelMemberService } from '../../../model-member'
 import { NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '../../../model/ocap'
@@ -96,19 +95,20 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 		return this.userConversations.get(conversationId)
 	}
 
+	/**
+	 * Create ChatBIConversation for lark user
+	 * 
+	 * @param input Context of lark user
+	 * @returns ChatBIConversation
+	 */
 	async createChatConversation(input: ChatBILarkContext) {
 		const { tenant, organizationId, user } = input
 		const tenantId = tenant.id
-		const { items } = await this.copilotService.findAllWithoutOrganization({
-			where: {
-				tenantId,
-				organizationId: organizationId ? organizationId : IsNull()
-			}
-		})
+		const items = await this.copilotService.findAllCopilots(tenantId, organizationId)
 		const copilot = items.find((item) => item.role === AiProviderRole.Primary)
-		if (!copilot) {
+		if (!copilot?.enabled) {
 			throw new Error(
-				`No copilot configuration found for tenant: '${tenantId}' and organization: '${organizationId}'`
+				`No 'Primary' copilot found for tenant='${tenantId}' and organization='${organizationId}'`
 			)
 		}
 
@@ -127,6 +127,12 @@ export class ChatBIHandler implements ICommandHandler<ChatBICommand> {
 				//
 			}
 		})
+
+		if (!chatModel) {
+			throw new Error(
+				`Failed to create ChatModel for Copilot(provider='${copilot.provider}', role='${copilot.role}', defaultModel='${copilot.defaultModel}')`
+			)
+		}
 
 		return new ChatBIConversation(
 			input,

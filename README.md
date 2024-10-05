@@ -10,7 +10,7 @@ English | [中文](./README_zh.md)
   </a>
 </p>
 <p align="center">
-  <em>Open-Source Analytics Platform for Enterprise Data Analysis, Indicator Management and Reporting</em>
+  <em>Open-Source AI Platform for Enterprise Data Analysis, Indicator Management and System Orchestration</em>
 </p>
 <p align="center">
   <a href="https://github.com/meta-d/ocap/" target="_blank">
@@ -30,37 +30,17 @@ English | [中文](./README_zh.md)
 # Metad Analytics Platform
 
 ## 💡 What's New
+### Xpert AI
+
+**Xpert AI** is an enterprise-level AI system that integrates BI (Business Intelligence) indicators management and intelligent dialogue functionality. It features modules such as a knowledge base, data analysis toolset (ChatBI, ChatDB, Search), and more. It acts as a digital expert, providing intelligent assistant copilot services and is deeply integrated with Feishu (Lark) bots. *Xpert AI* leverages advanced AI technology to offer efficient decision support and information management for enterprises, helping users quickly obtain data insights, optimize business processes, and enhance overall operational efficiency.
+
+[More details](https://mtda.cloud/en/blog/releases-2-7-xpert)
+
 ### ChatBI: Natural Language-Driven Business Intelligence Analysis
 
-[ChatBI](https://mtda.cloud/en/docs/chatbi) is an innovative feature we are introducing, combining chat functionality with business intelligence (BI) analysis capabilities. It offers users a more intuitive and convenient data analysis experience through natural language interaction. The main features of ChatBI include:
-
-1. **Natural Language Querying**: Users can ask questions in natural language and get data analysis results directly without needing to understand complex query languages. This feature allows even non-technical personnel to easily obtain data insights.
-
-2. **Multi-Turn Conversations**: Supports multi-turn conversations, allowing for continuous, context-aware interactions. The system remembers previous conversation content, enabling deeper and more precise data analysis.
-
-3. **Support for Various Large Language Models**: ChatBI integrates multiple mainstream large language models, such as ChatGPT and Llama, enhancing the accuracy of natural language understanding and generation to meet different business needs and language support.
-4. **Security and Access Control**: Provides strict data security and access control to ensure the protection of sensitive data.
-5. **Integration with Multiple Data Sources**: Supports connection and integration with data from various sources, such as databases, cloud services, and SAP ERP systems, providing users with rich data sources.
-
-[More details](https://mtda.cloud/en/blog/releases-2-5-chatbi/)
+[ChatBI](https://mtda.cloud/en/docs/chatbi) is an innovative feature we are introducing, combining chat functionality with business intelligence (BI) analysis capabilities. It offers users a more intuitive and convenient data analysis experience through natural language interaction.
 
 [ChatBI_Demo.mp4](https://github.com/user-attachments/assets/5f7c84be-2307-43cf-8342-bce39524e37d)
-
-### Copilot Command Agents
-🎉🎉 New version brings several exciting new features, particularly a comprehensive upgrade to [Copilot Command](https://www.mtda.cloud/en/docs/server/copilot/#commands) and [Business Roles](https://www.mtda.cloud/en/docs/server/copilot/#business-roles).
-
-- [New Version 2.4 - Copilot Multi-Agent Command](https://www.mtda.cloud/en/blog/releases-2-4-copilot-multi-agent).
-- [AI Digital Business Experts](https://www.mtda.cloud/en/#people-are-talking)
-
-- **Copilot Command Agents**
-  - _Dimension Members Retriever_: This feature dynamically retrieves and acquires key information of dimension members, helping users better understand data dimensions.
-  - _Few Shot_: By retrieving similar examples, it provides more precise templates, making data analysis more aligned with actual needs.
-  - _Suggestion_: Provides dynamic prompt completion functionality, helping users quickly generate high-quality analysis commands.
-- **Business Roles** The new version also adds the Business Roles feature to the AI Copilot. Users can switch business roles during use, allowing for more precise business analysis in different scenarios. Each business role has corresponding examples. When the Copilot executes an Agent, it selects the examples most relevant to the current task to send to the LLM, ensuring more accurate results. 
-
-[More details](https://www.mtda.cloud/en/blog/releases-2-3-copilot-agents-roles)
-
-![copilot architecture](https://raw.githubusercontent.com/meta-d/meta-d/main/img/v2.3/copilot-architecture.png)
 
 ## 🎯 Mission
 
