@@ -1,5 +1,5 @@
 import { RunnableConfig } from '@langchain/core/runnables'
-import { CopilotToolContext } from '@metad/contracts'
+import { XpertToolContext } from '@metad/contracts'
 import { ICommand } from '@nestjs/cqrs'
 
 export class QuerySqlCommand implements ICommand {
@@ -10,6 +10,6 @@ export class QuerySqlCommand implements ICommand {
 			query: string
 		},
 		public readonly config: RunnableConfig,
-		public readonly context: CopilotToolContext
+		public readonly context: XpertToolContext
 	) {}
 }

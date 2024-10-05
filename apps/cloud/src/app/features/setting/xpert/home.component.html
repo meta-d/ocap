@@ -5,11 +5,19 @@
     [tabPanel]="tabPanel"
   >
     <span mat-tab-link [routerLink]="['./roles']"
-      routerLinkActive #rla3="routerLinkActive"
-      [active]="rla3.isActive"
+      routerLinkActive #rla1="routerLinkActive"
+      [active]="rla1.isActive"
     >
       <mat-icon fontSet="material-icons-outlined">engineering</mat-icon>
       {{ 'PAC.KEY_WORDS.Roles' | translate: {Default: "Roles"} }}
+    </span>
+
+    <span mat-tab-link [routerLink]="['./toolsets']"
+      routerLinkActive #rla2="routerLinkActive"
+      [active]="rla2.isActive"
+    >
+      <mat-icon fontSet="material-icons-outlined">construction</mat-icon>
+      {{ 'PAC.KEY_WORDS.Toolsets' | translate: {Default: "Toolsets"} }}
     </span>
   </nav>
 </div>

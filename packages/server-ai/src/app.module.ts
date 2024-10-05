@@ -11,9 +11,11 @@ import { CopilotOrganizationModule } from './copilot-organization'
 import { CopilotUserModule } from './copilot-user'
 import { EventHandlers } from './core/events'
 import { GraphragModule } from './graphrag/graphrag.module'
-import { KnowledgeDocumentModule } from './knowledge-document/document.module'
-import { KnowledgebaseModule } from './knowledgebase'
-import { XpertRoleModule } from './xpert-role'
+import { KnowledgeDocumentModule } from './knowledge-document/index'
+import { KnowledgebaseModule } from './knowledgebase/index'
+import { XpertRoleModule } from './xpert-role/index'
+import { XpertToolModule } from './xpert-tool/index'
+import { XpertToolsetModule } from './xpert-toolset/index'
 
 @Module({
 	imports: [
@@ -30,7 +32,9 @@ import { XpertRoleModule } from './xpert-role'
 		CopilotUserModule,
 		CopilotOrganizationModule,
 		GraphragModule,
-		XpertRoleModule
+		XpertRoleModule,
+		XpertToolModule,
+		XpertToolsetModule
 	],
 	controllers: [],
 	providers: [...EventHandlers]

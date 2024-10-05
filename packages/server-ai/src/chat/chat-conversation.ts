@@ -14,10 +14,10 @@ import {
 	CopilotBaseMessage,
 	CopilotChatMessage,
 	CopilotMessageGroup,
-	CopilotToolContext,
+	XpertToolContext,
 	IChatConversation,
 	ICopilot,
-	ICopilotToolset,
+	IXpertToolset,
 	IUser,
 	IXpertRole
 } from '@metad/contracts'
@@ -39,6 +39,7 @@ import { ChatAgentState, chatAgentState } from './types'
 import { ExaSearchResults } from "@langchain/exa"
 import Exa from "exa-js"
 import { SearxngSearch } from "@langchain/community/tools/searxng_search"
+import { createToolset } from '../xpert-toolset'
 
 const exaClient = process.env.EXASEARCH_API_KEY ? new Exa(process.env.EXASEARCH_API_KEY) : null
 
@@ -97,116 +98,124 @@ export class ChatConversationAgent {
 		})
 	}
 
-	createAgentGraph(role: IXpertRole, toolsets: ICopilotToolset[]) {
+	createAgentGraph(role: IXpertRole, toolsets: IXpertToolset[]) {
 		const llm = this.createLLM(this.copilot)
 		if (!llm) {
 			throw new Error(`Can't create chatModel for provider '${this.copilot.provider}'`)
 		}
 
+		console.log(toolsets)
+
 		const tools = []
+
 		toolsets.forEach((toolset) => {
-			switch (toolset.name) {
-				case 'Wikipedia': {
-					const wikiTool = new WikipediaQueryRun({
-						topKResults: 3,
-						maxDocContentLength: 4000
-					})
-					tools.push(wikiTool)
-					break
-				}
-				case 'DuckDuckGo': {
-					const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
-					tools.push(duckTool)
-					break
-				}
-				case 'SearchApi': {
-					tools.push(new SearchApi(process.env.SEARCHAPI_API_KEY, {
-						...(toolset.tools?.[0]?.options ?? {}),
-					  }))
-					break
-				}
-				case 'TavilySearch': {
-					tools.push(new TavilySearchResults({
-						...(toolset.tools?.[0]?.options ?? {}),
-						apiKey: process.env.TAVILY_API_KEY
-					  }))
-					break
-				}
-				case 'ExaSearch': {
-					tools.push(new ExaSearchResults({
-						client: exaClient,
-						searchArgs: {
-						  ...(toolset.tools?.[0]?.options ?? {}),
-						} as any,
-					  })
-					)
-					break
-				}
-				case 'SearxngSearch': {
-					tools.push(new SearxngSearch({
-						apiBase: (toolset.tools?.[0]?.options ?? {}).apiBase,
-						params: {
-							engines: "google",
-							...omit(toolset.tools?.[0]?.options ?? {}, 'apiBase'),
-							format: "json", // Do not change this, format other than "json" is will throw error
-						},
-						// Custom Headers to support rapidAPI authentication Or any instance that requires custom headers
-						headers: {},
-					  })
-					)
-					break
-				}
+			const toolkit = createToolset(toolset)
+			if (toolkit) {
+				tools.push(...toolkit.getTools())
+			} else {
+				switch (toolset.name) {
+					case 'Wikipedia': {
+						const wikiTool = new WikipediaQueryRun({
+							topKResults: 3,
+							maxDocContentLength: 4000
+						})
+						tools.push(wikiTool)
+						break
+					}
+					case 'DuckDuckGo': {
+						const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
+						tools.push(duckTool)
+						break
+					}
+					case 'SearchApi': {
+						tools.push(new SearchApi(process.env.SEARCHAPI_API_KEY, {
+							...(toolset.tools?.[0]?.options ?? {}),
+						}))
+						break
+					}
+					case 'TavilySearch': {
+						tools.push(new TavilySearchResults({
+							...(toolset.tools?.[0]?.options ?? {}),
+							apiKey: process.env.TAVILY_API_KEY
+						}))
+						break
+					}
+					case 'ExaSearch': {
+						tools.push(new ExaSearchResults({
+							client: exaClient,
+							searchArgs: {
+							...(toolset.tools?.[0]?.options ?? {}),
+							} as any,
+						})
+						)
+						break
+					}
+					case 'SearxngSearch': {
+						tools.push(new SearxngSearch({
+							apiBase: (toolset.tools?.[0]?.options ?? {}).apiBase,
+							params: {
+								engines: "google",
+								...omit(toolset.tools?.[0]?.options ?? {}, 'apiBase'),
+								format: "json", // Do not change this, format other than "json" is will throw error
+							},
+							// Custom Headers to support rapidAPI authentication Or any instance that requires custom headers
+							headers: {},
+						})
+						)
+						break
+					}
 
-				default: {
-					toolset.tools.forEach((item) => {
-						switch (item.type) {
-							case 'command': {
-								let zodSchema: z.AnyZodObject = null
-								try {
-									zodSchema = eval(jsonSchemaToZod(JSON.parse(item.schema), { module: 'cjs' }))
-								} catch (err) {
-									throw new Error(`Invalid input schema for tool: ${item.name}`)
-								}
-								// Copilot
-								let chatModel = llm
-								if (item.providerRole || toolset.providerRole) {
-									const copilot = this.chatService.findCopilot(this.tenantId, this.organizationId, item.providerRole || toolset.providerRole)
-									chatModel = this.createLLM(copilot)
-								}
+					default: {
+						toolset.tools?.forEach((item) => {
+							switch (item.type) {
+								case 'command': {
+									let zodSchema: z.AnyZodObject = null
+									try {
+										zodSchema = eval(jsonSchemaToZod(JSON.parse(item.schema), { module: 'cjs' }))
+									} catch (err) {
+										throw new Error(`Invalid input schema for tool: ${item.name}`)
+									}
+									// Copilot
+									let chatModel = llm
+									if (item.providerRole || toolset.providerRole) {
+										const copilot = this.chatService.findCopilot(this.tenantId, this.organizationId, item.providerRole || toolset.providerRole)
+										chatModel = this.createLLM(copilot)
+									}
 
-								// Default args values in copilot role for tool function
-								const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
+									// Default args values in copilot role for tool function
+									const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
 
-								tools.push(
-									tool(
-										async (args, config) => {
-											try {
-												return await this.chatService.executeCommand(item.name, {
-														...(defaultArgs ?? {}),
-														...args
-													}, config, <CopilotToolContext>{
-														tenantId: this.tenantId,
-														organizationId: this.organizationId,
-														user: this.user,
-														chatModel,
-														role,
-														roleContext: role?.options?.context,
-													})
-											} catch(error) {
-												return `Error: ${getErrorMessage(error)}`
+									tools.push(
+										tool(
+											async (args, config) => {
+												try {
+													return await this.chatService.executeCommand(item.name, {
+															...(defaultArgs ?? {}),
+															...args
+														}, config, <XpertToolContext>{
+															tenantId: this.tenantId,
+															organizationId: this.organizationId,
+															user: this.user,
+															chatModel,
+															role,
+															roleContext: role?.options?.context,
+														})
+												} catch(error) {
+													return `Error: ${getErrorMessage(error)}`
+												}
+											},
+											{
+												name: item.name,
+												description: item.description,
+												schema: defaultArgs ? null : zodSchema
 											}
-										},
-										{
-											name: item.name,
-											description: item.description,
-											schema: defaultArgs ? null : zodSchema
-										}
+										)
 									)
-								)
-								break
+									break
+								}
 							}
-						}
-					})
+						})
+					}
 				}
 			}
 		})

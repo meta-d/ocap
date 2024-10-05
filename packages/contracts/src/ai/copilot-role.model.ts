@@ -1,8 +1,10 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { ICopilotToolset } from './copilot-toolset.model'
+import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
 
 /**
+ * @deprecated use XpertRole
+ * 
  * Copilot role, business role for the copilot
  */
 export interface ICopilotRole extends IBasePerTenantAndOrganizationEntityModel {
@@ -21,7 +23,7 @@ export interface ICopilotRole extends IBasePerTenantAndOrganizationEntityModel {
   active?: boolean
   avatar?: string
 
-  toolsets?: ICopilotToolset[]
+  toolsets?: IXpertToolset[]
   /**
    * More configuration
    */
@@ -31,6 +33,9 @@ export interface ICopilotRole extends IBasePerTenantAndOrganizationEntityModel {
   knowledgebases?: IKnowledgebase[]
 }
 
+/**
+ * @deprecated use XpertRole
+ */
 export type TCopilotRoleOptions = {
   context?: Record<string, any>
   toolsets: {

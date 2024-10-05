@@ -31,7 +31,7 @@ export class XpertRoleService extends OrganizationBaseCrudService<IXpertRole> {
     this.#refresh.next()
   }
 
-  updateKnowledgebases(roleId: string, knowledgebases: string[]): Observable<IXpertRole> {
-    return this.httpClient.put<IXpertRole>(this.apiBaseUrl + '/' + roleId + '/knowledgebases', { knowledgebases })
-  }
+  // updateKnowledgebases(roleId: string, knowledgebases: string[]): Observable<IXpertRole> {
+  //   return this.httpClient.put<IXpertRole>(this.apiBaseUrl + '/' + roleId + '/knowledgebases', { knowledgebases })
+  // }
 }

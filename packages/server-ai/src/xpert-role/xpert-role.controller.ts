@@ -19,11 +19,11 @@ export class XpertRoleController extends CrudController<XpertRole> {
 		super(service)
 	}
 
-	@Put(':id/knowledgebases')
-	async updateKnowledgebases(
-		@Param('id') id: string,
-		@Body('knowledgebases') knowledgebases: string[]
-	): Promise<IXpertRole> {
-		return await this.service.updateKnowledgebases(id, knowledgebases)
-	}
+	// @Put(':id/knowledgebases')
+	// async updateKnowledgebases(
+	// 	@Param('id') id: string,
+	// 	@Body('knowledgebases') knowledgebases: string[]
+	// ): Promise<IXpertRole> {
+	// 	return await this.service.updateKnowledgebases(id, knowledgebases)
+	// }
 }

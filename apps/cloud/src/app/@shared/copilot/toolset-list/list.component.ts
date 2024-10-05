@@ -4,7 +4,7 @@ import { booleanAttribute, Component, input, model } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilotToolset } from '../../../@core/types'
+import { IXpertToolset } from '../../../@core/types'
 import { AvatarComponent } from '../../files'
 import { MaterialModule } from '../../material.module'
 
@@ -26,12 +26,12 @@ import { MaterialModule } from '../../material.module'
   styleUrls: ['list.component.scss']
 })
 export class ToolsetListComponent {
-  readonly toolsetList = input<ICopilotToolset[]>()
+  readonly toolsetList = input<IXpertToolset[]>()
   readonly disabled = input<boolean, string | boolean>(false, { transform: booleanAttribute })
 
   readonly toolsets = model()
 
-  compareId(a: ICopilotToolset, b: ICopilotToolset): boolean {
+  compareId(a: IXpertToolset, b: IXpertToolset): boolean {
     return a?.id === b?.id
   }
 }

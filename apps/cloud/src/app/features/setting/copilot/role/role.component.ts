@@ -13,7 +13,7 @@ import {
   CopilotRoleService,
   getErrorMessage,
   ICopilotRole,
-  ICopilotToolset,
+  IXpertToolset,
   IKnowledgebase,
   KnowledgebaseService,
   OrderTypeEnum,
@@ -95,7 +95,7 @@ export class CopilotRoleComponent extends UpsertEntityComponent<ICopilotRole> {
       this.knowledgebases().some((kb) => !this.copilotRole().knowledgebases.some((item) => item.id === kb.id))
     )
   })
-  readonly toolsetList = signal<ICopilotToolset[]>(TOOLSETS)
+  readonly toolsetList = signal<IXpertToolset[]>(TOOLSETS)
 
   private roleSub = toObservable(this.paramId)
     .pipe(

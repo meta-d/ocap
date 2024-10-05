@@ -1,19 +1,19 @@
 import { z } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
-import { IBasePerTenantEntityModel } from '../base-entity.model'
+import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IUser } from '../user.model'
 import { AiProviderRole, ICopilot } from './copilot.model'
-import { ICopilotRole } from './copilot-role.model'
+import { IXpertRole } from './xpert-role.model'
+import { IXpertTool } from './xpert-tool.model'
 
-/**
- * Toolset in copilot
- */
-export interface ICopilotToolset extends IBasePerTenantEntityModel {
+export type XpertToolsetType = string
+export type TXpertToolset = {
   /**
-   * tool name
+   * toolset name
    */
   name: string
-  description: string
+  type?: XpertToolsetType
+  description?: string
   /**
    * avatar url
    */
@@ -24,39 +24,45 @@ export interface ICopilotToolset extends IBasePerTenantEntityModel {
    */
   providerRole?: AiProviderRole
 
-  options?: {
-    token: string
-  }
-
-  tools: ICopilotTool[]
-}
-
-export type ICopilotTool = {
-  name: string
-  description: string
   options?: Record<string, any>
-  type?: 'command' | 'agent' | 'browser' | null
-  schema?: string
 
-  /**
-   * Priority role of AI provider
-   * @default `AiProviderRole.Secondary`
-   */
-  providerRole?: AiProviderRole
+  tools?: IXpertTool[]
 }
 
-export type CopilotToolContext = {
+/**
+ * Toolset for Xpert
+ */
+export interface IXpertToolset extends IBasePerTenantAndOrganizationEntityModel, TXpertToolset {}
+
+export type XpertToolContext = {
   tenantId: string
-	organizationId?: string
+  organizationId?: string
   user: IUser
   copilot: ICopilot
   chatModel: unknown // BaseChatModel in langchain
   roleContext: Record<string, any>
-  role: ICopilotRole
+  role: IXpertRole
 }
 
+export const TOOLSET_TYPES = new Map<string, any>()
+
+TOOLSET_TYPES.set('TavilySearch', {
+  name: 'TavilySearch',
+  description: 'Tavily Search is a robust search API tailored specifically for LLM Agents.',
+  avatar: '/assets/icons/tavily.ico',
+  schema: {
+    type: 'object',
+    properties: {
+      apiKey: { type: 'string', title: 'Api Key' },
+      maxResults: { type: 'number', title: 'Max results', default: '2' }
+    },
+    required: ['apiKey'],
+    secret: ['apiKey']
+  }
+})
+
 // 临时
-export const TOOLSETS: ICopilotToolset[] = [
+export const TOOLSETS: IXpertToolset[] = [
   {
     id: '1',
     name: 'DuckDuckGo',
@@ -175,7 +181,7 @@ export const TOOLSETS: ICopilotToolset[] = [
         name: 'TavilySearch',
         description: 'Search tool tailored specifically for LLM Agents',
         options: {
-          maxResults: 2,
+          maxResults: 2
         }
       }
     ]
@@ -190,7 +196,7 @@ export const TOOLSETS: ICopilotToolset[] = [
         name: 'ExaSearch',
         description: 'Search tool of Exa',
         options: {
-          numResults: 2,
+          numResults: 2
         }
       }
     ]
@@ -198,17 +204,19 @@ export const TOOLSETS: ICopilotToolset[] = [
   {
     id: '8',
     name: 'SearxngSearch',
-    description: 'SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.',
+    description:
+      'SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.',
     avatar: '/assets/icons/searxng.svg',
     tools: [
       {
         name: 'SearxngSearch',
-        description: 'This tool is useful for performing meta-search engine queries using the SearxNG API. It is particularly helpful in answering questions about current events.',
+        description:
+          'This tool is useful for performing meta-search engine queries using the SearxNG API. It is particularly helpful in answering questions about current events.',
         options: {
           apiBase: 'https://search.inetol.net/',
-          engines: "google",
+          engines: 'google'
         }
       }
     ]
-  },
+  }
 ]

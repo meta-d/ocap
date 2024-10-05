@@ -4,6 +4,8 @@ import { AIPermissionsEnum, PermissionsEnum } from '../../../@core'
 import { XpertHomeComponent } from './home.component'
 import { XpertRolesComponent } from './roles/roles.component'
 import { XpertRoleComponent } from './role/role.component'
+import { XpertToolsetsComponent } from './toolsets/toolsets.component'
+import { XpertToolsetComponent } from './toolset/toolset.component'
 
 export default [
   {
@@ -34,6 +36,20 @@ export default [
           {
             path: ':id',
             component: XpertRoleComponent,
+          }
+        ]
+      },
+      {
+        path: 'toolsets',
+        component: XpertToolsetsComponent,
+        children: [
+          {
+            path: 'create',
+            component: XpertToolsetComponent,
+          },
+          {
+            path: ':id',
+            component: XpertToolsetComponent,
           }
         ]
       },

@@ -63,13 +63,13 @@ export class XpertRolesComponent extends TranslationBaseComponent {
     }
   ])
 
-  readonly refresh$ = new BehaviorSubject<void>(null)
+  readonly #refresh$ = new BehaviorSubject<void>(null)
 
   readonly dataSource = signal<CopilotRoleRowType[]>([])
 
   readonly displayedColumns = ['avatar', 'name', 'title', 'titleCN', 'description', 'actions']
 
-  private itemsSub = this.refresh$
+  private itemsSub = this.#refresh$
     .pipe(
       switchMap(() => this.roleService.getAllInOrg({ order: {updatedAt: OrderTypeEnum.DESC } })),
       map(({ items }) => items),
@@ -157,5 +157,9 @@ export class XpertRolesComponent extends TranslationBaseComponent {
     } else {
       this.dataSource.update((items) => items.filter((x) => x !== item))
     }
+  }
+
+  refresh() {
+    this.#refresh$.next()
   }
 }

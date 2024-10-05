@@ -3,7 +3,7 @@ import { Component, model } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilotToolset } from '../../../@core/types'
+import { IXpertToolset } from '../../../@core/types'
 import { AvatarComponent } from '../../files'
 import { MaterialModule } from '../../material.module'
 
@@ -24,5 +24,5 @@ import { MaterialModule } from '../../material.module'
   styleUrls: ['toolset.component.scss']
 })
 export class ToolsetCardComponent {
-  readonly toolset = model<ICopilotToolset>()
+  readonly toolset = model<IXpertToolset>()
 }

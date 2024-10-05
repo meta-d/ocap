@@ -1694,6 +1694,12 @@
       "ConfirmDeleteIntegration": "确定删除此集成",
       "WebhookUrl": "回调地址"
     },
+    "Xpert": {
+      "ToolsetType": "工具集类型",
+      "Toolset": {
+        
+      }
+    },
     "title": {
       "short": "Xpert AI"
     },

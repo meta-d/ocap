@@ -170,7 +170,7 @@ export class IntegrationComponent implements IsDirty {
     ).subscribe({
       next: () => {
         this.formGroup.markAsPristine()
-        this.#toastr.success('PAC.MODEL.CreatedSuccessfully', { Default: 'Created Successfully!' })
+        this.#toastr.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created Successfully!' })
         this.#router.navigate(['..'], { relativeTo: this.#route })
       },
       error: (error) => {

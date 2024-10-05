@@ -128,6 +128,14 @@ const routes: Routes = [
         }
       },
       {
+        path: 'agent',
+        loadChildren: () => import('./xpert-agent/routes').then(m => m.routes),
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Xpert Agent',
+        }
+      },
+      {
         path: 'data',
         loadChildren: () => import('./data-factory/routes').then(m => m.routes),
         canActivate: [AuthGuard],

@@ -1,27 +1,28 @@
 import { CdkListboxModule } from '@angular/cdk/listbox'
-import { Component, computed, effect, inject, model, signal } from '@angular/core'
+import { Component, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { FormArray, FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayBehaviour, nonBlank } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
-import { distinctUntilChanged, filter, firstValueFrom, map, switchMap } from 'rxjs'
+import { distinctUntilChanged, filter, map, switchMap } from 'rxjs'
 import {
-  XpertRoleService,
   getErrorMessage,
-  IXpertRole,
-  ICopilotToolset,
   IKnowledgebase,
+  IXpertRole,
   KnowledgebaseService,
   OrderTypeEnum,
-  ToastrService
+  ToastrService,
+  XpertRoleService,
+  XpertToolsetService
 } from '../../../../@core'
-import { TOOLSETS } from '../../../../@core/copilot'
 import { AvatarEditorComponent, MaterialModule, UpsertEntityComponent } from '../../../../@shared'
 import { KnowledgebaseListComponent, ToolsetListComponent } from '../../../../@shared/copilot'
+import { XpertRolesComponent } from '../roles/roles.component'
+
 
 @Component({
   standalone: true,
@@ -45,7 +46,9 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
   DisplayBehaviour = DisplayBehaviour
 
   readonly roleService = inject(XpertRoleService)
+  readonly toolsetService = inject(XpertToolsetService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
+  readonly rolesComponent = inject(XpertRolesComponent)
   readonly _toastrService = inject(ToastrService)
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
@@ -55,9 +58,10 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
 
   readonly loading = signal(true)
 
-  readonly copilotRole = signal<IXpertRole>(null)
+  readonly xpertRole = signal<IXpertRole>(null)
 
   readonly formGroup = this.fb.group({
+    id: new FormControl<string>(null),
     avatar: new FormControl<string>(null),
     name: new FormControl<string>(null),
     title: new FormControl(null),
@@ -68,11 +72,19 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
       new FormControl(null),
       new FormControl(null),
       new FormControl(null),
-      new FormControl(null),
+      new FormControl(null)
     ]),
+    knowledgebases: new FormControl(null),
     toolsets: new FormControl(null),
-    options: new FormControl(null),
+    options: new FormControl(null)
   })
+  get knowledgebases() {
+    return this.formGroup.get('knowledgebases').value
+  }
+  set knowledgebases(value) {
+    this.formGroup.patchValue({ knowledgebases: value })
+    this.formGroup.markAsDirty()
+  }
   get toolsets() {
     return this.formGroup.get('toolsets').value
   }
@@ -85,27 +97,27 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
   }
 
   readonly knowledgebaseList = toSignal(
-    this.knowledgebaseService.getAll({ order: { createdAt: OrderTypeEnum.DESC } }).pipe(map(({ items }) => items))
+    this.knowledgebaseService.getAllInOrg({ order: { createdAt: OrderTypeEnum.DESC } }).pipe(map(({ items }) => items))
   )
-  readonly knowledgebases = model<IKnowledgebase[]>([])
+  // readonly knowledgebases = model<IKnowledgebase[]>([])
 
-  readonly knowledgebasesDirty = computed(() => {
-    return (
-      this.knowledgebases().length !== this.copilotRole()?.knowledgebases?.length ||
-      this.knowledgebases().some((kb) => !this.copilotRole().knowledgebases.some((item) => item.id === kb.id))
-    )
-  })
-  readonly toolsetList = signal<ICopilotToolset[]>(TOOLSETS)
+  // readonly knowledgebasesDirty = computed(() => {
+  //   return (
+  //     this.knowledgebases().length !== this.xpertRole()?.knowledgebases?.length ||
+  //     this.knowledgebases().some((kb) => !this.xpertRole().knowledgebases.some((item) => item.id === kb.id))
+  //   )
+  // })
+  readonly toolsetList = toSignal(this.toolsetService.getAllInOrg().pipe(map(({ items }) => items)))
 
   private roleSub = toObservable(this.paramId)
     .pipe(
       distinctUntilChanged(),
       filter(nonBlank),
-      switchMap((id) => this.roleService.getById(id, { relations: ['knowledgebases'] })),
+      switchMap((id) => this.roleService.getById(id, { relations: ['knowledgebases', 'toolsets'] })),
       takeUntilDestroyed()
     )
     .subscribe((role) => {
-      this.copilotRole.set(role)
+      this.xpertRole.set(role)
     })
 
   constructor(roleService: XpertRoleService) {
@@ -113,9 +125,12 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
 
     effect(
       () => {
-        if (this.copilotRole()) {
-          this.formGroup.patchValue({...this.copilotRole(), options: this.copilotRole().options ? JSON.stringify(this.copilotRole().options, null, 2) : null})
-          this.knowledgebases.set([...(this.copilotRole().knowledgebases ?? [])])
+        if (this.xpertRole()) {
+          this.formGroup.patchValue({
+            ...this.xpertRole(),
+            options: this.xpertRole().options ? JSON.stringify(this.xpertRole().options, null, 2) : null
+          })
+          // this.knowledgebases.set([...(this.xpertRole().knowledgebases ?? [])])
         } else {
           this.formGroup.reset()
         }
@@ -127,34 +142,27 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
   }
 
   close(refresh = false) {
+    if (refresh) {
+      this.rolesComponent.refresh()
+    }
     this.#router.navigate(['../'], { relativeTo: this.#route })
   }
 
-  async saveAll() {
-    try {
-      if (this.formGroup.dirty) {
-        if (this.paramId()) {
-          await firstValueFrom(this.update(this.paramId(), { ...this.formGroup.value, options: 
-            this.formGroup.value.options ? JSON.parse(this.formGroup.value.options) : null }))
-        } else {
-          this.copilotRole.set(await firstValueFrom(this.save({ ...this.formGroup.value })))
-        }
-      }
-      // Update knowledgebases
-      if (this.knowledgebasesDirty()) {
-        await firstValueFrom(
-          this.roleService.updateKnowledgebases(
-            this.copilotRole().id,
-            this.knowledgebases().map(({ id }) => id)
-          )
-        )
-      }
-
-      this._toastrService.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated Successfully!' })
-      this.close()
-    } catch (error) {
-      this._toastrService.error(getErrorMessage(error))
+  saveAll() {
+    const entity = {
+      ...this.formGroup.value,
+      options: this.formGroup.value.options ? JSON.parse(this.formGroup.value.options) : null,
+      knowledgebases: this.formGroup.value.knowledgebases.map((item) => ({ id: item.id })),
+      toolsets: this.formGroup.value.toolsets.map((item) => ({ id: item.id }))
     }
+    this.upsert(entity).subscribe({
+      next: () => {
+        this.close(true)
+      },
+      error: (error) => {
+        this._toastrService.error(getErrorMessage(error))
+      }
+    })
   }
 
   compareId(a: IKnowledgebase, b: IKnowledgebase): boolean {

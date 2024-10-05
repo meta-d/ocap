@@ -1,8 +1,8 @@
 import { RunnableConfig } from '@langchain/core/runnables'
-import { CopilotToolContext } from '@metad/contracts'
+import { XpertToolContext } from '@metad/contracts'
 import { ICommand } from '@nestjs/cqrs'
 
-export class ChatBINewCommand implements ICommand {
+export class ChatBIToolCommand implements ICommand {
 	static readonly type = '[ChatBI] Chat'
 
 	constructor(
@@ -10,6 +10,6 @@ export class ChatBINewCommand implements ICommand {
 			question: string
 		},
 		public readonly config: RunnableConfig,
-		public readonly context: CopilotToolContext
+		public readonly context: XpertToolContext
 	) {}
 }

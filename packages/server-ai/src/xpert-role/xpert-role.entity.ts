@@ -1,12 +1,13 @@
-import { AiBusinessRole, IXpertRole, ICopilotToolset, IKnowledgebase, TXpertRoleOptions } from '@metad/contracts'
-import { Optional } from '@nestjs/common'
+import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions } from '@metad/contracts'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, JoinTable, ManyToMany } from 'typeorm'
+import { Column, Entity, Index, JoinTable, ManyToMany } from 'typeorm'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
-import { Knowledgebase } from '../core/entities/internal'
+import { Knowledgebase, XpertToolset } from '../core/entities/internal'
+
 
 @Entity('xpert_role')
+@Index(['tenantId', 'organizationId', 'name'], { unique: true })
 export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRole {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -45,15 +46,9 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	avatar?: string
-
-	@ApiPropertyOptional({ type: () => Object })
-	@IsJSON()
-	@IsOptional()
-	@Column({ type: 'json', nullable: true })
-	toolsets?: ICopilotToolset[]
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()
@@ -76,4 +71,14 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 		name: 'xpert_role_knowledgebase'
 	})
 	knowledgebases?: IKnowledgebase[]
+
+	// Toolsets
+	@ManyToMany(() => XpertToolset, {
+		onUpdate: 'CASCADE',
+		onDelete: 'CASCADE'
+	})
+	@JoinTable({
+		name: 'xpert_role_toolset'
+	})
+	toolsets?: IXpertToolset[]
 }

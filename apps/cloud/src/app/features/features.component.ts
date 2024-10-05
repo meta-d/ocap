@@ -459,6 +459,17 @@ export class FeaturesComponent implements OnInit {
           permissionKeys: [AnalyticsPermissionsEnum.CHATBI_VIEW]
         }
       },
+      {
+        title: 'Xpert Agent',
+        matIcon: 'network_node',
+        link: '/agent',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'Xpert Agent',
+          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
+          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
+        }
+      },
       // {
       //   title: 'Data Factory',
       //   matIcon: 'data_table',

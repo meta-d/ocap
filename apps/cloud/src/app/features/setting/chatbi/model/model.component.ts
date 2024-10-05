@@ -137,7 +137,7 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
     return this.formGroup.dirty
   }
 
-  upsert() {
+  saveAll() {
     const entity = omit(this.formGroup.value, 'roles')
     ;(this.paramId()
       ? this.update(this.paramId(), entity).pipe(map(() => this.paramId()))

@@ -1,5 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { ICopilotToolset } from './copilot-toolset.model'
+import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
 
 /**
@@ -21,7 +21,7 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
   active?: boolean
   avatar?: string
 
-  toolsets?: ICopilotToolset[]
+  toolsets?: IXpertToolset[]
   /**
    * More configuration
    */

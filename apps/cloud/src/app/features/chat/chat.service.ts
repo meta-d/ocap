@@ -25,7 +25,7 @@ import {
   getErrorMessage,
   IChatConversation,
   IXpertRole,
-  ICopilotToolset,
+  IXpertToolset,
   IKnowledgebase,
   LanguagesEnum,
   OrderTypeEnum
@@ -60,13 +60,13 @@ export class ChatService {
   readonly conversations = signal<IChatConversation[]>([])
 
   readonly knowledgebases = signal<IKnowledgebase[]>([])
-  readonly toolsets = signal<ICopilotToolset[]>([])
+  readonly toolsets = signal<IXpertToolset[]>([])
 
   readonly answering = signal<boolean>(false)
 
   readonly lang = this.appService.lang
   readonly roles = derivedFrom(
-    [this.copilotRoleService.getAllInOrg({ relations: ['knowledgebases'] }).pipe(map(({ items }) => items)), this.lang],
+    [this.copilotRoleService.getAllInOrg({ relations: ['knowledgebases', 'toolsets'] }).pipe(map(({ items }) => items)), this.lang],
     pipe(
       map(([roles, lang]) => {
         if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
@@ -129,7 +129,7 @@ export class ChatService {
       skip(1),
       filter((id) => !this.conversation() || this.conversation().id !== id),
       switchMap((id) =>
-        id ? this.conversationService.getById(id, { relations: ['role', 'role.knowledgebases'] }).pipe(
+        id ? this.conversationService.getById(id, { relations: ['role', 'role.knowledgebases', 'role.toolsets'] }).pipe(
           catchError((error) => {
             this.#toastr.error(getErrorMessage(error))
             return of(null)
@@ -322,7 +322,7 @@ export class ChatService {
       role: {
         id: this.role$.value?.id,
         knowledgebases: this.knowledgebases().map(({ id }) => id),
-        toolsets: this.toolsets().map(({ id }) => id)
+        toolsets: this.toolsets()?.map(({ id }) => id)
       },
       data: {
         conversationId: this.conversation()?.id,

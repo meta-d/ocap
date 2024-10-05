@@ -1,4 +1,4 @@
-import { AiBusinessRole, ICopilotRole, ICopilotToolset, IKnowledgebase, TCopilotRoleOptions } from '@metad/contracts'
+import { AiBusinessRole, ICopilotRole, IXpertToolset, IKnowledgebase, TCopilotRoleOptions } from '@metad/contracts'
 import { Optional } from '@nestjs/common'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
@@ -53,7 +53,7 @@ export class CopilotRole extends TenantOrganizationBaseEntity implements ICopilo
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	toolsets?: ICopilotToolset[]
+	toolsets?: IXpertToolset[]
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()

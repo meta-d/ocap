@@ -2,7 +2,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
-import { ChatGatewayEvent, ChatGatewayMessage, CopilotToolContext, JSONValue, OrderTypeEnum } from '@metad/contracts'
+import { ChatGatewayEvent, ChatGatewayMessage, XpertToolContext, JSONValue, OrderTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, referencesCommandName } from '@metad/copilot'
 import {
 	Agent,
@@ -60,7 +60,7 @@ import {
 import { ChatBIService } from '../../chatbi.service'
 import { ChatAnswer, createDimensionMemberRetrieverTool } from '../../tools'
 import { ChatAnswerSchema, GetCubesContextSchema, insightAgentState } from '../../types'
-import { ChatBINewCommand } from '../chat-bi.command'
+import { ChatBIToolCommand } from '../chat-bi.command'
 import { getErrorMessage, race, shortuuid, TimeoutError } from '@metad/server-common'
 import { markdownCubes } from '../../graph'
 import { CallbackManager } from '@langchain/core/callbacks/manager'
@@ -68,9 +68,9 @@ import { omit, upperFirst } from 'lodash'
 
 const DefaultToolMaximumWaitTime = 30 * 1000 // 30s
 
-@CommandHandler(ChatBINewCommand)
-export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
-	private readonly logger = new Logger(ChatBINewHandler.name)
+@CommandHandler(ChatBIToolCommand)
+export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
+	private readonly logger = new Logger(ChatBIToolHandler.name)
 
 	readonly commandName = 'chatbi'
 
@@ -88,10 +88,10 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 		@Inject(CACHE_MANAGER)
 		private readonly cacheManager: Cache
 	) {
-		this.chatService.registerCommand('ChatBI', ChatBINewCommand)
+		this.chatService.registerCommand('ChatBI', ChatBIToolCommand)
 	}
 
-	public async execute(command: ChatBINewCommand): Promise<any> {
+	public async execute(command: ChatBIToolCommand): Promise<any> {
 		const { args, config, context } = command
 		const parentRunId = (<CallbackManager>config.callbacks).getParentRunId()
 
@@ -251,7 +251,7 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 		await this.cacheManager.set(modelId + '/' + cubeName, data)
 	}
 
-	async registerChatModels(dsCoreService: DSCoreService, context: CopilotToolContext) {
+	async registerChatModels(dsCoreService: DSCoreService, context: XpertToolContext) {
 		const { tenantId, organizationId, role } = context
 		const { items } = await this.modelService.findAll({
 			where: { tenantId, organizationId },
@@ -270,7 +270,7 @@ export class ChatBINewHandler implements ICommandHandler<ChatBINewCommand> {
 		return markdownCubes(models)
 	}
 
-	createGraphAgent(llm: BaseChatModel, context: CopilotToolContext, dsCoreService: DSCoreService, subscriber: Subscriber<any>) {
+	createGraphAgent(llm: BaseChatModel, context: XpertToolContext, dsCoreService: DSCoreService, subscriber: Subscriber<any>) {
 		const { tenantId, organizationId } = context
 
 		const referencesRetrieverTool = createReferencesRetrieverTool(this.copilotKnowledgeService, {
@@ -342,7 +342,7 @@ ${createAgentStepsInstructions(
 	 * @param dsCoreService 
 	 * @returns 
 	 */
-	createCubeContextTool(context: CopilotToolContext, dsCoreService: DSCoreService) {
+	createCubeContextTool(context: XpertToolContext, dsCoreService: DSCoreService) {
 		// Maximum waiting time of tool call
 		const { toolMaximumWaitTime = DefaultToolMaximumWaitTime } = context.roleContext
 		return tool(

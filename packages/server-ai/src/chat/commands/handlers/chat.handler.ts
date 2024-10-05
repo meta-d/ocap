@@ -4,7 +4,7 @@ import {
 	ChatUserMessage,
 	IChatConversation,
 	IXpertRole,
-	TOOLSETS
+	IXpertToolset,
 } from '@metad/contracts'
 import { NgmLanguageEnum } from '@metad/copilot'
 import { getErrorMessage, shortuuid } from '@metad/server-common'
@@ -18,6 +18,8 @@ import { CopilotCheckLimitCommand } from '../../../copilot-user'
 import { ChatConversationAgent } from '../../chat-conversation'
 import { ChatService } from '../../chat.service'
 import { ChatCommand } from '../chat.command'
+import { FindXpertToolsetsQuery } from '../../../xpert-toolset/index'
+
 
 @CommandHandler(ChatCommand)
 export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
@@ -73,6 +75,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 
 				if (!this.chatService.getConversation(chatConversation.id)) {
 					await this.chatService.fetchCopilots(tenantId, organizationId)
+					const toolsets = await this.queryBus.execute<FindXpertToolsetsQuery, IXpertToolset[]>(new FindXpertToolsetsQuery(role?.toolsets ?? []))
 
 					try {
 						this.chatService.setConversation(
@@ -85,7 +88,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 								this.chatService,
 								this.commandBus,
 								this.queryBus
-							).createAgentGraph(copilotRole, TOOLSETS.filter((item) => role?.toolsets?.includes(item.id)))
+							).createAgentGraph(copilotRole, toolsets)
 						)
 					} catch (error) {
 						subscriber.next({
