@@ -1,4 +1,7 @@
-import { AnalyticsFeatures, FeatureEnum, IFeatureCreateInput } from '@metad/contracts'
+import { AnalyticsFeatures, FeatureEnum, AiFeatureEnum, IFeatureCreateInput } from '@metad/contracts'
+import { pacToggleFeatures } from '@metad/server-config'
+
+const features = pacToggleFeatures
 
 export const DEFAULT_FEATURES: Partial<IFeatureCreateInput>[] = [
 	{
@@ -20,15 +23,6 @@ export const DEFAULT_FEATURES: Partial<IFeatureCreateInput>[] = [
 				link: 'trend',
 				isEnabled: true,
 				icon: 'trend-outline',
-				status: 'primary'
-			},
-			{
-				name: 'Insight',
-				code: AnalyticsFeatures.FEATURE_HOME_INSIGHT,
-				description: 'Insight',
-				link: 'insight',
-				isEnabled: true,
-				icon: 'insight-outline',
 				status: 'primary'
 			},
 		]
@@ -86,43 +80,10 @@ export const DEFAULT_FEATURES: Partial<IFeatureCreateInput>[] = [
 			}
 		]
 	},
-	// {
-	// 	name: 'Insight',
-	// 	code: AnalyticsFeatures.FEATURE_INSIGHT,
-	// 	description: 'Manage and View Insight Model',
-	// 	image: 'estimate.png',
-	// 	link: 'insight',
-	// 	isEnabled: true,
-	// 	icon: 'file-text-outline',
-	// 	status: 'success',
-	// 	children: [
-	// 		{
-	// 			name: 'Insight Admin',
-	// 			code: AnalyticsFeatures.FEATURE_INSIGHT_ADMIN,
-	// 			description:
-	// 				'Manage Insight',
-	// 			image: 'estimate-received.png',
-	// 			link: 'insight/admin',
-	// 			isEnabled: true,
-	// 			icon: 'file-text-outline',
-	// 			status: 'warning'
-	// 		},
-    //         {
-	// 			name: 'Insight Model Viewer',
-	// 			code: AnalyticsFeatures.FEATURE_INSIGHT_VIEWER,
-	// 			description: 'View Insight Model',
-	// 			image: 'estimate-received.png',
-	// 			link: 'insight',
-	// 			isEnabled: true,
-	// 			icon: 'file-text-outline',
-	// 			status: 'warning'
-	// 		}
-	// 	]
-	// },
 	{
-		name: 'Story Model',
+		name: 'Semantic Model',
 		code: AnalyticsFeatures.FEATURE_MODEL,
-		description: 'Manage and View Story Model',
+		description: 'Manage and View Semantic Model',
 		image: 'estimate.png',
 		link: 'model',
 		isEnabled: true,
@@ -148,5 +109,30 @@ export const DEFAULT_FEATURES: Partial<IFeatureCreateInput>[] = [
 		isEnabled: true,
 		icon: 'project-outline',
 		status: 'success',
+	},
+	{
+		name: 'Data Factory',
+		code: AnalyticsFeatures.FEATURE_DATA_FACTORY,
+		description: 'Go to data factory to manage data',
+		image: 'data-factory.png',
+		link: 'data',
+		isEnabled: true,
+		icon: 'data-factory',
+		status: 'success',
+	},
+	{
+		code: AiFeatureEnum.FEATURE_COPILOT,
+		children: [
+			{
+				name: 'Copilot ChatBI',
+				code: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
+				description: 'Manage ChatBI of Copilot',
+				image: 'file-storage.png',
+				link: 'settings/chatbi',
+				isEnabled: features.FEATURE_COPILOT_CHATBI,
+				icon: 'file-text-outline',
+				status: 'info'
+			},
+		]
 	}
 ]

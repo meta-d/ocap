@@ -69,9 +69,18 @@ $prefix: (ngm, color);
   .ngm-input__suffix {
     @apply absolute right-1;
   }
+  .ngm-input-element__clear {
+    @apply w-6 h-6;
+    .material-icons {
+      font-size: 20px;
+    }
+  }
 }
 
 .ngm-density__compact {
+  .ngm-input-label {
+    @apply text-sm;
+  }
   .ngm-input-element.mat-mdc-input-element {
     @apply py-1 px-2 text-xs rounded;
   }
@@ -85,7 +94,7 @@ $prefix: (ngm, color);
 }
 
 .ngm-input-label {
-  @apply p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
+  @apply p-1 text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
 }
 
 .ngm-form-field__subscript-wrapper {

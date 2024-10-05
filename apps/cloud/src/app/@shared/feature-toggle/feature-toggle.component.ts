@@ -1,22 +1,23 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute } from '@angular/router'
-import { IFeature, IFeatureOrganization, IFeatureToggle } from '@metad/contracts'
-import { combineLatest, firstValueFrom, of } from 'rxjs'
-import { distinctUntilChanged, map, shareReplay, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
+import { IFeature, IFeatureOrganization } from '@metad/contracts'
+import { NgmCountdownConfirmationComponent } from '@metad/ocap-angular/common'
+import { derivedFrom } from 'ngxtension/derived-from'
+import { injectRouteData } from 'ngxtension/inject-route-data'
+import { of, pipe } from 'rxjs'
+import { map, switchMap, tap } from 'rxjs/operators'
 import { environment } from '../../../environments/environment'
 import { FeatureService, FeatureStoreService, Store } from '../../@core/services'
 import { TranslationBaseComponent } from '../language/translation-base.component'
-import { NgmCountdownConfirmationComponent } from '@metad/ocap-angular/common'
-
 
 @Component({
   selector: 'pac-feature-toggle',
   templateUrl: './feature-toggle.component.html',
   styleUrls: ['./feature-toggle.component.scss']
 })
-export class FeatureToggleComponent extends TranslationBaseComponent implements OnInit {
+export class FeatureToggleComponent extends TranslationBaseComponent {
   private readonly _activatedRoute = inject(ActivatedRoute)
   private readonly _featureService = inject(FeatureService)
   private readonly _featureStoreService = inject(FeatureStoreService)
@@ -24,40 +25,54 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
   private readonly _matDialog = inject(MatDialog)
   readonly destroyRef = inject(DestroyRef)
 
-  loading = false
-  featureToggles = []
-  featureTogglesDefinitions: IFeatureToggle[] = []
+  readonly isOrganization = injectRouteData('isOrganization')
 
-  public readonly isOrganization$ = this._activatedRoute.data.pipe(
-    startWith(this._activatedRoute.snapshot.data),
-    map((data) => data?.isOrganization),
-    distinctUntilChanged(),
-    takeUntilDestroyed(),
-    shareReplay(1)
+  // loading = false
+  readonly loading = signal(false)
+  readonly featureToggles = signal([])
+  // featureTogglesDefinitions: IFeatureToggle[] = []
+
+  // public readonly isOrganization$ = this._activatedRoute.data.pipe(
+  //   startWith(this._activatedRoute.snapshot.data),
+  //   map((data) => data?.isOrganization),
+  //   distinctUntilChanged(),
+  //   takeUntilDestroyed(),
+  //   shareReplay(1)
+  // )
+  readonly organization = toSignal(this._storeService.selectedOrganization$)
+
+  readonly features$ = this._featureService.getParentFeatures(['children']).pipe(
+    map(({ items }) => items),
   )
-  public readonly organization$ = this._storeService.selectedOrganization$
+  // readonly features$ = this._featureService.getFeatureToggleDefinition()
 
-  public readonly features$ = this._featureService.getParentFeatures(['children']).pipe(map(({ items }) => items))
+  readonly featureTenant = toSignal(this._storeService.featureTenant$)
 
-  public readonly featureTenant$ = this._storeService.featureTenant$
-
-  public readonly featureOrganizations$ = this.isOrganization$.pipe(
-    switchMap((isOrganization) => (isOrganization ? this.organization$ : of(null))),
-    switchMap((organization) => {
-      const request = {}
-      if (organization) {
-        request['organizationId'] = organization.id
-      }
-      return this._featureStoreService.loadFeatureOrganizations(['feature'], request).pipe(map(({ items }) => items))
-    }),
-    takeUntilDestroyed(),
-    shareReplay(1)
+  readonly featureOrganizations = derivedFrom(
+    [this.isOrganization],
+    pipe(
+      switchMap(([isOrganization]) => (isOrganization ? this._storeService.selectedOrganization$ : of(null))),
+      switchMap((organization) => {
+        const request = {}
+        if (organization) {
+          request['organizationId'] = organization.id
+        }
+        return this._featureStoreService.loadFeatureOrganizations(['feature'], request).pipe(map(({ items }) => items))
+      })
+    ),
+    { initialValue: [] }
   )
 
-  ngOnInit(): void {
-    combineLatest([this.featureTenant$, this.featureOrganizations$])
-      .pipe(withLatestFrom(combineLatest([this.isOrganization$, this.organization$])), takeUntilDestroyed(this.destroyRef))
-      .subscribe(([[featureTenant, featureOrganizations], [isOrganization, organization]]) => {
+  constructor() {
+    super()
+
+    this.loading.set(true)
+    effect(
+      () => {
+        const isOrganization = this.isOrganization()
+        const organization = this.organization()
+        const featureTenant = this.featureTenant()
+        const featureOrganizations = this.featureOrganizations()
         if (isOrganization && organization) {
           this._storeService.featureOrganizations = featureOrganizations
         }
@@ -73,75 +88,92 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
           }
         })
 
-        this.featureToggles = featureToggles
+        this.featureToggles.set(featureToggles)
+        console.log(featureToggles)
 
-        this.loading = false
-      })
-
-    this._storeService.featureToggles$
-      .pipe(
-        tap((toggles) => (this.featureTogglesDefinitions = toggles)),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe()
+        this.loading.set(false)
+      },
+      { allowSignalWrites: true }
+    )
   }
+
+  // ngOnInit(): void {
+
+  //   combineLatest([this.featureTenant$, this.featureOrganizations$])
+  //     .pipe(
+  //       withLatestFrom(combineLatest([this.isOrganization$, this.organization$])),
+  //       takeUntilDestroyed(this.destroyRef)
+  //     )
+  //     .subscribe(([[featureTenant, featureOrganizations], [isOrganization, organization]]) => {
+
+  //     })
+
+  //   this._storeService.featureToggles$
+  //     .pipe(
+  //       tap((toggles) => (this.featureTogglesDefinitions = toggles)),
+  //       takeUntilDestroyed(this.destroyRef)
+  //     )
+  //     .subscribe()
+  // }
 
   getFeatures() {
     this._featureStoreService.loadFeatures(['children']).pipe(takeUntilDestroyed(this.destroyRef)).subscribe()
   }
 
   async featureChanged(isEnabled: boolean, feature: IFeature) {
-    const result = await firstValueFrom(
-      this._matDialog
-        .open(NgmCountdownConfirmationComponent, {
-          data: {
-          	recordType: feature.description,
-          	isEnabled: isEnabled
-          },
+    this._matDialog
+      .open(NgmCountdownConfirmationComponent, {
+        data: {
+          recordType: feature.description,
+          isEnabled: isEnabled
+        }
+      })
+      .afterClosed()
+      .pipe(
+        switchMap((result) => {
+          if (result) {
+            return this.emitFeatureToggle({ feature, isEnabled: !!isEnabled })
+          }
         })
-        .afterClosed()
-    )
-
-    if (result) {
-      await this.emitFeatureToggle({ feature, isEnabled: !!isEnabled })
-    } else {
-      if (!environment.IS_ELECTRON) {
-        window.location.reload()
-      }
-    }
+      )
+      .subscribe()
   }
 
-  async emitFeatureToggle({ feature, isEnabled }: { feature: IFeature; isEnabled: boolean }) {
-    const isOrganization = await firstValueFrom(this.isOrganization$)
-    const organization = await firstValueFrom(this.organization$)
+  emitFeatureToggle({ feature, isEnabled }: { feature: IFeature; isEnabled: boolean }) {
+    const isOrganization = this.isOrganization()
+    const organization = this.organization()
     const { id: featureId } = feature
     const request = {
       featureId,
+      feature,
       isEnabled
     }
     if (organization && isOrganization) {
       const { id: organizationId } = organization
       request['organizationId'] = organizationId
     }
-    await firstValueFrom(this._featureStoreService.changedFeature(request))
-    if (!environment.IS_ELECTRON) {
-      window.location.reload()
-    }
+    return this._featureStoreService.changedFeature(request).pipe(
+      tap(() => {
+        if (!environment.IS_ELECTRON) {
+          window.location.reload()
+        }
+      })
+    )
   }
 
   enabledFeature(row: IFeature) {
-    const featureOrganization = this.featureToggles.find(
-      (featureOrganization: IFeatureOrganization) => featureOrganization.featureId === row.id
+    const featureOrganization = this.featureToggles().find(
+      (featureOrganization: IFeatureOrganization) => featureOrganization.feature.code === row.code
     )
-    if (featureOrganization && featureOrganization.isEnabled === false) {
+    if (featureOrganization) {
       return featureOrganization.isEnabled
     }
 
-    const featureToggle = this.featureTogglesDefinitions.find((item: IFeatureToggle) => item.name == row.code)
-    if (featureToggle) {
-      return featureToggle.enabled
-    }
+    // const featureToggle = this.featureTogglesDefinitions.find((item: IFeatureToggle) => item.code == row.code)
+    // if (featureToggle) {
+    //   return featureToggle.enabled
+    // }
 
-    return true
+    return false
   }
 }

@@ -1,12 +1,12 @@
 import { Injectable, ViewContainerRef, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
-import { DeepPartial } from '@metad/core'
 import { NxStoryService, StoryWidget } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { IStoryTemplate, StoryTemplateType, ToastrService } from '../../../@core'
 import { StoryTemplateComponent } from '../../../@shared'
+import { DeepPartial } from '@metad/ocap-core'
 
 @Injectable()
 export class StoryToolbarService {
@@ -22,11 +22,6 @@ export class StoryToolbarService {
     map((widget) => widget?.component),
     distinctUntilChanged()
   )
-  // constructor() {
-  //   super({} as Story)
-
-  //   this.connect(this.storyService, { parent: ['story'] })
-  // }
 
   /**
    * 新创建 Story Widget

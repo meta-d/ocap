@@ -55,3 +55,7 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[
 export function isUUID(id: string) {
   return uuidRegex.test(id);
 }
+
+export function getWebSocketUrl(url: string) {
+  return (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + url.replace('http:', '').replace('https:', '')
+}

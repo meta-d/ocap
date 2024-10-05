@@ -35,12 +35,14 @@ import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { combineLatestWith, firstValueFrom } from 'rxjs'
 import { filter, map, startWith, tap } from 'rxjs/operators'
 import {
+  AIPermissionsEnum,
   AbilityActions,
   AnalyticsFeatures,
-  AnalyticsFeatures as AnalyticsFeaturesEnum,
+  AnalyticsFeatures as AnalyticsFeatureEnum,
   AnalyticsPermissionsEnum,
   EmployeesService,
   FeatureEnum,
+  AiFeatureEnum,
   IOrganization,
   IRolePermission,
   IUser,
@@ -55,6 +57,7 @@ import { StoryCreationComponent } from '../@shared'
 import { AppService } from '../app.service'
 import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
+import { injectChatCommand } from '../@shared/copilot'
 
 
 @Component({
@@ -145,6 +148,12 @@ export class FeaturesComponent implements OnInit {
   |--------------------------------------------------------------------------
   */
   readonly menus = signal<PacMenuItem[]>([])
+  /**
+  |--------------------------------------------------------------------------
+  | Copilots
+  |--------------------------------------------------------------------------
+  */
+  readonly chatCommand = injectChatCommand()
 
   /**
   |--------------------------------------------------------------------------
@@ -369,7 +378,6 @@ export class FeaturesComponent implements OnInit {
     if (event instanceof NavigationError) {
       this.loading.set(false)
     }
-    // this._cdr.detectChanges()
   }
 
   back(): void {
@@ -427,27 +435,41 @@ export class FeaturesComponent implements OnInit {
               featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
-          {
-            title: 'Insights',
-            matIcon: 'insights',
-            link: '/home/insight',
-            data: {
-              translationKey: 'Insights',
-              featureKey: AnalyticsFeatures.FEATURE_INSIGHT
-            }
-          }
         ]
       },
       {
+        title: 'Chat',
+        matIcon: 'robot_2',
+        link: '/chat',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'Chat',
+          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
+          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
+        }
+      },
+      {
         title: 'Chat BI',
-        matIcon: 'try',
+        matIcon: 'mms',
         link: '/chatbi',
         pathMatch: 'prefix',
         data: {
           translationKey: 'ChatBI',
-          featureKey: FeatureEnum.FEATURE_COPILOT,
+          featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
+          permissionKeys: [AnalyticsPermissionsEnum.CHATBI_VIEW]
         }
       },
+      // {
+      //   title: 'Data Factory',
+      //   matIcon: 'data_table',
+      //   link: '/data',
+      //   pathMatch: 'prefix',
+      //   data: {
+      //     translationKey: 'DataFactory',
+      //     featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
+      //     permissionKeys: [AnalyticsPermissionsEnum.DATA_FACTORY_VIEW]
+      //   }
+      // },
       {
         title: 'Semantic Model',
         matIcon: 'database',
@@ -466,7 +488,7 @@ export class FeaturesComponent implements OnInit {
         pathMatch: 'prefix',
         data: {
           translationKey: 'Project',
-          featureKey: AnalyticsFeatures.FEATURE_STORY,
+          featureKey: AnalyticsFeatures.FEATURE_PROJECT,
           permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
         },
         children: [
@@ -486,8 +508,8 @@ export class FeaturesComponent implements OnInit {
             link: '/project/indicators',
             data: {
               translationKey: 'Indicators',
-              featureKey: AnalyticsFeatures.FEATURE_STORY,
-              permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
+              featureKey: AnalyticsFeatures.FEATURE_INDICATOR,
+              permissionKeys: [AnalyticsPermissionsEnum.INDICATOR_EDIT]
             }
           }
         ]
@@ -498,7 +520,7 @@ export class FeaturesComponent implements OnInit {
         link: '/indicator/market',
         data: {
           translationKey: 'Indicator Market',
-          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR_MARKET,
+          featureKey: AnalyticsFeatureEnum.FEATURE_INDICATOR_MARKET,
           permissionKeys: [AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW]
         }
       },
@@ -509,20 +531,10 @@ export class FeaturesComponent implements OnInit {
         link: '/indicator-app',
         data: {
           translationKey: 'Indicator App',
-          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR
+          featureKey: AnalyticsFeatureEnum.FEATURE_INDICATOR_APP,
+          permissionKeys: [AnalyticsPermissionsEnum.INDICATOR_VIEW]
         }
       },
-      // {
-      //   title: 'Subscription',
-      //   icon: 'alert',
-      //   pathMatch: 'prefix',
-      //   link: '/subscription',
-      //   data: {
-      //     translationKey: 'MENU.INSIGHT',
-      //     featureKey: AnalyticsFeatures.FEATURE_SUBSCRIPTION
-      //   }
-      // },
-
       {
         title: 'Data Sources',
         matIcon: 'settings_remote',
@@ -534,18 +546,6 @@ export class FeaturesComponent implements OnInit {
           featureKey: AnalyticsFeatures.FEATURE_MODEL
         }
       },
-      // {
-      //   title: 'Notification Destinations',
-      //   icon: 'robot',
-      //   link: '/settings/notification-destinations',
-      //   admin: true,
-      //   data: {
-      //     translationKey: 'PAC.KEY_WORDS.NOTIFICATION_DESTINATION',
-      //     permissionKeys: [AnalyticsPermissionsEnum.DATA_SOURCE_EDIT]
-      //     // featureKey: AnalyticsFeatures.FEATURE_A
-      //   }
-      // },
-
       {
         title: 'Settings',
         matIcon: 'settings',
@@ -570,8 +570,38 @@ export class FeaturesComponent implements OnInit {
             link: '/settings/copilot',
             data: {
               translationKey: 'AI Copilot',
-              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
-              featureKey: FeatureEnum.FEATURE_COPILOT
+              permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
+              featureKey: AiFeatureEnum.FEATURE_COPILOT
+            }
+          },
+          {
+            title: 'Digital Xpert',
+            matIcon: 'robot_2',
+            link: '/settings/xpert',
+            data: {
+              translationKey: 'Digital Xpert',
+              permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
+              featureKey: AiFeatureEnum.FEATURE_COPILOT_XPERT
+            }
+          },
+          {
+            title: 'Knowledgebase',
+            matIcon: 'school',
+            link: '/settings/knowledgebase',
+            data: {
+              translationKey: 'Knowledgebase',
+              permissionKeys: [AIPermissionsEnum.KNOWLEDGEBASE_EDIT],
+              featureKey: AiFeatureEnum.FEATURE_COPILOT_KNOWLEDGEBASE
+            }
+          },
+          {
+            title: 'Chat BI',
+            matIcon: 'try',
+            link: '/settings/chatbi',
+            data: {
+              translationKey: 'Chat BI',
+              permissionKeys: [AnalyticsPermissionsEnum.CHATBI_EDIT],
+              featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI
             }
           },
           {
@@ -614,10 +644,21 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Certification',
               // 同语义模型的功能绑定一起启用与否
               featureKey: AnalyticsFeatures.FEATURE_MODEL,
-              permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
-              // permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
+              permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
             }
           },
+          {
+            title: 'Integration',
+            matIcon: 'hub',
+            link: '/settings/integration',
+            pathMatch: 'prefix',
+            data: {
+              translationKey: 'Integration',
+              featureKey: FeatureEnum.FEATURE_INTEGRATION,
+              permissionKeys: [PermissionsEnum.INTEGRATION_EDIT]
+            }
+          },
+          
           {
             title: 'Email Templates',
             matIcon: 'email',

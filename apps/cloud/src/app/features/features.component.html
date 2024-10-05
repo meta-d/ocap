@@ -43,6 +43,7 @@
 
     <pac-menu class="flex-1 p-2 flex overflow-hidden hover:overflow-auto"
       [isCollapsed]="isCollapsed"
+      [isMobile]="isMobile()"
       [menus]="menus()"
       (clicked)="onMenuClicked($event, isMobile())">
       <pac-notification class="flex justify-end"/>
@@ -61,7 +62,10 @@
         </button>
 
         @if (!isMobile()) {
-          <span class="pac-home-title text-2xl" routerLink="/home">{{title() || ('PAC.title.short' | translate)}}</span>
+          <span class="pac-home-title text-2xl" routerLink="/home">
+            <span class="italic">Xpert</span> AI
+          </span>
+            <!-- {{title() || ('PAC.title.short' | translate)}}-->
 
           <button mat-icon-button (click)="back()">
             <mat-icon>navigate_before</mat-icon>

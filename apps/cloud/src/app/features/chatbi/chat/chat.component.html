@@ -2,7 +2,7 @@
   <div class="chat-content-flow w-full md:max-w-3xl mx-auto">
     <div class="w-full p-4 md:p-6 flex rounded-xl bg-gray-50 dark:bg-neutral-900">
       <div class="w-full flex flex-row items-start gap-2 md:gap-4">
-        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-base aspect-square place-items-center">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-base aspect-square place-items-center">
           <div class="w-full h-full rounded-full relative">
             <img
               alt=""
@@ -13,7 +13,7 @@
               data-nimg="1"
               class="w-full h-full object-cover rounded-full"
               style="color: transparent"
-              src="/assets/images/chatbi.jpeg"
+              src="/assets/images/chatbi.jpg"
             />
           </div>
         </div>
@@ -30,7 +30,7 @@
                 }
               </p>
               @if (examplesLoading()) {
-                <pac-chatbi-loading class="w-10 h-10"/>
+                <pac-chat-loading class="w-10 h-10"/>
               } @else {
                 <ul class="list-decimal">
                   @for (example of examples(); track example) {
@@ -60,21 +60,8 @@
         @case ('user') {
           <div class="w-full p-4 md:p-6 flex rounded-xl">
             <div class="w-full flex flex-row items-start gap-2 md:gap-4">
-              <div class="w-8 h-8 p-1.5 rounded-full flex items-center justify-center font-bold text-white text-base bg-gray-700 aspect-square place-items-center overflow-hidden">
-                <span>
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 1024 1024"
-                    class="w-full h-full object-cover fill-white"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M512 704c-176 0-320-144-320-320S336 64 512 64s320 144 320 320-144 320-320 320z m0-576c-140.8 0-256 115.2-256 256s115.2 256 256 256 256-115.2 256-256S652.8 128 512 128zM883.2 960c-8 0-17.6-3.2-24-9.6C768 852.8 644.8 800 512 800s-256 52.8-348.8 150.4c-12.8 12.8-32 12.8-44.8 1.6-12.8-12.8-12.8-32-1.6-44.8C220.8 796.8 361.6 736 512 736s291.2 60.8 395.2 169.6c12.8 12.8 11.2 33.6-1.6 44.8-6.4 6.4-14.4 9.6-22.4 9.6z"
-                    ></path>
-                  </svg>
-                </span>
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-base aspect-square place-items-center overflow-hidden">
+                <pac-user-avatar [user]="createdBy()" />
               </div>
               <div class="w-[90%] md:w-auto md:max-w-[90%] inline-flex flex-col items-start gap-y-3">
                 <div class="w-full flex flex-col items-start">

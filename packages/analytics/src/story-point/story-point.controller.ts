@@ -1,5 +1,5 @@
 import { IPagination, ISecretToken, IStoryPoint } from '@metad/contracts'
-import { CrudController, ParseJsonPipe, Public, SecretTokenGetCommand, UUIDValidationPipe } from '@metad/server-core'
+import { CrudController, PaginationParams, ParseJsonPipe, Public, SecretTokenGetCommand, UUIDValidationPipe } from '@metad/server-core'
 import {
 	ClassSerializerInterceptor,
 	Controller,
@@ -73,6 +73,7 @@ export class StoryPointController extends CrudController<StoryPoint> {
 	@Get(':id')
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$relations', ParseJsonPipe) relations: PaginationParams<StoryPoint>['relations'],
 		@Query('$query', ParseJsonPipe) options: FindOneOptions<StoryPoint>,
 		@Query('token') token: string
 	): Promise<StoryPoint> {

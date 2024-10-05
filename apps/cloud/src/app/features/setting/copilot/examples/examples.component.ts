@@ -18,9 +18,9 @@ import { BehaviorSubject, EMPTY, combineLatestWith, map, pipe, switchMap } from 
 import {
   AiBusinessRole,
   CopilotExampleService,
-  CopilotRoleService,
+  XpertRoleService,
   ICopilotKnowledge,
-  ICopilotRole,
+  IXpertRole,
   LanguagesEnum,
   ToastrService,
   getErrorMessage
@@ -39,7 +39,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
 
   readonly exampleService = inject(CopilotExampleService)
-  readonly roleService = inject(CopilotRoleService)
+  readonly roleService = inject(XpertRoleService)
   readonly _toastrService = inject(ToastrService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
@@ -59,7 +59,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
         },
         {
           name: 'role',
-          caption: i18n?.BusinessRole || 'Business Role'
+          caption: i18n?.ExpertRole || 'Expert Role'
         },
         {
           name: 'command',
@@ -122,7 +122,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
 
   readonly lang = this.appService.lang
   readonly refreshFilter$ = new BehaviorSubject<void>(null)
-  readonly _roles = toSignal(this.refreshFilter$.pipe(switchMap(() => this.roleService.getAll())))
+  readonly _roles = toSignal(this.refreshFilter$.pipe(switchMap(() => this.roleService.getAll()), map(({items}) => items)))
   readonly roles = computed(() => {
     const lang = this.lang() as LanguagesEnum
     const roles = this._roles()?.map((role) => ({
@@ -216,7 +216,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   }
 
   async handleUploadChange(event) {
-    const { roles, examples } = await uploadYamlFile<{ roles: ICopilotRole[]; examples: ICopilotKnowledge[] }>(
+    const { roles, examples } = await uploadYamlFile<{ roles: IXpertRole[]; examples: ICopilotKnowledge[] }>(
       event.target.files[0]
     )
 

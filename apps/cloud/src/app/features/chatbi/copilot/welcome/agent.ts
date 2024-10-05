@@ -49,7 +49,7 @@ Give some example prompts for analysis the data cube.
         const llmWithStructuredOutput = model.withStructuredOutput(
           z.object({
             examples: z.array(z.string().describe('example prompt for data analysis'))
-          })
+          }).describe('example prompts output')
         )
 
         const chain = prompt.pipe(llmWithStructuredOutput)

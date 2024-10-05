@@ -15,7 +15,7 @@ import { CommandBus } from '@nestjs/cqrs'
 import { BusinessArea, BusinessAreaService } from '../business-area'
 import { SemanticModelQueryDTO } from './dto'
 import { updateXmlaCatalogContent } from './helper'
-import { NgmDSCoreService, registerModel } from './ocap'
+import { NgmDSCoreService, registerSemanticModel } from './ocap'
 
 const axios = _axios.default
 
@@ -79,7 +79,7 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 
 		// Register semantic models
 		items.forEach((model) => {
-			registerModel(model, this.dsCoreService)
+			registerSemanticModel(model, this.dsCoreService)
 		})
 	}
 

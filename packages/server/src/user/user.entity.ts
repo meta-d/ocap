@@ -202,9 +202,9 @@ export class User extends TenantBaseEntity implements IUser {
 	@JoinColumn()
 	organizations?: IOrganization[]
 
-	createTrial(employeeId: string) {
+	createTrial(organizationId: string) {
 		// logic
-		this.apply(new TrialUserCreatedEvent(this.id, employeeId))
+		this.apply(new TrialUserCreatedEvent(this.id, organizationId))
 	}
 }
 

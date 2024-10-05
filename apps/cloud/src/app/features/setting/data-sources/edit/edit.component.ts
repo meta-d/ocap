@@ -20,6 +20,7 @@ import {
 } from '../../../../@core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { environment } from 'apps/cloud/src/environments/environment'
+import { NgmInputComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -28,7 +29,8 @@ import { environment } from 'apps/cloud/src/environments/environment'
     MaterialModule,
     FormlyModule,
     ContentLoaderModule,
-    ButtonGroupDirective
+    ButtonGroupDirective,
+    NgmInputComponent
   ],
   selector: 'pac-data-source-edit',
   templateUrl: 'edit.component.html',

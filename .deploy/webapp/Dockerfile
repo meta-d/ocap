@@ -33,6 +33,7 @@ RUN chmod +x /wait /entrypoint.compose.sh /entrypoint.prod.sh && dos2unix /entry
 WORKDIR /srv/pangolin
 
 COPY --chown=node:node packages/contracts/package.json ./packages/contracts/
+COPY --chown=node:node packages/copilot-angular/package.json ./packages/copilot-angular/
 
 RUN yarn config set network-timeout 300000
 

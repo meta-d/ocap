@@ -87,6 +87,7 @@
         ],
         "styles": [
           "packages/angular/_index.scss",
+          "packages/copilot-angular/_index.scss",
           "apps/cloud/src/styles.scss"
         ],
         "stylePreprocessorOptions": {

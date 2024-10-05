@@ -13,7 +13,7 @@ import {
 	getEntityProperty,
 	isEntityType
 } from '@metad/ocap-core'
-import { CopilotService, DATABASE_POOL_TOKEN, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { DATABASE_POOL_TOKEN, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Pool } from 'pg'
@@ -22,6 +22,7 @@ import { DeepPartial, FindConditions, FindManyOptions, In, Repository } from 'ty
 import { SemanticModel } from '../model/model.entity'
 import { NgmDSCoreService, getSemanticModelKey } from '../model/ocap'
 import { SemanticModelMember } from './member.entity'
+import { CopilotService } from '@metad/server-ai'
 
 @Injectable()
 export class SemanticModelMemberService extends TenantOrganizationAwareCrudService<SemanticModelMember> {

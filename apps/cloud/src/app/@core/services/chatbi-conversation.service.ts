@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
-import { API_PREFIX, OrganizationBaseService, SystemPrivacyFields } from '@metad/cloud/state'
+import { API_PREFIX, OrganizationBaseCrudService, SystemPrivacyFields } from '@metad/cloud/state'
 import { CopilotChatMessage } from '@metad/copilot'
 import { Indicator } from '@metad/ocap-core'
 import { omit } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, map, switchMap } from 'rxjs'
-import { IChatBIConversation, OrderTypeEnum } from '../types'
+import { IChatBIConversation, IUser, OrderTypeEnum } from '../types'
 
 const API_CHATBI_CONVERSATION = API_PREFIX + '/chatbi-conversation'
 
@@ -22,14 +22,19 @@ export interface ChatbiConverstion<T = any> {
   indicators: Indicator[]
   answer: T
   examples: string[]
+  createdBy?: IUser
 }
 
 @Injectable({ providedIn: 'root' })
-export class ChatBIConversationService extends OrganizationBaseService {
+export class ChatBIConversationService extends OrganizationBaseCrudService<IChatBIConversation> {
   readonly #logger = inject(NGXLogger)
-  readonly httpClient = inject(HttpClient)
+  // readonly httpClient = inject(HttpClient)
 
   readonly #refresh = new BehaviorSubject<void>(null)
+
+  constructor() {
+    super(API_CHATBI_CONVERSATION)
+  }
 
   getMy() {
     return this.selectOrganizationId().pipe(
@@ -37,6 +42,7 @@ export class ChatBIConversationService extends OrganizationBaseService {
         this.httpClient.get<{ items: IChatBIConversation[]; total: number; }>(API_CHATBI_CONVERSATION + '/my', {
           params: {
             data: JSON.stringify({
+              relation: ['createdBy'],
               take: 20,
               skip: 0,
               order: {
@@ -51,8 +57,7 @@ export class ChatBIConversationService extends OrganizationBaseService {
   }
 
   getById(id: string) {
-    return this.httpClient
-      .get<IChatBIConversation>(API_CHATBI_CONVERSATION + '/' + id)
+    return super.getById(id)
       .pipe(map(convertChatBIConversationResult))
   }
 
@@ -66,9 +71,9 @@ export class ChatBIConversationService extends OrganizationBaseService {
           .pipe(map((result) => convertChatBIConversationResult(result)))
   }
 
-  delete(id: string) {
-    return this.httpClient.delete(`${API_CHATBI_CONVERSATION}/${id}`)
-  }
+  // delete(id: string) {
+  //   return this.httpClient.delete(`${API_CHATBI_CONVERSATION}/${id}`)
+  // }
 
   refresh() {
     this.#refresh.next()
@@ -92,5 +97,6 @@ export function convertChatBIConversationResult(result: IChatBIConversation) {
   return {
     ...(result.options ?? {}),
     ...omit(result, 'options', ...SystemPrivacyFields),
+    createdBy: result.createdBy
   } as ChatbiConverstion
 }

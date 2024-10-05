@@ -1,6 +1,6 @@
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { ChatOpenAI } from '@langchain/openai'
-import { injectDimensionMemberTool, makeCubeRulesPrompt } from '@metad/core'
+import { makeCubeRulesPrompt } from '@metad/core'
 import { Route } from 'apps/cloud/src/app/@core/copilot'
 import { MEMBER_RETRIEVER_PROMPT } from './types'
 
@@ -8,7 +8,7 @@ export async function createConditionalAggregationWorker({
   llm,
   tools
 }: {
-  llm: ChatOpenAI
+  llm: BaseChatModel
   tools: DynamicStructuredTool[]
 }) {
   const systemPrompt =
@@ -42,7 +42,7 @@ export async function createConditionalAggregationWorker({
 //             makeCubeRulesPrompt() +
 //             `\n\n{role}` +
 //             `\n\n{context}`
-        
+
 //         return await Route.createWorkerAgent(llm, [...tools, memberRetrieverTool, ], systemPrompt)
 //     }
 // }

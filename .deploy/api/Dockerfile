@@ -33,6 +33,7 @@ COPY --chown=node:node packages/common/package.json ./packages/common/
 COPY --chown=node:node packages/config/package.json ./packages/config/
 COPY --chown=node:node packages/auth/package.json ./packages/auth/
 COPY --chown=node:node packages/server/package.json ./packages/server/
+COPY --chown=node:node packages/server-ai/package.json ./packages/server-ai/
 COPY --chown=node:node packages/adapter/package.json ./packages/adapter/
 COPY --chown=node:node packages/analytics/package.json ./packages/analytics/
 

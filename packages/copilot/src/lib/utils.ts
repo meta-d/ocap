@@ -1,6 +1,8 @@
+import { AIMessage } from '@langchain/core/messages'
+import { ChatGenerationChunk } from '@langchain/core/outputs'
+import { nanoid as _nanoid } from 'nanoid'
 import { ZodType, ZodTypeDef } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { nanoid as _nanoid } from 'nanoid'
 
 export function zodToAnnotations(obj: ZodType<any, ZodTypeDef, any>) {
   return (<{ properties: any }>zodToJsonSchema(obj)).properties
@@ -19,17 +21,16 @@ export function isNil(value: unknown): value is null | undefined {
 }
 
 export function isString(value: unknown): value is string {
-  return typeof value ==='string' || value instanceof String
+  return typeof value === 'string' || value instanceof String
 }
 
 export function isBlank(value: unknown) {
-  return isNil(value) || isString(value) && !value.trim()
+  return isNil(value) || (isString(value) && !value.trim())
 }
 
 export function nonBlank<T>(value: T): value is NonNullable<T> {
   return !isBlank(value)
 }
-
 
 /**
  * Split the prompt into command and prompt
@@ -54,3 +55,13 @@ export function referencesCommandName(commandName: string) {
 }
 
 export const AgentRecursionLimit = 20
+
+export function sumTokenUsage(output) {
+  let tokenUsed = 0
+  output.generations?.forEach((generation) => {
+    generation.forEach((item) => {
+      tokenUsed += (<AIMessage>(<ChatGenerationChunk>item).message).usage_metadata.total_tokens
+    })
+  })
+  return tokenUsed
+}

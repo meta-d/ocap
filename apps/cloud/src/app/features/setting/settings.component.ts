@@ -1,7 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core'
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions'
 import { distinctUntilChanged, map } from 'rxjs/operators'
-import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Store, routeAnimations } from '../../@core'
+import {
+  AIPermissionsEnum,
+  AiFeatureEnum,
+  AnalyticsFeatures,
+  AnalyticsPermissionsEnum,
+  FeatureEnum,
+  PermissionsEnum,
+  RolesEnum,
+  Store,
+  routeAnimations
+} from '../../@core'
 import { AppService } from '../../app.service'
 
 @Component({
@@ -40,26 +50,45 @@ export class PACSettingComponent {
         {
           link: 'copilot',
           label: 'AI Copilot',
-          icon: 'assistant',
+          icon: 'psychology',
           data: {
-            featureKey: FeatureEnum.FEATURE_COPILOT,
-            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
+            featureKey: AiFeatureEnum.FEATURE_COPILOT,
+            permissionKeys: [AIPermissionsEnum.COPILOT_EDIT]
+          }
+        },
+        {
+          link: 'xpert',
+          label: 'Digital Xpert',
+          icon: 'robot_2',
+          data: {
+            featureKey: AiFeatureEnum.FEATURE_COPILOT_XPERT,
+            permissionKeys: [AIPermissionsEnum.COPILOT_EDIT]
+          }
+        },
+        {
+          link: 'knowledgebase',
+          label: 'Knowledgebase',
+          icon: 'school',
+          data: {
+            featureKey: AiFeatureEnum.FEATURE_COPILOT_KNOWLEDGEBASE,
+            permissionKeys: [AIPermissionsEnum.KNOWLEDGEBASE_EDIT]
           }
         },
         {
           link: 'chatbi',
           label: 'Chat BI',
-          icon: 'try',
+          icon: 'mms',
           data: {
-            featureKey: FeatureEnum.FEATURE_COPILOT,
-            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
+            featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
+            permissionKeys: [AnalyticsPermissionsEnum.CHATBI_EDIT]
           }
         },
         {
           link: 'business-area',
           label: 'Business Area',
-          icon: 'workspaces',
+          icon: 'business_center',
           data: {
+            featureKey: AnalyticsFeatures.FEATURE_BUSINESS_AREA,
             permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
           }
         },
@@ -68,8 +97,17 @@ export class PACSettingComponent {
           label: 'Certification',
           icon: 'verified_user',
           data: {
-            permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
+            permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
             // permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
+          }
+        },
+        {
+          link: 'integration',
+          label: 'Integration',
+          icon: 'hub',
+          data: {
+            featureKey: FeatureEnum.FEATURE_INTEGRATION,
+            permissionKeys: [PermissionsEnum.INTEGRATION_EDIT]
           }
         },
         {
@@ -77,6 +115,7 @@ export class PACSettingComponent {
           label: 'User',
           icon: 'people',
           data: {
+            featureKey: FeatureEnum.FEATURE_USER,
             permissionKeys: [PermissionsEnum.ORG_USERS_EDIT]
           }
         },
@@ -85,6 +124,7 @@ export class PACSettingComponent {
           label: 'Role & Permission',
           icon: 'supervisor_account',
           data: {
+            featureKey: FeatureEnum.FEATURE_ROLES_PERMISSION,
             permissionKeys: [PermissionsEnum.CHANGE_ROLES_PERMISSIONS]
           }
         },
@@ -94,6 +134,7 @@ export class PACSettingComponent {
           label: 'Email Template',
           icon: 'email',
           data: {
+            featureKey: FeatureEnum.FEATURE_EMAIL_TEMPLATE,
             permissionKeys: [PermissionsEnum.VIEW_ALL_EMAIL_TEMPLATES]
           }
         },
@@ -102,6 +143,7 @@ export class PACSettingComponent {
           label: 'Custom SMTP',
           icon: 'alternate_email',
           data: {
+            featureKey: FeatureEnum.FEATURE_SMTP,
             permissionKeys: [PermissionsEnum.CUSTOM_SMTP_VIEW]
           }
         },
@@ -125,7 +167,7 @@ export class PACSettingComponent {
         {
           link: 'tenant',
           label: 'Tenant',
-          icon: 'storage',
+          icon: 'tenancy',
           data: {
             permissionKeys: [RolesEnum.SUPER_ADMIN]
           }

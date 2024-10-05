@@ -1,9 +1,10 @@
-import { CopilotCheckpointService, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { DeleteResult, FindConditions, FindOneOptions, Repository } from 'typeorm'
 import { ChatBIConversation } from './conversation.entity'
+import { CopilotCheckpointService } from '@metad/server-ai'
 
 @Injectable()
 export class ChatBIConversationService extends TenantOrganizationAwareCrudService<ChatBIConversation> {

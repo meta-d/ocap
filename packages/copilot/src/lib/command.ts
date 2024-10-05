@@ -3,15 +3,15 @@ import { BaseStringPromptTemplate, ChatPromptTemplate } from '@langchain/core/pr
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
 import { BaseCheckpointSaver, CompiledStateGraph, StateGraph } from '@langchain/langgraph'
-import { ChatOpenAI } from '@langchain/openai'
+import { StateDefinition } from '@langchain/langgraph/dist/graph/annotation'
+import { ChannelReducers } from '@langchain/langgraph/dist/graph/state'
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
-import { AgentState } from './graph'
 
 /**
  * Copilot command, which can execute multiple actions.
  */
-export interface CopilotCommand<T = any> {
+export interface CopilotCommand<T extends StateDefinition = any> {
   /**
    * Hidden for debug
    */
@@ -74,8 +74,7 @@ export interface CopilotCommand<T = any> {
   createGraph?: (
     options: CreateGraphOptions
   ) => Promise<
-    | StateGraph<T, Partial<T>, string>
-    | CompiledStateGraph<T, Partial<T>, string>
+    StateGraph<{ channels: ChannelReducers<T> }, T, Partial<T>, string> | CompiledStateGraph<T, Partial<T>, string>
   >
 
   // For history management
@@ -84,7 +83,7 @@ export interface CopilotCommand<T = any> {
 }
 
 export type CreateGraphOptions = {
-  llm: ChatOpenAI
+  llm: BaseChatModel
   secondaryChatModel?: BaseChatModel
   checkpointer?: BaseCheckpointSaver
   interruptBefore?: any[]

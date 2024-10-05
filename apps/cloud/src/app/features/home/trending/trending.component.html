@@ -20,11 +20,14 @@
     </div>
   </div>
 
-  <div class="max-w-full w-full grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" waIntersectionObserver waIntersectionThreshold="0.5"
+  <div class="max-w-full w-full grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+    waIntersectionObserver
+    waIntersectionThreshold="0.5"
     [@listAnimation]="trends.length">
-    <pac-story-card *ngFor="let story of trends; trackBy: trackById" [story]="story" [highlight]="highlight"></pac-story-card>
+    <pac-story-card *ngFor="let story of trends; trackBy: trackById" [story]="story" [highlight]="highlight" />
 
-    <div *ngIf="!done" class="col-span-3 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" (waIntersectionObservee)="onIntersection()">
+    <div *ngIf="!done" class="col-span-3 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+      (waIntersectionObservee)="onIntersection()">
       <div *ngFor="let item of [1,2,3]" class="border shadow rounded-md p-4 w-full mx-auto dark:border-slate-200/10">
         <div class="animate-pulse flex space-x-4">
           <div class="bg-slate-200 h-24 w-20 dark:bg-slate-200/10"></div>

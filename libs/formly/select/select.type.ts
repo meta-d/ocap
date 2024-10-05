@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { nonNullable } from '@metad/core'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { DisplayDensity, OcapCoreModule } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isString } from 'lodash-es'
@@ -43,6 +43,8 @@ import { EMPTY, Observable, catchError, startWith } from 'rxjs'
   ]
 })
 export class PACFormlySelectComponent extends FieldType implements OnInit {
+  DisplayDensity = DisplayDensity
+  
   readonly #translate = inject(TranslateService)
   readonly #destroyRef = inject(DestroyRef)
 

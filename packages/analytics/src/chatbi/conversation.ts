@@ -3,7 +3,7 @@ import { BaseMessage, HumanMessage, isAIMessage, SystemMessage, ToolMessage } fr
 import { FewShotPromptTemplate, SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool, ToolInputParsingException } from '@langchain/core/tools'
 import { CompiledStateGraph, END, GraphValueError, START } from '@langchain/langgraph'
-import { IChatBIModel, ISemanticModel, OrderTypeEnum } from '@metad/contracts'
+import { IChatBIModel, ICopilot, ISemanticModel, OrderTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, nanoid, referencesCommandName } from '@metad/copilot'
 import {
 	CubeVariablePrompt,
@@ -17,22 +17,21 @@ import {
 	Schema
 } from '@metad/ocap-core'
 import {
-	Copilot,
+	AgentState,
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	createExampleFewShotPrompt,
+	createReactAgent,
 	createReferencesRetrieverTool,
-} from '@metad/server-core'
+} from '@metad/server-ai'
 import { Logger } from '@nestjs/common'
 import { groupBy } from 'lodash'
 import { BehaviorSubject, firstValueFrom, Subject, switchMap, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../chatbi-model/chatbi-model.service'
-import { AgentState, createReactAgent } from '../core/index'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../model-member/index'
-import { getSemanticModelKey, NgmDSCoreService, registerModel } from '../model/ocap'
+import { getSemanticModelKey, NgmDSCoreService, registerSemanticModel } from '../model/ocap'
 import { ChatBIService } from './chatbi.service'
 import { markdownCubes } from './graph/index'
-import { createLLM } from './llm'
 import {
 	createChatAnswerTool,
 	createCubeContextTool,
@@ -46,7 +45,12 @@ import { createWelcomeTool } from './tools/welcome'
 import { ChatLarkMessage, ChatStack } from './message'
 import { createIndicatorTool } from './tools/indicator'
 
+/**
+ * ChatBI conversation for Lark
+ */
 export class ChatBIConversation implements IChatBIConversation {
+	static readonly toolCallTimeout = 30 * 1000 // 30s
+
 	private readonly logger = new Logger(ChatBIConversation.name)
 	readonly commandName = 'chatbi'
 
@@ -54,6 +58,9 @@ export class ChatBIConversation implements IChatBIConversation {
 	private destroy$: Subject<void> = new Subject<void>()
 	public graph: CompiledStateGraph<AgentState, Partial<AgentState>, typeof START | 'agent' | 'tools'>
 
+	get integrationId() {
+		return this.chatContext.integrationId
+	}
 	get userId() {
 		return this.chatContext.userId
 	}
@@ -89,15 +96,17 @@ export class ChatBIConversation implements IChatBIConversation {
 
 	private status: 'init' | 'idle' | 'running' | 'error' = 'init'
 	private chatStack: ChatStack[] = []
+	
 	constructor(
 		private readonly chatContext: ChatBILarkContext,
-		private readonly copilot: Copilot,
+		private readonly chatModel: BaseChatModel,
 		private readonly modelService: ChatBIModelService,
 		private readonly semanticModelMemberService: SemanticModelMemberService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
 		private readonly dsCoreService: NgmDSCoreService,
 		private readonly copilotKnowledgeService: CopilotKnowledgeService,
-		private readonly chatBIService: ChatBIService
+		private readonly chatBIService: ChatBIService,
+		public readonly copilot: ICopilot
 	) {
 		this.exampleFewShotPrompt = createExampleFewShotPrompt(this.copilotKnowledgeService, {
 			tenantId: this.tenantId,
@@ -182,17 +191,17 @@ export class ChatBIConversation implements IChatBIConversation {
 
 		const { items } = await this.modelService.findAll({
 			where: { tenantId: this.chatContext.tenant.id, organizationId: this.chatContext.organizationId },
-			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators'],
+			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators', 'roles', 'integrations'],
 			order: {
 				visits: OrderTypeEnum.DESC
 			}
 		})
 
-		const models = items
+		// const models = items.map((item) => ({...item, model: convertOcapSemanticModel(item.model)}))
 
-		this.logger.debug(`Chat models visits:`, models.map(({ visits }) => visits).join(', '))
+		this.logger.debug(`Chat models visits:`, items.map(({ visits }) => visits).join(', '))
 
-		this.models = models
+		this.models = items.filter((item) => item.integrations.some((_) => _.id === this.integrationId))
 		this.indicators$.next([])
 
 		this.graph.updateState(
@@ -222,22 +231,8 @@ ${markdownCubes(this.models.slice(3))}
 	}
 
 	registerModel(model: ISemanticModel) {
-		registerModel(model, this.dsCoreService)
+		registerSemanticModel(model, this.dsCoreService)
 	}
-
-	// async switchContext(modelId: string, cubeName: string) {
-	// 	// Get Data Source
-	// 	const modelKey = this.getModelKey(modelId)
-	// 	const modelDataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
-	// 	// Get entity type context
-	// 	const entityType = await firstValueFrom(modelDataSource.selectEntityType(cubeName))
-	// 	if (!isEntityType(entityType)) {
-	// 		throw entityType
-	// 	}
-	// 	const context = markdownModelCube({ modelId, dataSource: modelKey, cube: entityType })
-	// 	this.context = context
-	// 	return context
-	// }
 
 	createAgentGraph() {
 		const chatId = this.chatId
@@ -267,21 +262,11 @@ ${markdownCubes(this.models.slice(3))}
 			conversation: this,
 			larkService: chatContext.larkService
 		})
-		// const createFormula = createFormulaTool(
-		// 	{
-		// 		logger: this.logger,
-		// 		conversation: this,
-		// 		larkService: chatContext.larkService
-		// 	},
-		// )
 
 		const welcomeTool = createWelcomeTool({ conversation: this })
 		const moreQuestionsTool = createMoreQuestionsTool({ conversation: this })
 
-		const llm = createLLM<BaseChatModel>(this.copilot, {}, (input) => {
-			//
-		})
-		const indicatorTool = createIndicatorTool(llm, this.referencesRetrieverTool, {
+		const indicatorTool = createIndicatorTool(this.chatModel, this.referencesRetrieverTool, {
 			logger: this.logger,
 			conversation: this,
 			larkService: chatContext.larkService
@@ -299,7 +284,7 @@ ${markdownCubes(this.models.slice(3))}
 		
 		return createReactAgent({
 			state: insightAgentState,
-			llm,
+			llm: this.chatModel,
 			checkpointSaver: this.copilotCheckpointSaver,
 			// interruptBefore,
 			// interruptAfter,
@@ -346,7 +331,7 @@ ${createAgentStepsInstructions(
 						if (isString(content) && content.startsWith('Error:')) {
 							this.logger.error(content)
 							const toolCallMessage = state.messages[state.messages.length - 2]
-							this.logger.debug((<ToolMessage>toolCallMessage).lc_kwargs)
+							this.logger.verbose((<ToolMessage>toolCallMessage).lc_kwargs)
 							return 'agent'
 						}
 
@@ -388,7 +373,7 @@ ${createAgentStepsInstructions(
 		await this.initThread()
 		// Model context
 		let context = null
-		const session = this.chatBIService.userSessions[this.userId]
+		const session = null // this.chatBIService.userSessions[this.userId]
 		if (this.chatType === 'p2p' && session?.chatModelId) {
 			const chatModel = this.models.find((item) => item.id === session.chatModelId)
 			context = markdownCubes([chatModel])
@@ -397,7 +382,9 @@ ${createAgentStepsInstructions(
 		}
 
 		// Few-shot prompt
+		this.logger.verbose(`ExampleFewShot start for user input: ${text}`)
 		const content = await this.exampleFewShotPrompt.format({ input: text })
+		this.logger.verbose(`ExampleFewShot got content: ${content}`)
 
 		const streamResults = await this.graph.stream(
 			{
@@ -448,7 +435,7 @@ ${createAgentStepsInstructions(
 
 					if (content) {
 						verboseContent = content
-						this.logger.debug(`[ChatBI] [Graph]: verbose content`, verboseContent)
+						this.logger.debug(`[ChatBI] [Graph] verbose content: `, verboseContent)
 						// 对话结束时还有正在思考的消息，则意味着出现错误
 						if (['thinking', 'continuing', 'waiting'].includes(this.message?.status)) {
 							this.message.update({
@@ -467,7 +454,7 @@ ${createAgentStepsInstructions(
 			this.status = 'idle'
 
 		} catch (err: any) {
-			console.error(err)
+			this.logger.error(err)
 			this.status = 'error'
 			if (err instanceof ToolInputParsingException) {
 				this.chatContext.larkService.errorMessage(this.chatContext, err)
@@ -475,7 +462,7 @@ ${createAgentStepsInstructions(
 				end = true
 			} else {
 				// larkService.errorMessage(input, err)
-				errorWithEndMessage(this.chatContext, err.message, this)
+				await errorWithEndMessage(this.chatContext, err.message, this)
 			}
 		}
 
@@ -500,6 +487,7 @@ ${createAgentStepsInstructions(
 			return null
 		}
 	}
+
 	async getCubeCache(modelId: string, cubeName: string) {
 		return await this.chatBIService.cacheManager.get<EntityType>(modelId + '/' + cubeName)
 	}
@@ -534,7 +522,7 @@ ${createAgentStepsInstructions(
 			]
 		}
 
-		this.chatContext.larkService.createAction(this.chatContext.chatId, message).subscribe({
+		this.chatContext.larkService.createAction(this.chatContext, message).subscribe({
 			next: async (action) => {
 				if (action?.value === C_CHATBI_END_CONVERSATION || action?.value === `"${C_CHATBI_END_CONVERSATION}"`) {
 					await this.end()

@@ -7,6 +7,7 @@ import { MaterialModule, SharedModule } from '../../../@shared'
 import { PACDataSourceCreationComponent } from './creation/creation.component'
 import { PACDataSourcesRoutingModule } from './data-sources-routing.module'
 import { PACDataSourcesComponent } from './data-sources.component'
+import { NgmInputComponent } from '@metad/ocap-angular/common'
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { PACDataSourcesComponent } from './data-sources.component'
     TranslateModule,
     PACDataSourcesRoutingModule,
     ContentLoaderModule,
+    NgmInputComponent,
 
     ButtonGroupDirective,
     DensityDirective

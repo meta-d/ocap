@@ -1,11 +1,18 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { nanoid } from '@metad/copilot'
-import {
-  markdownModelCube,
-} from '@metad/core'
+import { markdownModelCube } from '@metad/core'
 import { AnalyticalGridOptions } from '@metad/ocap-angular/analytical-grid'
-import { assignDeepOmitBlank, DataSettings, DataSettingsSchema, DimensionMemberSchema, MeasureSchema, omit, SlicerSchema, tryFixSlicer, VariableSchema } from '@metad/ocap-core'
+import {
+  assignDeepOmitBlank,
+  DataSettings,
+  DataSettingsSchema,
+  DimensionMemberSchema,
+  MeasureSchema,
+  omit,
+  SlicerSchema,
+  tryFixSlicer
+} from '@metad/ocap-core'
 import { FilterControlType, NxStoryService, WidgetComponentType } from '@metad/story/core'
 import {
   chartAnnotationCheck,
@@ -166,7 +173,11 @@ export function injectCreateVariableTool() {
     schema: z.object({
       dataSettings: DataSettingsSchema,
       widget: createWidgetSchema({
-        variable: VariableSchema.describe('variable')
+        variable: z
+          .object({
+            variable: z.string().describe('The name of the variable')
+          })
+          .describe('variable')
       })
     }),
     func: async ({ dataSettings, widget }) => {

@@ -16,14 +16,11 @@ export const SlicerSchema = z.object({
       dimension: z.string().describe('The name of the dimension'),
       hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
       level: z.string().optional().describe('The name of the level in the hierarchy'),
-      parameter: z.string().optional().describe('The name of variable reference to')
+      // parameter: z.string().optional().describe('The name of variable reference to') // Variable slicer (has parameter) already exists alone.
     })
     .describe('dimension of the slicer'),
   exclude: z.boolean().optional().describe('Exclude members'),
   members: z.array(MemberSchema).describe('Members in the slicer')
-})
-export const VariableSchema = z.object({
-  variable: z.string().describe('The name of the variable')
 })
 
 export const TimeSlicerSchema = z.object({

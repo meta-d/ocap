@@ -35,79 +35,17 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 		status: 'info',
 		children: [
 			// {
-			// 	name: 'Help Center',
-			// 	code: 'FEATURE_ORGANIZATION_HELP_CENTER',
-			// 	description: 'Find out more about how to use Metad',
-			// 	image: 'help.png',
-			// 	link: 'help',
-			// 	isEnabled: features.FEATURE_ORGANIZATION_HELP_CENTER,
+			// 	name: 'Organization Tag',
+			// 	code: 'FEATURE_ORGANIZATION_TAG',
+			// 	description: 'Manage Organization Tag, Create First Tag',
+			// 	image: 'tag.png',
+			// 	link: 'organization/tags',
+			// 	isEnabled: features.FEATURE_ORGANIZATION_TAG,
 			// 	icon: 'file-text-outline',
 			// 	status: 'primary'
 			// },
-			{
-				name: 'Organization Tag',
-				code: 'FEATURE_ORGANIZATION_TAG',
-				description: 'Manage Organization Tag, Create First Tag',
-				image: 'tag.png',
-				link: 'organization/tags',
-				isEnabled: features.FEATURE_ORGANIZATION_TAG,
-				icon: 'file-text-outline',
-				status: 'primary'
-			},
-			// {
-			// 	name: 'Organization Equipment',
-			// 	code: 'FEATURE_ORGANIZATION_EQUIPMENT',
-			// 	description:
-			// 		'Manage Organization Equipment, Create First Equipment',
-			// 	image: 'equipment.png',
-			// 	link: 'organization/equipment',
-			// 	isEnabled: features.FEATURE_ORGANIZATION_EQUIPMENT,
-			// 	icon: 'file-text-outline',
-			// 	status: 'warning'
-			// },
-			// {
-			// 	name: 'Organization Vendor',
-			// 	code: 'FEATURE_ORGANIZATION_VENDOR',
-			// 	description: 'Manage Organization Vendor, Create First Vendor',
-			// 	image: 'vendor.png',
-			// 	link: 'organization/vendors',
-			// 	isEnabled: features.FEATURE_ORGANIZATION_VENDOR,
-			// 	icon: 'file-text-outline',
-			// 	status: 'primary'
-			// },
-			// {
-			// 	name: 'Organization Department',
-			// 	code: 'FEATURE_ORGANIZATION_DEPARTMENT',
-			// 	description:
-			// 		'Manage Organization Department, Create First Department',
-			// 	image: 'department.png',
-			// 	link: 'organization/departments',
-			// 	isEnabled: features.FEATURE_ORGANIZATION_DEPARTMENT,
-			// 	icon: 'file-text-outline',
-			// 	status: 'success'
-			// },
-			// {
-			// 	name: 'Organization Employment Type',
-			// 	code: 'FEATURE_ORGANIZATION_EMPLOYMENT_TYPE',
-			// 	description: 'Manage Organization Employment Type',
-			// 	image: 'employment-type.png',
-			// 	link: 'organization/employment-types',
-			// 	isEnabled: features.FEATURE_ORGANIZATION_EMPLOYMENT_TYPE,
-			// 	icon: 'file-text-outline',
-			// 	status: 'success'
-			// }
 		]
 	},
-	// {
-	// 	name: 'Organization Team',
-	// 	code: 'FEATURE_ORGANIZATION_TEAM',
-	// 	description: 'Manage Organization Team, Create First Team',
-	// 	image: 'team.png',
-	// 	link: 'organization/teams',
-	// 	isEnabled: features.FEATURE_ORGANIZATION_TEAM,
-	// 	icon: 'file-text-outline',
-	// 	status: 'warning'
-	// },
 	{
 		name: 'Users',
 		code: 'FEATURE_USER',
@@ -118,16 +56,7 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 		icon: 'file-text-outline',
 		status: 'primary'
 	},
-	{
-		name: 'Organizations',
-		code: 'FEATURE_ORGANIZATIONS',
-		description: 'Manage Tenant Organizations',
-		image: 'organization.png',
-		link: 'organizations',
-		isEnabled: features.FEATURE_ORGANIZATIONS,
-		icon: 'file-text-outline',
-		status: 'success'
-	},
+
 	// {
 	// 	name: 'Apps & Integrations',
 	// 	code: 'FEATURE_APP_INTEGRATION',
@@ -140,12 +69,12 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 	// 	status: 'warning'
 	// },
 	{
-		name: 'Email History',
-		code: 'FEATURE_EMAIL_HISTORY',
-		description: 'Manage Email History',
+		name: 'Email',
+		code: 'FEATURE_EMAIL',
+		description: 'Manage Email',
 		image: 'email-history.png',
 		link: 'settings/email-history',
-		isEnabled: features.FEATURE_EMAIL_HISTORY,
+		isEnabled: features.FEATURE_EMAIL,
 		icon: 'file-text-outline',
 		status: 'info',
 		children: [
@@ -181,16 +110,16 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 				icon: 'file-text-outline',
 				status: 'info'
 			},
-			{
-				name: 'SMS Gateway',
-				code: 'FEATURE_SMS_GATEWAY',
-				description: 'Manage SMS Gateway',
-				image: 'sms-gateway.png',
-				link: 'tasks/me',
-				isEnabled: features.FEATURE_SMS_GATEWAY,
-				icon: 'file-text-outline',
-				status: 'primary'
-			}
+			// {
+			// 	name: 'SMS Gateway',
+			// 	code: 'FEATURE_SMS_GATEWAY',
+			// 	description: 'Manage SMS Gateway',
+			// 	image: 'sms-gateway.png',
+			// 	link: 'tasks/me',
+			// 	isEnabled: features.FEATURE_SMS_GATEWAY,
+			// 	icon: 'file-text-outline',
+			// 	status: 'primary'
+			// }
 		]
 	},
 	// {
@@ -223,18 +152,23 @@ export let DEFAULT_FEATURES: IFeatureCreateInput[] = [
 		icon: 'home-outline',
 		status: 'primary'
 	},
+
 	{
-		name: 'Copilot',
-		code: FeatureEnum.FEATURE_COPILOT,
-		description: 'Enable Copilot',
-		image: 'copilot.png',
-		link: 'settings/copilot',
-		isEnabled: features.FEATURE_COPILOT,
+		name: 'Integration',
+		code: FeatureEnum.FEATURE_INTEGRATION,
+		description: 'Enable Integration',
+		image: 'integration.png',
+		link: 'settings/integration',
+		isEnabled: features.FEATURE_INTEGRATION,
 		icon: 'assistant',
-		status: 'accent'
+		status: 'accent',
 	}
 ];
 
 export function setDefaultFeatures(features: IFeatureCreateInput[]) {
 	DEFAULT_FEATURES = features
+}
+
+export function getFeatureToggleDefinitions(): IFeatureCreateInput[] {
+	return DEFAULT_FEATURES
 }

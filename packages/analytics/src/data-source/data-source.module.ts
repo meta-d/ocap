@@ -1,4 +1,5 @@
-import { EmployeeModule, SharedModule, TenantModule, UserModule } from '@metad/server-core'
+import { ChatModule } from '@metad/server-ai'
+import { SharedModule, TenantModule, UserModule } from '@metad/server-core'
 import { Module, forwardRef } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -19,7 +20,7 @@ import { QueryHandlers } from './queries/handlers'
 		forwardRef(() => UserModule),
 		SharedModule,
 		CqrsModule,
-		EmployeeModule
+		ChatModule
 	],
 	providers: [DataSourceService, ...EventHandlers, ...CommandHandlers, ...QueryHandlers],
 	controllers: [DataSourceController],

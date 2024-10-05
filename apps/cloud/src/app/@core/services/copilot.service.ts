@@ -5,14 +5,14 @@ import { Router } from '@angular/router'
 import { API_PREFIX, AuthService } from '@metad/cloud/state'
 import { AiProviderRole, BusinessRoleType, ICopilot } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/copilot-angular'
+import { pick } from '@metad/ocap-core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
 import { combineLatest, distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { ICopilot as IServerCopilot } from '../types'
-import { CopilotRoleService } from './copilot-role.service'
-import { Store } from './store.service'
 import { AgentService } from './agent.service'
-import { pick } from '@metad/ocap-core'
+import { Store } from './store.service'
+import { XpertRoleService } from './xpert-role.service'
 
 const baseUrl = environment.API_BASE_URL
 const API_CHAT = constructUrl(baseUrl) + '/api/ai/chat'
@@ -23,11 +23,11 @@ export class PACCopilotService extends NgmCopilotService {
   readonly #store = inject(Store)
   readonly httpClient = inject(HttpClient)
   readonly authService = inject(AuthService)
-  readonly roleService = inject(CopilotRoleService)
+  readonly roleService = inject(XpertRoleService)
   readonly router = inject(Router)
   readonly #agentService = inject(AgentService)
 
-  readonly copilots = signal<(ICopilot & {organizationId: string})[]>(null)
+  readonly copilots = signal<ICopilot[]>(null)
 
   // Init copilot config
   private _userSub = this.#store.user$
@@ -37,7 +37,7 @@ export class PACCopilotService extends NgmCopilotService {
       distinctUntilChanged(),
       filter(Boolean),
       switchMap(() => this.#store.selectOrganizationId()),
-      switchMap(() => this.httpClient.get<{ total: number; items: (ICopilot & {organizationId: string})[] }>(API_PREFIX + '/copilot')),
+      switchMap(() => this.httpClient.get<{ total: number; items: ICopilot[] }>(API_PREFIX + '/copilot')),
       takeUntilDestroyed()
     )
     .subscribe((result) => {
@@ -46,7 +46,10 @@ export class PACCopilotService extends NgmCopilotService {
 
   private roleSub = this.roleService
     .getAll()
-    .pipe(takeUntilDestroyed())
+    .pipe(
+      map(({ items }) => items),
+      takeUntilDestroyed()
+    )
     .subscribe((roles) => {
       this.roles.set(roles as BusinessRoleType[])
     })
@@ -82,9 +85,7 @@ export class PACCopilotService extends NgmCopilotService {
     )
     .subscribe((options) => this.clientOptions$.next(options))
 
-  private tokenSub = this.tokenUsage$.pipe(
-    takeUntilDestroyed(),
-  ).subscribe((usage) => {
+  private tokenSub = this.tokenUsage$.pipe(takeUntilDestroyed()).subscribe((usage) => {
     this.#agentService.emit('copilot', {
       organizationId: this.#store.organizationId,
       copilot: pick(usage.copilot, 'organizationId', 'provider', 'id'),
@@ -151,7 +152,15 @@ export class PACCopilotService extends NgmCopilotService {
       )
     )
 
-    this.copilots.set(items as (ICopilot & {organizationId: string})[])
+    this.copilots.update((copilots) => {
+      items.forEach((item) => {
+        if (item.id) {
+          copilots = copilots.filter((_) => _.id !== item.id)
+        }
+        copilots.push(item as ICopilot)
+      })
+      return copilots
+    })
   }
 
   enableCopilot(): void {

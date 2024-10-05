@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
-import { PermissionsEnum } from '../../../@core'
+import { AIPermissionsEnum, PermissionsEnum } from '../../../@core'
 import { CopilotComponent } from './copilot.component'
 
 export default [
@@ -11,7 +11,7 @@ export default [
     data: {
       title: 'Settings / Copilot',
       permissions: {
-        only: [PermissionsEnum.ORG_COPILOT_EDIT],
+        only: [AIPermissionsEnum.COPILOT_EDIT],
         redirectTo: '/settings'
       }
     },
@@ -26,7 +26,7 @@ export default [
         loadComponent: () => import('./basic/basic.component').then((m) => m.CopilotBasicComponent)
       },
       {
-        path: 'knowledges',
+        path: 'examples',
         loadComponent: () => import('./examples/examples.component').then((m) => m.CopilotExamplesComponent),
         children: [
           {
@@ -39,10 +39,20 @@ export default [
           }
         ]
       },
-      {
-        path: 'roles',
-        loadComponent: () => import('./roles/roles.component').then((m) => m.CopilotRolesComponent)
-      },
+      // {
+      //   path: 'roles',
+      //   component: CopilotRolesComponent,
+      //   children: [
+      //     {
+      //       path: 'create',
+      //       component: CopilotRoleComponent,
+      //     },
+      //     {
+      //       path: ':id',
+      //       component: CopilotRoleComponent,
+      //     }
+      //   ]
+      // },
       {
         path: 'usages',
         loadComponent: () => import('./usages/usages.component').then((m) => m.CopilotUsagesComponent)

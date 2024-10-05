@@ -1,0 +1,85 @@
+<h2 class="pac-page-title">{{ 'PAC.Knowledgebase.Knowledgebase' | translate: {Default: 'Knowledgebase' } }}</h2>
+
+<div class="filter-bar p-2 flex items-center gap-4">
+  <span class="flex-1"></span>
+
+  <div ngmButtonGroup >
+    <button mat-mini-fab [matTooltip]=" 'PAC.Knowledgebase.AddKnowledgebase' | translate: {Default: 'Add Knowledgebase' }"
+        (click)="newKnowledgebase()">
+        <mat-icon fontSet="material-icons-outlined">add</mat-icon>
+    </button>
+  </div>
+</div>
+
+<div class="flex flex-wrap p-4 gap-4 overflow-y-auto">
+  @for (item of knowledgebases(); track item.id) {
+    <div class="ngm-card flex-1 flex flex-col max-w-sm w-full lg:max-w-md lg:w-[360px] p-4 group">
+
+      <button mat-icon-button class="ngm-card__menu transition-opacity opacity-0 group-hover:opacity-100" displayDensity="cosy"
+        [matMenuTriggerFor]="menu"
+        [matMenuTriggerData]="{item: item}"
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <div class="">
+        <div class="flex items-start gap-2">
+
+          <pac-avatar class="shrink-0 w-16 h-16 rounded-full overflow-hidden" [imageUrl]="item.avatar" />
+
+          <div class="flex flex-col items-start overflow-hidden">
+            <p class="text-sm flex items-center text-token-text-secondary opacity-80">
+              @if (item.permission === KnowledgebasePermission.Public || item.permission === KnowledgebasePermission.Organization) {
+                <mat-icon class="mr-1" displayDensity="compact" fontSet="material-icons-round">public</mat-icon> {{ 'PAC.Knowledgebase.Permission_Public' | translate: {Default:'Public'} }}
+              } @else {
+                <mat-icon class="mr-1" displayDensity="compact" fontSet="material-icons-round">lock</mat-icon> {{ 'PAC.Knowledgebase.Permission_Private' | translate: {Default:'Private'} }}
+              }
+            </p>
+            <p class="max-w-full font-bold text-xl my-2 whitespace-nowrap text-ellipsis overflow-hidden" [title]="item.name">{{item.name}}</p>
+          </div>
+
+        </div>
+
+        <div class="w-full h-28 my-4 overflow-hidden hover:overflow-auto">
+          <span class="text-zinc-700 text-sm dark:text-zinc-500">{{item.description}}</span>
+        </div>
+        
+      </div>
+
+      <div class="flex justify-between items-end">
+        <pac-user-profile-inline [user]="item.createdBy" />
+
+        <a class="inline-block cursor-pointer" (click)="openKnowledgebase(item.id)">
+          <button
+            class="flex items-center gap-2 px-4 py-2 font-sans text-xs font-bold text-center whitespace-nowrap text-gray-900 uppercase align-middle transition-all rounded-lg select-none disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none hover:bg-gray-900/10 active:bg-gray-900/20
+              dark:text-zinc-200 dark:hover:bg-neutral-700 dark:active:bg-neutral-500"
+            type="button">
+            {{'PAC.KEY_WORDS.Open' | translate: {Default: 'Open'} }}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"></path>
+            </svg>
+          </button>
+        </a>
+      </div>
+    </div>
+  }
+</div>
+
+
+<mat-menu #menu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent let-item="item">
+    <button mat-menu-item (click)="edit(item)">
+      <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+      <span>
+        {{ 'PAC.ACTIONS.Edit' | translate: {Default: "Edit"} }}
+      </span>
+    </button>
+
+    <button mat-menu-item ngmAppearance="danger" (click)="remove(item)">
+      <mat-icon fontSet="material-icons-outlined">delete_forever</mat-icon>
+      <span>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}</span>
+    </button>
+  </ng-template>
+</mat-menu>

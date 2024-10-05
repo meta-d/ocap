@@ -1,6 +1,6 @@
-import { IPagination } from '@metad/contracts'
-import { CrudController, PaginationParams, ParseJsonPipe, UseValidationPipe } from '@metad/server-core'
-import { Controller, Get, Query } from '@nestjs/common'
+import { IChatBIModel } from '@metad/contracts'
+import { CrudController } from '@metad/server-core'
+import { Body, Controller, Param, Put } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { ChatBIModel } from './chatbi-model.entity'
 import { ChatBIModelService } from './chatbi-model.service'
@@ -13,13 +13,9 @@ export class ChatBIModelController extends CrudController<ChatBIModel> {
 		super(service)
 	}
 
-	@Get()
-	@UseValidationPipe()
-	async getAll(
-		@Query('$filter', ParseJsonPipe) where: PaginationParams<ChatBIModel>['where'],
-		@Query('$relations', ParseJsonPipe) relations: PaginationParams<ChatBIModel>['relations'],
-		@Query('$order', ParseJsonPipe) order: PaginationParams<ChatBIModel>['order']
-	): Promise<IPagination<ChatBIModel>> {
-		return await this.service.findAll({ where, relations, order })
+	@Put(':id/roles')
+	async updateRoles(@Param('id') id: string, @Body('roles') roles: string[]): Promise<IChatBIModel> {
+		return await this.service.updateRoles(id, roles)
 	}
+
 }

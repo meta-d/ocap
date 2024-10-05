@@ -1,9 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { BusinessRoleType, CopilotService, DefaultBusinessRole } from '@metad/copilot'
+import { BusinessRoleType, CopilotService, DefaultBusinessRole, NgmLanguageEnum } from '@metad/copilot'
 import { TranslateService } from '@ngx-translate/core'
-import { map, startWith } from 'rxjs'
-import { NgmLanguageEnum } from '../types'
+import { combineLatest, map, shareReplay, startWith } from 'rxjs'
+import { createLLM } from '../core'
 
 @Injectable()
 export abstract class NgmCopilotService extends CopilotService {
@@ -45,6 +45,15 @@ export abstract class NgmCopilotService extends CopilotService {
   })
 
   readonly languagePrompt = computed(() => `Please answer in language ${Object.entries(NgmLanguageEnum).find((item) => item[1] === this.lang())?.[0] ?? 'English'}`)
+
+  readonly llm$ = combineLatest([this.copilot$, this.clientOptions$]).pipe(
+    map(([copilot, clientOptions]) =>
+      copilot?.enabled ? createLLM(copilot, clientOptions, (input) => {
+        this.recordTokenUsage(input)
+      }) : null
+    ),
+    shareReplay(1)
+  )
 
   constructor() {
     super()

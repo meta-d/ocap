@@ -20,10 +20,10 @@ import { UserModule } from './users/user.module'
     MaterialModule,
     SettingRoutingModule,
 
-    // Formly
-    FormlyModule.forRoot(),
-    PACFormlyEmptyModule,
-    FormlyMaterialModule,
+    // // Formly
+    // FormlyModule.forChild(),
+    // PACFormlyEmptyModule,
+    // FormlyMaterialModule,
 
     FeatureToggleModule,
     UserModule,

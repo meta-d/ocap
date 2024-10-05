@@ -33,6 +33,8 @@ import { injectCreateChatAgent } from './agent-free'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
 import { formatDocumentsAsString } from 'langchain/util/document'
+import { combineLatest, map, shareReplay } from 'rxjs'
+import { createLLM } from '../core'
 
 export const AgentRecursionLimit = 20
 
@@ -63,7 +65,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly verbose = computed(() => this.#aiOptions().verbose)
 
   readonly llm = toSignal(this.copilot.llm$)
-  readonly secondaryLLM = toSignal(this.copilot.secondaryLLM$)
+  readonly secondaryLLM$ = combineLatest([this.copilot.secondary$, this.copilot.clientOptions$]).pipe(
+    map(([secondary, clientOptions]) => secondary?.enabled ? createLLM(secondary, clientOptions, (input) => {
+      this.copilot.recordTokenUsage(input)
+    }) : null),
+    shareReplay(1)
+  )
+  readonly secondaryLLM = toSignal(this.secondaryLLM$)
 
   routeTemplate: TemplateRef<any> | null = null
 
@@ -605,7 +613,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
           configurable: {
             thread_id: conversation.id
           },
-          recursionLimit: this.aiOptions.recursionLimit ?? AgentRecursionLimit
+          recursionLimit: this.aiOptions.recursionLimit ?? AgentRecursionLimit,
+          signal: abortController.signal
         }
       )
 

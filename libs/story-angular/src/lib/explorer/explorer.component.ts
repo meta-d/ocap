@@ -25,7 +25,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
-import { CHARTS, NxChartType, getChartType, nonBlank } from '@metad/core'
+import { nonBlank } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
@@ -34,9 +34,11 @@ import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent, P
 import { NgmChartPropertyComponent, NgmChartSettingsComponent, NgmSchemaChartTypeComponent } from '@metad/story/widgets/analytical-card'
 import { NgmGridSettingsComponent } from '@metad/story/widgets/analytical-grid'
 import {
+  CHARTS,
   C_MEASURES,
   ChartAnnotation,
   ChartOrient,
+  ChartTypeEnum,
   DataSettings,
   Dimension,
   DisplayBehaviour,
@@ -45,6 +47,7 @@ import {
   Measure,
   assignDeepOmitBlank,
   cloneDeep,
+  getChartType,
   getEntityDimensions,
   getEntityLevel,
   getEntityMeasures,
@@ -129,11 +132,11 @@ export class StoryExplorerComponent {
       if (chartAnnotation) {
         const component = {
           component: WidgetComponentType.AnalyticalCard,
-          label: '' as NxChartType,
+          label: '' as ChartTypeEnum,
           dataSettings: value.dataSettings
         }
         try {
-          component.label = getChartType(chartAnnotation.chartType)?.label as NxChartType
+          component.label = getChartType(chartAnnotation.chartType)?.label as ChartTypeEnum
         } catch(err) {
           console.error(err)
         }
@@ -316,12 +319,12 @@ export class StoryExplorerComponent {
   readonly columns = signal<(Dimension | Measure)[]>([])
   readonly slicers = signal<{ [name: string]: ISlicer }>({})
   readonly component = signal({
-    label: NxChartType.Bar,
+    label: ChartTypeEnum.Bar,
     component: WidgetComponentType.AnalyticalCard,
     dataSettings: {
       chartAnnotation: {
         chartType: {
-          type: NxChartType.Bar,
+          type: ChartTypeEnum.Bar,
           orient: ChartOrient.horizontal
         },
         dimensions: [{}],

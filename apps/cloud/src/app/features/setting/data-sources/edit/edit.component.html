@@ -13,15 +13,16 @@
     </div>
   }
 
-    <div class="pac-data-source-creation__stepper-content">
+    <div class="pac-data-source-creation__stepper-content px-2">
         <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch">
-            <mat-form-field appearance="fill">
-                <mat-label>{{ 'PAC.MENU.DATA_SOURCES.NAME' | translate: {Default: 'Name'} }}</mat-label>
-                <input matInput formControlName="name" required>
-                <mat-error *ngIf="nameCtrl.invalid">
-                    {{ 'PAC.MENU.DATA_SOURCES.NAME_REQUIRED' | translate: {Default: 'Name Required'} }}
-                </mat-error>
-            </mat-form-field>
+            <ngm-input [ngClass]="{'ngm-input-error': nameCtrl.invalid}" [label]="'PAC.MENU.DATA_SOURCES.NAME' | translate: {Default: 'Name'}"
+              formControlName="name" required>
+              @if (nameCtrl.invalid) {
+                <span ngmError>
+                {{ 'PAC.MENU.DATA_SOURCES.NAME_REQUIRED' | translate: {Default: 'Name Required'} }}
+                </span>
+              }
+            </ngm-input>
     
             <div class="flex justify-between items-center mx-2 mb-6">
               @if (enableLocalAgent) {

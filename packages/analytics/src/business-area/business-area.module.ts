@@ -2,7 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RouterModule } from 'nest-router';
-import { SharedModule, EmployeeModule, UserModule } from '@metad/server-core';
+import { SharedModule, UserModule } from '@metad/server-core';
 import { BusinessAreaService } from './business-area.service';
 import { BusinessAreaController } from './business-area.controller';
 import { BusinessArea } from './business-area.entity';
@@ -18,7 +18,6 @@ import { BusinessAreaUserModule } from '../business-area-user/index';
     SharedModule,
     CqrsModule,
     UserModule,
-    EmployeeModule,
     BusinessAreaUserModule
   ],
   controllers: [

@@ -9,7 +9,7 @@ export class ChatLarkMessage {
 		tag: 'custom_icon',
 		img_key: ChatLarkMessage.logoImgKey
 	}
-	static readonly helpUrl = 'https://mtda.cloud/docs/chatbi/'
+	static readonly helpUrl = 'https://mtda.cloud/docs/chatbi/feishu/bot/'
 
 	private id: string = null
 	public status: ChatLarkMessageStatus = 'thinking'
@@ -127,7 +127,7 @@ export class ChatLarkMessage {
 		}
 		if (this.id) {
 			this.larkService
-				.patchAction(this.id, {
+				.patchAction(this.chatContext, this.id, {
 					...this.getCard(),
 					header: this.header ?? this.getHeader()
 				})

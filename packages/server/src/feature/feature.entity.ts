@@ -16,6 +16,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { BaseEntity, FeatureOrganization } from '../core/entities/internal';
 
 @Entity('feature')
+@Index(['name', 'code'], { unique: true })
 export class Feature extends BaseEntity implements IFeature {
 	
 	@ApiProperty({ type: () => String })

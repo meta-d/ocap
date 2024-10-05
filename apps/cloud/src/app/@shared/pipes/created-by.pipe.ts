@@ -25,5 +25,5 @@ export function userLabel(value: IUser) {
   if (!value) {
     return ''
   }
-  return value.fullName || ((value.firstName || '') + ' ' + (value.lastName || '')).trim() || value.email
+  return value.fullName || ((value.firstName || '') + ' ' + (value.lastName || '')).trim() || value.username || value.email
 }

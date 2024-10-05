@@ -1,8 +1,7 @@
-import { IOrganizationUpdateInput } from './index';
 import {
-	IBaseEntityModel,
 	IBasePerTenantAndOrganizationEntityModel
 } from './base-entity.model';
+import { IOrganizationUpdateInput } from './index';
 import { IOrganizationProjectsUpdateInput } from './organization-projects.model';
 import { ITag } from './tag-entity.model';
 
@@ -44,24 +43,19 @@ export interface IIntegrationTenant extends IBasePerTenantAndOrganizationEntityM
 	settings?: IIntegrationSetting[];
 }
 
-export interface IIntegration {
-	name: string;
-	imgSrc: string;
-	isComingSoon?: boolean;
-	isPaid?: boolean;
-	version?: string;
-	docUrl?: string;
-	isFreeTrial?: boolean;
-	freeTrialPeriod?: number;
-	order?: number;
-	integrationTypes?: IIntegrationType[];
-	tags?: ITag[];
-}
+export interface IIntegration extends IBasePerTenantAndOrganizationEntityModel {
+	name: string
+	description?: string
+	/**
+     * avatar url
+     */
+	avatar?: string
+	slug: string;
+	provider: IntegrationEnum
 
-export interface IIntegrationType extends IBaseEntityModel {
-	name: string;
-	groupName: string;
-	order: number;
+	options?: any
+
+	tags?: ITag[]
 }
 
 export interface IIntegrationFilter {
@@ -93,7 +87,8 @@ export interface IIntegrationTenantCreateDto
 
 export enum IntegrationEnum {
 	UPWORK = 'Upwork',
-	HUBSTAFF = 'Hubstaff'
+	HUBSTAFF = 'Hubstaff',
+	LARK = 'Lark'
 }
 
 export enum IntegrationEntity {

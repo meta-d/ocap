@@ -4,7 +4,6 @@ import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { ToolNode } from '@langchain/langgraph/prebuilt'
 import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
-import { ChatOpenAI } from '@langchain/openai'
 import { Indicator } from '@metad/cloud/state'
 import { CreateGraphOptions, Team } from '@metad/copilot'
 import { injectDimensionMemberTool } from '@metad/core'
@@ -12,6 +11,7 @@ import { ProjectService } from '../../project.service'
 import { injectRunIndicatorAgent } from '../indicator/graph'
 import { promptIndicatorCode } from '../prompt'
 import { INDICATOR_AGENT_NAME, IndicatorArchitectState, markdownIndicators } from './types'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
 const superState: StateGraphArgs<IndicatorArchitectState>['channels'] = Team.createState()
 
@@ -68,7 +68,7 @@ export async function createSupervisorAgent({
   indicators,
   tools
 }: {
-  llm: ChatOpenAI
+  llm: BaseChatModel
   indicators: Signal<Indicator[]>
   tools: DynamicStructuredTool[]
 }) {

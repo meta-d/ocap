@@ -4,7 +4,6 @@ import { UpdateResult } from 'typeorm';
 import { AuthService } from '../../../auth/auth.service';
 import { getUserDummyImage } from '../../../core';
 import { Employee } from '../../../employee/employee.entity';
-import { EmployeeService } from '../../../employee/employee.service';
 import { OrganizationService } from '../../../organization/organization.service';
 import { OrganizationContactService } from '../../../organization-contact/organization-contact.service';
 import { OrganizationDepartmentService } from '../../../organization-department/organization-department.service';
@@ -22,7 +21,7 @@ export class InviteAcceptEmployeeHandler
 	implements ICommandHandler<InviteAcceptEmployeeCommand> {
 	constructor(
 		private readonly inviteService: InviteService,
-		private readonly employeeService: EmployeeService,
+		// private readonly employeeService: EmployeeService,
 		private readonly organizationService: OrganizationService,
 		private readonly organizationProjectService: OrganizationProjectService,
 		private readonly organizationContactService: OrganizationContactService,
@@ -75,18 +74,18 @@ export class InviteAcceptEmployeeHandler
 			languageCode
 		);
 
-		const employee = await this.employeeService.create({
-			user,
-			organization: input.organization,
-			tenant: {
-				id: organization.tenantId
-			},
-			startedWorkOn: invite.actionDate || null
-		});
+		// const employee = await this.employeeService.create({
+		// 	user,
+		// 	organization: input.organization,
+		// 	tenant: {
+		// 		id: organization.tenantId
+		// 	},
+		// 	startedWorkOn: invite.actionDate || null
+		// });
 
-		this.updateEmployeeMemberships(invite, employee);
+		// this.updateEmployeeMemberships(invite, employee);
 
-		this.inviteService.sendAcceptInvitationEmail(organization, employee, languageCode);
+		// this.inviteService.sendAcceptInvitationEmail(organization, employee, languageCode);
 
 		return await this.inviteService.update(input.inviteId, {
 			status: InviteStatusEnum.ACCEPTED

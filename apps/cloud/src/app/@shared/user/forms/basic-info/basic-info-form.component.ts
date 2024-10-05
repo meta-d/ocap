@@ -3,7 +3,7 @@ import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/for
 import { matchValidator } from '@metad/cloud/auth'
 import { AuthService } from '@metad/cloud/state'
 import { ITag, IUser } from '@metad/contracts'
-import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/formly'
+import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { firstValueFrom, map } from 'rxjs'
 import { LANGUAGES, RoleService, Store } from '../../../../@core'
@@ -39,7 +39,14 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
   @Input() public createdById: string
   @Input() public selectedTags: ITag[]
 
-  readonly roles$ = this.#roleService.getAll().pipe(map(({ items }) => items))
+  readonly roles$ = this.#roleService.getAll().pipe(
+    map(({ items }) =>
+      items.map(({ id, name }) => ({
+        key: id,
+        caption: name
+      }))
+    )
+  )
 
   //Fields for the form
   public form = new FormGroup({})
@@ -57,37 +64,37 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
   registerOnChange(fn: any): void {
     this.onChange = fn
   }
-  registerOnTouched(fn: any): void { }
-  setDisabledState?(isDisabled: boolean): void { }
+  registerOnTouched(fn: any): void {}
+  setDisabledState?(isDisabled: boolean): void {}
 
   ngOnInit() {
     const TRANSLATES = this.getTranslation('PAC.SHARED.USER_BASIC')
 
     const password = this.password
       ? [
-        {
-          className: FORMLY_W_1_2,
-          key: 'password',
-          type: 'input',
-          props: {
-            label: TRANSLATES?.Passwrod ?? 'Passwrod',
-            placeholder: '',
-            type: 'password',
-            appearance: 'fill'
+          {
+            className: FORMLY_W_1_2,
+            key: 'password',
+            type: 'input',
+            props: {
+              label: TRANSLATES?.Passwrod ?? 'Passwrod',
+              placeholder: '',
+              type: 'password',
+              appearance: 'fill'
+            }
+          },
+          {
+            className: FORMLY_W_1_2,
+            key: 'confirmPassword',
+            type: 'input',
+            props: {
+              label: TRANSLATES?.RepeatPasswrod ?? 'Repeat Passwrod',
+              placeholder: '',
+              type: 'password',
+              appearance: 'fill'
+            }
           }
-        },
-        {
-          className: FORMLY_W_1_2,
-          key: 'confirmPassword',
-          type: 'input',
-          props: {
-            label: TRANSLATES?.RepeatPasswrod ?? 'Repeat Passwrod',
-            placeholder: '',
-            type: 'password',
-            appearance: 'fill'
-          }
-        }
-      ]
+        ]
       : []
     this.fields = [
       {
@@ -148,7 +155,8 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
               valueProp: 'id',
               labelProp: 'name',
               options: this.roles$,
-              appearance: 'fill'
+              appearance: 'fill',
+              valueKey: 'key',
             }
           },
           {

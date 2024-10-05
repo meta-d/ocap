@@ -1,10 +1,16 @@
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { ChatOpenAI } from '@langchain/openai'
 import { makeCubeRulesPrompt } from '@metad/core'
 import { Route } from 'apps/cloud/src/app/@core/copilot'
 import { MEMBER_RETRIEVER_PROMPT } from './types'
 
-export async function createVarianceMeasureWorker({ llm, tools }: { llm: ChatOpenAI; tools: DynamicStructuredTool[] }) {
+export async function createVarianceMeasureWorker({
+  llm,
+  tools
+}: {
+  llm: BaseChatModel
+  tools: DynamicStructuredTool[]
+}) {
   const systemPrompt =
     `You are a data analyst. Please create a measure that calculate the variance or ratio between different members within a dimension.` +
     ` It is useful for comparing data, such as year-over-year changes, month-over-month changes, differences between versions, or differences between accounts.` +

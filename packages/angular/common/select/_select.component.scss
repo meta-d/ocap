@@ -57,7 +57,7 @@ $prefix: (ngm, color);
 }
 
 .ngm-select-label {
-  @apply p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
+  @apply p-1 text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
 }
 
 .cdk-overlay-pane:not(.mat-mdc-select-panel-above) {
@@ -91,6 +91,9 @@ $prefix: (ngm, color);
 }
 
 .ngm-density__compact {
+  .ngm-select-label {
+    @apply text-sm;
+  }
   .ngm-select-element {
     @apply px-2 py-1 text-xs rounded;
   }

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
-import { PermissionsEnum } from '../../../@core'
+import { AnalyticsPermissionsEnum, PermissionsEnum } from '../../../@core'
 import { CertificationComponent } from './certification.component'
 
 const routes: Routes = [
@@ -10,7 +10,7 @@ const routes: Routes = [
     data: {
       title: 'Settings / Certification',
       permissions: {
-        only: [PermissionsEnum.ORG_COPILOT_EDIT],
+        only: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT],
         redirectTo: '/settings'
       }
     },

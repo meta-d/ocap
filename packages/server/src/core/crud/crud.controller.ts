@@ -6,7 +6,8 @@ import {
 	Body,
 	Param,
 	HttpStatus,
-	HttpCode
+	HttpCode,
+	Query
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { IPagination } from '@metad/contracts';
@@ -14,8 +15,9 @@ import { DeepPartial } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BaseEntity } from '../entities/internal';
 import { ICrudService } from './icrud.service';
-import { PaginationParams } from './pagination-params';
-import { UUIDValidationPipe } from './../../shared/pipes';
+import { OptionsSelect, PaginationParams } from './pagination-params';
+import { ParseJsonPipe, UUIDValidationPipe } from './../../shared/pipes';
+import { isNil, omitBy } from 'lodash';
 
 @ApiResponse({ 
 	status: HttpStatus.UNAUTHORIZED,
@@ -61,10 +63,24 @@ export abstract class CrudController<T extends BaseEntity> {
 	})
 	@Get()
 	async findAll(
-		filter?: PaginationParams<T>,
+		filter: PaginationParams<T>,
+		@Query('$where', ParseJsonPipe) where?: PaginationParams<T>['where'],
+		@Query('$relations', ParseJsonPipe) relations?: PaginationParams<T>['relations'],
+		@Query('$order', ParseJsonPipe) order?: PaginationParams<T>['order'],
+		@Query('$take') take?: PaginationParams<T>['take'],
+		@Query('$skip') skip?: PaginationParams<T>['skip'],
+		@Query('$select', ParseJsonPipe) select?: OptionsSelect<T>['select'],
 		...options: any[]
 	): Promise<IPagination<T>> {
-		return this.crudService.findAll(filter);
+		return this.crudService.findAll(omitBy({
+			where: where ?? filter?.where,
+			relations: relations ?? filter?.relations,
+			order: order ?? filter?.order,
+			take: take ?? filter?.take,
+			skip: skip ?? filter?.skip,
+			select: select,
+			...(filter ?? {}),
+		}, isNil));
 	}
 	
 	@ApiOperation({ summary: 'Find by id' })
@@ -79,9 +95,10 @@ export abstract class CrudController<T extends BaseEntity> {
 	@Get(':id')
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$relations', ParseJsonPipe) relations?: PaginationParams<T>['relations'],
 		...options: any[]
 	): Promise<T> {
-		return this.crudService.findOne(id);
+		return this.crudService.findOne(id, { relations });
 	}
 
 	@ApiOperation({ summary: 'Create new record' })

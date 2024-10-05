@@ -1,6 +1,7 @@
-import { ICopilot, ICopilotOrganization, ICopilotUser, IUser } from '@metad/contracts'
+import { ICopilot, IUser } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
-import { CopilotTokenRecordCommand, WsJWTGuard, WsUser } from '@metad/server-core'
+import { WsJWTGuard, WsUser } from '@metad/server-core'
+import { CopilotTokenRecordCommand } from '@metad/server-ai'
 import { UseGuards } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import {

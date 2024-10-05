@@ -1,6 +1,6 @@
 import { includes, upperFirst } from 'lodash-es'
 
-export function convertConfigurationSchema(schema, i18n?) {
+export function convertConfigurationSchema(schema: any, i18n?: any) {
   const fields = []
   schema.order
     ?.map((name) => ({ name, property: schema.properties[name] }))
@@ -19,10 +19,10 @@ export function convertConfigurationSchema(schema, i18n?) {
 }
 
 function convertFormlyField(
-  schema,
+  schema: any,
   name: string,
   property: { type: string; extendedEnum: any[]; title: string; default: string, depend: string },
-  i18n
+  i18n?: any
 ) {
   let type = ''
   let inputType = null

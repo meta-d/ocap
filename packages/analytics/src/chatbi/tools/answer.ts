@@ -3,10 +3,7 @@ import {
 	ChartAnnotation,
 	ChartBusinessService,
 	ChartDimensionRoleType,
-	ChartDimensionSchema,
-	ChartMeasureSchema,
 	DataSettings,
-	DataSettingsSchema,
 	Dimension,
 	EntityType,
 	FilteringLogic,
@@ -23,30 +20,28 @@ import {
 	isTimeRangesSlicer,
 	Measure,
 	OrderBy,
-	OrderBySchema,
 	PresentationVariant,
 	PropertyMeasure,
 	slicerAsString,
-	SlicerSchema,
 	TimeRangesSlicer,
 	timeRangesSlicerAsString,
-	TimeSlicerSchema,
 	toAdvancedFilter,
 	tryFixDimension,
 	tryFixSlicer,
 	tryFixVariableSlicer,
 	workOutTimeRangeSlicers
 } from '@metad/ocap-core'
+import { getErrorMessage, race } from '@metad/server-common'
 import { firstValueFrom, Subject, takeUntil } from 'rxjs'
-import { z } from 'zod'
+import { ChatBIConversation } from '../conversation'
 import { ChatLarkMessage } from '../message'
-import { ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
+import { ChatAnswerSchema, ChatBILarkContext, ChatContext, IChatBIConversation } from '../types'
 import { createBaseChart } from './charts/chart'
 import { createDualAxisChart, createSeriesChart } from './charts/combination'
 
 const TABLE_PAGE_SIZE = 10
 
-type ChatAnswer = {
+export type ChatAnswer = {
 	preface: string
 	visualType: 'Chart' | 'Table' | 'KPI'
 	dataSettings: DataSettings
@@ -62,63 +57,52 @@ type ChatAnswer = {
 	orders: OrderBy[]
 }
 
-export const ChatAnswerSchema = z.object({
-	preface: z.string().describe('preface of the answer'),
-	visualType: z.enum(['Chart', 'Table', 'KPI']).describe('Visual type of result'),
-	dataSettings: DataSettingsSchema.optional().describe('The data settings of the widget'),
-	chartType: z
-		.object({
-			type: z.enum(['Column', 'Line', 'Pie', 'Bar']).describe('The type of chart')
-		})
-		.optional()
-		.describe('Chart configuration'),
-	dimensions: z.array(ChartDimensionSchema).optional().describe('The dimensions used by the chart'),
-	measures: z.array(ChartMeasureSchema).optional().describe('The measures used by the chart'),
-	orders: z.array(OrderBySchema).optional().describe('The orders used by the chart'),
-	top: z.number().optional().describe('The number of top members'),
-	slicers: z.array(SlicerSchema).optional().describe('The slicers to filter data'),
-	timeSlicers: z.array(TimeSlicerSchema).optional().describe('The time slicers to filter data'),
-	variables: z.array(SlicerSchema).optional().describe('The variables to the query of cube'),
-	conclusion: z.string().optional().describe('conclusion of the answer')
-})
-
 export function createChatAnswerTool(context: ChatContext, larkContext: ChatBILarkContext) {
 	const { chatId, logger, dsCoreService, conversation } = context
 	return tool(
 		async (answer): Promise<string> => {
 			logger.debug(`Execute copilot action 'answerQuestion':`, JSON.stringify(answer, null, 2))
 			try {
-				let entityType = null
-				if (answer.dataSettings) {
-					// Make sure datasource exists
-					const _dataSource = await dsCoreService._getDataSource(answer.dataSettings.dataSource)
-					const entity = await firstValueFrom(
-						dsCoreService.selectEntitySet(answer.dataSettings.dataSource, answer.dataSettings.entitySet)
-					)
-					entityType = entity.entityType
-				}
+				// 限制总体超时时间
+				return await race(
+					ChatBIConversation.toolCallTimeout,
+					(async () => {
+						let entityType = null
+						if (answer.dataSettings) {
+							// Make sure datasource exists
+							const _dataSource = await dsCoreService._getDataSource(answer.dataSettings.dataSource)
+							const entity = await firstValueFrom(
+								dsCoreService.selectEntitySet(
+									answer.dataSettings.dataSource,
+									answer.dataSettings.entitySet
+								)
+							)
+							entityType = entity.entityType
+						}
 
-				// Fetch data for chart or table or kpi
-				if (answer.dimensions?.length || answer.measures?.length) {
-					const { categoryMembers } = await drawChartMessage(
-						{ ...context, entityType: entityType || context.entityType },
-						conversation,
-						answer as ChatAnswer
-					)
-					// Max limit 20 members
-					const members = categoryMembers
-						? JSON.stringify(Object.values(categoryMembers).slice(0, 20))
-						: 'Empty'
+						// Fetch data for chart or table or kpi
+						if (answer.dimensions?.length || answer.measures?.length) {
+							const { categoryMembers } = await drawChartMessage(
+								{ ...context, entityType: entityType || context.entityType },
+								conversation,
+								answer as ChatAnswer
+							)
+							// Max limit 20 members
+							const members = categoryMembers
+								? JSON.stringify(Object.values(categoryMembers).slice(0, 20))
+								: 'Empty'
 
-					return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
+							return `The analysis data has been displayed to the user. The dimension members involved in this data analysis are:
 ${members}
 Please give more analysis suggestions about other dimensions or filter by dimensioin members, 3 will be enough.`
-				}
+						}
 
-				return `图表答案已经回复给用户了，请不要重复回答了。`
+						return `图表答案已经回复给用户了，请不要重复回答了。`
+					})()
+				)
 			} catch (err) {
-				logger.error(err)
-				return `Error: ${err}。如果需要用户提供更多信息，请直接提醒用户。`
+				logger.debug(getErrorMessage(err))
+				return `Error: ${getErrorMessage(err)}; If more information is needed from the user, remind the user directly.`
 			}
 		},
 		{
@@ -242,7 +226,8 @@ const colors = [
 	'carmine' //洋红色
 ]
 
-function createSlicersTitle(slicers: ISlicer[]) {
+export function createSlicersTitle(slicers: ISlicer[]) {
+	// console.log(JSON.stringify(slicers, null, 2))
 	return slicers.map((slicer) => {
 		return {
 			tag: 'text_tag',
@@ -358,63 +343,6 @@ function createLineChart(
 		unit = shortUnit
 	} else {
 		throw Error(`图形配置错误`)
-		// let categoryProperty: PropertyHierarchy = null
-		// const fields = []
-		// if (chartAnnotation.dimensions?.length > 1) {
-		// 	const dimensions = chartAnnotation.dimensions.filter((d) => d.role !== ChartDimensionRoleType.Time)
-		// 	const series = getChartSeries(chartAnnotation) || dimensions[1] || dimensions[0]
-		// 	if (!series) {
-		// 		throw new Error(
-		// 			`Cannot find series dimension in chart dimensions: '${JSON.stringify(chartAnnotation.dimensions)}'`
-		// 		)
-		// 	}
-		// 	const seriesName = getPropertyHierarchy(series)
-		// 	const property = getEntityHierarchy(entityType, seriesName)
-		// 	if (!property) {
-		// 		throw new Error(`Cannot find hierarchy for series dimension '${JSON.stringify(series)}'`)
-		// 	}
-		// 	const seriesCaption = property.memberCaption
-		// 	chart_spec.seriesField = seriesCaption
-		// 	fields.push(seriesCaption)
-		// 	categoryProperty = getEntityHierarchy(
-		// 		entityType,
-		// 		chartAnnotation.dimensions.filter((d) => d.dimension !== series.dimension)[0]
-		// 	)
-		// 	const categoryCaption = categoryProperty.memberCaption
-		// 	chart_spec[categoryField] = categoryCaption
-		// 	fields.push(categoryCaption)
-		// } else if (chartAnnotation.dimensions?.length) {
-		// 	categoryProperty = getEntityHierarchy(entityType, chartAnnotation.dimensions[0])
-		// 	if (!categoryProperty) {
-		// 		throw new Error(`Not found dimension '${chartAnnotation.dimensions[0].dimension}'`)
-		// 	}
-		// 	const categoryCaption = categoryProperty.memberCaption
-		// 	chart_spec[categoryField] = categoryCaption
-		// 	fields.push(categoryCaption)
-		// }
-
-		// chartAnnotation.measures?.forEach((measure) => {
-		// 	const property = getEntityProperty<PropertyMeasure>(entityType, measure)
-		// 	// // Type: measure
-		// 	// _data.forEach((item, index) => {
-		// 	// 	item['type'] = property.caption || property.name
-		// 	// })
-		// 	if (property.formatting?.unit === '%') {
-		// 		_data.forEach((item, index) => {
-		// 			item[property.name] = isNil(data[index][property.name])
-		// 					? null
-		// 					: (data[index][property.name] * 100).toFixed(1)
-		// 		})
-		// 	} else {
-		// 		const result = formatDataValues(data, _data, property.name)
-		// 		_data = result.values
-		// 		unit = result.unit
-		// 	}
-		// })
-
-		// chart_spec.data = {
-		// 	values: _data // 此处传入数据。
-		// }
 	}
 
 	categoryMembers = {}

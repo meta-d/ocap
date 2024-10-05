@@ -19,7 +19,7 @@ export class FeatureService {
 	constructor(private http: HttpClient) {}
 
 	getFeatureToggleDefinition() {
-		return this.http.get(`${this.API_URL}/definition`).toPromise();
+		return this.http.get<IFeature[]>(`${this.API_URL}/definition`)
 	}
 
 	getParentFeatures(

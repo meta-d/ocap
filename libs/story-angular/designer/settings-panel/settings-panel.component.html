@@ -1,4 +1,4 @@
-<mat-drawer-container class="h-full" autoresize waResizeBox="content-box" (waResizeObserver)="onResize($event)">
+<mat-drawer-container class="h-full" displayDensity="compact" autoresize waResizeBox="content-box" (waResizeObserver)="onResize($event)">
     <mat-drawer #drawer mode="over" position="end" [(opened)]="drawerOpened" class="ngm-settings-panel__drawer">
         <mat-toolbar class="ngm-settings-panel__drawer-drawer flex justify-start items-center gap-2">
             <button mat-icon-button type="button" displayDensity="cosy" (click)="closeDrawer()">

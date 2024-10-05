@@ -1,0 +1,20 @@
+@switch (data().type) {
+  @case ('AnalyticalCard') {
+    <ngm-analytical-card [title]="data().title"
+      [dataSettings]="data().dataSettings"
+      [chartSettings]="chartSettings()"
+      [slicers]="data().slicers"
+    />
+  }
+  @case ('KPI') {
+    <pac-widget-kpi displayDensity="compact" [title]="data().title"
+      [dataSettings]="data().dataSettings"
+      [slicers]="data().slicers"
+      [options]="{
+        showToolbar: true,
+        shortNumber: true,
+        digitsInfo: '0.0-2'
+      }"
+    />
+  }
+}

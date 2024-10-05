@@ -8,6 +8,7 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { EntityType, Indicator, isEntityType, isEqual, isString, nonNullable, omit, omitBlank, Schema } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { derivedAsync } from 'ngxtension/derived-async'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import {
   BehaviorSubject,
   debounceTime,
@@ -22,7 +23,6 @@ import {
 } from 'rxjs'
 import { ChatBIConversationService, ChatbiConverstion, registerModel } from '../../@core'
 import { QuestionAnswer } from './types'
-import { injectQueryParams } from 'ngxtension/inject-query-params'
 
 @Injectable()
 export class ChatbiService {

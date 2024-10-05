@@ -1,4 +1,3 @@
-import { getChartType } from '@metad/core'
 import {
   C_MEASURES,
   ChartAnnotation,
@@ -8,6 +7,7 @@ import {
   EntityType,
   ISlicer,
   assignDeepOmitBlank,
+  getChartType,
   omit,
   tryFixDimension
 } from '@metad/ocap-core'

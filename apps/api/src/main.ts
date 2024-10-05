@@ -1,19 +1,27 @@
-import { Logger, LogLevel } from '@nestjs/common'
-import { NestFactory, Reflector } from '@nestjs/core'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { AnalyticsModule, AnalyticsService, bootstrap, prepare, seedModule } from '@metad/analytics'
-import { AuthGuard, seedDefault, ServerAppModule, AppService, IntegrationLarkModule, LarkService } from '@metad/server-core'
-import { getConfig, setConfig, environment as env } from '@metad/server-config'
-import { json, urlencoded, text } from 'express'
-import * as expressSession from 'express-session';
+import { bootstrap, prepare, seedModule } from '@metad/analytics'
+import { seedDefault } from '@metad/server-core'
 import yargs from 'yargs'
-import { AppModule } from './app/app.module'
 import { pluginConfig } from './plugin-config'
 
-const LOGGER_LEVELS = ['error', 'warn', 'log', 'debug', 'verbose'] as LogLevel[]
-const LoggerIndex = LOGGER_LEVELS.findIndex((value) => value === (process.env.LOGGER_LEVEL || 'warn'))
-
 prepare()
+
+const argv: any = yargs(process.argv).argv
+const command = argv.command
+
+if (command === 'seedModule') {
+  seedModule(pluginConfig).catch((error: any) => {
+    console.log(error)
+    process.exit(1)
+  })
+} else if (command === 'seed') {
+  seedDefault(pluginConfig).catch((error: any) => {
+    console.log(error)
+    process.exit(1)
+  })
+} else {
+  bootstrap()
+}
+
 
 // async function bootstrap() {
 //   const app = await NestFactory.create(AppModule, {
@@ -54,8 +62,6 @@ prepare()
 //   const globalPrefix = 'api'
 //   app.setGlobalPrefix(globalPrefix)
 
-  
-
 //   // Seed default values
 //   const serverService = app.select(ServerAppModule).get(AppService)
 //   await serverService.seedDBIfEmpty()
@@ -83,19 +89,3 @@ prepare()
 //   })
 // }
 
-const argv: any = yargs(process.argv).argv
-const command = argv.command
-
-if (command === 'seedModule') {
-  seedModule(pluginConfig).catch((error: any) => {
-    console.log(error)
-    process.exit(1)
-  })
-} else if(command === 'seed') {
-  seedDefault(pluginConfig).catch((error: any) => {
-    console.log(error);
-    process.exit(1);
-  })  
-} else {
-  bootstrap()
-}

@@ -22,13 +22,14 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 import { nonBlank, nonNullable } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
-import { debounceTime, distinctUntilChanged, filter, map, startWith } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs'
 import { ChatbiAnswerComponent } from '../answer/answer.component'
 import { ChatbiService } from '../chatbi.service'
 import { injectExamplesAgent } from '../copilot'
 import { ChatbiInputComponent } from '../input/input.component'
-import { ChatbiLoadingComponent } from '../loading/loading.component'
+import { ChatLoadingComponent } from '../../../@shared/copilot'
 import { AppService } from '../../../app.service'
+import { UserAvatarComponent } from '../../../@shared'
 
 @Component({
   standalone: true,
@@ -45,10 +46,11 @@ import { AppService } from '../../../app.service'
     MatDividerModule,
     DensityDirective,
     NgmDisplayBehaviourComponent,
+    UserAvatarComponent,
 
     ChatbiInputComponent,
     ChatbiAnswerComponent,
-    ChatbiLoadingComponent
+    ChatLoadingComponent
   ],
   selector: 'pac-chatbi-chat',
   templateUrl: 'chat.component.html',
@@ -56,9 +58,9 @@ import { AppService } from '../../../app.service'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatbiChatComponent {
+  readonly appService = inject(AppService)
   readonly translate = inject(TranslateService)
   readonly chatbiService = inject(ChatbiService)
-  readonly appService = inject(AppService)
   readonly examplesAgent = injectExamplesAgent()
 
   readonly chatContent = viewChild('chatContent', { read: ElementRef<HTMLDivElement> })
@@ -71,6 +73,7 @@ export class ChatbiChatComponent {
 
   readonly prompt = model<string>(null)
   readonly conversation = this.chatbiService.conversation
+  readonly createdBy = computed(() => this.conversation()?.createdBy)
 
   readonly examplesEmpty = computed(() => !this.examples()?.length)
   readonly examplesLoading = signal<boolean>(false)
