@@ -1,4 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { JSONValue } from '../core.model'
 import { ICopilotRole } from './copilot-role.model'
 
 export interface IChatConversation extends IBasePerTenantAndOrganizationEntityModel {
@@ -126,16 +127,6 @@ export type CopilotChatMessage = CopilotBaseMessage & {
 export interface CopilotMessageGroup extends CopilotBaseMessage {
   messages?: CopilotChatMessage[]
 }
-
-export type JSONValue =
-  | null
-  | string
-  | number
-  | boolean
-  | {
-      [x: string]: JSONValue
-    }
-  | Array<JSONValue>
 
 // Type guards
 export function isMessageGroup(message: CopilotBaseMessage): message is CopilotMessageGroup {

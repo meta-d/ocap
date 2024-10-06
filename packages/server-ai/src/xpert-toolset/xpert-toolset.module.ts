@@ -7,6 +7,7 @@ import { XpertToolsetController } from './xpert-toolset.controller'
 import { XpertToolset } from './xpert-toolset.entity'
 import { XpertToolsetService } from './xpert-toolset.service'
 import { QueryHandlers } from './queries/handlers'
+import { CopilotModule } from '../copilot'
 
 
 @Module({
@@ -14,7 +15,9 @@ import { QueryHandlers } from './queries/handlers'
 		RouterModule.forRoutes([{ path: '/xpert-toolset', module: XpertToolsetModule }]),
 		TypeOrmModule.forFeature([XpertToolset]),
 		TenantModule,
-		CqrsModule
+		CqrsModule,
+
+		CopilotModule
 	],
 	controllers: [XpertToolsetController],
 	providers: [XpertToolsetService, ...QueryHandlers],

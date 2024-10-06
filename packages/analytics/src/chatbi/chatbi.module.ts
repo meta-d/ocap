@@ -1,4 +1,4 @@
-import { ChatModule, CopilotCheckpointModule, CopilotKnowledgeModule, CopilotModule } from '@metad/server-ai'
+import { CopilotCheckpointModule, CopilotKnowledgeModule, CopilotModule, XpertToolsetModule } from '@metad/server-ai'
 import { CacheModule, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { ChatBIModelModule } from '../chatbi-model'
@@ -18,7 +18,7 @@ import { CommandHandlers } from './commands/handlers'
 		ChatBIModelModule,
 		CopilotCheckpointModule,
 		CopilotKnowledgeModule,
-		ChatModule
+		XpertToolsetModule
 	],
 	controllers: [],
 	providers: [ChatBIService, ...CommandHandlers, ...provideOcap()],

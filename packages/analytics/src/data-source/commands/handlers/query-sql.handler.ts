@@ -1,5 +1,5 @@
 import { createQueryRunnerByType } from '@metad/adapter'
-import { ChatService } from '@metad/server-ai'
+import { XpertToolsetService } from '@metad/server-ai'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { DataSourceService } from '../../data-source.service'
 import { QuerySqlCommand } from '../query-sql.command'
@@ -7,10 +7,10 @@ import { QuerySqlCommand } from '../query-sql.command'
 @CommandHandler(QuerySqlCommand)
 export class QuerySqlHandler implements ICommandHandler<QuerySqlCommand> {
 	constructor(
-		private readonly chatService: ChatService,
+		private readonly toolsetService: XpertToolsetService,
 		private readonly dataSourceService: DataSourceService
 	) {
-		this.chatService.registerCommand('QuerySql', QuerySqlCommand)
+		this.toolsetService.registerCommand('QuerySql', QuerySqlCommand)
 	}
 
 	public async execute(command: QuerySqlCommand): Promise<string> {

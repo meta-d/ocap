@@ -1,4 +1,4 @@
-<div class="flex-1 flex flex-col items-start overflow-auto lg:flex-row">
+<div class="flex-1 flex items-start overflow-auto lg:flex-row">
   <form class="flex flex-col gap-2 p-4 w-full lg:w-[400px] lg:max-w-[400px]" [formGroup]="formGroup">
     <pac-avatar-editor formControlName="avatar" class="w-24 h-24 self-center m-8" />
 
@@ -31,6 +31,12 @@
       <list-content-loader />
     }
   </form>
+
+  <ul>
+    @for (tool of toolsetTypeTools(); track tool.name) {
+      <li>{{tool.description}}</li>
+    }
+  </ul>
 </div>
 
 <div class="flex justify-between items-center p-4">

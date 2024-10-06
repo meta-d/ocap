@@ -16,13 +16,13 @@ export type XpertToolType = {
   enabled?: boolean
   options?: Record<string, any>
   type?: 'command' | 'agent' | 'browser' | null
-  schema?: string
+  schema?: Record<string, any>
 
   /**
    * Priority role of AI provider
    * @default `AiProviderRole.Secondary`
    */
-  providerRole?: AiProviderRole
+  aiProviderRole?: AiProviderRole
 
   toolset?: IXpertToolset
 }

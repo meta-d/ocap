@@ -13,6 +13,7 @@ export type TXpertToolset = {
    */
   name: string
   type?: XpertToolsetType
+  category?: 'command' | string | null
   description?: string
   /**
    * avatar url
@@ -22,7 +23,7 @@ export type TXpertToolset = {
    * Priority role of AI provider
    * @default `AiProviderRole.Secondary`
    */
-  providerRole?: AiProviderRole
+  aiProviderRole?: AiProviderRole
 
   options?: Record<string, any>
 
@@ -44,7 +45,7 @@ export type XpertToolContext = {
   role: IXpertRole
 }
 
-export const TOOLSET_TYPES = new Map<string, any>()
+export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()
 
 TOOLSET_TYPES.set('TavilySearch', {
   name: 'TavilySearch',
@@ -61,101 +62,204 @@ TOOLSET_TYPES.set('TavilySearch', {
   }
 })
 
+TOOLSET_TYPES.set('DuckDuckGo', {
+  name: 'DuckDuckGo',
+  description: 'DuckDuckGo Search.',
+  avatar: '/assets/icons/duckduckgo-icon.webp',
+  schema: {
+    type: 'object',
+    properties: {
+      maxResults: { type: 'number', title: 'Max results', default: '2' },
+      searchOptions: {
+        type: 'object',
+        properties: {
+          safeSearch: { type: 'number', title: 'SafeSearch Level', default: '0' },
+          locale: { type: 'string', title: 'Locale' },
+        }
+      }
+    },
+    required: [],
+    secret: []
+  }
+})
+
+TOOLSET_TYPES.set('Wikipedia', {
+  name: 'Wikipedia',
+  description: 'Wikipedia Query.',
+  avatar: '/assets/icons/wikipedia-icon.png',
+})
+
+TOOLSET_TYPES.set('ChatDB', {
+  name: 'ChatDB',
+  description: 'ChatDB Tools.',
+  category: 'command',
+  avatar: '/assets/images/chatbi.jpg',
+  aiProviderRole: AiProviderRole.Primary,
+  schema: {
+    type: 'object',
+    properties: {
+      dataSourceId: { type: 'string', title: 'DataSource Id' },
+      schema: { type: 'string', title: 'Schema' },
+    },
+    required: [],
+    secret: []
+  },
+  tools: [
+    {
+      name: 'ListTables',
+      description: 'List tables',
+      schema: 
+        zodToJsonSchema(
+          z.object({
+            // dataSourceId: z.string().describe('The id of dataSource'),
+            // schema: z.string().describe('The schema in dataSource db'),
+          })
+        )
+    },
+    {
+      name: 'QuerySchema',
+      description: 'Query schema for tables',
+      schema: 
+        zodToJsonSchema(
+          z.object({
+            // dataSourceId: z.string().describe('The id of dataSource'),
+            // schema: z.string().describe('The schema in dataSource db'),
+            tables: z.array(z.string()).describe('The tables to query')
+          })
+        )
+    },
+    {
+      name: 'QuerySql',
+      description: 'Execute SQL statement of query',
+      schema: 
+        zodToJsonSchema(
+          z.object({
+            query: z.string().describe('The sql statement of query')
+          })
+        )
+    }
+  ]
+})
+
+TOOLSET_TYPES.set('ChatBI', {
+  name: 'ChatBI',
+  description: 'Chat with BI.',
+  category: 'command',
+  avatar: '/assets/images/chatbi.jpg',
+  aiProviderRole: AiProviderRole.Primary,
+  schema: {
+    type: 'object',
+    properties: {
+    },
+    required: [],
+    secret: []
+  },
+  tools: [
+    {
+      name: 'ChatBI',
+      description: 'ChatBI Command Tool',
+      schema:
+        zodToJsonSchema(
+          z.object({
+            question: z.string().describe('The question to ask bi tool')
+          })
+        )
+    }
+  ]
+})
+
+
 // 临时
 export const TOOLSETS: IXpertToolset[] = [
-  {
-    id: '1',
-    name: 'DuckDuckGo',
-    description: 'DuckDuckGo Search',
-    avatar: '/assets/icons/duckduckgo-icon.webp',
-    tools: [
-      {
-        name: 'DuckDuckGoSearch',
-        description: 'DuckDuckGo Search'
-      }
-    ]
-  },
-  {
-    id: '2',
-    name: 'Wikipedia',
-    description: 'Wikipedia Query',
-    avatar: '/assets/icons/wikipedia-icon.png',
-    tools: [
-      {
-        name: 'WikipediaQuery',
-        description: 'Wikipedia Query Tool'
-      }
-    ]
-  },
-  {
-    id: '3',
-    name: 'ChatBI',
-    description: 'Chat with BI',
-    avatar: '/assets/images/chatbi.jpg',
-    providerRole: AiProviderRole.Primary,
-    tools: [
-      {
-        name: 'ChatBI',
-        description: 'ChatBI Command Tool',
-        type: 'command',
-        schema: JSON.stringify(
-          zodToJsonSchema(
-            z.object({
-              question: z.string().describe('The question to ask bi tool')
-            })
-          )
-        )
-      }
-    ]
-  },
-  {
-    id: '4',
-    name: 'ChatDB',
-    description: 'Chat with SQL DB',
-    avatar: '/assets/images/chatbi.jpg',
-    providerRole: AiProviderRole.Primary,
-    tools: [
-      {
-        name: 'ListTables',
-        description: 'List tables',
-        type: 'command',
-        schema: JSON.stringify(
-          zodToJsonSchema(
-            z.object({
-              // dataSourceId: z.string().describe('The id of dataSource'),
-              // schema: z.string().describe('The schema in dataSource db'),
-            })
-          )
-        )
-      },
-      {
-        name: 'QuerySchema',
-        description: 'Query schema for tables',
-        type: 'command',
-        schema: JSON.stringify(
-          zodToJsonSchema(
-            z.object({
-              // dataSourceId: z.string().describe('The id of dataSource'),
-              // schema: z.string().describe('The schema in dataSource db'),
-              tables: z.array(z.string()).describe('The tables to query')
-            })
-          )
-        )
-      },
-      {
-        name: 'QuerySql',
-        description: 'Execute SQL statement of query',
-        type: 'command',
-        schema: JSON.stringify(
-          zodToJsonSchema(
-            z.object({
-              query: z.string().describe('The sql statement of query')
-            })
-          )
-        )
-      }
-    ]
-  },
+  // {
+  //   id: '1',
+  //   name: 'DuckDuckGo',
+  //   description: 'DuckDuckGo Search',
+  //   avatar: '/assets/icons/duckduckgo-icon.webp',
+  //   tools: [
+  //     {
+  //       name: 'DuckDuckGoSearch',
+  //       description: 'DuckDuckGo Search'
+  //     }
+  //   ]
+  // },
+  // {
+  //   id: '2',
+  //   name: 'Wikipedia',
+  //   description: 'Wikipedia Query',
+  //   avatar: '/assets/icons/wikipedia-icon.png',
+  //   tools: [
+  //     {
+  //       name: 'WikipediaQuery',
+  //       description: 'Wikipedia Query Tool'
+  //     }
+  //   ]
+  // },
+  // {
+  //   id: '3',
+  //   name: 'ChatBI',
+  //   description: 'Chat with BI',
+  //   avatar: '/assets/images/chatbi.jpg',
+  //   aiProviderRole: AiProviderRole.Primary,
+  //   tools: [
+  //     {
+  //       name: 'ChatBI',
+  //       description: 'ChatBI Command Tool',
+  //       type: 'command',
+  //       schema: 
+  //         zodToJsonSchema(
+  //           z.object({
+  //             question: z.string().describe('The question to ask bi tool')
+  //           })
+  //         )
+  //     }
+  //   ]
+  // },
+  // {
+  //   id: '4',
+  //   name: 'ChatDB',
+  //   description: 'Chat with SQL DB',
+  //   avatar: '/assets/images/chatbi.jpg',
+  //   aiProviderRole: AiProviderRole.Primary,
+  //   tools: [
+  //     {
+  //       name: 'ListTables',
+  //       description: 'List tables',
+  //       type: 'command',
+  //       schema: 
+  //         zodToJsonSchema(
+  //           z.object({
+  //             // dataSourceId: z.string().describe('The id of dataSource'),
+  //             // schema: z.string().describe('The schema in dataSource db'),
+  //           })
+  //         )
+  //     },
+  //     {
+  //       name: 'QuerySchema',
+  //       description: 'Query schema for tables',
+  //       type: 'command',
+  //       schema: 
+  //         zodToJsonSchema(
+  //           z.object({
+  //             // dataSourceId: z.string().describe('The id of dataSource'),
+  //             // schema: z.string().describe('The schema in dataSource db'),
+  //             tables: z.array(z.string()).describe('The tables to query')
+  //           })
+  //         )
+  //     },
+  //     {
+  //       name: 'QuerySql',
+  //       description: 'Execute SQL statement of query',
+  //       type: 'command',
+  //       schema: 
+  //         zodToJsonSchema(
+  //           z.object({
+  //             query: z.string().describe('The sql statement of query')
+  //           })
+  //         )
+  //     }
+  //   ]
+  // },
   {
     id: '5',
     name: 'SearchApi',
@@ -171,21 +275,21 @@ export const TOOLSETS: IXpertToolset[] = [
       }
     ]
   },
-  {
-    id: '6',
-    name: 'TavilySearch',
-    description: 'Tavily Search is a robust search API tailored specifically for LLM Agents.',
-    avatar: '/assets/icons/tavily.ico',
-    tools: [
-      {
-        name: 'TavilySearch',
-        description: 'Search tool tailored specifically for LLM Agents',
-        options: {
-          maxResults: 2
-        }
-      }
-    ]
-  },
+  // {
+  //   id: '6',
+  //   name: 'TavilySearch',
+  //   description: 'Tavily Search is a robust search API tailored specifically for LLM Agents.',
+  //   avatar: '/assets/icons/tavily.ico',
+  //   tools: [
+  //     {
+  //       name: 'TavilySearch',
+  //       description: 'Search tool tailored specifically for LLM Agents',
+  //       options: {
+  //         maxResults: 2
+  //       }
+  //     }
+  //   ]
+  // },
   {
     id: '7',
     name: 'ExaSearch',

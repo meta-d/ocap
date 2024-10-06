@@ -34,3 +34,13 @@ export enum OrderTypeEnum {
 	DESC = 'DESC',
 	ASC = 'ASC'
 }
+
+export type JSONValue =
+  | null
+  | string
+  | number
+  | boolean
+  | {
+      [x: string]: JSONValue
+    }
+  | Array<JSONValue>

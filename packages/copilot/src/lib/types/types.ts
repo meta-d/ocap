@@ -4,6 +4,9 @@ import { AiProvider } from './providers'
 export const DefaultModel = 'gpt-3.5-turbo'
 export const DefaultBusinessRole = 'default'
 
+/**
+ * @deprecated use in @metad/contracts
+ */
 export enum AiProviderRole {
   Primary = 'primary',
   Secondary = 'secondary'

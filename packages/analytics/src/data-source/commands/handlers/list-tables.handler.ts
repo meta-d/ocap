@@ -1,16 +1,16 @@
 import { createQueryRunnerByType } from '@metad/adapter'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { XpertToolsetService } from '@metad/server-ai'
 import { DataSourceService } from '../../data-source.service'
 import { ListTablesCommand } from '../list-tables.command'
-import { ChatService } from '@metad/server-ai'
 
 @CommandHandler(ListTablesCommand)
 export class ListTablesHandler implements ICommandHandler<ListTablesCommand> {
 	constructor(
-		private readonly chatService: ChatService,
+		private readonly toolsetService: XpertToolsetService,
 		private readonly dataSourceService: DataSourceService
 	) {
-		this.chatService.registerCommand('ListTables', ListTablesCommand)
+		this.toolsetService.registerCommand('ListTables', ListTablesCommand)
 	}
 
 	public async execute(command: ListTablesCommand): Promise<string> {

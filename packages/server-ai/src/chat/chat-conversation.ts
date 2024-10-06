@@ -1,11 +1,8 @@
-import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
-import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
 import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_run'
 import { SearchApi } from "@langchain/community/tools/searchapi"
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { tool } from '@langchain/core/tools'
 import { CompiledStateGraph, START } from '@langchain/langgraph'
 import {
 	AiProviderRole,
@@ -14,7 +11,6 @@ import {
 	CopilotBaseMessage,
 	CopilotChatMessage,
 	CopilotMessageGroup,
-	XpertToolContext,
 	IChatConversation,
 	ICopilot,
 	IXpertToolset,
@@ -25,10 +21,8 @@ import { AgentRecursionLimit } from '@metad/copilot'
 import { getErrorMessage, omit, shortuuid } from '@metad/server-common'
 import { Logger } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
-import { jsonSchemaToZod } from 'json-schema-to-zod'
 import { formatDocumentsAsString } from 'langchain/util/document'
 import { catchError, concat, filter, from, fromEvent, map, Observable, of, tap } from 'rxjs'
-import { z } from 'zod'
 import { ChatConversationUpdateCommand } from '../chat-conversation'
 import { createLLM, createReactAgent } from '../copilot'
 import { CopilotCheckpointSaver } from '../copilot-checkpoint'
@@ -104,12 +98,17 @@ export class ChatConversationAgent {
 			throw new Error(`Can't create chatModel for provider '${this.copilot.provider}'`)
 		}
 
-		console.log(toolsets)
-
 		const tools = []
-
 		toolsets.forEach((toolset) => {
-			const toolkit = createToolset(toolset)
+			const toolkit = createToolset(toolset, {
+				tenantId: this.tenantId,
+				organizationId: this.organizationId,
+				toolsetService: this.chatService.toolsetService,
+				commandBus: this.commandBus,
+				user: this.user,
+				copilots: this.chatService.getCopilots(this.tenantId, this.organizationId),
+				chatModel: llm
+			})
 			if (toolkit) {
 				tools.push(...toolkit.getTools())
 			} else {
@@ -122,24 +121,24 @@ export class ChatConversationAgent {
 						tools.push(wikiTool)
 						break
 					}
-					case 'DuckDuckGo': {
-						const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
-						tools.push(duckTool)
-						break
-					}
+					// case 'DuckDuckGo': {
+					// 	const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
+					// 	tools.push(duckTool)
+					// 	break
+					// }
 					case 'SearchApi': {
 						tools.push(new SearchApi(process.env.SEARCHAPI_API_KEY, {
 							...(toolset.tools?.[0]?.options ?? {}),
 						}))
 						break
 					}
-					case 'TavilySearch': {
-						tools.push(new TavilySearchResults({
-							...(toolset.tools?.[0]?.options ?? {}),
-							apiKey: process.env.TAVILY_API_KEY
-						}))
-						break
-					}
+					// case 'TavilySearch': {
+					// 	tools.push(new TavilySearchResults({
+					// 		...(toolset.tools?.[0]?.options ?? {}),
+					// 		apiKey: process.env.TAVILY_API_KEY
+					// 	}))
+					// 	break
+					// }
 					case 'ExaSearch': {
 						tools.push(new ExaSearchResults({
 							client: exaClient,
@@ -166,55 +165,55 @@ export class ChatConversationAgent {
 					}
 
 					default: {
-						toolset.tools?.forEach((item) => {
-							switch (item.type) {
-								case 'command': {
-									let zodSchema: z.AnyZodObject = null
-									try {
-										zodSchema = eval(jsonSchemaToZod(JSON.parse(item.schema), { module: 'cjs' }))
-									} catch (err) {
-										throw new Error(`Invalid input schema for tool: ${item.name}`)
-									}
-									// Copilot
-									let chatModel = llm
-									if (item.providerRole || toolset.providerRole) {
-										const copilot = this.chatService.findCopilot(this.tenantId, this.organizationId, item.providerRole || toolset.providerRole)
-										chatModel = this.createLLM(copilot)
-									}
+						// toolset.tools?.forEach((item) => {
+						// 	switch (item.type) {
+						// 		case 'command': {
+						// 			let zodSchema: z.AnyZodObject = null
+						// 			try {
+						// 				zodSchema = eval(jsonSchemaToZod(JSON.parse(item.schema), { module: 'cjs' }))
+						// 			} catch (err) {
+						// 				throw new Error(`Invalid input schema for tool: ${item.name}`)
+						// 			}
+						// 			// Copilot
+						// 			let chatModel = llm
+						// 			if (item.providerRole || toolset.providerRole) {
+						// 				const copilot = this.chatService.findCopilot(this.tenantId, this.organizationId, item.providerRole || toolset.providerRole)
+						// 				chatModel = this.createLLM(copilot)
+						// 			}
 
-									// Default args values in copilot role for tool function
-									const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
+						// 			// Default args values in copilot role for tool function
+						// 			const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
 
-									tools.push(
-										tool(
-											async (args, config) => {
-												try {
-													return await this.chatService.executeCommand(item.name, {
-															...(defaultArgs ?? {}),
-															...args
-														}, config, <XpertToolContext>{
-															tenantId: this.tenantId,
-															organizationId: this.organizationId,
-															user: this.user,
-															chatModel,
-															role,
-															roleContext: role?.options?.context,
-														})
-												} catch(error) {
-													return `Error: ${getErrorMessage(error)}`
-												}
-											},
-											{
-												name: item.name,
-												description: item.description,
-												schema: defaultArgs ? null : zodSchema
-											}
-										)
-									)
-									break
-								}
-							}
-						})
+						// 			tools.push(
+						// 				tool(
+						// 					async (args, config) => {
+						// 						try {
+						// 							return await this.chatService.executeCommand(item.name, {
+						// 									...(defaultArgs ?? {}),
+						// 									...args
+						// 								}, config, <XpertToolContext>{
+						// 									tenantId: this.tenantId,
+						// 									organizationId: this.organizationId,
+						// 									user: this.user,
+						// 									chatModel,
+						// 									role,
+						// 									roleContext: role?.options?.context,
+						// 								})
+						// 						} catch(error) {
+						// 							return `Error: ${getErrorMessage(error)}`
+						// 						}
+						// 					},
+						// 					{
+						// 						name: item.name,
+						// 						description: item.description,
+						// 						schema: defaultArgs ? null : zodSchema
+						// 					}
+						// 				)
+						// 			)
+						// 			break
+						// 		}
+						// 	}
+						// })
 					}
 				}
 			}

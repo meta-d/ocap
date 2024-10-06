@@ -24,6 +24,8 @@ function convertFormlyField(
   property: { type: string; extendedEnum: any[]; title: string; default: string, depend: string },
   i18n?: any
 ) {
+
+  const label = property.title || upperFirst(name)
   let type = ''
   let inputType = null
   switch (property.type) {
@@ -48,9 +50,12 @@ function convertFormlyField(
     case 'toggle':
       type = 'toggle'
       break
+    case 'object':
+      return {
+        key: name,
+        fieldGroup: convertConfigurationSchema(property, i18n)
+      }
   }
-
-  const label = property.title || upperFirst(name)
 
   const formField = {
     key: name,

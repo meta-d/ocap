@@ -5,11 +5,12 @@ import { ChatEventsGateway } from './chat.gateway'
 import { CommandHandlers } from './commands/handlers'
 import { CopilotModule } from '../copilot'
 import { CopilotCheckpointModule } from '../copilot-checkpoint'
-import { KnowledgebaseModule } from '../knowledgebase/knowledgebase.module'
+import { KnowledgebaseModule } from '../knowledgebase/'
 import { ChatService } from './chat.service'
+import { XpertToolsetModule } from '../xpert-toolset/'
 
 @Module({
-	imports: [CqrsModule, CopilotModule, CopilotCheckpointModule, KnowledgebaseModule],
+	imports: [CqrsModule, CopilotModule, CopilotCheckpointModule, KnowledgebaseModule, XpertToolsetModule],
 	controllers: [ChatController],
 	providers: [ChatEventsGateway, ChatService, ...CommandHandlers],
 	exports: [ChatService]

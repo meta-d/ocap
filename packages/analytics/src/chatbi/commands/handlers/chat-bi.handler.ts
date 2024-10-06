@@ -37,13 +37,13 @@ import {
 	workOutTimeRangeSlicers
 } from '@metad/ocap-core'
 import {
-	ChatService,
 	CopilotCheckpointSaver,
 	CopilotKnowledgeService,
 	createExampleFewShotPrompt,
 	createLLM,
 	createReactAgent,
-	createReferencesRetrieverTool
+	createReferencesRetrieverTool,
+	XpertToolsetService
 } from '@metad/server-ai'
 import { CACHE_MANAGER, Inject, Logger } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
@@ -75,7 +75,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 	readonly commandName = 'chatbi'
 
 	constructor(
-		private readonly chatService: ChatService,
+		private readonly toolsetService: XpertToolsetService,
 		private readonly chatBIService: ChatBIService,
 		private readonly modelService: ChatBIModelService,
 		private readonly copilotCheckpointSaver: CopilotCheckpointSaver,
@@ -88,7 +88,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 		@Inject(CACHE_MANAGER)
 		private readonly cacheManager: Cache
 	) {
-		this.chatService.registerCommand('ChatBI', ChatBIToolCommand)
+		this.toolsetService.registerCommand('ChatBI', ChatBIToolCommand)
 	}
 
 	public async execute(command: ChatBIToolCommand): Promise<any> {

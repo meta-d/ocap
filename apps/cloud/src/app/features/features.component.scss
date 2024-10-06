@@ -69,6 +69,10 @@ $prefix: (ngm, shell);
 
 .pac-auth-button.mat-mdc-button-base {
   --mdc-icon-button-icon-size: 100%;
+  .avatar {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 .pac_sidenav-content {

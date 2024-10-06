@@ -10,12 +10,11 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { assign, omit } from 'lodash-es'
+import { assign } from 'lodash-es'
 import { injectParams } from 'ngxtension/inject-params'
 import { distinctUntilChanged, filter, switchMap } from 'rxjs/operators'
 import {
   convertConfigurationSchema,
-  getErrorMessage,
   IXpertToolset,
   KnowledgebaseService,
   ToastrService,
@@ -69,7 +68,8 @@ export class XpertToolsetComponent extends UpsertEntityComponent<IXpertToolset> 
     name: new FormControl<string>(null),
     description: new FormControl<string>(null),
     type: new FormControl<string>(null),
-    options: new FormGroup({})
+    options: new FormGroup({}),
+    tools: new FormControl(null),
   })
 
   readonly type = toSignal(this.formGroup.get('type').valueChanges)
@@ -99,12 +99,13 @@ export class XpertToolsetComponent extends UpsertEntityComponent<IXpertToolset> 
     return convertConfigurationSchema(toolsetType.schema, this.i18n())
   })
   readonly toolsetTypeAvatar = computed(() => this.toolsetType()?.avatar)
+  readonly toolsetTypeTools = computed(() => this.toolsetType()?.tools)
 
   private toolsetSub = toObservable(this.paramId)
     .pipe(
       distinctUntilChanged(),
       filter(nonBlank),
-      switchMap((id) => this.toolsetService.getById(id, { relations: [] })),
+      switchMap((id) => this.toolsetService.getById(id, { relations: ['tools'] })),
       takeUntilDestroyed()
     )
     .subscribe((role) => {
@@ -140,22 +141,31 @@ export class XpertToolsetComponent extends UpsertEntityComponent<IXpertToolset> 
     },
     { allowSignalWrites: true }
     )
+
+    effect(() => {
+      if (this.toolsetTypeTools() && !this.formGroup.value.tools) {
+        this.formGroup.patchValue({
+          tools: this.toolsetTypeTools()
+        })
+      }
+    },
+    { allowSignalWrites: true }
+    )
   }
 
   saveAll() {
-    ;(this.formGroup.value.id
-      ? this.toolsetService.update(this.formGroup.value.id, {
-          ...this.formGroup.value
-        })
-      : this.toolsetService.create(omit(this.formGroup.value, 'id'))
-    ).subscribe({
+    const entity = {
+      ...this.formGroup.value,
+      category: this.toolsetType()?.category
+    }
+
+    this.upsert(entity).subscribe({
       next: () => {
         this.formGroup.markAsPristine()
-        this.#toastr.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created Successfully!' })
         this.close(true)
       },
       error: (error) => {
-        this.#toastr.error(getErrorMessage(error))
+        // this.#toastr.error(getErrorMessage(error))
       }
     })
   }

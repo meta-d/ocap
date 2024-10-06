@@ -5,7 +5,6 @@ import { IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, OneToMany } from 'typeorm'
 import { XpertTool } from '../core/entities/internal'
 
-
 @Entity('xpert_toolset')
 export class XpertToolset extends TenantOrganizationBaseEntity implements IXpertToolset {
 	@ApiPropertyOptional({ type: () => String })
@@ -17,6 +16,11 @@ export class XpertToolset extends TenantOrganizationBaseEntity implements IXpert
 	@IsString()
 	@Column({ nullable: true, length: 50 })
 	type: string
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@Column({ nullable: true, length: 10 })
+	category?: 'command' | string | null
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -44,7 +48,9 @@ export class XpertToolset extends TenantOrganizationBaseEntity implements IXpert
 
 	// Xpert Tools
 	@ApiProperty({ type: () => XpertTool })
-	@OneToMany(() => XpertTool, (tool) => tool.toolset)
+	@OneToMany(() => XpertTool, (tool) => tool.toolset, {
+		cascade: ['insert', 'update', 'remove', 'soft-remove', 'recover']
+	})
 	@JoinColumn()
 	tools?: IXpertTool[]
 }

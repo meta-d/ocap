@@ -1,10 +1,10 @@
-import { IXpertTool, IXpertToolset } from '@metad/contracts'
+import { IXpertTool, IXpertToolset, JSONValue } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
-import { Optional } from '@nestjs/common'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNumber, IsOptional, IsString, IsEnum } from 'class-validator'
 import { Column, Entity, Index, JoinColumn, ManyToOne, RelationId } from 'typeorm'
 import { XpertToolset } from '../core/entities/internal'
+
 
 @Entity('xpert_tool')
 export class XpertTool extends TenantOrganizationBaseEntity implements IXpertTool {
@@ -18,6 +18,12 @@ export class XpertTool extends TenantOrganizationBaseEntity implements IXpertToo
 	@IsOptional()
 	@Column({ nullable: true, length: 500 })
 	description?: string
+
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	schema?: Record<string, any>
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()

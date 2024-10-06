@@ -12,7 +12,8 @@ export class FindXpertToolsetsHandler implements IQueryHandler<FindXpertToolsets
 		const { items } = await this.service.findAll({
 			where: {
 				id: In(command.ids)
-			}
+			},
+			relations: [ 'tools' ]
 		})
 		return items
 	}

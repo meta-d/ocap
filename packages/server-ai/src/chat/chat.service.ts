@@ -1,18 +1,17 @@
 import { AiProviderRole, ICopilot } from '@metad/contracts'
-import { Injectable, Type } from '@nestjs/common'
-import { CommandBus, ICommand } from '@nestjs/cqrs'
+import { Injectable } from '@nestjs/common'
 import { CopilotService, ProviderRolePriority } from '../copilot'
+import { XpertToolsetService } from '../xpert-toolset/xpert-toolset.service'
 import { ChatConversationAgent } from './chat-conversation'
 
 @Injectable()
 export class ChatService {
 	private readonly conversations = new Map<string, ChatConversationAgent>()
-	private commands: Map<string, Type<ICommand>> = new Map()
 	private copilots = new Map<string, ICopilot[]>()
 
 	constructor(
 		private readonly copilotService: CopilotService,
-		private readonly commandBus: CommandBus
+		public readonly toolsetService: XpertToolsetService
 	) {}
 
 	setConversation(id: string, conversation: ChatConversationAgent): void {
@@ -23,16 +22,8 @@ export class ChatService {
 		return this.conversations.get(id)
 	}
 
-	registerCommand(name: string, command: Type<ICommand>) {
-		this.commands.set(name, command)
-	}
-
-	async executeCommand(name: string, ...args: any[]) {
-		const command = this.commands.get(name)
-		if (!command) {
-			throw new Error(`Command "${name}" not found`)
-		}
-		return await this.commandBus.execute(new command(...args))
+	getCopilots(tenantId: string, organizationId: string) {
+		return this.copilots.get(`${tenantId}/${organizationId}`)
 	}
 
 	async fetchCopilots(tenantId: string, organizationId: string) {
