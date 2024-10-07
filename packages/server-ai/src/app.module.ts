@@ -16,6 +16,7 @@ import { KnowledgebaseModule } from './knowledgebase/index'
 import { XpertRoleModule } from './xpert-role/index'
 import { XpertToolModule } from './xpert-tool/index'
 import { XpertToolsetModule } from './xpert-toolset/index'
+import { XpertAgentModule } from './xpert-agent/index'
 
 @Module({
 	imports: [
@@ -32,6 +33,7 @@ import { XpertToolsetModule } from './xpert-toolset/index'
 		CopilotUserModule,
 		CopilotOrganizationModule,
 		GraphragModule,
+		XpertAgentModule,
 		XpertRoleModule,
 		XpertToolModule,
 		XpertToolsetModule

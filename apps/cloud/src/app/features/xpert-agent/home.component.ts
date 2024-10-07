@@ -9,8 +9,9 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
+import { FFlowModule } from '@foblex/flow'
 import { routeAnimations } from '../../@core'
-import { AvatarComponent, MaterialModule } from '../../@shared'
+import { AvatarComponent, MaterialModule, ToolsetCardComponent } from '../../@shared'
 import { AppService } from '../../app.service'
 
 @Component({
@@ -26,8 +27,11 @@ import { AppService } from '../../app.service'
     TranslateModule,
     IntersectionObserverModule,
     MaterialModule,
+    FFlowModule,
+    
     NgmCommonModule,
-    AvatarComponent
+    AvatarComponent,
+    ToolsetCardComponent
   ],
   selector: 'pac-xpert-agent-home',
   templateUrl: './home.component.html',
