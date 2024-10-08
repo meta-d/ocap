@@ -4,8 +4,9 @@
   @apply w-full w-full;
 }
 
-::ng-deep simple-flow {
+:host::ng-deep {
   @include flow-common.connection;
+  @include flow-common.background;
 }
 f-flow {
   height: 100%;
