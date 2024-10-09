@@ -1,6 +1,7 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
+import { IXpertWorkspace } from './xpert-workspace.model'
 
 /**
  * Expert role, business role for the xperts.
@@ -20,6 +21,9 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
   starters?: string[]
   active?: boolean
   avatar?: string
+
+  workspaceId?: string
+  workspace?: IXpertWorkspace
 
   toolsets?: IXpertToolset[]
   /**

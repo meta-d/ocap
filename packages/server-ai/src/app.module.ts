@@ -17,6 +17,7 @@ import { XpertRoleModule } from './xpert-role/index'
 import { XpertToolModule } from './xpert-tool/index'
 import { XpertToolsetModule } from './xpert-toolset/index'
 import { XpertAgentModule } from './xpert-agent/index'
+import { XpertWorkspaceModule } from './xpert-workspace'
 
 @Module({
 	imports: [
@@ -36,7 +37,8 @@ import { XpertAgentModule } from './xpert-agent/index'
 		XpertAgentModule,
 		XpertRoleModule,
 		XpertToolModule,
-		XpertToolsetModule
+		XpertToolsetModule,
+		XpertWorkspaceModule
 	],
 	controllers: [],
 	providers: [...EventHandlers]

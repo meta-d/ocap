@@ -1,11 +1,13 @@
 import { TenantOrganizationAwareCrudService } from '@metad/server-core'
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common'
-import { CommandBus } from '@nestjs/cqrs'
+import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { assign } from 'lodash'
-import { In, Repository } from 'typeorm'
+import { FindConditions, In, IsNull, Repository } from 'typeorm'
 import { KnowledgebaseService } from '../knowledgebase'
 import { XpertRole } from './xpert-role.entity'
+import { IUser } from '@metad/contracts'
+import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 
 @Injectable()
 export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRole> {
@@ -16,7 +18,8 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		repository: Repository<XpertRole>,
 		@Inject(forwardRef(() => KnowledgebaseService))
 		private readonly knowledgebaseService: KnowledgebaseService,
-		private readonly commandBus: CommandBus
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
 	) {
 		super(repository)
 	}
@@ -27,15 +30,33 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		return await this.repository.save(_entity)
 	}
 
-	// async updateKnowledgebases(roleId: string, knowledgebases: string[]): Promise<XpertRole> {
-	// 	const role = await super.findOne({ where: { id: roleId }, relations: ['knowledgebases'] })
-	// 	const _knowledgebases = await this.knowledgebaseService.findAll({
-	// 		where: {
-	// 			id: In(knowledgebases)
-	// 		}
-	// 	})
+	async getAllByWorkspace(workspaceId: string, data, user: IUser) {
+		const { relations, order, take } = data ?? {}
+		let { where } = data ?? {}
+		where = where ?? {}
+		if (workspaceId === 'null' || workspaceId === 'undefined' || !workspaceId) {
+			where = {
+				...(<FindConditions<XpertRole>>where),
+				workspaceId: IsNull(),
+				createdById: user.id
+			}
+		} else {
+			const workspace = await this.queryBus.execute(new GetXpertWorkspaceQuery(user, { id: workspaceId }))
+			if (!workspace) {
+				throw new NotFoundException(`Not found or no auth for xpert workspace '${workspaceId}'`)
+			}
 
-	// 	role.knowledgebases = _knowledgebases.items
-	// 	return await this.repository.save(role)
-	// }
+			where = {
+				...(<FindConditions<XpertRole>>where),
+				workspaceId: workspaceId
+			}
+		}
+
+		return this.findAll({
+			where,
+			relations,
+			order,
+			take
+		})
+	}
 }

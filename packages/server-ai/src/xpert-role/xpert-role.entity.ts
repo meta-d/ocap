@@ -1,9 +1,9 @@
-import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions } from '@metad/contracts'
-import { ApiPropertyOptional } from '@nestjs/swagger'
+import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace } from '@metad/contracts'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, Index, JoinTable, ManyToMany } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
-import { Knowledgebase, XpertToolset } from '../core/entities/internal'
+import { Knowledgebase, XpertToolset, XpertWorkspace } from '../core/entities/internal'
 
 
 @Entity('xpert_role')
@@ -58,10 +58,25 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 
 	/*
     |--------------------------------------------------------------------------
+    | @ManyToOne
+    |--------------------------------------------------------------------------
+    */
+	@ApiProperty({ type: () => XpertWorkspace })
+	@ManyToOne(() => XpertWorkspace)
+	@JoinColumn()
+	workspace?: IXpertWorkspace
+
+	@ApiProperty({ type: () => String })
+	@RelationId((it: XpertRole) => it.workspace)
+	@IsString()
+	@Column({ nullable: true })
+	workspaceId?: string
+	
+	/*
+    |--------------------------------------------------------------------------
     | @ManyToMany 
     |--------------------------------------------------------------------------
     */
-
 	// Xpert role's knowledgebases
 	@ManyToMany(() => Knowledgebase, {
 		onUpdate: 'CASCADE',

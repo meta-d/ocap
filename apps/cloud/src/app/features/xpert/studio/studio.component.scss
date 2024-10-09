@@ -1,0 +1,20 @@
+@use '../flow-common';
+
+:host {
+  --mat-sidenav-container-width: 24rem;
+  @apply w-full w-full;
+}
+
+:host::ng-deep {
+  @include flow-common.connection;
+  @include flow-common.background;
+}
+f-flow {
+  height: 100%;
+}
+.f-node {
+  @include flow-common.node;
+}
+.f-node {
+  cursor: default;
+}

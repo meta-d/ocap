@@ -1,0 +1,26 @@
+<mat-sidenav-container class="flex-1 h-full">
+  <mat-sidenav #sidenav opened [mode]="isMobile() ? 'over' : 'side'" class="w-[400px]">
+    
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <f-flow fDraggable>
+        <f-background>
+            <f-circle-pattern></f-circle-pattern>
+        </f-background>
+        <f-canvas>
+            <f-connection fType="bezier" fOutputId="output1" fInputId="input1"></f-connection>
+            <div fNode fDragHandle [fNodePosition]="{ x: 24, y: 24 }" fNodeOutput fOutputId="output1" 
+            fOutputConnectableSide="bottom">
+            <pac-toolset-card [toolset]="{name: 'AAA'}"/>
+            </div>
+            <div fNode fDragHandle [fNodePosition]="{ x: 244, y: 24 }" fNodeInput fInputId="input1" fInputConnectableSide="left">
+            Drag me
+            </div>
+
+            <div fNode fDragHandle [fNodePosition]="{ x: 244, y: 44 }" fNodeInput fInputId="input2" fInputConnectableSide="left">
+            Drag me 2
+            </div>
+        </f-canvas>
+    </f-flow>
+  </mat-sidenav-content>
+</mat-sidenav-container>

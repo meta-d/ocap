@@ -1,18 +1,23 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkListboxModule } from '@angular/cdk/listbox'
+import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { FFlowModule } from '@foblex/flow'
+import { NgmCommonModule, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { FFlowModule } from '@foblex/flow'
-import { routeAnimations } from '../../@core'
-import { AvatarComponent, MaterialModule, ToolsetCardComponent } from '../../@shared'
-import { AppService } from '../../app.service'
+import { EMPTY } from 'rxjs'
+import { map, switchMap } from 'rxjs/operators'
+import { getErrorMessage, IXpertWorkspace, ToastrService, XpertWorkspaceService } from '../../../@core'
+import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
+import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,
@@ -23,32 +28,35 @@ import { AppService } from '../../app.service'
     RouterModule,
     DragDropModule,
     CdkListboxModule,
+    CdkMenuModule,
     RouterModule,
     TranslateModule,
     IntersectionObserverModule,
     MaterialModule,
     FFlowModule,
-    
+
     NgmCommonModule,
-    AvatarComponent,
     ToolsetCardComponent
   ],
-  selector: 'pac-xpert-agent-home',
-  templateUrl: './home.component.html',
-  styleUrl: 'home.component.scss',
-  animations: [routeAnimations],
+  selector: 'pac-xpert-studio',
+  templateUrl: './studio.component.html',
+  styleUrl: 'studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class XpertAgentHomeComponent {
+export class XpertStudioComponent {
   DisplayBehaviour = DisplayBehaviour
 
   readonly appService = inject(AppService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly logger = inject(NGXLogger)
-
-  readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
+  readonly #dialog = inject(MatDialog)
+  readonly #toastr = inject(ToastrService)
+  readonly workspaceService = inject(XpertWorkspaceService)
 
   readonly isMobile = this.appService.isMobile
-  readonly lang = this.appService.lang
+
+  
+
+  
 }

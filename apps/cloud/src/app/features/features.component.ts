@@ -437,6 +437,7 @@ export class FeaturesComponent implements OnInit {
           },
         ]
       },
+      // Xpert AI Features
       {
         title: 'Chat',
         matIcon: 'robot_2',
@@ -449,6 +450,18 @@ export class FeaturesComponent implements OnInit {
         }
       },
       {
+        title: 'Xpert Agent',
+        matIcon: 'engineering',
+        link: '/xpert',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'Xpert Agent',
+          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
+          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
+        }
+      },
+      // BI Features
+      {
         title: 'Chat BI',
         matIcon: 'mms',
         link: '/chatbi',
@@ -457,17 +470,6 @@ export class FeaturesComponent implements OnInit {
           translationKey: 'ChatBI',
           featureKey: AnalyticsFeatures.FEATURE_COPILOT_CHATBI,
           permissionKeys: [AnalyticsPermissionsEnum.CHATBI_VIEW]
-        }
-      },
-      {
-        title: 'Xpert Agent',
-        matIcon: 'network_node',
-        link: '/agent',
-        pathMatch: 'prefix',
-        data: {
-          translationKey: 'Xpert Agent',
-          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
-          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
         }
       },
       // {

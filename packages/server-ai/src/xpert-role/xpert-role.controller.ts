@@ -1,8 +1,7 @@
-import { IXpertRole } from '@metad/contracts'
-import { Body, Controller, Logger, Param, Put, UseInterceptors } from '@nestjs/common'
+import { CrudController, ParseJsonPipe, RequestContext, TransformInterceptor } from '@metad/server-core'
+import { Controller, Get, Logger, Param, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { CrudController, TransformInterceptor } from '@metad/server-core'
 import { XpertRole } from './xpert-role.entity'
 import { XpertRoleService } from './xpert-role.service'
 
@@ -19,11 +18,8 @@ export class XpertRoleController extends CrudController<XpertRole> {
 		super(service)
 	}
 
-	// @Put(':id/knowledgebases')
-	// async updateKnowledgebases(
-	// 	@Param('id') id: string,
-	// 	@Body('knowledgebases') knowledgebases: string[]
-	// ): Promise<IXpertRole> {
-	// 	return await this.service.updateKnowledgebases(id, knowledgebases)
-	// }
+	@Get('by-workspace/:id')
+	async getAllByWorkspace(@Param('id') workspaceId: string, @Query('data', ParseJsonPipe) data: any) {
+		return this.service.getAllByWorkspace(workspaceId, data, RequestContext.currentUser())
+	}
 }

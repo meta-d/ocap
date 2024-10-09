@@ -1,12 +1,12 @@
 import { inject, Injectable } from '@angular/core'
-import { OrganizationBaseCrudService } from '@metad/cloud/state'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable, tap } from 'rxjs'
 import { API_XPERT_ROLE } from '../constants/app.constants'
-import { IXpertRole } from '../types'
+import { IXpertRole, IXpertWorkspace } from '../types'
+import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 
 @Injectable({ providedIn: 'root' })
-export class XpertRoleService extends OrganizationBaseCrudService<IXpertRole> {
+export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> {
   readonly #logger = inject(NGXLogger)
 
   readonly #refresh = new BehaviorSubject<void>(null)
@@ -30,8 +30,4 @@ export class XpertRoleService extends OrganizationBaseCrudService<IXpertRole> {
   refresh() {
     this.#refresh.next()
   }
-
-  // updateKnowledgebases(roleId: string, knowledgebases: string[]): Observable<IXpertRole> {
-  //   return this.httpClient.put<IXpertRole>(this.apiBaseUrl + '/' + roleId + '/knowledgebases', { knowledgebases })
-  // }
 }

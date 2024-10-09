@@ -128,8 +128,8 @@ const routes: Routes = [
         }
       },
       {
-        path: 'agent',
-        loadChildren: () => import('./xpert-agent/routes').then(m => m.routes),
+        path: 'xpert',
+        loadChildren: () => import('./xpert/routes').then(m => m.routes),
         canActivate: [AuthGuard],
         data: {
           title: 'Xpert Agent',

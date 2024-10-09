@@ -12,6 +12,7 @@ import {
 	XpertRole,
 	XpertTool,
 	XpertToolset,
+	XpertWorkspace,
 } from './internal'
 
 export const ALL_AI_ENTITIES = [
@@ -27,5 +28,6 @@ export const ALL_AI_ENTITIES = [
 	XpertAgent,
 	XpertRole,
 	XpertTool,
-	XpertToolset
+	XpertToolset,
+	XpertWorkspace
 ]
