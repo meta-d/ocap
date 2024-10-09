@@ -12,6 +12,7 @@ import { IsString, IsNotEmpty } from 'class-validator';
 import { TenantOrganizationBaseEntity, User } from '../core/entities/internal';
 
 @Entity('user_organization')
+@Index(['tenantId', 'organizationId', 'userId'], {unique: true})
 export class UserOrganization
 	extends TenantOrganizationBaseEntity
 	implements IUserOrganization {
