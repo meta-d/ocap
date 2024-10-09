@@ -19,6 +19,7 @@ import {
 } from '../../../@core'
 import { AvatarComponent, MaterialModule, TranslationBaseComponent, UserProfileInlineComponent } from '../../../@shared'
 
+
 @Component({
   standalone: true,
   selector: 'pac-settings-knowledgebases',
@@ -40,7 +41,7 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
   KnowledgebasePermission = KnowledgebasePermission
 
   readonly knowledgebaseService = inject(KnowledgebaseService)
-  readonly _toastrService = inject(ToastrService)
+  readonly #toastr = inject(ToastrService)
   readonly #store = inject(Store)
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
@@ -88,10 +89,10 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
       .subscribe({
         next: (result) => {
           this.refresh()
-          this._toastrService.success('Created knowledgebase', 'Success')
+          this.#toastr.success('PAC.Messages.CreatedSuccessfully', {}, 'PAC.KEY_WORDS.Knowledgebase', {Default: 'Knowledgebase'})
         },
         error: (error) => {
-          this._toastrService.error(error, 'Error')
+          this.#toastr.error(error, 'Error')
         }
       })
   }
@@ -115,10 +116,10 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
       .subscribe({
         next: () => {
           this.refresh()
-          this._toastrService.success('PAC.Messages.DeletedSuccessfully', 'Deleted Successfully')
+          this.#toastr.success('PAC.Messages.DeletedSuccessfully', {Default: 'Deleted Successfully'})
         },
         error: (error) => {
-          this._toastrService.error(getErrorMessage(error), 'Error')
+          this.#toastr.error(getErrorMessage(error), 'Error')
         }
       })
   }

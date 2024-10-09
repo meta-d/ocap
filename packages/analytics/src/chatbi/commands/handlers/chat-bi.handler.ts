@@ -344,7 +344,7 @@ ${createAgentStepsInstructions(
 	 */
 	createCubeContextTool(context: CopilotToolContext, dsCoreService: DSCoreService) {
 		// Maximum waiting time of tool call
-		const { toolMaximumWaitTime = DefaultToolMaximumWaitTime } = context.roleContext
+		const { toolMaximumWaitTime = DefaultToolMaximumWaitTime } = context.roleContext ?? {}
 		return tool(
 			async ({ cubes }): Promise<string> => {
 				this.logger.debug(`Tool 'getCubeContext' params:`, JSON.stringify(cubes))

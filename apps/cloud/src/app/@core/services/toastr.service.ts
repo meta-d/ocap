@@ -13,7 +13,7 @@ import { NgmConfirmSnackBar } from '@metad/ocap-angular/common'
 export class ToastrService {
   constructor(private readonly _snackBar: MatSnackBar, private readonly translateService: TranslateService) {}
 
-  success(message: any, translationParams: Object = {}, title?: string) {
+  success(message: any, translationParams: Object = {}, title?: string, titleParams?: Object) {
     let displayMessage = ''
 
     if (message && message.message && typeof message.message === 'string') {
@@ -24,7 +24,7 @@ export class ToastrService {
 
     return this._snackBar.open(
       this.getTranslation(displayMessage, translationParams),
-      this.getTranslation(title || 'PAC.TOASTR.TITLE.SUCCESS'),
+      this.getTranslation(title || 'PAC.TOASTR.TITLE.SUCCESS', titleParams),
       { duration: 2000 }
     )
   }
