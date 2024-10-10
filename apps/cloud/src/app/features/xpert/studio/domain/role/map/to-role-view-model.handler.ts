@@ -1,12 +1,13 @@
 import { IHandler } from '@foblex/mediator'
+import { IXpertRole } from 'apps/cloud/src/app/@core'
+import { IStudioStorage } from '../../studio.storage'
 import { IRoleViewModel } from '../i-role-view-model'
-import { IRoleStorageModel } from '../i-role-storage-model'
 
 export class ToRoleViewModelHandler implements IHandler<void, IRoleViewModel[]> {
-  constructor(private roles: IRoleStorageModel[]) {}
+  constructor(private storage: IStudioStorage) {}
 
   public handle(): IRoleViewModel[] {
-    return this.roles.map((x) => {
+    return [...(this.storage.roles ?? []), this.storage.team, ...handleRoles(this.storage.team)].map((x) => {
       return {
         ...x,
         key: x.key ?? x.id,
@@ -14,4 +15,15 @@ export class ToRoleViewModelHandler implements IHandler<void, IRoleViewModel[]> 
       }
     })
   }
+}
+
+function handleRoles(role: IXpertRole) {
+  const roles = []
+  for (const member of role.members ?? []) {
+    roles.push(member)
+    if (member.members) {
+      roles.push(...handleRoles(member))
+    }
+  }
+  return roles
 }

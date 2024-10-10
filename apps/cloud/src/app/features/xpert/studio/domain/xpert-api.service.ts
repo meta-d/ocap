@@ -1,22 +1,20 @@
-import { inject, Injectable } from '@angular/core'
+import { inject, Injectable, signal } from '@angular/core'
 import { IPoint } from '@foblex/2d'
-import { generateGuid } from '@foblex/utils'
 import { IXpertRole, TXpertRoleDraft } from '@metad/contracts'
-import { debounceTime, distinctUntilChanged, filter, map, Observable, skip, Subject, switchMap } from 'rxjs'
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, skip, Subject, switchMap, tap } from 'rxjs'
 import { CreateConnectionHandler, CreateConnectionRequest, ToConnectionViewModelHandler } from './connection'
 import { IStudioModel } from './i-studio-model'
 import { CreateRoleHandler, CreateRoleRequest, MoveRoleHandler, MoveRoleRequest, RemoveRoleHandler, RemoveRoleRequest, ToRoleViewModelHandler } from './role'
 import { IStudioStorage } from './studio.storage'
 import { XpertRoleService } from 'apps/cloud/src/app/@core'
 import { injectParams } from 'ngxtension/inject-params'
-import { toObservable } from '@angular/core/rxjs-interop'
-import { getXpertRoleKey } from './types'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import * as CryptoJS from 'crypto-js'
 
 
 @Injectable()
 export class XpertStudioApiService {
-  readonly teamId = injectParams('id')
+  readonly paramId = injectParams('id')
   readonly xpertRoleService = inject(XpertRoleService)
 
   private storage: IStudioStorage = null
@@ -28,22 +26,44 @@ export class XpertStudioApiService {
       filter((value) => value !== EReloadReason.MOVED)
     )
   }
+  readonly paramId$ = toObservable(this.paramId)
 
-  private teamSub = toObservable(this.teamId).pipe(
+  readonly team = signal<IXpertRole>(null)
+  readonly versions = toSignal(this.paramId$.pipe(
     distinctUntilChanged(),
-    switchMap((id) => this.xpertRoleService.getOneById(id, { relations: ['members', 'toolsets'] }))
-  ).subscribe((role) => this.initRole(role))
+    switchMap((id) => this.xpertRoleService.getVersions(id))
+  ))
 
-  private saveDraftSub = this.reload.pipe(
-    skip(1),
+  readonly draft = signal<TXpertRoleDraft>(null)
+
+  // private teamSub = toObservable(this.teamId).pipe(
+  //   distinctUntilChanged(),
+  //   switchMap((id) => this.xpertRoleService.getTeam(id))
+  // ).subscribe((role) => this.initRole(role))
+
+  readonly refresh$ = new BehaviorSubject<void>(null)
+
+  private saveDraftSub = this.refresh$.pipe(
+    switchMap(() => combineLatest([
+      this.paramId$.pipe(
+        distinctUntilChanged(),
+        switchMap((id) => this.xpertRoleService.getTeam(id)),
+        tap((role) => {
+          this.draft.set(role.draft)
+          this.initRole(role)
+        })
+      ),
+      this.reload.pipe(filter((event) => event !== EReloadReason.INIT))
+    ])),
     map(() => calculateHash(JSON.stringify(this.storage))),
     distinctUntilChanged(),
     map(() => this.storage),
     debounceTime(10 * 1000),
     switchMap((draft) => this.xpertRoleService.saveDraft(this.storage.team.id, draft))
-  ).subscribe()
+  ).subscribe(() => this.draft.set(structuredClone(this.storage)))
 
   public initRole(role: IXpertRole) {
+    this.team.set(role)
     this.storage = (role.draft ? {
       ...role.draft,
       team: {
@@ -55,25 +75,20 @@ export class XpertStudioApiService {
       roles: [],
     }) as TXpertRoleDraft
 
-    this.reload.next(EReloadReason.JUST_RELOAD)
+    this.reload.next(EReloadReason.INIT)
+  }
+
+  public resume() {
+    this.xpertRoleService.update(this.team().id, {draft: null}).subscribe(() => {
+      this.refresh$.next()
+    })
   }
 
   public get(): IStudioModel {
-    const roles = []
-    const connections = []
-    this.storage?.team?.members?.forEach((member) => {
-      roles.push(member)
-      connections.push({
-        key: generateGuid(),
-        from: getXpertRoleKey(this.storage.team),
-        to: getXpertRoleKey(member)
-      })
-    })
-
     return this.storage && {
       team: this.storage.team,
-      roles: new ToRoleViewModelHandler([this.storage.team, ...this.storage.roles, ...roles]).handle(),
-      connections: new ToConnectionViewModelHandler(connections).handle()
+      roles: new ToRoleViewModelHandler(this.storage).handle(),
+      connections: new ToConnectionViewModelHandler(this.storage).handle()
     }
   }
 
@@ -103,6 +118,8 @@ export class XpertStudioApiService {
 }
 
 export enum EReloadReason {
+  INIT,
+
   JUST_RELOAD,
 
   CONNECTION_CHANGED,

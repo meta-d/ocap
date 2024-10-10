@@ -3,7 +3,7 @@ import { omit, pick } from '@metad/server-common'
 import { Logger, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { assign } from 'lodash'
-import { IsNull } from 'typeorm'
+import { IsNull, Not } from 'typeorm'
 import { XpertRole } from '../../xpert-role.entity'
 import { XpertRoleService } from '../../xpert-role.service'
 import { XpertRolePublishCommand } from '../publish.command'
@@ -89,25 +89,31 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 	}
 
 	async saveTeamVersion(team: XpertRole, version: string) {
+		const newTeam = await this.roleService.create({
+			...omit(team, 'id'),
+			version,
+			latest: false,
+		})
+
 		const { items } = await this.roleService.findAll({
 			where: {
+				id: Not(team.id),
 				workspaceId: team.workspaceId,
 				teamRoleId: team.id,
 				version: team.version ?? IsNull()
 			},
 			relations: ['members']
 		})
-		if (!items.find((item) => item.id === team.id)) {
-			items.push(team)
-		}
+
 		for await (const role of items) {
-			await this.saveTeamMemberVersion(role, version, items, {})
+			await this.saveTeamMemberVersion(role, version, newTeam, items, {})
 		}
 	}
 
 	async saveTeamMemberVersion(
 		role: IXpertRole,
 		version: string,
+		team: IXpertRole,
 		members: IXpertRole[],
 		mapNew: Record<string, string>
 	) {
@@ -120,7 +126,7 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 				if (index > -1 && members[index].id !== role.id) {
 					const _member = members[index]
 					members[index] = null
-					const newMember = await this.saveTeamMemberVersion(_member, version, members, mapNew)
+					const newMember = await this.saveTeamMemberVersion(_member, version, team, members, mapNew)
 					mapNew[_member.id] = newMember.id
 				}
 			}
@@ -130,6 +136,7 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 			...omit(role, 'id'),
 			version,
 			latest: false,
+			teamRoleId: team.id,
 			members: newMembers
 		})
 	}

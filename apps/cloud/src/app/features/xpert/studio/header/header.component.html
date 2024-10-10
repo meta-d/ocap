@@ -193,22 +193,30 @@
 
 <ng-template #publishMenu>
   <div class="ngm-cdk-menu w-80" cdkMenu>
-    <div class="flex flex-col p-4 pt-3">
+    <div class="flex flex-col">
       <div class="flex items-center h-6 text-xs font-medium text-gray-500 uppercase">最新发布</div>
-      <div class="flex justify-between items-center h-[18px]">
-        <div class="flex items-center mt-[3px] mb-[3px] leading-[18px] text-[13px] font-medium text-gray-700">
-          发布于 1 天前
+      <div [cdkMenuTriggerFor]="versionMenu" class="flex justify-between items-center">
+        <div class="flex items-center mt-[3px] mb-[3px] font-medium text-gray-700">
+          Version: {{version()}}
+          @if (latest()) {
+            <div class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-green-200 text-green-700 rounded-lg">
+              latest
+            </div>
+          }
         </div>
-        <button mat-stroked-button color="primary"
-          type="button"
-          class="btn-small ml-2 px-2 text-primary-600 false"
-          data-tabindex=""
-          tabindex="-1"
-        >
-          恢复
+      @if (draft()) {
+        <button mat-stroked-button color="primary" (click)="resume()"
+            type="button"
+            class="btn-small ml-2 px-2 text-primary-600 false"
+            data-tabindex=""
+            tabindex="-1"
+          >
+            恢复
         </button>
-      </div>
-      <button mat-flat-button color="primary"
+      }
+    </div>
+
+      <button mat-flat-button color="primary" [disabled]="!draft()"
         type="button"
         class="w-full mt-3"
         data-tabindex=""
@@ -218,5 +226,19 @@
         发布为新版本
       </button>
     </div>
+  </div>
+</ng-template>
+
+<ng-template #versionMenu>
+  <div class="ngm-cdk-menu" cdkMenu>
+    @for (item of versions(); track item.version) {
+      <button class="example-menu-item" cdkMenuItem>{{item.version}}
+        @if (item.version === version()) {
+            <div class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-blue-200 text-blue-700 rounded-lg">
+                current
+            </div>
+        }
+      </button>
+    }
   </div>
 </ng-template>

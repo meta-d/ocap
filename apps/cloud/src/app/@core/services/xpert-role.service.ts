@@ -31,8 +31,16 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
     this.#refresh.next()
   }
 
+  getTeam(id: string) {
+    return this.httpClient.get<IXpertRole>(this.apiBaseUrl + `/${id}/team`)
+  }
+
+  getVersions(id: string) {
+    return this.httpClient.get<{id: string; key: string; version: string; latest: boolean;}[]>(this.apiBaseUrl + `/${id}/version`)
+  }
+
   saveDraft(id: string, draft: TXpertRoleDraft) {
-    return this.httpClient.put(this.apiBaseUrl + `/${id}/draft`, draft)
+    return this.httpClient.put<TXpertRoleDraft>(this.apiBaseUrl + `/${id}/draft`, draft)
   }
 
   publish(id: string) {

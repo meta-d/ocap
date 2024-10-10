@@ -3,7 +3,7 @@ import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nest
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { assign } from 'lodash'
-import { FindConditions, In, IsNull, Repository } from 'typeorm'
+import { FindConditions, IsNull, Repository } from 'typeorm'
 import { KnowledgebaseService } from '../knowledgebase'
 import { XpertRole } from './xpert-role.entity'
 import { IUser, IXpertRole, TXpertRoleDraft } from '@metad/contracts'
@@ -61,6 +61,15 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		})
 	}
 
+	async getTeam(id: string) {
+		const team = await this.findOne(id, { relations: ['members', 'toolsets', 'knowledgebases'] })
+		if (!team.draft) {
+			const { items } = await this.findAll({ where: { workspaceId: team.workspaceId, teamRoleId: team.id }, relations: ['members', 'toolsets', 'knowledgebases'] })
+			assembleXpertRole(team, items, [])
+		}
+		return team
+	}
+
 	async save(entity: XpertRole) {
 		return await this.repository.save(entity)
 	}
@@ -82,4 +91,37 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 	async publish(id: string,) {
 		return await this.commandBus.execute(new XpertRolePublishCommand(id))
 	}
+
+	async allVersions(id: string) {
+		const role = await this.findOne(id)
+		const { items: allVersionRoles } = await this.findAll({
+			where: {
+				workspaceId: role.workspaceId,
+				key: role.key,
+				name: role.name
+			}
+		})
+
+		return allVersionRoles.map((role) => ({
+			id: role.id,
+			key: role.key,
+			version: role.version,
+			latest: role.latest
+		}))
+	}
+}
+
+function assembleXpertRole(role: IXpertRole, items: IXpertRole[], assembles: string[]) {
+	if (assembles.includes(role.id)) {
+		return role
+	}
+	role.members = role.members?.map((m) => items.find((item) => item.id === m.id) ?? m)
+
+	if (role.members) {
+	  for (const member of role.members) {
+		assembleXpertRole(member, items, assembles)
+	  }
+	}
+
+	return role
 }

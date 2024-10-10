@@ -106,8 +106,9 @@ export class XpertStudioComponent {
     connections: []
   })
 
-  readonly team = computed(() => this.viewModel()?.team)
+  readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
+  readonly versions = computed(() => this.apiService.versions())
   readonly roles = computed(() => this.viewModel()?.roles)
   readonly connections = computed(() => this.viewModel()?.connections)
 

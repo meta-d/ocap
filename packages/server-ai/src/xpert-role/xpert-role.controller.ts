@@ -24,6 +24,16 @@ export class XpertRoleController extends CrudController<XpertRole> {
 		return this.service.getAllByWorkspace(workspaceId, data, RequestContext.currentUser())
 	}
 
+	@Get(':id/team')
+	async getTeam(@Param('id') id: string) {
+		return this.service.getTeam(id)
+	}
+
+	@Get(':id/version')
+	async allVersions(@Param('id') id: string) {
+		return this.service.allVersions(id)
+	}
+
 	@Put(':id/draft')
 	async saveDraft(@Param('id') roleId: string, @Body() body: TXpertRoleDraft) {
 		// todo 检查有权限编辑此 xpert role

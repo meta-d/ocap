@@ -1,15 +1,30 @@
 import { IHandler } from '@foblex/mediator'
-import { IRoleConnectionStorageModel } from '../i-role-connection-storage-model'
+import { IXpertRole } from '../../../../../../@core/types'
+import { IStudioStorage } from '../../studio.storage'
+import { getXpertRoleKey } from '../../types'
 import { IRoleConnectionViewModel } from '../i-role-connection-view-model'
 
 export class ToConnectionViewModelHandler implements IHandler<void, IRoleConnectionViewModel[]> {
-  constructor(private connections: IRoleConnectionStorageModel[]) {}
+  constructor(private storage: IStudioStorage) {}
 
   public handle(): IRoleConnectionViewModel[] {
-    return this.connections.map((x) => {
-      return {
-        ...x
-      }
-    })
+    return handleConntections(this.storage.team)
   }
+}
+
+function handleConntections(role: IXpertRole) {
+  const connections = []
+  for (const member of role.members ?? []) {
+    const from = getXpertRoleKey(role)
+    const to = getXpertRoleKey(member)
+    connections.push({
+      key: from + '/' + to,
+      from,
+      to
+    })
+    if (member.members) {
+      connections.push(...handleConntections(member))
+    }
+  }
+  return connections
 }
