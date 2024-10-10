@@ -1,20 +1,51 @@
 @use '../flow-common';
 
 :host {
-  --mat-sidenav-container-width: 24rem;
+  --mat-sidenav-container-width: 20rem;
   @apply w-full w-full;
 }
 
 :host::ng-deep {
   @include flow-common.connection;
   @include flow-common.background;
+  @include flow-common.line-alignment;
+  @include flow-common.minimap;
+  .f-connection {
+    &.f-selected {
+      .f-connection-path {
+        stroke: var(--node-selected-border-color);
+      }
+    }
+  }
 }
 f-flow {
   height: 100%;
 }
 .f-node {
   @include flow-common.node;
+  @apply border-[2px] rounded-2xl border-transparent;
+  &.f-selected {
+    @apply border-components-card-option-selected-border;
+  }
 }
 .f-node {
   cursor: default;
+}
+.f-node-input,
+.f-node-output {
+  &:not(.f-node) {
+    @include flow-common.connectors;
+  }
+  &.f-node-input-connected,
+  &.f-node-output-connected {
+    background-color: var(--minimap-view-color);
+  }
+  &.f-node-output-not-connectable,
+  &.f-node-input-not-connectable {
+    background-color: var(--disabled-color);
+  }
+}
+
+.f-selection-area {
+  background-color: var(--selection-area-color);
 }

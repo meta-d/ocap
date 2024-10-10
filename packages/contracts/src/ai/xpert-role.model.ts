@@ -7,6 +7,10 @@ import { IXpertWorkspace } from './xpert-workspace.model'
  * Expert role, business role for the xperts.
  */
 export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
+  /**
+   * Semantic Primary Key
+   */
+  key: string
   name: string
   title?: string
   titleCN?: string
@@ -21,10 +25,36 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
   starters?: string[]
   active?: boolean
   avatar?: string
+  /**
+   * Version of role: '1' '2' '2.1' '2.2'...
+   */
+  version?: string
+  /**
+   * 当前版本上的草稿
+   */
+  draft?: TXpertRoleDraft
 
+  /**
+   * 所属的工作空间
+   */
   workspaceId?: string
   workspace?: IXpertWorkspace
 
+  /**
+   * @deprecated use teamId instand
+   */
+  teamRoleId?: string
+  /**
+   * @deprecated use team instand
+   */
+  teamRole?: IXpertRole
+  /**
+   * 下属员工
+   */
+  members?: IXpertRole[]
+  /**
+   * 所使用的工具集
+   */
   toolsets?: IXpertToolset[]
   /**
    * More configuration
@@ -32,16 +62,28 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
   options?: TXpertRoleOptions
 
   // Many to many relationship
+  /**
+   * 有权限检索的知识库
+   */
   knowledgebases?: IKnowledgebase[]
 }
 
 export type TXpertRoleOptions = {
+  position: {
+    x: number;
+    y: number;
+}
   context?: Record<string, any>
-  toolsets: {
+  toolsets?: {
     [id: string]: {
       [tool: string]: {
         defaultArgs: Record<string, any>
       }
     }
   }
+}
+
+export type TXpertRoleDraft = {
+  team: IXpertRole
+  roles: IXpertRole[]
 }

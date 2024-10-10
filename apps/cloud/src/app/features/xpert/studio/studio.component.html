@@ -1,26 +1,50 @@
 <mat-sidenav-container class="flex-1 h-full">
-  <mat-sidenav #sidenav opened [mode]="isMobile() ? 'over' : 'side'" class="w-[400px]">
-    
-  </mat-sidenav>
+  <mat-sidenav #sidenav opened [mode]="isMobile() ? 'over' : 'side'" class="w-[400px]"> </mat-sidenav>
   <mat-sidenav-content>
-    <f-flow fDraggable>
-        <f-background>
-            <f-circle-pattern></f-circle-pattern>
-        </f-background>
-        <f-canvas>
-            <f-connection fType="bezier" fOutputId="output1" fInputId="input1"></f-connection>
-            <div fNode fDragHandle [fNodePosition]="{ x: 24, y: 24 }" fNodeOutput fOutputId="output1" 
-            fOutputConnectableSide="bottom">
-            <pac-toolset-card [toolset]="{name: 'AAA'}"/>
-            </div>
-            <div fNode fDragHandle [fNodePosition]="{ x: 244, y: 24 }" fNodeInput fInputId="input1" fInputConnectableSide="left">
-            Drag me
-            </div>
+    <f-flow fDraggable (fLoaded)="onLoaded()" (fCreateConnection)="addConnection($event)"
+        (fReassignConnection)="reassignConnection($event)"
+      (contextmenu)="onContextMenu($event)"
+      [cdkContextMenuTriggerFor]="menu.template"
+      (cdkContextMenuClosed)="menu.dispose()">
+      <f-background>
+        <f-circle-pattern></f-circle-pattern>
+      </f-background>
+      <f-line-alignment></f-line-alignment>
+      <f-selection-area></f-selection-area>
 
-            <div fNode fDragHandle [fNodePosition]="{ x: 244, y: 44 }" fNodeInput fInputId="input2" fInputConnectableSide="left">
-            Drag me 2
-            </div>
-        </f-canvas>
+      <f-canvas fZoom>
+        <f-connection-for-create></f-connection-for-create>
+        <f-snap-connection fType="bezier" [fSnapThreshold]="100"></f-snap-connection>
+        @for (connection of connections(); track connection.key) {
+          <f-connection fType="bezier" [fReassignDisabled]="false"
+            [fOutputId]="connection.from" [fInputId]="connection.to"></f-connection>
+        }
+
+        @for (role of roles(); track role.key) {
+          <div
+            fNode [fNodeId]="role.key"
+            fDragHandle
+            [fNodePosition]="{ x: 24, y: 24 }"
+            [fNodeParentId]="role.parentId"
+            [fNodePosition]="role.position"
+            (fNodePositionChange)="moveXpertRole($event, role)"
+            class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
+          >
+            @if (team().key !== role.key && team().id !== role.key) {
+              <div fNodeInput [fInputId]="role.key" fInputConnectableSide="top" class="top"></div>
+            }
+            <div fNodeOutput [fOutputId]="role.key" fOutputConnectableSide="bottom" class="bottom" [fOutputMultiple]="true"></div>
+            <xpert-studio-role [xpertRole]="role" class=""/>
+          </div>
+        }
+      </f-canvas>
+
+      <f-selection-area></f-selection-area>
+      <f-minimap></f-minimap>
     </f-flow>
+
+    <xpert-studio-toolbar class="flex items-center mt-1 gap-2 absolute left-4 bottom-4 z-[9]" />
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+<xpert-studio-context-menu #menu="menuComponent" />

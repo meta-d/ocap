@@ -28,13 +28,14 @@ import {
   IXpertToolset,
   IKnowledgebase,
   LanguagesEnum,
-  OrderTypeEnum
+  uuid,
 } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, XpertRoleService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { COMMON_COPILOT_ROLE } from './types'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
+
 
 @Injectable()
 export class ChatService {
@@ -85,6 +86,7 @@ export class ChatService {
         if (!role) {
           role = {
             ...COMMON_COPILOT_ROLE,
+            key: uuid(),
             description: this.#translate.instant('PAC.Chat.CommonRoleDescription', {Default: 'Hi, how can I help? I can chat and search the knowledge base. Please select the appropriate role if you would like to use the tools.'})
           }
         }

@@ -1,4 +1,4 @@
-import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace } from '@metad/contracts'
+import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace, TXpertRoleDraft } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm'
@@ -9,6 +9,12 @@ import { Knowledgebase, XpertToolset, XpertWorkspace } from '../core/entities/in
 @Entity('xpert_role')
 @Index(['tenantId', 'organizationId', 'name'], { unique: true })
 export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRole {
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	key: string
+
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@Column({ length: 100 })
@@ -56,11 +62,24 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	@Column({ type: 'json', nullable: true })
 	options?: TXpertRoleOptions
 
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true, length: 10 })
+	version?: string
+
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	draft?: TXpertRoleDraft
+
 	/*
     |--------------------------------------------------------------------------
     | @ManyToOne
     |--------------------------------------------------------------------------
     */
+    // belongs to Workspace
 	@ApiProperty({ type: () => XpertWorkspace })
 	@ManyToOne(() => XpertWorkspace)
 	@JoinColumn()
@@ -72,11 +91,30 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	@Column({ nullable: true })
 	workspaceId?: string
 	
+	// belongs to Team
+	@ApiProperty({ type: () => XpertRole })
+	@ManyToOne(() => XpertRole)
+	@JoinColumn()
+	teamRole?: IXpertRole
+
+	@ApiProperty({ type: () => String })
+	@RelationId((it: XpertRole) => it.teamRole)
+	@IsString()
+	@Column({ nullable: true })
+	teamRoleId?: string
+
 	/*
     |--------------------------------------------------------------------------
     | @ManyToMany 
     |--------------------------------------------------------------------------
     */
+   	// Members
+	@ManyToMany(() => XpertRole)
+	@JoinTable({
+		name: 'xpert_role_member'
+	})
+	members?: IXpertRole[]
+
 	// Xpert role's knowledgebases
 	@ManyToMany(() => Knowledgebase, {
 		onUpdate: 'CASCADE',

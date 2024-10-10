@@ -18,6 +18,7 @@ import { getErrorMessage, IXpertWorkspace, routeAnimations, ToastrService, Xpert
 import { AvatarComponent, MaterialModule } from '../../@shared'
 import { AppService } from '../../app.service'
 import { derivedAsync } from 'ngxtension/derived-async'
+import { WorkspaceSettingsComponent } from './workspace-settings/settings.component'
 
 @Component({
   standalone: true,
@@ -91,5 +92,16 @@ export class XpertHomeComponent {
           this.#toastr.error(getErrorMessage(error))
         }
       })
+  }
+
+  openSettings() {
+    this.#dialog
+      .open(WorkspaceSettingsComponent, {
+        data: {
+          title: `Create New Workspace`
+        }
+      })
+      .afterClosed()
+      .subscribe()
   }
 }

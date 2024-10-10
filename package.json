@@ -217,6 +217,7 @@
     "@swc/cli": "0.3.12",
     "@swc/core": "1.3.96",
     "@swc/jest": "0.2.20",
+    "@types/crypto-js": "^4.1.1",
     "@types/jest": "29.4.4",
     "@types/js-yaml": "^4.0.5",
     "@types/lodash": "^4.14.182",

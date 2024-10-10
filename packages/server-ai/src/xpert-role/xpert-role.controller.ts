@@ -1,5 +1,6 @@
+import { TXpertRoleDraft } from '@metad/contracts'
 import { CrudController, ParseJsonPipe, RequestContext, TransformInterceptor } from '@metad/server-core'
-import { Controller, Get, Logger, Param, Query, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Get, Logger, Param, Put, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { XpertRole } from './xpert-role.entity'
@@ -21,5 +22,13 @@ export class XpertRoleController extends CrudController<XpertRole> {
 	@Get('by-workspace/:id')
 	async getAllByWorkspace(@Param('id') workspaceId: string, @Query('data', ParseJsonPipe) data: any) {
 		return this.service.getAllByWorkspace(workspaceId, data, RequestContext.currentUser())
+	}
+
+	@Put(':id/draft')
+	async saveDraft(@Param('id') roleId: string, @Body() body: TXpertRoleDraft) {
+		// todo 检查有权限编辑此 xpert role
+
+		// Save draft
+		await this.service.saveDraft(roleId, body)
 	}
 }

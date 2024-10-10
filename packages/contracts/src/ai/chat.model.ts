@@ -1,13 +1,13 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { JSONValue } from '../core.model'
-import { ICopilotRole } from './copilot-role.model'
+import { IXpertRole } from './xpert-role.model'
 
 export interface IChatConversation extends IBasePerTenantAndOrganizationEntityModel {
   key: string
   title?: string
 
   roleId?: string | null
-  role?: ICopilotRole
+  role?: IXpertRole
   
   options?: {
     knowledgebases: string[]

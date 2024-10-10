@@ -1,4 +1,4 @@
-import { TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -6,7 +6,7 @@ import { assign } from 'lodash'
 import { FindConditions, In, IsNull, Repository } from 'typeorm'
 import { KnowledgebaseService } from '../knowledgebase'
 import { XpertRole } from './xpert-role.entity'
-import { IUser } from '@metad/contracts'
+import { IUser, IXpertRole, TXpertRoleDraft } from '@metad/contracts'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 
 @Injectable()
@@ -58,5 +58,19 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 			order,
 			take
 		})
+	}
+
+	async saveDraft(id: string, draft: TXpertRoleDraft) {
+		const xpert = await this.findOne(id)
+		xpert.draft = {
+			...draft,
+			team: {
+				...draft.team,
+				updatedAt: new Date(),
+				updatedById: RequestContext.currentUserId()
+			}
+		} as TXpertRoleDraft
+
+		return await this.repository.save(xpert)
 	}
 }
