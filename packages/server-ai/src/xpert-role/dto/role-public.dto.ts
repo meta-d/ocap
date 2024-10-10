@@ -11,12 +11,12 @@ export class XpertRolePublicDTO extends XpertRole {
 	@Transform((params: TransformFnParams) =>
 		params.value ? params.value.map((item) => new KnowledgebasePublicDTO(item)) : null
 	)
-	knowledgebases?: Knowledgebase[]
+	declare knowledgebases?: Knowledgebase[]
 
 	@Transform((params: TransformFnParams) =>
 		params.value ? params.value.map((item) => new ToolsetPublicDTO(item)) : null
 	)
-	toolsets?: XpertToolset[]
+	declare toolsets?: XpertToolset[]
 
 	constructor(partial: Partial<XpertRolePublicDTO>) {
 		super()

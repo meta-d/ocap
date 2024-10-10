@@ -1,13 +1,13 @@
 import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace, TXpertRoleDraft } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsJSON, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { Knowledgebase, XpertToolset, XpertWorkspace } from '../core/entities/internal'
 
 
 @Entity('xpert_role')
-@Index(['tenantId', 'organizationId', 'name'], { unique: true })
+@Index(['tenantId', 'organizationId', 'name', 'version', 'latest'], { unique: true })
 export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRole {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -67,6 +67,12 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	@IsOptional()
 	@Column({ nullable: true, length: 10 })
 	version?: string
+
+	@ApiPropertyOptional({ type: () => Boolean })
+	@IsBoolean()
+	@IsOptional()
+	@Column({ nullable: true })
+	latest?: boolean
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()

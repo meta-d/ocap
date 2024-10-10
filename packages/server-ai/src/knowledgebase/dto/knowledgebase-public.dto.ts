@@ -5,22 +5,22 @@ import { Knowledgebase } from '../knowledgebase.entity'
 @Exclude()
 export class KnowledgebasePublicDTO extends Knowledgebase {
     @Expose()
-	id: string
+	declare id: string
 
 	@Expose()
-	name: string
+	declare name: string
 
 	@Expose()
-	language?: 'Chinese' | 'English'
+	declare language?: 'Chinese' | 'English'
 
 	@Expose()
-	avatar?: string
+	declare avatar?: string
 
 	@Expose()
-	description?: string
+	declare description?: string
 
 	@Expose()
-	status: string
+	declare status: string
 
 	constructor(partial: IKnowledgebase) {
 		super()

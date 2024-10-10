@@ -9,7 +9,7 @@ export class CreateRoleHandler implements IHandler<CreateRoleRequest> {
   public handle(request: CreateRoleRequest): void {
     this.storage.roles.push({
       key: uuid(),
-      name: 'xpert_' + (this.storage.roles.length + 1),
+      name: uuid(),
       options: {
         position: request.position
       }

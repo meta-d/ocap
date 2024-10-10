@@ -21,6 +21,7 @@ import {
   FFlowComponent,
   FFlowModule,
   FReassignConnectionEvent,
+  FSelectionChangeEvent,
   FZoomDirective
 } from '@foblex/flow'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -37,6 +38,8 @@ import { AppService } from '../../../app.service'
 import { XpertStudioContextMenuComponent, XpertStudioRoleComponent } from './components'
 import { EReloadReason, IRoleViewModel, IStudioModel, XpertStudioApiService } from './domain'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
+import { XpertStudioHeaderComponent } from './header/header.component'
+import { SelectionService } from './domain/selection.service'
 
 @Component({
   standalone: true,
@@ -58,13 +61,14 @@ import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
     ToolsetCardComponent,
     XpertStudioToolbarComponent,
     XpertStudioContextMenuComponent,
-    XpertStudioRoleComponent
+    XpertStudioRoleComponent,
+    XpertStudioHeaderComponent
   ],
   selector: 'pac-xpert-studio',
   templateUrl: './studio.component.html',
   styleUrl: 'studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [XpertStudioApiService]
+  providers: [XpertStudioApiService, SelectionService]
 })
 export class XpertStudioComponent {
   DisplayBehaviour = DisplayBehaviour
@@ -79,6 +83,7 @@ export class XpertStudioComponent {
   readonly xpertRoleService = inject(XpertRoleService)
   readonly paramId = injectParams('id')
   readonly apiService = inject(XpertStudioApiService)
+  readonly selectionService = inject(SelectionService)
   readonly #cdr = inject(ChangeDetectorRef)
 
   readonly fFlowComponent = viewChild(FFlowComponent)
@@ -102,8 +107,11 @@ export class XpertStudioComponent {
   })
 
   readonly team = computed(() => this.viewModel()?.team)
+  readonly id = computed(() => this.team()?.id)
   readonly roles = computed(() => this.viewModel()?.roles)
   readonly connections = computed(() => this.viewModel()?.connections)
+
+  public isSingleSelection: boolean = true;
 
   constructor() {
     // effect(() => {
@@ -162,5 +170,11 @@ export class XpertStudioComponent {
   public moveXpertRole(point: IPoint, role: IRoleViewModel): void {
     role.position = point;
     this.apiService.moveXpertRole(role.key, point);
+  }
+
+  public selectionChanged(event: FSelectionChangeEvent): void {
+    this.isSingleSelection = event.connections.length + event.nodes.length === 1;
+    this.selectionService.setTables(event.nodes);
+    this.#cdr.markForCheck();
   }
 }

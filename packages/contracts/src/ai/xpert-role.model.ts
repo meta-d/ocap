@@ -30,6 +30,10 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
    */
   version?: string
   /**
+   * Is latest version
+   */
+  latest?: boolean
+  /**
    * 当前版本上的草稿
    */
   draft?: TXpertRoleDraft

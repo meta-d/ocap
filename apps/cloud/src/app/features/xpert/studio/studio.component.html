@@ -2,7 +2,8 @@
   <mat-sidenav #sidenav opened [mode]="isMobile() ? 'over' : 'side'" class="w-[400px]"> </mat-sidenav>
   <mat-sidenav-content>
     <f-flow fDraggable (fLoaded)="onLoaded()" (fCreateConnection)="addConnection($event)"
-        (fReassignConnection)="reassignConnection($event)"
+      (fReassignConnection)="reassignConnection($event)"
+      (fSelectionChange)="selectionChanged($event)"
       (contextmenu)="onContextMenu($event)"
       [cdkContextMenuTriggerFor]="menu.template"
       (cdkContextMenuClosed)="menu.dispose()">
@@ -44,6 +45,8 @@
     </f-flow>
 
     <xpert-studio-toolbar class="flex items-center mt-1 gap-2 absolute left-4 bottom-4 z-[9]" />
+
+    <xpert-studio-header class="absolute top-0 left-0 z-10 flex items-center justify-between w-full px-3 h-14" />
   </mat-sidenav-content>
 </mat-sidenav-container>
 

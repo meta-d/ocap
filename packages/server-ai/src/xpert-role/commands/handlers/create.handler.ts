@@ -20,3 +20,4 @@ export class XpertRoleCreateHandler implements ICommandHandler<XpertRoleCreateCo
 		return await this.roleService.create(entity)
 	}
 }
+

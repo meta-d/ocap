@@ -1,11 +1,11 @@
 import { inject, Injectable } from '@angular/core'
 import { IPoint } from '@foblex/2d'
 import { generateGuid } from '@foblex/utils'
-import { IXpertRole } from '@metad/contracts'
+import { IXpertRole, TXpertRoleDraft } from '@metad/contracts'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, skip, Subject, switchMap } from 'rxjs'
 import { CreateConnectionHandler, CreateConnectionRequest, ToConnectionViewModelHandler } from './connection'
 import { IStudioModel } from './i-studio-model'
-import { CreateRoleHandler, CreateRoleRequest, MoveRoleHandler, MoveRoleRequest, ToRoleViewModelHandler } from './role'
+import { CreateRoleHandler, CreateRoleRequest, MoveRoleHandler, MoveRoleRequest, RemoveRoleHandler, RemoveRoleRequest, ToRoleViewModelHandler } from './role'
 import { IStudioStorage } from './studio.storage'
 import { XpertRoleService } from 'apps/cloud/src/app/@core'
 import { injectParams } from 'ngxtension/inject-params'
@@ -44,10 +44,16 @@ export class XpertStudioApiService {
   ).subscribe()
 
   public initRole(role: IXpertRole) {
-    this.storage = role.draft ?? {
+    this.storage = (role.draft ? {
+      ...role.draft,
+      team: {
+        ...(role.draft.team ?? {}),
+        id: role.id
+      }
+    } : {
       team: role,
       roles: [],
-    }
+    }) as TXpertRoleDraft
 
     this.reload.next(EReloadReason.JUST_RELOAD)
   }
@@ -88,6 +94,12 @@ export class XpertStudioApiService {
     this.reload.next(EReloadReason.MOVED)
   }
   
+  public removeRole(key: string) {
+    new RemoveRoleHandler(this.storage).handle(
+      new RemoveRoleRequest(key)
+    );
+    this.reload.next(EReloadReason.JUST_RELOAD);
+  }
 }
 
 export enum EReloadReason {

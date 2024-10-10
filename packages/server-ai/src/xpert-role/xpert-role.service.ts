@@ -8,6 +8,7 @@ import { KnowledgebaseService } from '../knowledgebase'
 import { XpertRole } from './xpert-role.entity'
 import { IUser, IXpertRole, TXpertRoleDraft } from '@metad/contracts'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
+import { XpertRolePublishCommand } from './commands'
 
 @Injectable()
 export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRole> {
@@ -60,6 +61,10 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		})
 	}
 
+	async save(entity: XpertRole) {
+		return await this.repository.save(entity)
+	}
+
 	async saveDraft(id: string, draft: TXpertRoleDraft) {
 		const xpert = await this.findOne(id)
 		xpert.draft = {
@@ -72,5 +77,9 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		} as TXpertRoleDraft
 
 		return await this.repository.save(xpert)
+	}
+
+	async publish(id: string,) {
+		return await this.commandBus.execute(new XpertRolePublishCommand(id))
 	}
 }

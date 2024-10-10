@@ -67,7 +67,7 @@ export class XpertHomeComponent {
 
   readonly xpertRoles = derivedAsync(() => {
     return this.xpertService.getAllByWorkspace(this.workspace()).pipe(
-      map(({items}) => items)
+      map(({items}) => items.filter((item) => item.latest))
     )
   })
 

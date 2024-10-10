@@ -1,6 +1,6 @@
 import { TXpertRoleDraft } from '@metad/contracts'
 import { CrudController, ParseJsonPipe, RequestContext, TransformInterceptor } from '@metad/server-core'
-import { Body, Controller, Get, Logger, Param, Put, Query, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Get, Logger, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { XpertRole } from './xpert-role.entity'
@@ -30,5 +30,10 @@ export class XpertRoleController extends CrudController<XpertRole> {
 
 		// Save draft
 		await this.service.saveDraft(roleId, body)
+	}
+
+	@Post(':id/publish')
+	async publish(@Param('id') id: string,) {
+		return await this.service.publish(id)
 	}
 }

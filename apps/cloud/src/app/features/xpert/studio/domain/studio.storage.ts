@@ -19,3 +19,15 @@ export function findXpertRole(roles: IXpertRole[], key: string) {
 
   return leader
 }
+
+export function removeXpertRole(roles: IXpertRole[], key: string) {
+  return roles?.filter((role) => {
+    if (role.members?.length) {
+      role.members = removeXpertRole(role.members, key)
+    }
+    if (getXpertRoleKey(role) === key) {
+      return false
+    }
+    return true
+  })
+}
