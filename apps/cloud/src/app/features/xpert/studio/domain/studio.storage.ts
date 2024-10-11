@@ -1,7 +1,10 @@
 import { IXpertRole, TXpertRoleDraft } from '@metad/contracts'
 import { getXpertRoleKey } from './types'
+import { IKnowledgebaseStorageModel } from './knowledge'
 
-export interface IStudioStorage extends TXpertRoleDraft {}
+export interface IStudioStorage extends TXpertRoleDraft {
+  knowledges: IKnowledgebaseStorageModel[]
+}
 
 export function findXpertRole(roles: IXpertRole[], key: string) {
   let leader: IXpertRole = null

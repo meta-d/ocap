@@ -91,6 +91,7 @@ export type TXpertRoleOptions = {
 export type TXpertRoleDraft = {
   team: IXpertRole
   roles: IXpertRole[]
+  knowledges: IKnowledgebase[]
 }
 
 export enum XpertRoleTypeEnum {

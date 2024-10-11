@@ -25,7 +25,6 @@
           <div
             fNode [fNodeId]="role.key"
             fDragHandle
-            [fNodePosition]="{ x: 24, y: 24 }"
             [fNodeParentId]="role.parentId"
             [fNodePosition]="role.position"
             (fNodePositionChange)="moveXpertRole($event, role)"
@@ -36,6 +35,18 @@
             }
             <div fNodeOutput [fOutputId]="role.key" fOutputConnectableSide="bottom" class="bottom" [fOutputMultiple]="true"></div>
             <xpert-studio-role [xpertRole]="role" class=""/>
+          </div>
+        }
+
+        @for (knowledge of knowledges(); track knowledge.key) {
+          <div
+            fNode [fNodeId]="knowledge.key"
+            fDragHandle
+            [fNodePosition]="knowledge.position"
+            class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
+          >
+            <div fNodeInput [fInputId]="knowledge.key" fInputConnectableSide="top" class="top"></div>
+            <xpert-studio-node-knowledge [knowledge]="knowledge" class=""/>
           </div>
         }
       </f-canvas>

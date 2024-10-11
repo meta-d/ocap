@@ -3,9 +3,9 @@
     [cdkMenuTriggerFor]="zoomMenu"
     >
     <div class="flex items-center justify-between w-[98px] h-8 hover:bg-gray-50 rounded-lg">
-        <div
+      <div
         class="flex items-center justify-center w-8 h-8 rounded-lg cursor-pointer active:scale-95 transition-transform hover:bg-black/5"
-        data-state="closed"
+        [matTooltip]="'缩小'"
         (click)="$event.stopPropagation(); onZoomOut()"
         >
         <svg
@@ -20,12 +20,12 @@
             d="M18.031 16.6168L22.3137 20.8995L20.8995 22.3137L16.6168 18.031C15.0769 19.263 13.124 20 11 20C6.032 20 2 15.968 2 11C2 6.032 6.032 2 11 2C15.968 2 20 6.032 20 11C20 13.124 19.263 15.0769 18.031 16.6168ZM16.0247 15.8748C17.2475 14.6146 18 12.8956 18 11C18 7.1325 14.8675 4 11 4C7.1325 4 4 7.1325 4 11C4 14.8675 7.1325 18 11 18C12.8956 18 14.6146 17.2475 15.8748 16.0247L16.0247 15.8748ZM7 10H15V12H7V10Z"
             ></path>
         </svg>
-        </div>
-        <div class="w-[34px]">{{ fZoomScale }}%</div>
+      </div>
+      <div class="w-[34px]">{{ fZoomScale }}%</div>
         <div
-        class="flex items-center justify-center w-8 h-8 rounded-lg cursor-pointer active:scale-95 transition-transform hover:bg-black/5"
-        data-state="closed"
-        (click)="$event.stopPropagation(); onZoomIn()"
+          class="flex items-center justify-center w-8 h-8 rounded-lg cursor-pointer active:scale-95 transition-transform hover:bg-black/5"
+          [matTooltip]="'放大'"
+          (click)="$event.stopPropagation(); onZoomIn()"
         >
         <svg
             viewBox="0 0 24 24"
@@ -33,22 +33,21 @@
             width="24"
             height="24"
             fill="currentColor"
-            class="remixicon w-4 h-4"
+            class="w-4 h-4"
         >
             <path
             d="M18.031 16.6168L22.3137 20.8995L20.8995 22.3137L16.6168 18.031C15.0769 19.263 13.124 20 11 20C6.032 20 2 15.968 2 11C2 6.032 6.032 2 11 2C15.968 2 20 6.032 20 11C20 13.124 19.263 15.0769 18.031 16.6168ZM16.0247 15.8748C17.2475 14.6146 18 12.8956 18 11C18 7.1325 14.8675 4 11 4C7.1325 4 4 7.1325 4 11C4 14.8675 7.1325 18 11 18C12.8956 18 14.6146 17.2475 15.8748 16.0247L16.0247 15.8748ZM10 10V7H12V10H15V12H12V15H10V12H7V10H10Z"
             ></path>
         </svg>
         </div>
-    </div>
+      </div>
     </div>
 
     <div class="flex items-center p-0.5 rounded-lg border-[0.5px] border-gray-100 bg-white shadow-lg text-gray-500">
-    <div
-        data-tooltip-id="workflow.undo"
+      <div
+        [matTooltip]="'撤销'"
         class="flex items-center px-1.5 w-8 h-8 rounded-md text-sm font-medium hover:bg-black/5 hover:text-gray-700 cursor-pointer select-none false"
-        data-state="closed"
-    >
+      >
         <svg
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
@@ -61,12 +60,12 @@
             d="M5.82843 6.99955L8.36396 9.53509L6.94975 10.9493L2 5.99955L6.94975 1.0498L8.36396 2.46402L5.82843 4.99955H13C17.4183 4.99955 21 8.58127 21 12.9996C21 17.4178 17.4183 20.9996 13 20.9996H4V18.9996H13C16.3137 18.9996 19 16.3133 19 12.9996C19 9.68584 16.3137 6.99955 13 6.99955H5.82843Z"
         ></path>
         </svg>
-    </div>
-    <div
-        data-tooltip-id="workflow.redo"
+      </div>
+      <div
+        [matTooltip]="'重做'"
         class="flex items-center px-1.5 w-8 h-8 rounded-md text-sm font-medium hover:bg-black/5 hover:text-gray-700 cursor-pointer select-none opacity-50"
         data-state="closed"
-    >
+      >
         <svg
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
@@ -79,33 +78,31 @@
             d="M16 7H11C7.68629 7 5 9.68629 5 13C5 16.3137 7.68629 19 11 19H20V21H11C6.58172 21 3 17.4183 3 13C3 8.58172 6.58172 5 11 5H16V1L22 6L16 11V7Z"
         ></path>
         </svg>
-    </div>
-    <div class="mx-[3px] w-[1px] h-3.5 bg-gray-200"></div>
-    <div class="inline-block" data-state="closed">
-        <div
-        class="flex items-center justify-center w-8 h-8 rounded-md hover:bg-black/5 cursor-pointer false false"
-        data-state="closed"
-        >
-        <svg
+      </div>
+      <div class="mx-[3px] w-[1px] h-3.5 bg-gray-200"></div>
+      <div class="inline-block">
+        <div class="flex items-center justify-center w-8 h-8 rounded-md hover:bg-black/5 cursor-pointer"
+          [matTooltip]="'变更历史'"
+          [cdkMenuTriggerFor]="historyMenu">
+          <svg
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
             fill="currentColor"
-            class="remixicon w-4 h-4 hover:bg-black/5 hover:text-gray-700 text-gray-500"
-        >
+            class="w-4 h-4 hover:bg-black/5 hover:text-gray-700 text-gray-500"
+          >
             <path
             d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12H4C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C9.25022 4 6.82447 5.38734 5.38451 7.50024L8 7.5V9.5H2V3.5H4L3.99989 5.99918C5.82434 3.57075 8.72873 2 12 2ZM13 7L12.9998 11.585L16.2426 14.8284L14.8284 16.2426L10.9998 12.413L11 7H13Z"
             ></path>
-        </svg>
+          </svg>
         </div>
-    </div>
+      </div>
     </div>
     <div class="flex items-center p-0.5 rounded-lg border-[0.5px] border-gray-100 bg-white shadow-lg text-gray-500">
-    <div data-state="closed">
+    <div>
         <div
         class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-black/5 hover:text-gray-700 cursor-pointer false"
-        data-state="closed"
         >
         <svg
             viewBox="0 0 24 24"
@@ -214,4 +211,32 @@
       </div>
     </button>
   </div>
+</ng-template>
+
+
+<ng-template #historyMenu>
+  <div class="ngm-cdk-menu" cdkMenu>
+    @for (item of histories(); track item) {
+      <button
+          class="ngm-cdk-menu-item flex items-center justify-start px-3 h-8 rounded-lg hover:bg-gray-50 cursor-pointer text-sm text-gray-700"
+          (click)="onGoToHistory(item)"
+        >
+          {{item.reason}}
+        </button>
+      }
+
+      <div class="h-[1px] bg-gray-100"></div>
+      <button
+        class="ngm-cdk-menu-item flex items-center justify-between px-3 h-8 rounded-lg hover:bg-gray-50 cursor-pointer text-sm text-gray-700"
+        ngmAppearance="danger"
+        (click)="clearHistory()"
+      >
+        清除历史记录
+      </button>
+
+      <div class="px-3 w-[240px] py-2 text-sm text-gray-500">
+        <div class="flex items-center mb-1 h-[22px] font-medium uppercase">提示</div>
+        <div class="mb-1 text-gray-700 leading-[18px]">您的编辑操作将被跟踪并存储在您的设备上，直到您离开编辑器。此历史记录将在您离开编辑器时被清除。</div>
+      </div>
+    </div>
 </ng-template>

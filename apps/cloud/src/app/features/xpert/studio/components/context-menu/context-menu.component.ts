@@ -50,6 +50,11 @@ export class XpertStudioContextMenuComponent {
     this.apiService.createRole(this.root.contextMenuPosition);
   }
 
+  public createKnowledge(menu: CdkMenu): void {
+    menu.menuStack.closeAll()
+    this.apiService.createKnowledge(this.root.contextMenuPosition);
+  }
+
   public deleteRole(menu: CdkMenu, role: string): void {
     menu.menuStack.closeAll()
     if (role) {

@@ -7,6 +7,7 @@ import {
   ChangeDetectorRef,
   Component,
   computed,
+  effect,
   inject,
   signal,
   viewChild
@@ -35,7 +36,7 @@ import { startWith } from 'rxjs/operators'
 import { ToastrService, XpertRoleService, XpertWorkspaceService } from '../../../@core'
 import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
-import { XpertStudioContextMenuComponent, XpertStudioRoleComponent } from './components'
+import { XpertStudioContextMenuComponent, XpertStudioNodeKnowledgeComponent, XpertStudioRoleComponent } from './components'
 import { EReloadReason, IRoleViewModel, IStudioModel, XpertStudioApiService, SelectionService } from './domain'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { XpertStudioHeaderComponent } from './header/header.component'
@@ -64,8 +65,9 @@ import { nonBlank } from '@metad/ocap-angular/core'
     XpertStudioToolbarComponent,
     XpertStudioContextMenuComponent,
     XpertStudioRoleComponent,
+    XpertStudioNodeKnowledgeComponent,
     XpertStudioHeaderComponent,
-    XpertStudioPanelComponent
+    XpertStudioPanelComponent,
   ],
   selector: 'pac-xpert-studio',
   templateUrl: './studio.component.html',
@@ -101,6 +103,7 @@ export class XpertStudioComponent {
   readonly viewModel = signal<IStudioModel>({
     team: null,
     roles: [],
+    knowledges: [],
     connections: []
   })
 
@@ -108,17 +111,19 @@ export class XpertStudioComponent {
   readonly id = computed(() => this.team()?.id)
   readonly versions = computed(() => this.apiService.versions()?.filter(nonBlank))
   readonly roles = computed(() => this.viewModel()?.roles)
+  readonly knowledges = computed(() => this.viewModel()?.knowledges)
   readonly connections = computed(() => this.viewModel()?.connections)
 
   public isSingleSelection: boolean = true;
 
   constructor() {
-    // effect(() => {
+    effect(() => {
     //   if (this.xpertRole()) {
     //     this.apiService.initRole(this.xpertRole())
     //   }
     //   // console.log(this.paramId(), this.xpertRole())
-    // }, { allowSignalWrites: true })
+      console.log(this.apiService.stateHistories())
+    }, { allowSignalWrites: true })
   }
 
   public ngOnInit(): void {
