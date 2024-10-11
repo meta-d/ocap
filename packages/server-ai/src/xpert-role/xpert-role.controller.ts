@@ -5,6 +5,7 @@ import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { XpertRole } from './xpert-role.entity'
 import { XpertRoleService } from './xpert-role.service'
+import { XpertRolePublicDTO } from './dto'
 
 @ApiTags('XpertRole')
 @ApiBearerAuth()
@@ -22,6 +23,10 @@ export class XpertRoleController extends CrudController<XpertRole> {
 	@Get('by-workspace/:id')
 	async getAllByWorkspace(@Param('id') workspaceId: string, @Query('data', ParseJsonPipe) data: any) {
 		return this.service.getAllByWorkspace(workspaceId, data, RequestContext.currentUser())
+	}
+	@Get('validate-name/:name')
+	async validateName(@Param('name') name: string) {
+		return this.service.validateName(name).then((items) => items.map((item) => new XpertRolePublicDTO(item)))
 	}
 
 	@Get(':id/team')

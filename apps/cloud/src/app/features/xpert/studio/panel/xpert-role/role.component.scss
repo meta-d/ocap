@@ -1,0 +1,10 @@
+:host {
+  @apply flex flex-col justify-start items-start;
+}
+
+.mat-mdc-input-element {
+  field-sizing: content;
+  &.ngm-error {
+    @apply border-red-500;
+  }
+}

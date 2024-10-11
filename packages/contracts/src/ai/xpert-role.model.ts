@@ -73,7 +73,7 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
 }
 
 export type TXpertRoleOptions = {
-  position: {
+  position?: {
     x: number;
     y: number;
 }

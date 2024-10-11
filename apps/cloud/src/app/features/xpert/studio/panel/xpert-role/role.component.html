@@ -1,0 +1,55 @@
+<div class="sticky top-0 flex flex-col bg-components-panel-bg w-full border-b-[0.5px] border-black/5 z-10">
+  <div class=" flex justify-start items-center px-3 pt-3 pb-2">
+    <pac-avatar [imageUrl]="xpertRole().avatar" class="shrink-0 mr-2 w-8 h-8 overflow-hidden rounded-full" />
+    <div class="flex flex-col items-start">
+      <input matInput class="mr-2 px-1 h-6 text-sm rounded-lg border border-transparent appearance-none outline-none
+       hover:bg-gray-50 
+       focus:border-gray-300 focus:shadow-xs focus:bg-white caret-[#295EFF]"
+        [ngClass]="{'ngm-error': nameError()}"
+        [placeholder]="xpertRole().name || calcName()"
+        [ngModel]="xpertRole().name"
+        (ngModelChange)="onNameChange($event)"
+        (blur)="onBlur()"
+        [matTooltip]="'PAC.Xpert.NameExisted' | translate: {Default: 'Name existed!'}"
+        [matTooltipDisabled]="!nameError()"
+        >
+      <input matInput class="mr-2 px-1 h-6 text-base field font-semibold rounded-lg border border-transparent appearance-none outline-none
+       text-gray-900 hover:bg-gray-50 
+       focus:border-gray-300 focus:shadow-xs focus:bg-white caret-[#295EFF]"
+        [ngModel]="xpertRole().title"
+        (ngModelChange)="onTitleChange($event)"
+        (blur)="onBlur()">
+    </div>
+  </div>
+
+  <div class="p-2">
+    <div class="group flex px-2 py-[5px] max-h-[60px] rounded-lg overflow-y-auto
+      border border-transparent hover:bg-gray-50 focus:border-gray-300 focus:shadow-xs"
+    >
+      <textarea matInput class="rc-textarea 
+        w-full text-xs text-gray-900 leading-[18px] bg-transparent
+        appearance-none outline-none resize-none
+        placeholder:text-gray-400 caret-[#295EFF]"
+        [placeholder]="'添加描述...'"
+        [ngModel]="xpertRole().description"
+        (ngModelChange)="onDescChange($event)"
+        (blur)="onBlur()">
+      </textarea>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="px-3 pb-2 flex flex-col items-stretch !h-[2000px]">
+    @if (toolsets()?.length) {
+      <label class="mt-4 text-left">Tools:</label>
+    }
+    @for (toolset of toolsets(); track toolset.id) {
+      <xpert-studio-panel-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
+        hover:bg-black/5 dark:hover:bg-white/10">
+        <pac-avatar [imageUrl]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+        <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
+      </xpert-studio-panel-role-toolset>
+    }
+</div>

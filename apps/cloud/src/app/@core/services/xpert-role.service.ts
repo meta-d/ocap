@@ -46,4 +46,14 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
   publish(id: string) {
     return this.httpClient.post<IXpertRole>(this.apiBaseUrl + `/${id}/publish`, {})
   }
+
+  validateName(name: string) {
+    return this.httpClient.get<IXpertRole[]>(this.apiBaseUrl + `/validate-name/${name}`)
+  }
+}
+
+export function convertToUrlPath(title: string) {
+  return title?.toLowerCase() // 转换为小写
+    .replace(/\s+/g, '-') // 替换空格为 -
+    .replace(/[^a-z0-9-]/g, ''); // 移除非字母数字字符
 }

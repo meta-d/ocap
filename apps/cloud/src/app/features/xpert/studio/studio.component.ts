@@ -36,10 +36,11 @@ import { ToastrService, XpertRoleService, XpertWorkspaceService } from '../../..
 import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { XpertStudioContextMenuComponent, XpertStudioRoleComponent } from './components'
-import { EReloadReason, IRoleViewModel, IStudioModel, XpertStudioApiService } from './domain'
+import { EReloadReason, IRoleViewModel, IStudioModel, XpertStudioApiService, SelectionService } from './domain'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { XpertStudioHeaderComponent } from './header/header.component'
-import { SelectionService } from './domain/selection.service'
+import { XpertStudioPanelComponent } from './panel/panel.component'
+
 
 @Component({
   standalone: true,
@@ -62,7 +63,8 @@ import { SelectionService } from './domain/selection.service'
     XpertStudioToolbarComponent,
     XpertStudioContextMenuComponent,
     XpertStudioRoleComponent,
-    XpertStudioHeaderComponent
+    XpertStudioHeaderComponent,
+    XpertStudioPanelComponent
   ],
   selector: 'pac-xpert-studio',
   templateUrl: './studio.component.html',
@@ -91,11 +93,6 @@ export class XpertStudioComponent {
   readonly fZoom = viewChild(FZoomDirective)
 
   readonly isMobile = this.appService.isMobile
-
-  // readonly xpertRole = derivedFrom([this.paramId], pipe(
-  //   switchMap(([id]) => this.xpertRoleService.getOneById(id, { relations: ['members', 'toolsets'] }))), {
-  //   initialValue: null
-  // })
 
   public contextMenuPosition: IPoint = PointExtensions.initialize(0, 0)
 

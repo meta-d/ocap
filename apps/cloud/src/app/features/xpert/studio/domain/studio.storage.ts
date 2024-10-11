@@ -4,7 +4,7 @@ import { getXpertRoleKey } from './types'
 export interface IStudioStorage extends TXpertRoleDraft {}
 
 export function findXpertRole(roles: IXpertRole[], key: string) {
-  let leader = null
+  let leader: IXpertRole = null
   for (const member of roles) {
     if (getXpertRoleKey(member) === key) {
       leader = member

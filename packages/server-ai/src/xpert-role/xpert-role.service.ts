@@ -18,7 +18,6 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		@InjectRepository(XpertRole)
 		repository: Repository<XpertRole>,
 		@Inject(forwardRef(() => KnowledgebaseService))
-		private readonly knowledgebaseService: KnowledgebaseService,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
 	) {
@@ -29,6 +28,15 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		const _entity = await super.findOne(id)
 		assign(_entity, entity)
 		return await this.repository.save(_entity)
+	}
+
+	async validateName(name: string) {
+		const { items } = await this.findAll({ where: {
+			name,
+			latest: true
+		}})
+
+		return items
 	}
 
 	async getAllByWorkspace(workspaceId: string, data, user: IUser) {

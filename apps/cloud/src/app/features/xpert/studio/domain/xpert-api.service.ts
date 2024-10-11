@@ -4,7 +4,7 @@ import { IXpertRole, TXpertRoleDraft } from '@metad/contracts'
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, skip, Subject, switchMap, tap } from 'rxjs'
 import { CreateConnectionHandler, CreateConnectionRequest, ToConnectionViewModelHandler } from './connection'
 import { IStudioModel } from './i-studio-model'
-import { CreateRoleHandler, CreateRoleRequest, MoveRoleHandler, MoveRoleRequest, RemoveRoleHandler, RemoveRoleRequest, ToRoleViewModelHandler } from './role'
+import { CreateRoleHandler, CreateRoleRequest, GetRoleHandler, GetRoleRequest, MoveRoleHandler, MoveRoleRequest, RemoveRoleHandler, RemoveRoleRequest, ToRoleViewModelHandler, UpdateRoleHandler, UpdateRoleRequest } from './role'
 import { IStudioStorage } from './studio.storage'
 import { XpertRoleService } from 'apps/cloud/src/app/@core'
 import { injectParams } from 'ngxtension/inject-params'
@@ -19,10 +19,10 @@ export class XpertStudioApiService {
 
   private storage: IStudioStorage = null
 
-  private reload: Subject<EReloadReason> = new Subject<EReloadReason>()
+  readonly #reload: Subject<EReloadReason> = new Subject<EReloadReason>()
 
   public get reload$(): Observable<EReloadReason> {
-    return this.reload.asObservable().pipe(
+    return this.#reload.asObservable().pipe(
       filter((value) => value !== EReloadReason.MOVED)
     )
   }
@@ -36,11 +36,6 @@ export class XpertStudioApiService {
 
   readonly draft = signal<TXpertRoleDraft>(null)
 
-  // private teamSub = toObservable(this.teamId).pipe(
-  //   distinctUntilChanged(),
-  //   switchMap((id) => this.xpertRoleService.getTeam(id))
-  // ).subscribe((role) => this.initRole(role))
-
   readonly refresh$ = new BehaviorSubject<void>(null)
 
   private saveDraftSub = this.refresh$.pipe(
@@ -53,7 +48,7 @@ export class XpertStudioApiService {
           this.initRole(role)
         })
       ),
-      this.reload.pipe(filter((event) => event !== EReloadReason.INIT))
+      this.#reload.pipe(filter((event) => event !== EReloadReason.INIT))
     ])),
     map(() => calculateHash(JSON.stringify(this.storage))),
     distinctUntilChanged(),
@@ -75,7 +70,7 @@ export class XpertStudioApiService {
       roles: [],
     }) as TXpertRoleDraft
 
-    this.reload.next(EReloadReason.INIT)
+    this.#reload.next(EReloadReason.INIT)
   }
 
   public resume() {
@@ -94,26 +89,42 @@ export class XpertStudioApiService {
 
   public createRole(position: IPoint): void {
     new CreateRoleHandler(this.storage).handle(new CreateRoleRequest(position))
-    this.reload.next(EReloadReason.JUST_RELOAD)
+    this.#reload.next(EReloadReason.JUST_RELOAD)
   }
 
   public createConnection(outputId: string, inputId: string): void {
     new CreateConnectionHandler(this.storage).handle(new CreateConnectionRequest(outputId, inputId))
-    this.reload.next(EReloadReason.JUST_RELOAD)
+    this.#reload.next(EReloadReason.JUST_RELOAD)
   }
 
   public moveXpertRole(key: string, position: IPoint): void {
     new MoveRoleHandler(this.storage).handle(
       new MoveRoleRequest(key, position)
     )
-    this.reload.next(EReloadReason.MOVED)
+    this.#reload.next(EReloadReason.MOVED)
   }
   
   public removeRole(key: string) {
     new RemoveRoleHandler(this.storage).handle(
       new RemoveRoleRequest(key)
     );
-    this.reload.next(EReloadReason.JUST_RELOAD);
+    this.#reload.next(EReloadReason.JUST_RELOAD);
+  }
+
+  public getNode(key: string) {
+    return new GetRoleHandler(this.storage).handle(
+      new GetRoleRequest(key)
+    );
+  }
+
+  public updateXpertRole(key: string, entity: Partial<IXpertRole>) {
+    return new UpdateRoleHandler(this.storage).handle(
+      new UpdateRoleRequest(key, entity)
+    )
+  }
+
+  public reload() {
+    this.#reload.next(EReloadReason.JUST_RELOAD)
   }
 }
 

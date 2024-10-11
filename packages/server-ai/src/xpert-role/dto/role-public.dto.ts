@@ -1,12 +1,14 @@
-import { Expose, Transform, TransformFnParams } from 'class-transformer'
+import { TXpertRoleDraft } from '@metad/contracts'
+import { Exclude, Expose, Transform, TransformFnParams } from 'class-transformer'
 import { Knowledgebase, XpertToolset } from '../../core/entities/internal'
+import { KnowledgebasePublicDTO } from '../../knowledgebase/dto'
 import { ToolsetPublicDTO } from '../../xpert-toolset/dto'
 import { XpertRole } from '../xpert-role.entity'
-import { KnowledgebasePublicDTO } from '../../knowledgebase/dto'
-
 
 @Expose()
 export class XpertRolePublicDTO extends XpertRole {
+	@Exclude()
+	draft?: TXpertRoleDraft
 
 	@Transform((params: TransformFnParams) =>
 		params.value ? params.value.map((item) => new KnowledgebasePublicDTO(item)) : null
@@ -18,7 +20,7 @@ export class XpertRolePublicDTO extends XpertRole {
 	)
 	declare toolsets?: XpertToolset[]
 
-	constructor(partial: Partial<XpertRolePublicDTO>) {
+	constructor(partial: Partial<XpertRolePublicDTO | XpertRole>) {
 		super()
 		Object.assign(this, partial)
 	}

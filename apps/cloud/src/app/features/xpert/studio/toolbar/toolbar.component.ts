@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core'
-import { XpertStudioComponent } from '../studio.component'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
+import { XpertStudioComponent } from '../studio.component'
 
 @Component({
   selector: 'xpert-studio-toolbar',

@@ -1,8 +1,10 @@
-import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable, Subject } from 'rxjs';
+import { XpertStudioApiService } from './xpert-api.service';
 
 @Injectable()
 export class SelectionService {
+  readonly apiService = inject(XpertStudioApiService)
 
   private selection: Subject<ISelectionEvent> = new Subject<ISelectionEvent>();
 
@@ -13,6 +15,10 @@ export class SelectionService {
   private column: string | null = null;
 
   private tables: string[] = [];
+
+  public singleNode$ = this.selection$.pipe(
+    map((event) => event.tables?.[0] ? this.apiService.getNode(event.tables[0]) : null)
+  )
 
   public setColumn(table: string, column: string | null): void {
     this.tables = [table];
@@ -38,8 +44,8 @@ export class SelectionService {
 }
 
 export interface ISelectionEvent {
+  nodes?: string[];
 
   tables: string[];
-
   column: string | null;
 }

@@ -26,6 +26,8 @@
   --border-medium: theme('colors.neutral.300');
   --border-light: theme('colors.neutral.200');
   --components-card-option-selected-border: theme('colors.blue.500');
+  --color-components-panel-bg: #fff;
+  --color-components-panel-border: #10182814;
 }
 
 :root .dark {
@@ -47,4 +49,6 @@
   --border-medium: theme('colors.neutral.600');
   --border-light: theme('colors.neutral.700');
   --components-card-option-selected-border: theme('colors.blue.500');
+  --color-components-panel-bg: #222225;
+  --color-components-panel-border: theme('colors.neutral.600');
 }

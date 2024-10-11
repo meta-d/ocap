@@ -32,7 +32,9 @@ module.exports = {
         'token-text-secondary': 'var(--text-secondary)',
         'token-border-medium': 'var(--border-medium)',
         'token-border-light': 'var(--border-light)',
-        'components-card-option-selected-border': 'var(--components-card-option-selected-border)'
+        'components-card-option-selected-border': 'var(--components-card-option-selected-border)',
+        'components-panel-bg': 'var(--color-components-panel-bg)',
+        'components-panel-border': 'var(--color-components-panel-border)',
       }
     },
     fontFamily: {
