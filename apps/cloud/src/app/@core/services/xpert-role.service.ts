@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs'
 import { API_XPERT_ROLE } from '../constants/app.constants'
 import { IXpertRole, TXpertRoleDraft } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
+import { toParams } from '@metad/ocap-angular/core'
 
 @Injectable({ providedIn: 'root' })
 export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> {
@@ -47,8 +48,10 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
     return this.httpClient.post<IXpertRole>(this.apiBaseUrl + `/${id}/publish`, {})
   }
 
-  validateName(name: string) {
-    return this.httpClient.get<IXpertRole[]>(this.apiBaseUrl + `/validate-name/${name}`)
+  validateTitle(title: string) {
+    return this.httpClient.get<IXpertRole[]>(this.apiBaseUrl + `/validate`, {
+      params: toParams({title})
+    })
   }
 }
 

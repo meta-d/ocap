@@ -9,6 +9,7 @@ import { XpertRole } from './xpert-role.entity'
 import { IUser, IXpertRole, TXpertRoleDraft } from '@metad/contracts'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { XpertRolePublishCommand } from './commands'
+import { convertToUrlPath } from '@metad/server-common'
 
 @Injectable()
 export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRole> {
@@ -30,7 +31,8 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		return await this.repository.save(_entity)
 	}
 
-	async validateName(name: string) {
+	async validateTitle(title: string) {
+		const name = convertToUrlPath(title)
 		const { items } = await this.findAll({ where: {
 			name,
 			latest: true

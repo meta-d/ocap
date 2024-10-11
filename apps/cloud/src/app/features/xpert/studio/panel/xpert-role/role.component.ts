@@ -1,17 +1,27 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, signal } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  model,
+  viewChild
+} from '@angular/core'
 import { FormsModule } from '@angular/forms'
-import { MatInputModule } from '@angular/material/input'
 import { FFlowModule } from '@foblex/flow'
 import { IXpertRole } from '@metad/contracts'
-import { convertToUrlPath, XpertRoleService } from 'apps/cloud/src/app/@core'
+import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
+import { TranslateModule } from '@ngx-translate/core'
+import { XpertRoleService } from 'apps/cloud/src/app/@core'
 import { AvatarComponent, MaterialModule } from 'apps/cloud/src/app/@shared'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
 import { getXpertRoleKey } from '../../domain/types'
 import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
-import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'xpert-studio-panel-role',
@@ -26,6 +36,7 @@ import { TranslateModule } from '@ngx-translate/core'
     FormsModule,
     TranslateModule,
     AvatarComponent,
+    NgmHighlightVarDirective,
     XpertStudioPanelRoleToolsetComponent
   ],
   host: {
@@ -35,30 +46,35 @@ import { TranslateModule } from '@ngx-translate/core'
   }
 })
 export class XpertStudioPanelRoleComponent {
+  readonly regex = `{{(.*?)}}`
   readonly elementRef = inject(ElementRef)
   readonly apiService = inject(XpertStudioApiService)
   readonly xpertService = inject(XpertRoleService)
 
   readonly xpertRole = input<IXpertRole>()
-  readonly calcName = signal('')
+  readonly promptInputElement = viewChild('editablePrompt', { read: ElementRef<HTMLDivElement> })
+
   readonly toolsets = computed(() => this.xpertRole()?.toolsets)
-  readonly name = computed(() => this.xpertRole()?.name)
+  readonly title = computed(() => this.xpertRole()?.title)
+  readonly prompt = model<string>()
+  readonly promptLength = computed(() => this.prompt()?.length)
 
   private get hostElement(): HTMLElement {
     return this.elementRef.nativeElement
   }
 
-  private validatedNames = derivedAsync(() => {
+  readonly titleError = derivedAsync(() => {
     return this.xpertService
-      .validateName(this.name())
-      .pipe(map((items) => items.filter((item) => item.id !== this.xpertRole().id)))
+      .validateTitle(this.title())
+      .pipe(map((items) => !!items.filter((item) => item.id !== this.xpertRole().id).length))
   })
-  readonly nameError = computed(() => !!this.validatedNames()?.length)
 
   constructor() {
     effect(() => {
-      console.log(this.nameError())
-    })
+      if (this.xpertRole()) {
+        this.prompt.set(this.xpertRole().prompt)
+      }
+    }, { allowSignalWrites: true })
   }
 
   protected emitSelectionChangeEvent(event: MouseEvent): void {
@@ -74,15 +90,18 @@ export class XpertStudioPanelRoleComponent {
     this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), {
       title: event
     })
-    this.calcName.set(convertToUrlPath(event))
   }
   onDescChange(event: string) {
     this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), { description: event })
   }
   onBlur() {
-    if (!this.xpertRole().name) {
-      this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), { name: this.calcName() })
-    }
     this.apiService.reload()
+  }
+  onPromptChange() {
+    const text = this.promptInputElement().nativeElement.textContent
+    console.log(text)
+    console.log(this.promptInputElement().nativeElement)
+    this.prompt.set(text)
+    this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), { prompt: text })
   }
 }

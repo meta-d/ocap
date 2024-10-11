@@ -40,6 +40,7 @@ import { EReloadReason, IRoleViewModel, IStudioModel, XpertStudioApiService, Sel
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
+import { nonBlank } from '@metad/ocap-angular/core'
 
 
 @Component({
@@ -105,7 +106,7 @@ export class XpertStudioComponent {
 
   readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
-  readonly versions = computed(() => this.apiService.versions())
+  readonly versions = computed(() => this.apiService.versions()?.filter(nonBlank))
   readonly roles = computed(() => this.viewModel()?.roles)
   readonly connections = computed(() => this.viewModel()?.connections)
 

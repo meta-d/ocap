@@ -15,6 +15,7 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
   title?: string
   titleCN?: string
   description?: string
+  type: XpertRoleTypeEnum
   /**
    * 系统提示语
    */
@@ -90,4 +91,9 @@ export type TXpertRoleOptions = {
 export type TXpertRoleDraft = {
   team: IXpertRole
   roles: IXpertRole[]
+}
+
+export enum XpertRoleTypeEnum {
+  Agent = 'agent',
+  Copilot = 'copilot'
 }

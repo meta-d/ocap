@@ -8,3 +8,9 @@
     @apply border-red-500;
   }
 }
+
+:host::ng-deep {
+  mark.highlight:hover {
+    @apply bg-blue-200;
+  }
+}

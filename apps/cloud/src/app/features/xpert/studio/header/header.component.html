@@ -197,14 +197,21 @@
       <div class="flex items-center h-6 text-xs font-medium text-gray-500 uppercase">最新发布</div>
       <div [cdkMenuTriggerFor]="versionMenu" class="flex justify-between items-center">
         <div class="flex items-center mt-[3px] mb-[3px] font-medium text-gray-700">
-          Version: {{version()}}
-          @if (latest()) {
-            <div class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-green-200 text-green-700 rounded-lg">
-              latest
-            </div>
+          
+          @if (version()) {
+            Version: {{version()}}
+            @if (latest()) {
+              <div class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-green-200 text-green-700 rounded-lg">
+                latest
+              </div>
+            }
+          } @else {
+            <span class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-orange-200 text-orange-700 rounded-lg">
+              draft
+            </span>
           }
         </div>
-      @if (draft()) {
+      @if (version() && draft()) {
         <button mat-stroked-button color="primary" (click)="resume()"
             type="button"
             class="btn-small ml-2 px-2 text-primary-600 false"

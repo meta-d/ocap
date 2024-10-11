@@ -24,9 +24,9 @@ export class XpertRoleController extends CrudController<XpertRole> {
 	async getAllByWorkspace(@Param('id') workspaceId: string, @Query('data', ParseJsonPipe) data: any) {
 		return this.service.getAllByWorkspace(workspaceId, data, RequestContext.currentUser())
 	}
-	@Get('validate-name/:name')
-	async validateName(@Param('name') name: string) {
-		return this.service.validateName(name).then((items) => items.map((item) => new XpertRolePublicDTO(item)))
+	@Get('validate')
+	async validateTitle(@Query('title') title: string) {
+		return this.service.validateTitle(title).then((items) => items.map((item) => new XpertRolePublicDTO(item)))
 	}
 
 	@Get(':id/team')

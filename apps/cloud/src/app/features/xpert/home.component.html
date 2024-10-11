@@ -1,14 +1,13 @@
 <div
-  class="sticky top-0 flex justify-between items-center pt-4 px-12 pb-2 leading-[56px] bg-gray-100 z-20 flex-wrap gap-y-2"
+  class="sticky top-0 flex justify-between items-center gap-4 pt-4 px-12 pb-2 leading-[56px] bg-gray-100 z-20 flex-wrap gap-y-2"
 >
-  <div class="flex justify-start items-center">
+  <div class="flex justify-start items-center gap-4">
     <div
       type="button"
-      id="radix-:r4a:"
       aria-haspopup="menu"
       aria-expanded="false"
       data-state="closed"
-      class="group flex-0 flex cursor-poin ter items-center gap-1 rounded-lg py-1.5 px-3 text-lg font-semibold overflow-hidden whitespace-nowrap text-token-text-secondary hover:bg-token-main-surface-secondary"
+      class="group flex-0 flex cursor-poin ter items-center gap-1 rounded-lg py-1.5 px-3 text-lg font-semibold overflow-hidden whitespace-nowrap bg-white text-token-text-secondary hover:bg-token-main-surface-secondary"
       [cdkMenuTriggerFor]="workspaceMenu"
     >
       <div class="text-token-text-secondary">
@@ -31,20 +30,62 @@
       </svg>
     </div>
 
-    <ngm-tags
-      [tags]="[
-        {
-          key: 'agent',
-          caption: 'Agent'
-        },
-        {
-          key: 'workflow',
-          caption: 'Workflow'
-        }
-      ]"
-      selectable
-      color="green"
-    ></ngm-tags>
+    <ul class="relative flex" cdkListbox cdkListboxS [(ngModel)]="types">
+      <li
+        [cdkOption]="null"
+        class="mr-1 px-3 py-[7px] h-[32px] flex items-center rounded-lg font-medium leading-[18px] cursor-pointer shadow-xs active:scale-95 transition-transform hover:bg-white"
+        [ngClass]="type() ? '' : 'text-primary-600 bg-white'"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="currentColor"
+          class="remixicon w-[14px] h-[14px] mr-1"
+        >
+          <path
+            d="M7 11.5C4.51472 11.5 2.5 9.48528 2.5 7C2.5 4.51472 4.51472 2.5 7 2.5C9.48528 2.5 11.5 4.51472 11.5 7C11.5 9.48528 9.48528 11.5 7 11.5ZM7 21.5C4.51472 21.5 2.5 19.4853 2.5 17C2.5 14.5147 4.51472 12.5 7 12.5C9.48528 12.5 11.5 14.5147 11.5 17C11.5 19.4853 9.48528 21.5 7 21.5ZM17 11.5C14.5147 11.5 12.5 9.48528 12.5 7C12.5 4.51472 14.5147 2.5 17 2.5C19.4853 2.5 21.5 4.51472 21.5 7C21.5 9.48528 19.4853 11.5 17 11.5ZM17 21.5C14.5147 21.5 12.5 19.4853 12.5 17C12.5 14.5147 14.5147 12.5 17 12.5C19.4853 12.5 21.5 14.5147 21.5 17C21.5 19.4853 19.4853 21.5 17 21.5ZM7 9.5C8.38071 9.5 9.5 8.38071 9.5 7C9.5 5.61929 8.38071 4.5 7 4.5C5.61929 4.5 4.5 5.61929 4.5 7C4.5 8.38071 5.61929 9.5 7 9.5ZM7 19.5C8.38071 19.5 9.5 18.3807 9.5 17C9.5 15.6193 8.38071 14.5 7 14.5C5.61929 14.5 4.5 15.6193 4.5 17C4.5 18.3807 5.61929 19.5 7 19.5ZM17 9.5C18.3807 9.5 19.5 8.38071 19.5 7C19.5 5.61929 18.3807 4.5 17 4.5C15.6193 4.5 14.5 5.61929 14.5 7C14.5 8.38071 15.6193 9.5 17 9.5ZM17 19.5C18.3807 19.5 19.5 18.3807 19.5 17C19.5 15.6193 18.3807 14.5 17 14.5C15.6193 14.5 14.5 15.6193 14.5 17C14.5 18.3807 15.6193 19.5 17 19.5Z"
+          ></path></svg
+        >全部
+      </li>
+      <li
+        [cdkOption]="XpertRoleTypeEnum.Agent"
+        class="mr-1 px-3 py-[7px] h-[32px] flex items-center rounded-lg border-[0.5px] border-transparent text-gray-700 text-[13px] font-medium leading-[18px] cursor-pointer active:scale-95 transition-transform hover:bg-white"
+        [ngClass]="type() === XpertRoleTypeEnum.Agent ? 'text-primary-600 bg-white' : ''"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="currentColor"
+          class="remixicon w-[14px] h-[14px] mr-1"
+        >
+          <path
+            d="M2 8.99374C2 5.68349 4.67654 3 8.00066 3H15.9993C19.3134 3 22 5.69478 22 8.99374V21H8.00066C4.68659 21 2 18.3052 2 15.0063V8.99374ZM20 19V8.99374C20 6.79539 18.2049 5 15.9993 5H8.00066C5.78458 5 4 6.78458 4 8.99374V15.0063C4 17.2046 5.79512 19 8.00066 19H20ZM14 11H16V13H14V11ZM8 11H10V13H8V11Z"
+          ></path></svg
+        >聊天助手
+      </li>
+      <li
+        [cdkOption]="XpertRoleTypeEnum.Copilot"
+        class="mr-1 px-3 py-[7px] h-[32px] flex items-center rounded-lg border-[0.5px] border-transparent text-gray-700 text-[13px] font-medium leading-[18px] cursor-pointer active:scale-95 transition-transform hover:bg-white"
+        [ngClass]="type() === XpertRoleTypeEnum.Copilot ? 'text-primary-600 bg-white' : ''"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="currentColor"
+          class="remixicon w-[14px] h-[14px] mr-1"
+        >
+          <path
+            d="M11 1V2H7C5.34315 2 4 3.34315 4 5V8C4 10.7614 6.23858 13 9 13H15C17.7614 13 20 10.7614 20 8V5C20 3.34315 18.6569 2 17 2H13V1H11ZM6 5C6 4.44772 6.44772 4 7 4H17C17.5523 4 18 4.44772 18 5V8C18 9.65685 16.6569 11 15 11H9C7.34315 11 6 9.65685 6 8V5ZM9.5 9C10.3284 9 11 8.32843 11 7.5C11 6.67157 10.3284 6 9.5 6C8.67157 6 8 6.67157 8 7.5C8 8.32843 8.67157 9 9.5 9ZM14.5 9C15.3284 9 16 8.32843 16 7.5C16 6.67157 15.3284 6 14.5 6C13.6716 6 13 6.67157 13 7.5C13 8.32843 13.6716 9 14.5 9ZM6 22C6 18.6863 8.68629 16 12 16C15.3137 16 18 18.6863 18 22H20C20 17.5817 16.4183 14 12 14C7.58172 14 4 17.5817 4 22H6Z"
+          ></path></svg
+        >Copilot
+      </li>
+    </ul>
   </div>
 </div>
 
@@ -53,11 +94,11 @@
 >
   <a
     class="relative col-span-1 flex flex-col justify-between min-h-[160px] bg-gray-200 rounded-xl border-[0.5px] border-black/5"
-    
     ><div class="grow p-2 rounded-t-xl">
       <div class="px-6 pt-2 pb-1 text-xs font-medium leading-[18px] text-gray-500">创建应用</div>
       <div
         class="flex items-center mb-1 px-6 py-[7px] rounded-lg text-[13px] font-medium leading-[18px] text-gray-600 cursor-pointer hover:text-primary-600 hover:bg-white"
+        (click)="newBlank()"
       >
         <svg
           width="16"
@@ -134,30 +175,27 @@
   >
   @for (role of xpertRoles(); track role.name) {
     <div
-      class="group col-span-1 bg-white border-2 border-solid border-transparent rounded-xl shadow-sm min-h-[160px] flex flex-col transition-all duration-200 ease-in-out cursor-pointer hover:shadow-lg"
+      class="group relative col-span-1 bg-white border-2 border-solid border-transparent rounded-xl shadow-sm min-h-[160px] flex flex-col transition-all duration-200 ease-in-out cursor-pointer hover:shadow-lg"
       [routerLink]="['.', role.id]"
     >
       <div class="flex pt-[14px] px-[14px] pb-3 h-[66px] items-center gap-3 grow-0 shrink-0">
         <div class="relative shrink-0">
-          <div
-            class="w-10 h-10 bg-center bg-cover bg-no-repeat rounded-md"
-            style="background-image: url('/console/api/workspaces/current/tool-provider/builtin/google/icon')"
-          ></div>
+          <div class="w-10 h-10 bg-center bg-cover bg-no-repeat rounded-md"></div>
         </div>
         <div class="grow w-0 py-[1px]">
           <div class="flex items-center text-sm leading-5 font-semibold text-gray-800">
-            <div class="truncate" title="Google">{{role.name}}</div>
+            <div class="truncate" title="Google">{{ role.title }}</div>
           </div>
           <div class="flex items-center text-[10px] leading-[18px] text-gray-500 font-medium">
-            <div class="truncate">作者&nbsp;</div>
+            <div class="truncate">作者&nbsp;{{ role.createdBy | user }}</div>
           </div>
         </div>
       </div>
       <div
         class="grow mb-2 px-[14px] max-h-[72px] text-xs leading-normal text-gray-500 line-clamp-2 group-hover:line-clamp-2 group-hover:max-h-[36px]"
-        title="{{role.description}}"
+        title="{{ role.description }}"
       >
-        {{role.description}}
+        {{ role.description }}
       </div>
       <div class="flex items-center shrink-0 mt-1 pt-1 pl-[14px] pr-[6px] pb-[6px] h-[42px]">
         <div class="relative w-full flex items-center gap-1 py-[7px] rounded-md text-gray-500" title="搜索">
@@ -186,6 +224,97 @@
             </defs>
           </svg>
           <div class="grow text-xs text-start leading-[18px] font-normal truncate">搜索</div>
+        </div>
+      </div>
+
+      <div
+        class="absolute bottom-1 left-0 right-0 items-center shrink-0 pt-1 pl-[14px] pr-[6px] pb-[6px] h-[42px]
+          hidden group-hover:flex"
+        (click)="$event.stopPropagation();"
+      >
+        <div class="grow flex items-center gap-1 w-0">
+          <div class="group-hover:!mr-0 mr-[41px] grow w-full">
+            <div class="relative" >
+              <div>
+                <button
+                  class="group style_popupBtn__nc4lA bg-gray-100 !bg-transparent !w-full !p-0 !border-0 !text-gray-500 hover:!bg-gray-100 hover:!text-gray-700"
+                  type="button"
+                >
+                  <div
+                    class="group/tip relative w-full flex items-center gap-1 px-2 py-[7px] rounded-md cursor-pointer hover:bg-gray-100"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="shrink-0 w-3 h-3"
+                    >
+                      <g id="Icon" clip-path="url(#clip0_17795_9693)">
+                        <path
+                          id="Icon_2"
+                          d="M4.66699 4.6665H4.67283M1.16699 3.03317L1.16699 5.6433C1.16699 5.92866 1.16699 6.07134 1.19923 6.20561C1.22781 6.32465 1.27495 6.43845 1.33891 6.54284C1.41106 6.66057 1.51195 6.76146 1.71373 6.96324L6.18709 11.4366C6.88012 12.1296 7.22664 12.4761 7.62621 12.606C7.97769 12.7202 8.35629 12.7202 8.70777 12.606C9.10735 12.4761 9.45386 12.1296 10.1469 11.4366L11.4371 10.1464C12.1301 9.45337 12.4766 9.10686 12.6065 8.70728C12.7207 8.35581 12.7207 7.9772 12.6065 7.62572C12.4766 7.22615 12.1301 6.87963 11.4371 6.1866L6.96372 1.71324C6.76195 1.51146 6.66106 1.41057 6.54332 1.33842C6.43894 1.27446 6.32514 1.22732 6.20609 1.19874C6.07183 1.1665 5.92915 1.1665 5.64379 1.1665L3.03366 1.1665C2.38026 1.1665 2.05357 1.1665 1.804 1.29366C1.58448 1.40552 1.406 1.58399 1.29415 1.80352C1.16699 2.05308 1.16699 2.37978 1.16699 3.03317ZM4.95866 4.6665C4.95866 4.82759 4.82808 4.95817 4.66699 4.95817C4.50591 4.95817 4.37533 4.82759 4.37533 4.6665C4.37533 4.50542 4.50591 4.37484 4.66699 4.37484C4.82808 4.37484 4.95866 4.50542 4.95866 4.6665Z"
+                          stroke="currentColor"
+                          stroke-width="1.25"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        ></path>
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_17795_9693"><rect width="14" height="14" fill="white"></rect></clipPath>
+                      </defs>
+                    </svg>
+                    <div class="grow text-xs text-start leading-[18px] font-normal truncate">添加标签</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div
+              style="
+                position: fixed;
+                top: 1px;
+                left: 1px;
+                width: 1px;
+                height: 0px;
+                padding: 0px;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0px, 0px, 0px, 0px);
+                white-space: nowrap;
+                border-width: 0px;
+                display: none;
+              "
+            ></div>
+          </div>
+        </div>
+        <div class="shrink-0 mx-1 w-[1px] h-[14px] bg-gray-200"></div>
+        <div class="shrink-0">
+          <div class="relative" >
+            <div>
+              <button
+                class="group bg-gray-100 !bg-transparent h-8 w-8 rounded-md border-none hover:!bg-black/5"
+                type="button"
+                [cdkMenuTriggerFor]="cardMenu"
+                [cdkMenuTriggerData]="{xpert: role}"
+              >
+                <div class="flex items-center justify-center w-8 h-8 cursor-pointer rounded-md">
+                  <svg
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="currentColor"
+                    class="remixicon w-4 h-4 text-gray-700"
+                  >
+                    <path
+                      d="M5 10C3.9 10 3 10.9 3 12C3 13.1 3.9 14 5 14C6.1 14 7 13.1 7 12C7 10.9 6.1 10 5 10ZM19 10C17.9 10 17 10.9 17 12C17 13.1 17.9 14 19 14C20.1 14 21 13.1 21 12C21 10.9 20.1 10 19 10ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z"
+                    ></path>
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -221,6 +350,15 @@
     <button class="ngm-cdk-menu-item" cdkMenuItem (click)="openSettings()">
       <mat-icon class="text-token-text-secondary mr-2">workspaces</mat-icon>
       {{ 'PAC.KEY_WORDS.Settings' | translate: { Default: 'Settings' } }}
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #cardMenu let-xpert="xpert">
+  <div class="ngm-cdk-menu" cdkMenu >
+    <button class="ngm-cdk-menu-item" cdkMenuItem ngmAppearance="danger" (click)="deleteXpert(xpert)">
+      <mat-icon class="mr-2">delete</mat-icon>
+      {{ 'PAC.KEY_WORDS.Delete' | translate: { Default: 'Delete' } }}
     </button>
   </div>
 </ng-template>
