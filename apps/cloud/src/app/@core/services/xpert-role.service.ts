@@ -41,7 +41,7 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
   }
 
   saveDraft(id: string, draft: TXpertRoleDraft) {
-    return this.httpClient.put<TXpertRoleDraft>(this.apiBaseUrl + `/${id}/draft`, draft)
+    return this.httpClient.post<TXpertRoleDraft>(this.apiBaseUrl + `/${id}/draft`, draft)
   }
 
   publish(id: string) {

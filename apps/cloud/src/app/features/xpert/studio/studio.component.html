@@ -38,15 +38,23 @@
           </div>
         }
 
-        @for (knowledge of knowledges(); track knowledge.key) {
+        @for (node of nodes(); track node.key) {
           <div
-            fNode [fNodeId]="knowledge.key"
+            fNode [fNodeId]="node.key"
             fDragHandle
-            [fNodePosition]="knowledge.position"
+            [fNodePosition]="node.position"
             class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
           >
-            <div fNodeInput [fInputId]="knowledge.key" fInputConnectableSide="top" class="top"></div>
-            <xpert-studio-node-knowledge [knowledge]="knowledge" class=""/>
+            <div fNodeInput [fInputId]="node.key" fInputConnectableSide="top" class="top"></div>
+            <div fNodeOutput [fOutputId]="node.key" fOutputConnectableSide="bottom" class="bottom" [fOutputMultiple]="true"></div>
+            @switch (node.type) {
+              @case('role') {
+                <xpert-studio-role [xpertRole]="node.entity" class=""/>
+              }
+              @case('knowledge') {
+                <xpert-studio-node-knowledge [knowledge]="node.entity" class=""/>
+              }
+            }
           </div>
         }
       </f-canvas>

@@ -26,6 +26,7 @@ import {
   FZoomDirective
 } from '@foblex/flow'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { nonBlank } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
@@ -36,13 +37,15 @@ import { startWith } from 'rxjs/operators'
 import { ToastrService, XpertRoleService, XpertWorkspaceService } from '../../../@core'
 import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
-import { XpertStudioContextMenuComponent, XpertStudioNodeKnowledgeComponent, XpertStudioRoleComponent } from './components'
-import { EReloadReason, IRoleViewModel, IStudioModel, XpertStudioApiService, SelectionService } from './domain'
-import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
+import {
+  XpertStudioContextMenuComponent,
+  XpertStudioNodeKnowledgeComponent,
+  XpertStudioRoleComponent
+} from './components'
+import { EReloadReason, IRoleViewModel, IStudioModel, SelectionService, XpertStudioApiService } from './domain'
 import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
-import { nonBlank } from '@metad/ocap-angular/core'
-
+import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 
 @Component({
   standalone: true,
@@ -67,7 +70,7 @@ import { nonBlank } from '@metad/ocap-angular/core'
     XpertStudioRoleComponent,
     XpertStudioNodeKnowledgeComponent,
     XpertStudioHeaderComponent,
-    XpertStudioPanelComponent,
+    XpertStudioPanelComponent
   ],
   selector: 'pac-xpert-studio',
   templateUrl: './studio.component.html',
@@ -103,7 +106,7 @@ export class XpertStudioComponent {
   readonly viewModel = signal<IStudioModel>({
     team: null,
     roles: [],
-    knowledges: [],
+    nodes: [],
     connections: []
   })
 
@@ -111,19 +114,22 @@ export class XpertStudioComponent {
   readonly id = computed(() => this.team()?.id)
   readonly versions = computed(() => this.apiService.versions()?.filter(nonBlank))
   readonly roles = computed(() => this.viewModel()?.roles)
-  readonly knowledges = computed(() => this.viewModel()?.knowledges)
+  readonly nodes = computed(() => this.viewModel()?.nodes)
   readonly connections = computed(() => this.viewModel()?.connections)
 
-  public isSingleSelection: boolean = true;
+  public isSingleSelection: boolean = true
 
   constructor() {
-    effect(() => {
-    //   if (this.xpertRole()) {
-    //     this.apiService.initRole(this.xpertRole())
-    //   }
-    //   // console.log(this.paramId(), this.xpertRole())
-      console.log(this.apiService.stateHistories())
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        //   if (this.xpertRole()) {
+        //     this.apiService.initRole(this.xpertRole())
+        //   }
+        //   // console.log(this.paramId(), this.xpertRole())
+        console.log(this.apiService.stateHistories())
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   public ngOnInit(): void {
@@ -143,6 +149,7 @@ export class XpertStudioComponent {
   private getData(): void {
     this.viewModel.set(this.apiService.get())
     // this.form = new BuildFormHandler().handle(new BuildFormRequest(this.viewModel));
+    console.log(this.viewModel())
   }
 
   public onLoaded(): void {
@@ -172,13 +179,13 @@ export class XpertStudioComponent {
   }
 
   public moveXpertRole(point: IPoint, role: IRoleViewModel): void {
-    role.position = point;
-    this.apiService.moveXpertRole(role.key, point);
+    role.position = point
+    this.apiService.moveXpertRole(role.key, point)
   }
 
   public selectionChanged(event: FSelectionChangeEvent): void {
-    this.isSingleSelection = event.connections.length + event.nodes.length === 1;
-    this.selectionService.setTables(event.nodes);
-    this.#cdr.markForCheck();
+    this.isSingleSelection = event.connections.length + event.nodes.length === 1
+    this.selectionService.setNodes(event.nodes)
+    this.#cdr.markForCheck()
   }
 }

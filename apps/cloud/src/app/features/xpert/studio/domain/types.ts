@@ -10,7 +10,10 @@ export enum EReloadReason {
   JUST_RELOAD = 'just_reload',
   CONNECTION_CHANGED = 'connection_changed',
   MOVED = 'moved',
-  KNOWLEDGE_CREATED = 'knowledge_created'
+  ROLE_CREATED = 'role_created',
+  ROLE_REMOVED = 'role_removed',
+  KNOWLEDGE_CREATED = 'knowledge_created',
+  KNOWLEDGE_REMOVED = 'knowledge_removed',
 }
 
 export type TStateHistory = {
@@ -21,3 +24,5 @@ export type TStateHistory = {
 export function getXpertRoleKey(role: IXpertRole) {
   return role.key ?? role.id
 }
+
+export type TNodeType = 'role' | 'knowledge' | 'toolset'

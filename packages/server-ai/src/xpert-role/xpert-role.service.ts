@@ -95,7 +95,8 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 			}
 		} as TXpertRoleDraft
 
-		return await this.repository.save(xpert)
+		await this.repository.save(xpert)
+		return xpert.draft
 	}
 
 	async publish(id: string,) {

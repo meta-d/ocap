@@ -92,9 +92,19 @@ export type TXpertRoleDraft = {
   team: IXpertRole
   roles: IXpertRole[]
   knowledges: IKnowledgebase[]
+  
+  savedAt?: Date
 }
 
 export enum XpertRoleTypeEnum {
   Agent = 'agent',
   Copilot = 'copilot'
+}
+
+export type TXpertTeamDraft = {
+  team: IXpertRole
+  roles: IXpertRole[]
+  knowledges: IKnowledgebase[]
+  
+  savedAt?: Date
 }

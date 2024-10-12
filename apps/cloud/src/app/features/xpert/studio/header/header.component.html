@@ -1,6 +1,11 @@
 <div>
-  <div class="flex items-center h-[18px] text-sm text-gray-500">
-    自动保存 08:07:52<span class="flex items-center mx-1">·</span>已发布 1 天前
+  <div class="flex items-center h-[18px] text-sm opacity-50">
+    @if (draftSavedDate()) {
+      <span>自动保存 {{draftSavedDate()}}</span>
+    }
+    @if (latestPublishDate()) {
+      <span class="flex items-center mx-1">·</span>已发布 {{latestPublishDate()}}
+    }
   </div>
 </div>
 <div class="flex items-center gap-2">

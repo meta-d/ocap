@@ -1,9 +1,13 @@
 @if (selectedNode() && visiable()) {
   <div class="relative mr-2 h-full">
-    <xpert-studio-panel-role class="h-full bg-components-panel-bg shadow-lg border-[0.5px] border-components-panel-border rounded-2xl overflow-y-auto
-      w-[420px]"
-      [xpertRole]="selectedNode()">
-    </xpert-studio-panel-role>
+    @switch (selectedNode().type) {
+      @case('role') {
+        <xpert-studio-panel-role class="h-full bg-components-panel-bg shadow-lg border-[0.5px] border-components-panel-border rounded-2xl overflow-y-auto
+          w-[420px]"
+          [xpertRole]="role()">
+        </xpert-studio-panel-role>
+      }
+    }
 
     <div class="absolute top-2 right-2 z-20 opacity-50 hover:opacity-100" displayDensity="compact">
         <button mat-icon-button (click)="close()">

@@ -1,11 +1,11 @@
-import { IXpertRole } from '@metad/contracts'
+import { IKnowledgebase, IXpertRole } from 'apps/cloud/src/app/@core'
 import { IRoleConnectionViewModel } from './connection'
 import { IRoleViewModel } from './role'
-import { IKnowledgebaseViewModel } from './knowledge'
+import { TNodeViewModel } from './node'
 
 export interface IStudioModel {
   team: IXpertRole
   roles: IRoleViewModel[]
-  knowledges: IKnowledgebaseViewModel[]
   connections: IRoleConnectionViewModel[]
+  nodes: TNodeViewModel[]
 }

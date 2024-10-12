@@ -25,19 +25,16 @@ import { IStudioModel } from './i-studio-model'
 import {
   CreateRoleHandler,
   CreateRoleRequest,
-  GetRoleHandler,
-  GetRoleRequest,
   MoveRoleHandler,
   MoveRoleRequest,
   RemoveRoleHandler,
   RemoveRoleRequest,
-  ToRoleViewModelHandler,
   UpdateRoleHandler,
   UpdateRoleRequest
 } from './role'
 import { IStudioStorage } from './studio.storage'
 import { EReloadReason, IStudioStore, TStateHistory } from './types'
-import { CreateKnowledgeHandler, CreateKnowledgeRequest, ToKnowledgeViewModelHandler } from './knowledge'
+import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest, RemoveNodeHandler, RemoveNodeRequest, ToNodeViewModelHandler } from './node'
 
 @Injectable()
 export class XpertStudioApiService {
@@ -70,6 +67,7 @@ export class XpertStudioApiService {
 
   readonly draft = signal<TXpertRoleDraft>(null)
   readonly stateHistories = signal<TStateHistory[]>([])
+  readonly viewModel = signal<IStudioModel>(null)
 
   readonly refresh$ = new BehaviorSubject<void>(null)
 
@@ -99,7 +97,7 @@ export class XpertStudioApiService {
       debounceTime(10 * 1000),
       switchMap((draft) => this.xpertRoleService.saveDraft(this.storage.team.id, draft))
     )
-    .subscribe(() => this.draft.set(structuredClone(this.storage)))
+    .subscribe((draft) => this.draft.set(draft))
 
   public initRole(role: IXpertRole) {
     this.team.set(role)
@@ -128,14 +126,14 @@ export class XpertStudioApiService {
   }
 
   public get(): IStudioModel {
-    return (
-      this.storage && {
-        team: this.storage.team,
-        roles: new ToRoleViewModelHandler(this.storage).handle(),
-        knowledges: new ToKnowledgeViewModelHandler(this.storage).handle(),
-        connections: new ToConnectionViewModelHandler(this.storage).handle()
-      }
-    )
+    this.viewModel.set(this.storage && {
+      team: this.storage.team,
+      roles: [],
+      // knowledges: new ToKnowledgeViewModelHandler(this.storage).handle(),
+      connections: new ToConnectionViewModelHandler(this.storage).handle(),
+      nodes: new ToNodeViewModelHandler(this.storage).handle()
+    })
+    return this.viewModel()
   }
 
   public createRole(position: IPoint): void {
@@ -160,7 +158,7 @@ export class XpertStudioApiService {
   }
 
   public getNode(key: string) {
-    return new GetRoleHandler(this.storage).handle(new GetRoleRequest(key))
+    return this.viewModel().nodes.find((item) => item.key === key)
   }
 
   public updateXpertRole(key: string, entity: Partial<IXpertRole>) {
@@ -193,8 +191,31 @@ export class XpertStudioApiService {
 
   // Knowledge
   createKnowledge(position: IPoint): void {
-    new CreateKnowledgeHandler(this.store).handle(new CreateKnowledgeRequest(position))
+    new CreateNodeHandler(this.store).handle(new CreateNodeRequest('knowledge', position))
     this.#reload.next(EReloadReason.KNOWLEDGE_CREATED)
+  }
+
+  // Nodes
+  public moveNode(key: string, position: IPoint): void {
+    // Find node
+    const node = this.viewModel().nodes.find((item) => item.key === key)
+    new MoveNodeHandler(this.store).handle(new MoveNodeRequest(node, position))
+
+    this.#reload.next(EReloadReason.MOVED)
+  }
+  public removeNode(key: string) {
+    // Find node
+    const node = this.viewModel().nodes.find((item) => item.key === key)
+    // Remove node
+    new RemoveNodeHandler(this.store).handle(new RemoveNodeRequest(node))
+    switch(node.type) {
+      case 'knowledge':
+        this.#reload.next(EReloadReason.KNOWLEDGE_REMOVED)
+        break
+      case 'role':
+        this.#reload.next(EReloadReason.ROLE_REMOVED)
+        break
+    }
   }
 }
 

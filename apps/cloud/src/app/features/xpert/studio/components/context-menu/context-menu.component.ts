@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component, inject, TemplateRef, ViewChild } from '@angular/core'
 import { Subscription } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
-import { XpertStudioComponent } from '../../studio.component'
 import { SelectionService } from '../../domain/selection.service'
+import { XpertStudioComponent } from '../../studio.component'
 
 @Component({
   selector: 'xpert-studio-context-menu',
@@ -19,50 +19,60 @@ export class XpertStudioContextMenuComponent {
   readonly selectionService = inject(SelectionService)
   private root = inject(XpertStudioComponent)
   readonly #cdr = inject(ChangeDetectorRef)
-  
 
   @ViewChild(TemplateRef, { static: true })
   public template!: TemplateRef<CdkMenu>
 
   private subscriptions = new Subscription()
-  public column: string | null = null;
-  public table: string | null = null;
+
+  /**
+   * @deprecated
+   */
+  public column: string | null = null
+  /**
+   * @deprecated
+   */
+  public table: string | null = null
+
+  public node: string | null = null
 
   public ngOnInit(): void {
-    this.subscriptions.add(this.subscribeToSelectionChanges());
+    this.subscriptions.add(this.subscribeToSelectionChanges())
   }
 
   private subscribeToSelectionChanges(): Subscription {
     return this.selectionService.selection$.subscribe((selection) => {
-      this.column = selection.column;
+      this.column = selection.column
       if (this.root.fFlowComponent().getSelection().nodes.length === 1) {
-        this.table = this.root.fFlowComponent().getSelection().nodes[ 0 ];
+        this.table = this.root.fFlowComponent().getSelection().nodes[0]
+        this.node = this.root.fFlowComponent().getSelection().nodes[0]
       } else {
-        this.table = null;
-        this.column = null;
+        this.table = null
+        this.column = null
       }
-      this.#cdr.detectChanges();
-    });
+
+      this.#cdr.detectChanges()
+    })
   }
 
   public createRole(menu: CdkMenu): void {
     menu.menuStack.closeAll()
-    this.apiService.createRole(this.root.contextMenuPosition);
+    this.apiService.createRole(this.root.contextMenuPosition)
   }
 
   public createKnowledge(menu: CdkMenu): void {
     menu.menuStack.closeAll()
-    this.apiService.createKnowledge(this.root.contextMenuPosition);
+    this.apiService.createKnowledge(this.root.contextMenuPosition)
   }
 
-  public deleteRole(menu: CdkMenu, role: string): void {
+  public deleteNode(menu: CdkMenu, node: string): void {
     menu.menuStack.closeAll()
-    if (role) {
-      this.apiService.removeRole(role);
+    if (node) {
+      this.apiService.removeNode(node)
     }
   }
 
   public dispose(): void {
-    this.selectionService.reset();
+    this.selectionService.reset()
   }
 }

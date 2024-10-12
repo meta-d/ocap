@@ -1,7 +1,7 @@
 import { IHandler } from '@foblex/mediator'
+import { IXpertRole } from 'apps/cloud/src/app/@core'
 import { findXpertRole, IStudioStorage } from '../../studio.storage'
 import { GetRoleRequest } from './get-role.request'
-import { IXpertRole } from 'apps/cloud/src/app/@core';
 
 export class GetRoleHandler implements IHandler<GetRoleRequest> {
   constructor(private storage: IStudioStorage) {}
@@ -9,7 +9,7 @@ export class GetRoleHandler implements IHandler<GetRoleRequest> {
   public handle(request: GetRoleRequest): IXpertRole {
     const node = findXpertRole([...this.storage.roles, this.storage.team], request.key)
     if (!node) {
-      throw new Error(`Xpert with key ${ request.key } not found`);
+      throw new Error(`Xpert with key ${request.key} not found`)
     }
     return node
   }

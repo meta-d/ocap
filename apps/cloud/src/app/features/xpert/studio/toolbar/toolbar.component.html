@@ -216,6 +216,14 @@
 
 <ng-template #historyMenu>
   <div class="ngm-cdk-menu" cdkMenu>
+    <div class="sticky top-0 bg-white flex items-center justify-between px-4 pt-3 text-base font-semibold text-gray-900">
+      <div class="grow">变更历史</div>
+      <div class="shrink-0 flex items-center justify-center w-6 h-6 cursor-pointer">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="remixicon w-4 h-4 text-gray-500">
+          <path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"></path>
+        </svg>
+      </div>
+    </div>
     @for (item of histories(); track item) {
       <button
           class="ngm-cdk-menu-item flex items-center justify-start px-3 h-8 rounded-lg hover:bg-gray-50 cursor-pointer text-sm text-gray-700"

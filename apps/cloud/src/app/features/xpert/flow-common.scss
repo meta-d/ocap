@@ -51,7 +51,8 @@
       stroke: var(--connection-color);
       stroke-width: 2;
     }
-    .f-connection-text, .f-connection-center {
+    .f-connection-text,
+    .f-connection-center {
       fill: var(--connection-color);
       color: var(--connection-color);
     }
@@ -93,16 +94,14 @@
       }
     }
     .f-minimap-view {
-      fill: var(--minimap-view-color)
+      fill: var(--minimap-view-color);
     }
   }
 }
 @mixin node {
-  // width: 100px;
-  // padding: 4px;
   color: var(--node-color);
   text-align: center;
-  background: var(--node-background-color);
+  background: var(--color-components-card-bg);
   border-radius: var(--node-border-radius);
   border: 0.2px solid var(--node-border-color);
   cursor: move;
@@ -171,4 +170,3 @@
     line-height: normal;
   }
 }
-  
