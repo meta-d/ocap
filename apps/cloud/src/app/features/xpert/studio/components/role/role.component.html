@@ -1,21 +1,30 @@
-<div class="flex justify-start items-center px-3 pt-3 pb-2">
-  <pac-avatar [imageUrl]="xpertRole().avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
-  <div class="flex flex-col">
-    <span class="text-lg">{{xpertRole().name}}</span>
+@if (!isRoot()) {
+  <div fNodeInput [fInputId]="node().key" fInputConnectableSide="top" class="top"></div>
+}
+<div fNodeOutput [fOutputId]="node().key + '/role'" fOutputConnectableSide="bottom" class="bottom" [fOutputMultiple]="true"></div>
+<div fNodeOutput [fOutputId]="node().key + '/knowledge'" fOutputConnectableSide="right" class="right" [fOutputMultiple]="true"></div>
+<div fNodeOutput [fOutputId]="node().key + '/toolset'" fOutputConnectableSide="right" class="right" [fOutputMultiple]="true"></div>
+
+@if (xpertRole()) {
+  <div class="flex justify-start items-center px-3 pt-3 pb-2">
+    <pac-avatar [imageUrl]="xpertRole().avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+    <div class="flex flex-col">
+      <span class="text-lg">{{xpertRole().title}}</span>
+    </div>
   </div>
-</div>
-
-<div class="px-3 pb-2 flex flex-col items-stretch">
-    <p class="text-sm text-token-text-secondary text-left">{{xpertRole().description}}</p>
-
-    @if (toolsets()?.length) {
-      <label class="mt-4 text-left">Tools:</label>
-    }
-    @for (toolset of toolsets(); track toolset.id) {
-      <xpert-studio-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
-        hover:bg-black/5 dark:hover:bg-white/10">
-        <pac-avatar [imageUrl]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
-        <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
-      </xpert-studio-role-toolset>
-    }
-</div>
+  
+  <div class="px-3 pb-2 flex flex-col items-stretch">
+      <p class="text-sm text-token-text-secondary text-left">{{xpertRole().description}}</p>
+  
+      @if (toolsets()?.length) {
+        <label class="mt-4 text-left">Tools:</label>
+      }
+      @for (toolset of toolsets(); track toolset.id) {
+        <xpert-studio-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
+          hover:bg-black/5 dark:hover:bg-white/10">
+          <pac-avatar [imageUrl]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+          <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
+        </xpert-studio-role-toolset>
+      }
+  </div>
+}

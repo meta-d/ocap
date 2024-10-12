@@ -1,12 +1,13 @@
-import { IXpertRole } from '@metad/contracts'
+import { IXpertRole, TXpertTeamDraft, TXpertTeamNode } from '@metad/contracts'
 import { omit, pick } from '@metad/server-common'
-import { Logger, NotFoundException } from '@nestjs/common'
+import { HttpException, Logger, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { assign } from 'lodash'
 import { IsNull, Not } from 'typeorm'
 import { XpertRole } from '../../xpert-role.entity'
 import { XpertRoleService } from '../../xpert-role.service'
 import { XpertRolePublishCommand } from '../publish.command'
+import { nonNullable } from '@metad/copilot'
 
 @CommandHandler(XpertRolePublishCommand)
 export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublishCommand> {
@@ -25,7 +26,6 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 		const { items: allVersionRoles } = await this.roleService.findAll({
 			where: {
 				workspaceId: xpertRole.workspaceId,
-				key: xpertRole.key,
 				name: xpertRole.name
 			}
 		})
@@ -54,46 +54,36 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 			version = '1'
 		}
 
+		// Check
+		const draft = xpertRole.draft
+		this.check(draft)
+
 		if (currentVersion) {
-			await this.saveTeamVersion(xpertRole, currentVersion)
+			await this.saveTeamVersion(xpertRole, version)
 		}
-
+		
 		xpertRole.version = version
-		xpertRole.members = []
-		const team = xpertRole.draft.team
-		if (team.members) {
-			for await (const member of team.members) {
-				const newMember = await this.createNewMember(xpertRole, version, member)
-				xpertRole.members.push(newMember)
-			}
-		}
-		assign(
-			xpertRole,
-			pick(
-				team,
-				'title',
-				'titleCN',
-				'description',
-				'prompt',
-				'starters',
-				'avatar',
-				'options',
-				'toolsets',
-				'knowledgebases'
-			)
-		)
-
 		xpertRole.draft = null
+		xpertRole.publishAt = new Date()
+		// await this.roleService.save(xpertRole)
+		// xpertRole.members = []
 
-		return await this.roleService.save(xpertRole)
+		await this.publish(xpertRole, version, draft)
+
+		return xpertRole
 	}
 
 	async saveTeamVersion(team: XpertRole, version: string) {
-		const newTeam = await this.roleService.create({
+		team.draft = null
+		const oldTeam = {
 			...omit(team, 'id'),
-			version,
 			latest: false,
-		})
+		}
+
+		team.version = version
+		await this.roleService.save(team)
+
+		const newTeam = await this.roleService.create(oldTeam)
 
 		const { items } = await this.roleService.findAll({
 			where: {
@@ -132,44 +122,138 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 			}
 		}
 
-		return await this.roleService.create({
+		const oldRole = {
 			...omit(role, 'id'),
-			version,
 			latest: false,
 			teamRoleId: team.id,
 			members: newMembers
-		})
+		}
+		role.version = version
+		await this.roleService.save(role as XpertRole)
+		return await this.roleService.create(oldRole)
 	}
 
-	async createNewMember(team: IXpertRole, version: string, role: IXpertRole) {
-		const result = await this.roleService.findOneOrFail({
+	// async createNewMember(team: IXpertRole, version: string, role: IXpertRole) {
+	// 	const result = await this.roleService.findOneOrFail({
+	// 		where: {
+	// 			workspaceId: team.workspaceId,
+	// 			teamRoleId: team.id,
+	// 			version: version,
+	// 			name: role.name
+	// 		}
+	// 	})
+	// 	if (result.success) {
+	// 		return result.record
+	// 	}
+
+	// 	const newMembers = []
+	// 	if (role.members) {
+	// 		for await (const member of role.members) {
+	// 			if (!member.id) {
+	// 				newMembers.push(await this.createNewMember(team, version, member))
+	// 			} else {
+	// 				newMembers.push(member)
+	// 			}
+	// 		}
+	// 	}
+	// 	return await this.roleService.create({
+	// 		...omit(role, 'id'),
+	// 		workspaceId: team.workspaceId,
+	// 		teamRoleId: team.id,
+	// 		version,
+	// 		members: newMembers
+	// 	})
+	// }
+
+	// 检查
+	// 先创建或修改或删除
+	// 再维护members 关系
+    async publish(team: IXpertRole, version: string, draft: TXpertTeamDraft) {
+
+		// All members in this team
+		const { items } = await this.roleService.findAll({
 			where: {
+				id: Not(team.id),
 				workspaceId: team.workspaceId,
 				teamRoleId: team.id,
-				version: version,
-				key: role.key
-			}
+				version: team.version ?? IsNull()
+			},
+			relations: ['members']
 		})
-		if (result.success) {
-			return result.record
-		}
 
-		const newMembers = []
-		if (role.members) {
-			for await (const member of role.members) {
-				if (!member.id) {
-					newMembers.push(await this.createNewMember(team, version, member))
-				} else {
-					newMembers.push(member)
+		// CURD members
+		const roleNodes = draft.nodes.filter((node) => node.type === 'role') as (TXpertTeamNode & {type: 'role'})[]
+		const rolesMap = {}
+		for await (const node of roleNodes) {
+			if (!node.entity.id) {
+				const entity = await this.roleService.create({
+					...node.entity,
+					version,
+					teamRoleId: team.id,
+					workspaceId: team.workspaceId,
+				})
+				rolesMap[node.key] = {
+					node,
+					entity
+				}
+			} else {
+				let entity = null
+				if (node.entity.id === team.id) {
+					entity = team
+					assign(
+						entity,
+						pick(
+							draft.team,
+							'title',
+							'titleCN',
+							'description',
+							'prompt',
+							'starters',
+							'avatar',
+							'options',
+						)
+					)
+					entity.teamRoleId = team.id
+				} else if (node.entity.teamRoleId === team.id) {
+					entity = await this.roleService.findOne(node.entity.id)
+					assign(entity, node.entity)
+					entity.version = version
+				}
+				
+				if (entity) {
+					await this.roleService.save(entity)
+					rolesMap[node.key] = {
+						node,
+						entity
+					}
 				}
 			}
 		}
-		return await this.roleService.create({
-			...omit(role, 'id'),
-			workspaceId: team.workspaceId,
-			teamRoleId: team.id,
-			version,
-			members: newMembers
+		// Delete members
+		for await (const oldEntity of items) {
+			if (!rolesMap[oldEntity.id]) {
+				await this.roleService.delete(oldEntity.id)
+			}
+		}
+
+		// Update relations
+		for await (const key of Object.keys(rolesMap)) {
+			const { node, entity } = rolesMap[key]
+			entity.members = draft.connections.filter((conn) => conn.type === 'role' && conn.from === node.key)
+											.map((conn) => rolesMap[conn.to]?.entity).filter(nonNullable)
+			entity.knowledgebases = draft.connections.filter((conn) => conn.type === 'knowledge' && conn.from === node.key)
+											.map((conn) => draft.nodes.find((_) => _.type === 'knowledge' && _.key === conn.to)?.entity)
+											.filter(nonNullable)
+			await this.roleService.save(entity)
+		}
+	}
+
+	check(draft: TXpertTeamDraft) {
+		// Check all nodes have been connected
+		draft.nodes.forEach((node) => {
+			if (!draft.connections.some((connection) => connection.from === node.key || connection.to === node.key)) {
+				throw new HttpException(`有游离的 Xpert！`, 500)
+			}
 		})
 	}
 }

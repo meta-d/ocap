@@ -17,6 +17,20 @@
       }
     }
   }
+  .f-node-input,
+  .f-node-output {
+    &:not(.f-node) {
+      @include flow-common.connectors;
+    }
+    &.f-node-input-connected,
+    &.f-node-output-connected {
+      background-color: var(--minimap-view-color);
+    }
+    &.f-node-output-not-connectable,
+    &.f-node-input-not-connectable {
+      background-color: var(--disabled-color);
+    }
+  }
 }
 f-flow {
   height: 100%;
@@ -31,20 +45,7 @@ f-flow {
 .f-node {
   cursor: default;
 }
-.f-node-input,
-.f-node-output {
-  &:not(.f-node) {
-    @include flow-common.connectors;
-  }
-  &.f-node-input-connected,
-  &.f-node-output-connected {
-    background-color: var(--minimap-view-color);
-  }
-  &.f-node-output-not-connectable,
-  &.f-node-input-not-connectable {
-    background-color: var(--disabled-color);
-  }
-}
+
 
 .f-selection-area {
   background-color: var(--selection-area-color);

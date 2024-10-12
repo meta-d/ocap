@@ -1,4 +1,4 @@
-import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace, TXpertRoleDraft, XpertRoleTypeEnum } from '@metad/contracts'
+import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace, XpertRoleTypeEnum, TXpertTeamDraft } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsBoolean, IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm'
@@ -9,11 +9,6 @@ import { Knowledgebase, XpertToolset, XpertWorkspace } from '../core/entities/in
 @Entity('xpert_role')
 @Index(['tenantId', 'organizationId', 'type', 'name', 'version', 'latest'], { unique: true })
 export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRole {
-	@ApiPropertyOptional({ type: () => String })
-	@IsString()
-	@IsOptional()
-	@Column({ nullable: true })
-	key: string
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -79,11 +74,20 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	@Column({ nullable: true })
 	latest?: boolean
 
+	@ApiProperty({
+		type: 'string',
+		format: 'date-time',
+		example: '2023-11-21T06:20:32.232Z',
+	})
+	@IsOptional()
+	@Column({ nullable: true, type: 'timestamptz' })
+	publishAt?: Date
+
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	draft?: TXpertRoleDraft
+	draft?: TXpertTeamDraft
 
 	/*
     |--------------------------------------------------------------------------

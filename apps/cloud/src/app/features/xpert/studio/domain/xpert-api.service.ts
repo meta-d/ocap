@@ -1,10 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { IPoint } from '@foblex/2d'
-import { IXpertRole, TXpertRoleDraft } from '@metad/contracts'
+import { IKnowledgebase, IXpertRole, TXpertTeamDraft } from '../../../../@core/types'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
-import { XpertRoleService } from 'apps/cloud/src/app/@core'
+import { KnowledgebaseService, XpertRoleService } from 'apps/cloud/src/app/@core'
 import * as CryptoJS from 'crypto-js'
 import { isEqual, negate } from 'lodash-es'
 import { injectParams } from 'ngxtension/inject-params'
@@ -16,23 +16,18 @@ import {
   filter,
   map,
   Observable,
+  shareReplay,
   Subject,
   switchMap,
   tap
 } from 'rxjs'
 import { CreateConnectionHandler, CreateConnectionRequest, ToConnectionViewModelHandler } from './connection'
-import { IStudioModel } from './i-studio-model'
 import {
-  CreateRoleHandler,
-  CreateRoleRequest,
   MoveRoleHandler,
   MoveRoleRequest,
-  RemoveRoleHandler,
-  RemoveRoleRequest,
   UpdateRoleHandler,
   UpdateRoleRequest
 } from './role'
-import { IStudioStorage } from './studio.storage'
 import { EReloadReason, IStudioStore, TStateHistory } from './types'
 import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest, RemoveNodeHandler, RemoveNodeRequest, ToNodeViewModelHandler } from './node'
 
@@ -40,13 +35,17 @@ import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest,
 export class XpertStudioApiService {
   readonly paramId = injectParams('id')
   readonly xpertRoleService = inject(XpertRoleService)
+  readonly knowledgebaseService = inject(KnowledgebaseService)
 
   // private storage: IStudioStorage = null
   readonly store = createStore({ name: 'xpertStudio' }, withProps<IStudioStore>({ draft: null }))
   readonly #stateHistory = stateHistory<Store, IStudioStore>(this.store, {
     comparatorFn: negate(isEqual)
   })
-  get storage(): IStudioStorage {
+  /**
+   * @deprecated
+   */
+  get storage(): TXpertTeamDraft {
     return this.store.getValue().draft
   }
 
@@ -65,13 +64,19 @@ export class XpertStudioApiService {
     )
   )
 
-  readonly draft = signal<TXpertRoleDraft>(null)
+  readonly draft = signal<TXpertTeamDraft>(null)
   readonly stateHistories = signal<TStateHistory[]>([])
-  readonly viewModel = signal<IStudioModel>(null)
+  readonly viewModel = toSignal(this.store.pipe(map((state) => state.draft)))
 
-  readonly refresh$ = new BehaviorSubject<void>(null)
+  readonly #refresh$ = new BehaviorSubject<void>(null)
 
-  private saveDraftSub = this.refresh$
+  // knowledgebases
+  readonly knowledgebases$ = this.knowledgebaseService.getAllInOrg().pipe(
+    map(({items}) => items),
+    shareReplay(1)
+  )
+
+  private saveDraftSub = this.#refresh$
     .pipe(
       switchMap(() =>
         combineLatest([
@@ -94,7 +99,7 @@ export class XpertStudioApiService {
       map(() => calculateHash(JSON.stringify(this.storage))),
       distinctUntilChanged(),
       map(() => this.storage),
-      debounceTime(10 * 1000),
+      debounceTime(5 * 1000),
       switchMap((draft) => this.xpertRoleService.saveDraft(this.storage.team.id, draft))
     )
     .subscribe((draft) => this.draft.set(draft))
@@ -112,8 +117,9 @@ export class XpertStudioApiService {
           }
         : {
             team: role,
-            roles: []
-          }) as IStudioStorage
+            nodes: new ToNodeViewModelHandler(role).handle(),
+            connections: new ToConnectionViewModelHandler(role).handle()
+          }) as TXpertTeamDraft
     }))
 
     this.#reload.next(EReloadReason.INIT)
@@ -121,49 +127,35 @@ export class XpertStudioApiService {
 
   public resume() {
     this.xpertRoleService.update(this.team().id, { draft: null }).subscribe(() => {
-      this.refresh$.next()
+      this.refresh()
     })
   }
 
-  public get(): IStudioModel {
-    this.viewModel.set(this.storage && {
-      team: this.storage.team,
-      roles: [],
-      // knowledges: new ToKnowledgeViewModelHandler(this.storage).handle(),
-      connections: new ToConnectionViewModelHandler(this.storage).handle(),
-      nodes: new ToNodeViewModelHandler(this.storage).handle()
-    })
-    return this.viewModel()
+  public refresh() {
+    this.#refresh$.next()
   }
 
-  public createRole(position: IPoint): void {
-    new CreateRoleHandler(this.storage).handle(new CreateRoleRequest(position))
-    this.#reload.next(EReloadReason.JUST_RELOAD)
-  }
+  // public get(): TXpertTeamDraft {
+  //   this.viewModel.set(this.storage && {
+  //     team: this.storage.team,
+  //     roles: [],
+  //     // knowledges: new ToKnowledgeViewModelHandler(this.storage).handle(),
+  //     connections: new ToConnectionViewModelHandler(this.storage).handle(),
+  //     nodes: new ToNodeViewModelHandler(this.storage).handle()
+  //   })
+  //   return this.viewModel()
+  // }
 
-  public createConnection(outputId: string, inputId: string): void {
-    new CreateConnectionHandler(this.storage).handle(new CreateConnectionRequest(outputId, inputId))
-    this.#reload.next(EReloadReason.JUST_RELOAD)
-  }
-
-  public moveXpertRole(key: string, position: IPoint): void {
-    new MoveRoleHandler(this.store).handle(new MoveRoleRequest(key, position))
-
-    this.#reload.next(EReloadReason.MOVED)
-  }
-
-  public removeRole(key: string) {
-    new RemoveRoleHandler(this.storage).handle(new RemoveRoleRequest(key))
-    this.#reload.next(EReloadReason.JUST_RELOAD)
-  }
+  // public removeRole(key: string) {
+  //   new RemoveRoleHandler(this.storage).handle(new RemoveRoleRequest(key))
+  //   this.#reload.next(EReloadReason.JUST_RELOAD)
+  // }
 
   public getNode(key: string) {
     return this.viewModel().nodes.find((item) => item.key === key)
   }
 
-  public updateXpertRole(key: string, entity: Partial<IXpertRole>) {
-    return new UpdateRoleHandler(this.storage).handle(new UpdateRoleRequest(key, entity))
-  }
+
 
   public reload() {
     this.#reload.next(EReloadReason.JUST_RELOAD)
@@ -189,33 +181,38 @@ export class XpertStudioApiService {
     this.#stateHistory.clear()
   }
 
+  // Connections
+  public createConnection(outputId: string, inputId: string, oldFInputId?: string): void {
+    new CreateConnectionHandler(this.store).handle(new CreateConnectionRequest(outputId, inputId, oldFInputId))
+    this.#reload.next(EReloadReason.CONNECTION_CHANGED)
+  }
+
   // Knowledge
-  createKnowledge(position: IPoint): void {
-    new CreateNodeHandler(this.store).handle(new CreateNodeRequest('knowledge', position))
+  createKnowledge(position: IPoint, knowledge: IKnowledgebase): void {
+    new CreateNodeHandler(this.store).handle(new CreateNodeRequest('knowledge', position, knowledge))
     this.#reload.next(EReloadReason.KNOWLEDGE_CREATED)
   }
 
   // Nodes
   public moveNode(key: string, position: IPoint): void {
     // Find node
-    const node = this.viewModel().nodes.find((item) => item.key === key)
-    new MoveNodeHandler(this.store).handle(new MoveNodeRequest(node, position))
+    // const node = this.viewModel().nodes.find((item) => item.key === key)
+    new MoveNodeHandler(this.store).handle(new MoveNodeRequest(key, position))
 
     this.#reload.next(EReloadReason.MOVED)
   }
   public removeNode(key: string) {
-    // Find node
-    const node = this.viewModel().nodes.find((item) => item.key === key)
     // Remove node
-    new RemoveNodeHandler(this.store).handle(new RemoveNodeRequest(node))
-    switch(node.type) {
-      case 'knowledge':
-        this.#reload.next(EReloadReason.KNOWLEDGE_REMOVED)
-        break
-      case 'role':
-        this.#reload.next(EReloadReason.ROLE_REMOVED)
-        break
-    }
+    const event = new RemoveNodeHandler(this.store).handle(new RemoveNodeRequest(key))
+    event && this.#reload.next(event)
+  }
+  // Role node
+  public createRole(position: IPoint): void {
+    new CreateNodeHandler(this.store).handle(new CreateNodeRequest('role', position))
+    this.#reload.next(EReloadReason.ROLE_CREATED)
+  }
+  public updateXpertRole(key: string, entity: Partial<IXpertRole>) {
+    return new UpdateRoleHandler(this.store).handle(new UpdateRoleRequest(key, entity))
   }
 }
 

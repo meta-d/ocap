@@ -5,12 +5,13 @@ import { Subscription } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
 import { SelectionService } from '../../domain/selection.service'
 import { XpertStudioComponent } from '../../studio.component'
+import { XpertStudioKnowledgeMenuComponent } from '../knowledge-menu/knowledge.component'
 
 @Component({
   selector: 'xpert-studio-context-menu',
   exportAs: 'menuComponent',
   standalone: true,
-  imports: [CommonModule, CdkMenuModule],
+  imports: [CommonModule, CdkMenuModule, XpertStudioKnowledgeMenuComponent],
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.scss'
 })
@@ -58,11 +59,6 @@ export class XpertStudioContextMenuComponent {
   public createRole(menu: CdkMenu): void {
     menu.menuStack.closeAll()
     this.apiService.createRole(this.root.contextMenuPosition)
-  }
-
-  public createKnowledge(menu: CdkMenu): void {
-    menu.menuStack.closeAll()
-    this.apiService.createKnowledge(this.root.contextMenuPosition)
   }
 
   public deleteNode(menu: CdkMenu, node: string): void {

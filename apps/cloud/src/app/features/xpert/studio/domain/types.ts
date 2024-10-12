@@ -1,8 +1,7 @@
-import { IXpertRole } from '@metad/contracts'
-import { IStudioStorage } from './studio.storage'
+import { IXpertRole, TXpertTeamDraft } from 'apps/cloud/src/app/@core'
 
 export interface IStudioStore {
-  draft: IStudioStorage
+  draft: TXpertTeamDraft
 }
 
 export enum EReloadReason {
@@ -22,7 +21,5 @@ export type TStateHistory = {
 }
 
 export function getXpertRoleKey(role: IXpertRole) {
-  return role.key ?? role.id
+  return role.id
 }
-
-export type TNodeType = 'role' | 'knowledge' | 'toolset'

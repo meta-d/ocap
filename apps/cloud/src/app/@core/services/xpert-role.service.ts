@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, Observable, tap } from 'rxjs'
+import { BehaviorSubject, tap } from 'rxjs'
 import { API_XPERT_ROLE } from '../constants/app.constants'
-import { IXpertRole, TXpertRoleDraft } from '../types'
+import { IXpertRole, TXpertTeamDraft } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 import { toParams } from '@metad/ocap-angular/core'
 
@@ -40,8 +40,8 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
     return this.httpClient.get<{id: string; key: string; version: string; latest: boolean;}[]>(this.apiBaseUrl + `/${id}/version`)
   }
 
-  saveDraft(id: string, draft: TXpertRoleDraft) {
-    return this.httpClient.post<TXpertRoleDraft>(this.apiBaseUrl + `/${id}/draft`, draft)
+  saveDraft(id: string, draft: TXpertTeamDraft) {
+    return this.httpClient.post<TXpertTeamDraft>(this.apiBaseUrl + `/${id}/draft`, draft)
   }
 
   publish(id: string) {

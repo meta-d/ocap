@@ -1,6 +1,6 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { Component, computed, effect, inject, signal } from '@angular/core'
+import { Component, computed, effect, inject, model, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { MaterialModule } from '../../../../@shared/index'
@@ -19,6 +19,8 @@ export class XpertStudioPanelComponent {
   readonly xpertStudioComponent = inject(XpertStudioComponent)
   readonly selectionService = inject(SelectionService)
 
+  readonly visible = model(false)
+
   readonly selectedNode = toSignal(this.selectionService.singleNode$)
   readonly role = computed(() => {
     const selectedNode = this.selectedNode()
@@ -27,18 +29,20 @@ export class XpertStudioPanelComponent {
     }
     return null
   })
-  readonly visiable = signal(false)
+  
   private singleNodeSub = this.selectionService.singleNode$.pipe(takeUntilDestroyed()).subscribe((node) => {
-    this.visiable.set(!!node)
+    if (!node) {
+      this.close()
+    }
   })
 
   constructor() {
     effect(() => {
-      console.log(this.selectedNode())
+      console.log(`Panel visible:`,this.visible())
     })
   }
 
   close() {
-    this.visiable.set(false)
+    this.visible.set(false)
   }
 }

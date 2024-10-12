@@ -6,7 +6,7 @@ import { assign } from 'lodash'
 import { FindConditions, IsNull, Repository } from 'typeorm'
 import { KnowledgebaseService } from '../knowledgebase'
 import { XpertRole } from './xpert-role.entity'
-import { IUser, IXpertRole, TXpertRoleDraft } from '@metad/contracts'
+import { IUser, IXpertRole, TXpertTeamDraft } from '@metad/contracts'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { XpertRolePublishCommand } from './commands'
 import { convertToUrlPath } from '@metad/server-common'
@@ -18,7 +18,6 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 	constructor(
 		@InjectRepository(XpertRole)
 		repository: Repository<XpertRole>,
-		@Inject(forwardRef(() => KnowledgebaseService))
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
 	) {
@@ -84,7 +83,7 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		return await this.repository.save(entity)
 	}
 
-	async saveDraft(id: string, draft: TXpertRoleDraft) {
+	async saveDraft(id: string, draft: TXpertTeamDraft) {
 		const xpert = await this.findOne(id)
 		xpert.draft = {
 			...draft,
@@ -93,7 +92,7 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 				updatedAt: new Date(),
 				updatedById: RequestContext.currentUserId()
 			}
-		} as TXpertRoleDraft
+		} as TXpertTeamDraft
 
 		await this.repository.save(xpert)
 		return xpert.draft
@@ -107,15 +106,13 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		const role = await this.findOne(id)
 		const { items: allVersionRoles } = await this.findAll({
 			where: {
-				workspaceId: role.workspaceId,
-				key: role.key,
+				workspaceId: role.workspaceId ?? IsNull(),
 				name: role.name
 			}
 		})
 
 		return allVersionRoles.map((role) => ({
 			id: role.id,
-			key: role.key,
 			version: role.version,
 			latest: role.latest
 		}))

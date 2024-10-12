@@ -1,12 +1,6 @@
-import { IXpertRole, TXpertRoleDraft } from '@metad/contracts'
+import { IXpertRole } from '@metad/contracts'
 import { getXpertRoleKey } from './types'
-import { IKnowledgebaseStorageModel } from './knowledge'
 import { IRoleViewModel } from './role'
-
-export interface IStudioStorage extends TXpertRoleDraft {
-  knowledges: IKnowledgebaseStorageModel[]
-  roles: IRoleViewModel[]
-}
 
 export function findXpertRole(roles: IXpertRole[], key: string): IRoleViewModel {
   let leader: IRoleViewModel = null

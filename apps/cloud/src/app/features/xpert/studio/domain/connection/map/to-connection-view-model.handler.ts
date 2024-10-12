@@ -1,27 +1,36 @@
 import { IHandler } from '@foblex/mediator'
-import { IXpertRole } from '../../../../../../@core/types'
-import { IStudioStorage } from '../../studio.storage'
-import { getXpertRoleKey } from '../../types'
-import { IRoleConnectionViewModel } from '../i-role-connection-view-model'
+import { IXpertRole, TXpertTeamConnection } from '../../../../../../@core/types'
 
-export class ToConnectionViewModelHandler implements IHandler<void, IRoleConnectionViewModel[]> {
-  constructor(private storage: IStudioStorage) {}
+export class ToConnectionViewModelHandler implements IHandler<void, TXpertTeamConnection[]> {
+  constructor(private team: IXpertRole) {}
 
-  public handle(): IRoleConnectionViewModel[] {
-    return handleConntections(this.storage.team)
+  public handle(): TXpertTeamConnection[] {
+    return handleConntections(this.team)
   }
 }
 
 function handleConntections(role: IXpertRole) {
-  const connections = []
-  for (const member of role.members ?? []) {
-    const from = getXpertRoleKey(role)
-    const to = getXpertRoleKey(member)
+  const connections: TXpertTeamConnection[] = []
+  role.knowledgebases?.forEach((_) => {
+    const from = role.id
+    const to = _.id
     connections.push({
+      type: 'knowledge',
       key: from + '/' + to,
       from,
       to
     })
+  })
+  for (const member of role.members ?? []) {
+    const from = role.id
+    const to = member.id
+    connections.push({
+      type: 'role',
+      key: from + '/' + to,
+      from,
+      to
+    })
+
     if (member.members) {
       connections.push(...handleConntections(member))
     }

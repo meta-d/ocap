@@ -3,11 +3,15 @@
     <div cdkMenuItem class="ngm-cdk-menu-item" (click)="createRole(menu)">
       <span>添加成员</span>
     </div>
-    <div cdkMenuItem class="ngm-cdk-menu-item" (click)="createKnowledge(menu)">
+    <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="knowledgeMenu">
       <span>添加知识库</span>
     </div>
     <div cdkMenuItem class="ngm-cdk-menu-item" (click)="deleteNode(menu, node)">
       <span>删除</span>
     </div>
   </div>
+</ng-template>
+
+<ng-template #knowledgeMenu>
+  <xpert-studio-knowledge-menu cdkMenu class="ngm-cdk-menu" />
 </ng-template>

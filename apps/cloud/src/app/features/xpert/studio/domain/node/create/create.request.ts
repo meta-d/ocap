@@ -1,9 +1,10 @@
 import { IPoint } from '@foblex/2d'
-import { TNodeType } from '../../types'
+import { TXpertTeamNode, TXpertTeamNodeType } from 'apps/cloud/src/app/@core';
 
 export class CreateNodeRequest {
   constructor(
-    public readonly type: TNodeType,
-    public readonly position: IPoint
+    public readonly type: TXpertTeamNodeType,
+    public readonly position: IPoint,
+    public readonly entity?: TXpertTeamNode['entity']
   ) {}
 }

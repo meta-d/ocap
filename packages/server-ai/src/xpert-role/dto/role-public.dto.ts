@@ -1,4 +1,4 @@
-import { TXpertRoleDraft } from '@metad/contracts'
+import { TXpertTeamDraft } from '@metad/contracts'
 import { Exclude, Expose, Transform, TransformFnParams } from 'class-transformer'
 import { Knowledgebase, XpertToolset } from '../../core/entities/internal'
 import { KnowledgebasePublicDTO } from '../../knowledgebase/dto'
@@ -8,7 +8,7 @@ import { XpertRole } from '../xpert-role.entity'
 @Expose()
 export class XpertRolePublicDTO extends XpertRole {
 	@Exclude()
-	draft?: TXpertRoleDraft
+	declare draft?: TXpertTeamDraft
 
 	@Transform((params: TransformFnParams) =>
 		params.value ? params.value.map((item) => new KnowledgebasePublicDTO(item)) : null

@@ -86,7 +86,6 @@ export class ChatService {
         if (!role) {
           role = {
             ...COMMON_COPILOT_ROLE,
-            key: uuid(),
             description: this.#translate.instant('PAC.Chat.CommonRoleDescription', {Default: 'Hi, how can I help? I can chat and search the knowledge base. Please select the appropriate role if you would like to use the tools.'})
           }
         }

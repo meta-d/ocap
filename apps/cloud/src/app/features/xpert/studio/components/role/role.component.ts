@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
 import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
-import { IXpertRole } from '@metad/contracts'
 import { XpertStudioRoleToolsetComponent } from './toolset/toolset.component'
 import { AvatarComponent } from 'apps/cloud/src/app/@shared'
+import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
 
 @Component({
   selector: 'xpert-studio-role',
@@ -21,7 +21,9 @@ import { AvatarComponent } from 'apps/cloud/src/app/@shared'
 export class XpertStudioRoleComponent {
   readonly elementRef = inject(ElementRef)
 
-  readonly xpertRole = input<IXpertRole>()
+  readonly node = input<TXpertTeamNode & {type: 'role'}>()
+  readonly isRoot = input<boolean>(false)
+  readonly xpertRole = computed(() => this.node().entity)
 
   readonly toolsets = computed(() => this.xpertRole()?.toolsets)
 

@@ -1,16 +1,12 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
+import { IXpertToolset } from './xpert-toolset.model'
 import { IXpertWorkspace } from './xpert-workspace.model'
 
 /**
  * Expert role, business role for the xperts.
  */
 export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
-  /**
-   * Semantic Primary Key
-   */
-  key: string
   name: string
   title?: string
   titleCN?: string
@@ -35,9 +31,13 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
    */
   latest?: boolean
   /**
+   * Publish date of latest
+   */
+  publishAt?: Date
+  /**
    * 当前版本上的草稿
    */
-  draft?: TXpertRoleDraft
+  draft?: TXpertTeamDraft
 
   /**
    * 所属的工作空间
@@ -75,9 +75,9 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
 
 export type TXpertRoleOptions = {
   position?: {
-    x: number;
-    y: number;
-}
+    x: number
+    y: number
+  }
   context?: Record<string, any>
   toolsets?: {
     [id: string]: {
@@ -88,23 +88,50 @@ export type TXpertRoleOptions = {
   }
 }
 
-export type TXpertRoleDraft = {
-  team: IXpertRole
-  roles: IXpertRole[]
-  knowledges: IKnowledgebase[]
-  
-  savedAt?: Date
-}
-
 export enum XpertRoleTypeEnum {
   Agent = 'agent',
   Copilot = 'copilot'
 }
 
+// Xpert team draft types
+
 export type TXpertTeamDraft = {
   team: IXpertRole
-  roles: IXpertRole[]
-  knowledges: IKnowledgebase[]
-  
+
   savedAt?: Date
+  nodes: TXpertTeamNode[]
+  connections: TXpertTeamConnection[]
+}
+
+export type TXpertTeamNodeType = 'role' | 'knowledge' | 'toolset'
+
+export type TXpertTeamNode = {
+  key: string
+  type: TXpertTeamNodeType
+  position: IPoint
+} & (
+  | {
+      type: 'role'
+      entity: IXpertRole
+    }
+  | {
+      type: 'knowledge'
+      entity: IKnowledgebase
+    }
+    | {
+      type: 'toolset'
+      entity: IXpertToolset
+    }
+)
+
+export interface IPoint {
+  x: number
+  y: number
+}
+
+export interface TXpertTeamConnection {
+  key: string
+  from: string
+  to: string
+  type: TXpertTeamNodeType
 }

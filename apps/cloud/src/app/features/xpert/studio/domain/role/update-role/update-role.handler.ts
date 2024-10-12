@@ -1,16 +1,23 @@
 import { IHandler } from '@foblex/mediator'
 import { assign } from 'lodash-es'
-import { findXpertRole, IStudioStorage } from '../../studio.storage'
 import { UpdateRoleRequest } from './update-role.request'
+import { Store, StoreDef } from '@ngneat/elf'
+import { IStudioStore } from '../../types'
 
 export class UpdateRoleHandler implements IHandler<UpdateRoleRequest> {
-  constructor(private storage: IStudioStorage) {}
+  constructor(private store: Store<StoreDef, IStudioStore>) {}
 
   public handle(request: UpdateRoleRequest): void {
-    const node = findXpertRole([...this.storage.roles, this.storage.team], request.key)
-    if (!node) {
-      throw new Error(`Xpert with key ${request.key} not found`)
-    }
-    assign(node, request.entity)
+    this.store.update((state) => {
+      const draft = structuredClone(state.draft)
+      const node = draft.nodes.find((item) => item.key === request.key)
+      if (!node) {
+        throw new Error(`Xpert with key ${request.key} not found`)
+      }
+      assign(node, request.entity)
+      return {
+        draft
+      }
+    })
   }
 }

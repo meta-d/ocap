@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
 import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
-import { IKnowledgebase, IXpertRole } from '@metad/contracts'
+import { IKnowledgebase, IXpertRole, TXpertTeamNode } from '@metad/contracts'
 import { AvatarComponent } from 'apps/cloud/src/app/@shared'
 
 @Component({
@@ -20,7 +20,8 @@ import { AvatarComponent } from 'apps/cloud/src/app/@shared'
 export class XpertStudioNodeKnowledgeComponent {
   readonly elementRef = inject(ElementRef)
 
-  readonly knowledge = input<IKnowledgebase>()
+  readonly node = input<TXpertTeamNode>()
+  readonly knowledge = computed(() => this.node().entity)
 
   private get hostElement(): HTMLElement {
     return this.elementRef.nativeElement

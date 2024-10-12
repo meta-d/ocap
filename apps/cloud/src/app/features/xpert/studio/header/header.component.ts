@@ -1,23 +1,19 @@
-import { Component, computed, inject, signal } from '@angular/core'
-import { XpertStudioComponent } from '../studio.component'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { Component, computed, inject, signal } from '@angular/core'
+import { TranslateService } from '@ngx-translate/core'
 import { getErrorMessage, ToastrService, XpertRoleService } from 'apps/cloud/src/app/@core'
-import { sortBy } from 'lodash-es'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { formatRelative } from 'date-fns'
+import { sortBy } from 'lodash-es'
 import { getDateLocale } from '../../../../@core'
 import { XpertStudioApiService } from '../domain'
-import { TranslateService } from '@ngx-translate/core'
+import { XpertStudioComponent } from '../studio.component'
 
 @Component({
   selector: 'xpert-studio-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    CdkMenuModule,
-    MaterialModule
-  ],
+  imports: [CommonModule, CdkMenuModule, MaterialModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -40,7 +36,7 @@ export class XpertStudioHeaderComponent {
     return null
   })
   readonly latestPublishDate = computed(() => {
-    const publishDate = this.team()?.updatedAt
+    const publishDate = this.team()?.publishAt
     if (publishDate) {
       return formatRelative(new Date(publishDate), new Date(), {
         locale: getDateLocale(this.#translate.currentLang)
@@ -48,18 +44,23 @@ export class XpertStudioHeaderComponent {
     }
     return null
   })
-  
+
   readonly publishing = signal(false)
 
   publish() {
     this.publishing.set(true)
     this.xpertRoleService.publish(this.xpertStudioComponent.id()).subscribe({
-        next: (result) => {
-            this.#toastr.success(`PAC.Messages.Saved`, {}, `Version ${result.version}`)
-        },
-        error: (error) => {
-            this.#toastr.error(getErrorMessage(error))
-        }
+      next: (result) => {
+        this.#toastr.success(
+          `PAC.Xpert.PublishedSuccessfully`,
+          { Default: 'Published successfully' },
+          `v${result.version}`
+        )
+        this.apiService.refresh()
+      },
+      error: (error) => {
+        this.#toastr.error(getErrorMessage(error))
+      }
     })
   }
 

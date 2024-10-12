@@ -52,7 +52,6 @@ export class XpertNewBlankComponent {
   create() {
     this.xpertService
       .create({
-        key: uuid(),
         type: this.type(),
         title: this.title(),
         description: this.description(),

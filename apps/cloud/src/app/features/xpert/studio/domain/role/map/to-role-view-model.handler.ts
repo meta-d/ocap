@@ -1,19 +1,18 @@
 import { IHandler } from '@foblex/mediator'
 import { IXpertRole } from 'apps/cloud/src/app/@core'
-import { IStudioStorage } from '../../studio.storage'
 import { IRoleViewModel } from '../i-role-view-model'
 
 export class ToRoleViewModelHandler implements IHandler<void, IRoleViewModel[]> {
-  constructor(private storage: IStudioStorage) {}
 
   public handle(): IRoleViewModel[] {
-    return [...(this.storage.roles ?? []), this.storage.team, ...handleRoles(this.storage.team)].map((x) => {
-      return {
-        ...x,
-        key: x.key ?? x.id,
-        position: x.options?.position
-      }
-    })
+    // return [...(this.storage.roles ?? []), this.storage.team, ...handleRoles(this.storage.team)].map((x) => {
+    //   return {
+    //     ...x,
+    //     key: x.key ?? x.id,
+    //     position: x.options?.position
+    //   }
+    // })
+    return null
   }
 }
 

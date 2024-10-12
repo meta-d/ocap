@@ -1,5 +1,3 @@
-import { TNodeViewModel } from '../i-view-model'
-
 export class RemoveNodeRequest {
-  constructor(public readonly node: TNodeViewModel) {}
+  constructor(public readonly key: string) {}
 }

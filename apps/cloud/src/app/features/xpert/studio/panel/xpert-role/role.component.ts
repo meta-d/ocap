@@ -20,7 +20,6 @@ import { AvatarComponent, MaterialModule } from 'apps/cloud/src/app/@shared'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
-import { getXpertRoleKey } from '../../domain/types'
 import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
 
 @Component({
@@ -51,6 +50,7 @@ export class XpertStudioPanelRoleComponent {
   readonly apiService = inject(XpertStudioApiService)
   readonly xpertService = inject(XpertRoleService)
 
+  readonly key = input<string>()
   readonly xpertRole = input<IXpertRole>()
   readonly promptInputElement = viewChild('editablePrompt', { read: ElementRef<HTMLDivElement> })
 
@@ -84,15 +84,15 @@ export class XpertStudioPanelRoleComponent {
   }
 
   onNameChange(event: string) {
-    this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), { name: event })
+    this.apiService.updateXpertRole(this.key(), { name: event })
   }
   onTitleChange(event: string) {
-    this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), {
+    this.apiService.updateXpertRole(this.key(), {
       title: event
     })
   }
   onDescChange(event: string) {
-    this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), { description: event })
+    this.apiService.updateXpertRole(this.key(), { description: event })
   }
   onBlur() {
     this.apiService.reload()
@@ -102,6 +102,6 @@ export class XpertStudioPanelRoleComponent {
     console.log(text)
     console.log(this.promptInputElement().nativeElement)
     this.prompt.set(text)
-    this.apiService.updateXpertRole(getXpertRoleKey(this.xpertRole()), { prompt: text })
+    this.apiService.updateXpertRole(this.key(), { prompt: text })
   }
 }

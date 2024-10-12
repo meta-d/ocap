@@ -9,6 +9,7 @@ import {
   computed,
   effect,
   inject,
+  model,
   signal,
   viewChild
 } from '@angular/core'
@@ -33,8 +34,8 @@ import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
-import { startWith } from 'rxjs/operators'
-import { ToastrService, XpertRoleService, XpertWorkspaceService } from '../../../@core'
+import { map, startWith } from 'rxjs/operators'
+import { ToastrService, TXpertTeamNode, XpertRoleService, XpertWorkspaceService } from '../../../@core'
 import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import {
@@ -42,10 +43,11 @@ import {
   XpertStudioNodeKnowledgeComponent,
   XpertStudioRoleComponent
 } from './components'
-import { EReloadReason, IRoleViewModel, IStudioModel, SelectionService, XpertStudioApiService } from './domain'
+import { EReloadReason, SelectionService, XpertStudioApiService } from './domain'
 import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -103,21 +105,17 @@ export class XpertStudioComponent {
   public contextMenuPosition: IPoint = PointExtensions.initialize(0, 0)
 
   private subscriptions$ = new Subscription()
-  readonly viewModel = signal<IStudioModel>({
-    team: null,
-    roles: [],
-    nodes: [],
-    connections: []
-  })
 
   readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
   readonly versions = computed(() => this.apiService.versions()?.filter(nonBlank))
-  readonly roles = computed(() => this.viewModel()?.roles)
   readonly nodes = computed(() => this.viewModel()?.nodes)
   readonly connections = computed(() => this.viewModel()?.connections)
 
   public isSingleSelection: boolean = true
+
+  readonly viewModel = toSignal(this.apiService.store.pipe(map((state) => state.draft)))
+  readonly panelVisible = model<boolean>(false)
 
   constructor() {
     effect(
@@ -147,7 +145,7 @@ export class XpertStudioComponent {
   }
 
   private getData(): void {
-    this.viewModel.set(this.apiService.get())
+    // this.viewModel.set(this.apiService.get())
     // this.form = new BuildFormHandler().handle(new BuildFormRequest(this.viewModel));
     console.log(this.viewModel())
   }
@@ -173,19 +171,36 @@ export class XpertStudioComponent {
 
   public reassignConnection(event: FReassignConnectionEvent): void {
     console.log(`Reassign connecton:`, event)
-    if (!event.newFInputId) {
-      return
-    }
+    this.apiService.createConnection(event.fOutputId, event.newFInputId, event.oldFInputId)
   }
 
-  public moveXpertRole(point: IPoint, role: IRoleViewModel): void {
-    role.position = point
-    this.apiService.moveXpertRole(role.key, point)
+  public moveNode(point: IPoint, node: TXpertTeamNode): void {
+    node.position = point
+    this.apiService.moveNode(node.key, point)
   }
 
   public selectionChanged(event: FSelectionChangeEvent): void {
     this.isSingleSelection = event.connections.length + event.nodes.length === 1
     this.selectionService.setNodes(event.nodes)
     this.#cdr.markForCheck()
+  }
+
+  private mousePosition = {
+    x: 0,
+    y: 0
+  }
+  public onMouseDown($event: MouseEvent) {
+    this.mousePosition.x = $event.screenX;
+    this.mousePosition.y = $event.screenY;
+  }
+  public onSelectNode($event: MouseEvent, node: TXpertTeamNode) {
+    if (
+      this.mousePosition.x === $event.screenX &&
+      this.mousePosition.y === $event.screenY
+    ) {
+      // Execute Click
+      console.log(`Select node:`, node)
+      this.panelVisible.set(true)
+    }
   }
 }

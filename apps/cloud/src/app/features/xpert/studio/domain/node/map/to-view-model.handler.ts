@@ -1,35 +1,32 @@
 import { IHandler } from '@foblex/mediator'
-import { IXpertRole } from 'apps/cloud/src/app/@core'
+import { IXpertRole, TXpertTeamNode } from 'apps/cloud/src/app/@core'
 import { uniqBy } from 'lodash-es'
-import { IStudioStorage } from '../../studio.storage'
-import { TNodeViewModel } from '../i-view-model'
-import { IKnowledgebaseStorageModel } from '../../knowledge'
 
 
-export class ToNodeViewModelHandler implements IHandler<void, TNodeViewModel[]> {
-  constructor(private storage: IStudioStorage) {}
+export class ToNodeViewModelHandler implements IHandler<void, TXpertTeamNode[]> {
+  constructor(private team: IXpertRole) {}
 
-  public handle(): TNodeViewModel[] {
+  public handle(): TXpertTeamNode[] {
     const nodes = []
 
-    nodes.push(...[...(this.storage.roles ?? []), this.storage.team, ...handleRoles(this.storage.team)].map((x) => {
+    nodes.push(...[this.team, ...handleRoles(this.team)].map((x) => {
       return {
-        key: x.key ?? x.id,
         type: 'role',
+        key: x.id,
         position: x.position,
         entity: x,
       }
     }))
 
     // knowledgebases
-    const knowledgebases = [...(this.storage.knowledges ?? []), ...(this.storage.team.knowledgebases ?? [])] as IKnowledgebaseStorageModel[]
-    knowledgebases.push(...handleKnowledgebases(this.storage.team))
+    const knowledgebases = [...(this.team.knowledgebases ?? [])]
+    knowledgebases.push(...handleKnowledgebases(this.team))
 
-    return nodes.concat(...uniqBy(knowledgebases, 'id').map((x: IKnowledgebaseStorageModel) => {
+    return nodes.concat(...uniqBy(knowledgebases, 'id').map((x) => {
       return {
         key: x.id,
         type: 'knowledge',
-        position: x.position,
+        position: null,
         entity: x,
       }
     }))
