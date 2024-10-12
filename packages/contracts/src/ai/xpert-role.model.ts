@@ -109,6 +109,7 @@ export type TXpertTeamNode = {
   key: string
   type: TXpertTeamNodeType
   position: IPoint
+  hash?: string
 } & (
   | {
       type: 'role'

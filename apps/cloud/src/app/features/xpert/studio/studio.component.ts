@@ -34,7 +34,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
-import { map, startWith } from 'rxjs/operators'
+import { delay, map, startWith } from 'rxjs/operators'
 import { ToastrService, TXpertTeamNode, XpertRoleService, XpertWorkspaceService } from '../../../@core'
 import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
@@ -48,6 +48,7 @@ import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { toSignal } from '@angular/core/rxjs-interop'
+
 
 @Component({
   standalone: true,
@@ -124,7 +125,7 @@ export class XpertStudioComponent {
         //     this.apiService.initRole(this.xpertRole())
         //   }
         //   // console.log(this.paramId(), this.xpertRole())
-        console.log(this.apiService.stateHistories())
+        console.log(this.viewModel())
       },
       { allowSignalWrites: true }
     )
@@ -135,12 +136,12 @@ export class XpertStudioComponent {
   }
 
   private subscribeOnReloadData(): Subscription {
-    return this.apiService.reload$.pipe(startWith(null)).subscribe((reason: EReloadReason | null) => {
-      this.getData()
+    return this.apiService.reload$.pipe(startWith(null), delay(1000)).subscribe((reason: EReloadReason | null) => {
+      // this.getData()
       if (reason === EReloadReason.CONNECTION_CHANGED) {
         this.fFlowComponent().clearSelection()
       }
-      this.#cdr.detectChanges()
+      // this.#cdr.detectChanges()
     })
   }
 
@@ -174,9 +175,8 @@ export class XpertStudioComponent {
     this.apiService.createConnection(event.fOutputId, event.newFInputId, event.oldFInputId)
   }
 
-  public moveNode(point: IPoint, node: TXpertTeamNode): void {
-    node.position = point
-    this.apiService.moveNode(node.key, point)
+  public moveNode(point: IPoint, key: string): void {
+    this.apiService.moveNode(key, point)
   }
 
   public selectionChanged(event: FSelectionChangeEvent): void {

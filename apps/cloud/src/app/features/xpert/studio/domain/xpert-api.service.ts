@@ -30,6 +30,7 @@ import {
 } from './role'
 import { EReloadReason, IStudioStore, TStateHistory } from './types'
 import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest, RemoveNodeHandler, RemoveNodeRequest, ToNodeViewModelHandler } from './node'
+import { LayoutHandler, LayoutRequest } from './layout'
 
 @Injectable()
 export class XpertStudioApiService {
@@ -155,8 +156,6 @@ export class XpertStudioApiService {
     return this.viewModel().nodes.find((item) => item.key === key)
   }
 
-
-
   public reload() {
     this.#reload.next(EReloadReason.JUST_RELOAD)
   }
@@ -166,7 +165,11 @@ export class XpertStudioApiService {
   }
 
   gotoHistoryCursor(index: number) {
-    this.#stateHistory.jumpToPast(index)
+    if (index > this.getHistoryCursor()) {
+      this.#stateHistory.jumpToFuture(index)
+    } else {
+      this.#stateHistory.jumpToPast(index)
+    }
   }
 
   undo() {
@@ -195,10 +198,7 @@ export class XpertStudioApiService {
 
   // Nodes
   public moveNode(key: string, position: IPoint): void {
-    // Find node
-    // const node = this.viewModel().nodes.find((item) => item.key === key)
     new MoveNodeHandler(this.store).handle(new MoveNodeRequest(key, position))
-
     this.#reload.next(EReloadReason.MOVED)
   }
   public removeNode(key: string) {
@@ -213,6 +213,11 @@ export class XpertStudioApiService {
   }
   public updateXpertRole(key: string, entity: Partial<IXpertRole>) {
     return new UpdateRoleHandler(this.store).handle(new UpdateRoleRequest(key, entity))
+  }
+
+  public autoLayout() {
+    new LayoutHandler(this.store).handle(new LayoutRequest('TB'))
+    this.#reload.next(EReloadReason.AUTO_LAYOUT)
   }
 }
 

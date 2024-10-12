@@ -28,7 +28,10 @@ export class XpertStudioToolbarComponent {
     return Number((this.xpertStudioComponent.fZoom().getScale() * 100).toFixed(0))
   }
 
-  readonly histories = computed(() => this.apiService.stateHistories())
+  readonly histories = computed(() => this.apiService.stateHistories().reverse())
+  get historyCursor() {
+    return this.apiService.getHistoryCursor()
+  }
 
   public onZoomIn(): void {
     this.xpertStudioComponent.fZoom().zoomIn()
@@ -61,5 +64,9 @@ export class XpertStudioToolbarComponent {
 
   clearHistory() {
     this.apiService.clearHistory()
+  }
+
+  autoLayout() {
+    this.apiService.autoLayout()
   }
 }

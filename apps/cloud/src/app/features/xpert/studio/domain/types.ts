@@ -13,6 +13,7 @@ export enum EReloadReason {
   ROLE_REMOVED = 'role_removed',
   KNOWLEDGE_CREATED = 'knowledge_created',
   KNOWLEDGE_REMOVED = 'knowledge_removed',
+  AUTO_LAYOUT = 'auto_layout'
 }
 
 export type TStateHistory = {

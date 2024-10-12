@@ -13,7 +13,7 @@
       <f-line-alignment></f-line-alignment>
       <f-selection-area></f-selection-area>
 
-      <f-canvas fZoom>
+      <f-canvas fZoom [fZoomStep]="0.01" [fZoomDblClickStep]="0.1">
         <f-connection-for-create></f-connection-for-create>
         <f-snap-connection fType="bezier" [fSnapThreshold]="100"></f-snap-connection>
         @for (connection of connections(); track connection.key) {
@@ -23,12 +23,12 @@
           </f-connection>
         }
 
-        @for (node of nodes(); track node.key) {
+        @for (node of nodes(); track node.key + node.hash) {
           <div class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
             fNode [fNodeId]="node.key"
             fDragHandle
             [fNodePosition]="node.position"
-            (fNodePositionChange)="moveNode($event, node)"
+            (fNodePositionChange)="moveNode($event, node.key)"
             (mousedown)="onMouseDown($event)"
             (click)="onSelectNode($event, node)"
           >

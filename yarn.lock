@@ -3249,6 +3249,18 @@
     debug "^3.1.0"
     lodash.once "^4.1.1"
 
+"@dagrejs/dagre@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@dagrejs/dagre/-/dagre-1.1.4.tgz#66f9c0e2b558308f2c268f60e2c28f22ee17e339"
+  integrity sha512-QUTc54Cg/wvmlEUxB+uvoPVKFazM1H18kVHBQNmK2NbrDR5ihOCR6CXLnDSZzMcSQKJtabPUWridBOlJM3WkDg==
+  dependencies:
+    "@dagrejs/graphlib" "2.2.4"
+
+"@dagrejs/graphlib@2.2.4":
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/@dagrejs/graphlib/-/graphlib-2.2.4.tgz#d77bfa9ff49e2307c0c6e6b8b26b5dd3c05816c4"
+  integrity sha512-mepCf/e9+SKYy1d02/UkvSy6+6MoyXhVxP8lLDfA7BPE1X1d4dR0sZznmbM8/XVJ1GPM+Svnx7Xj6ZweByWUkw==
+
 "@datorama/akita@^6.2.3":
   version "6.2.4"
   resolved "https://registry.yarnpkg.com/@datorama/akita/-/akita-6.2.4.tgz#13e883879dc29ac4e3a775dc39f361df53051ea7"
@@ -8308,6 +8320,11 @@
   dependencies:
     "@types/node" "*"
     moment ">=2.14.0"
+
+"@types/crypto-js@^4.1.1":
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@types/crypto-js/-/crypto-js-4.2.2.tgz#771c4a768d94eb5922cc202a3009558204df0cea"
+  integrity sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==
 
 "@types/d3-scale-chromatic@^3.0.0":
   version "3.0.3"
