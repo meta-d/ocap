@@ -21,6 +21,17 @@ function handleConntections(role: IXpertRole) {
       to
     })
   })
+  role.toolsets?.forEach((_) => {
+    const from = role.id
+    const to = _.id
+    connections.push({
+      type: 'toolset',
+      key: from + '/' + to,
+      from,
+      to
+    })
+  })
+
   for (const member of role.members ?? []) {
     const from = role.id
     const to = member.id

@@ -1,10 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { IPoint } from '@foblex/2d'
-import { IKnowledgebase, IXpertRole, TXpertTeamDraft } from '../../../../@core/types'
+import { IKnowledgebase, IXpertRole, IXpertTool, IXpertToolset, TXpertTeamDraft } from '../../../../@core/types'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
-import { KnowledgebaseService, XpertRoleService } from 'apps/cloud/src/app/@core'
+import { KnowledgebaseService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import * as CryptoJS from 'crypto-js'
 import { isEqual, negate } from 'lodash-es'
 import { injectParams } from 'ngxtension/inject-params'
@@ -37,6 +37,7 @@ export class XpertStudioApiService {
   readonly paramId = injectParams('id')
   readonly xpertRoleService = inject(XpertRoleService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
+  readonly toolsetService = inject(XpertToolsetService)
 
   // private storage: IStudioStorage = null
   readonly store = createStore({ name: 'xpertStudio' }, withProps<IStudioStore>({ draft: null }))
@@ -73,6 +74,10 @@ export class XpertStudioApiService {
 
   // knowledgebases
   readonly knowledgebases$ = this.knowledgebaseService.getAllInOrg().pipe(
+    map(({items}) => items),
+    shareReplay(1)
+  )
+  readonly toolsets$ = this.toolsetService.getAllInOrg().pipe(
     map(({items}) => items),
     shareReplay(1)
   )
@@ -210,6 +215,10 @@ export class XpertStudioApiService {
   public createRole(position: IPoint): void {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('role', position))
     this.#reload.next(EReloadReason.ROLE_CREATED)
+  }
+  createToolset(position: IPoint, toolset: IXpertToolset): void {
+    new CreateNodeHandler(this.store).handle(new CreateNodeRequest('toolset', position, toolset))
+    this.#reload.next(EReloadReason.TOOLSET_CREATED)
   }
   public updateXpertRole(key: string, entity: Partial<IXpertRole>) {
     return new UpdateRoleHandler(this.store).handle(new UpdateRoleRequest(key, entity))

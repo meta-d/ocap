@@ -13,6 +13,8 @@ export enum EReloadReason {
   ROLE_REMOVED = 'role_removed',
   KNOWLEDGE_CREATED = 'knowledge_created',
   KNOWLEDGE_REMOVED = 'knowledge_removed',
+  TOOLSET_CREATED = 'toolset_created',
+  TOOLSET_REMOVED = 'toolset_removed',
   AUTO_LAYOUT = 'auto_layout'
 }
 

@@ -1,17 +1,19 @@
 import { CdkMenu, CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component, inject, TemplateRef, ViewChild } from '@angular/core'
+import {MatTabsModule} from '@angular/material/tabs'
 import { Subscription } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
 import { SelectionService } from '../../domain/selection.service'
 import { XpertStudioComponent } from '../../studio.component'
 import { XpertStudioKnowledgeMenuComponent } from '../knowledge-menu/knowledge.component'
+import { XpertStudioToolsetMenuComponent } from '../toolset-menu/toolset.component'
 
 @Component({
   selector: 'xpert-studio-context-menu',
   exportAs: 'menuComponent',
   standalone: true,
-  imports: [CommonModule, CdkMenuModule, XpertStudioKnowledgeMenuComponent],
+  imports: [CommonModule, CdkMenuModule, MatTabsModule, XpertStudioKnowledgeMenuComponent, XpertStudioToolsetMenuComponent],
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.scss'
 })

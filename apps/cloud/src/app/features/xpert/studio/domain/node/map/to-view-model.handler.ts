@@ -21,8 +21,7 @@ export class ToNodeViewModelHandler implements IHandler<void, TXpertTeamNode[]> 
     // knowledgebases
     const knowledgebases = [...(this.team.knowledgebases ?? [])]
     knowledgebases.push(...handleKnowledgebases(this.team))
-
-    return nodes.concat(...uniqBy(knowledgebases, 'id').map((x) => {
+    nodes.push(...uniqBy(knowledgebases, 'id').map((x) => {
       return {
         key: x.id,
         type: 'knowledge',
@@ -30,6 +29,20 @@ export class ToNodeViewModelHandler implements IHandler<void, TXpertTeamNode[]> 
         entity: x,
       }
     }))
+
+    // Toolsets
+    const toolsets = [...(this.team.toolsets ?? [])]
+    toolsets.push(...handleToolsets(this.team))
+    nodes.push(...uniqBy(toolsets, 'id').map((x) => {
+      return {
+        key: x.id,
+        type: 'toolset',
+        position: null,
+        entity: x,
+      }
+    }))
+
+    return nodes
   }
 }
 
@@ -50,6 +63,17 @@ function handleKnowledgebases(role: IXpertRole) {
     items.push(...(member.knowledgebases ?? []))
     if (member.members) {
       items.push(...handleKnowledgebases(member))
+    }
+  }
+  return items
+}
+
+function handleToolsets(role: IXpertRole) {
+  const items = []
+  for (const member of role.members ?? []) {
+    items.push(...(member.toolsets ?? []))
+    if (member.members) {
+      items.push(...handleToolsets(member))
     }
   }
   return items

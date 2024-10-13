@@ -1,0 +1,11 @@
+<ng-content></ng-content>
+
+@for (toolset of toolsets(); track toolset.id) {
+  <div cdkMenuItem class="ngm-cdk-menu-item w-full flex justify-start items-center px-1 py-0.5"
+    (click)="createToolset(toolset)">
+    <pac-avatar [imageUrl]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+    <div class="flex flex-col">
+      <span>{{toolset.name}}</span>
+    </div>
+  </div>
+}

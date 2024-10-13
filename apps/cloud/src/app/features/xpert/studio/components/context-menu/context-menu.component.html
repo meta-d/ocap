@@ -6,6 +6,9 @@
     <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="knowledgeMenu">
       <span>添加知识库</span>
     </div>
+    <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="toolsetMenu">
+      <span>添加工具集</span>
+    </div>
     <div cdkMenuItem class="ngm-cdk-menu-item" (click)="deleteNode(menu, node)">
       <span>删除</span>
     </div>
@@ -13,5 +16,13 @@
 </ng-template>
 
 <ng-template #knowledgeMenu>
-  <xpert-studio-knowledge-menu cdkMenu class="ngm-cdk-menu" />
+  <div cdkMenu class="ngm-cdk-menu flex flex-col">
+    <xpert-studio-knowledge-menu class="overflow-auto" />
+  </div>
+</ng-template>
+
+<ng-template #toolsetMenu>
+  <div cdkMenu class="ngm-cdk-menu flex flex-col">
+    <xpert-studio-toolset-menu class="overflow-auto" />
+  </div>
 </ng-template>

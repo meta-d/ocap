@@ -48,6 +48,7 @@ import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { XpertStudioNodeToolsetComponent } from './components/toolset/toolset.component'
 
 
 @Component({
@@ -72,6 +73,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
     XpertStudioContextMenuComponent,
     XpertStudioRoleComponent,
     XpertStudioNodeKnowledgeComponent,
+    XpertStudioNodeToolsetComponent,
     XpertStudioHeaderComponent,
     XpertStudioPanelComponent
   ],

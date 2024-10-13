@@ -244,6 +244,9 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 			entity.knowledgebases = draft.connections.filter((conn) => conn.type === 'knowledge' && conn.from === node.key)
 											.map((conn) => draft.nodes.find((_) => _.type === 'knowledge' && _.key === conn.to)?.entity)
 											.filter(nonNullable)
+			entity.toolsets = draft.connections.filter((conn) => conn.type === 'toolset' && conn.from === node.key)
+											.map((conn) => draft.nodes.find((_) => _.type === 'toolset' && _.key === conn.to)?.entity)
+											.filter(nonNullable)
 			await this.roleService.save(entity)
 		}
 	}
