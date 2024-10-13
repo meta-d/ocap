@@ -18,6 +18,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { IPoint, PointExtensions } from '@foblex/2d'
 import {
+  EFConnectionType,
   FCanvasComponent,
   FCreateConnectionEvent,
   FFlowComponent,
@@ -85,6 +86,7 @@ import { XpertStudioNodeToolsetComponent } from './components/toolset/toolset.co
 })
 export class XpertStudioComponent {
   DisplayBehaviour = DisplayBehaviour
+  EFConnectionType = EFConnectionType
 
   readonly appService = inject(AppService)
   readonly router = inject(Router)

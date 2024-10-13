@@ -17,7 +17,8 @@
         <f-connection-for-create></f-connection-for-create>
         <f-snap-connection fType="bezier" [fSnapThreshold]="100"></f-snap-connection>
         @for (connection of connections(); track connection.key) {
-          <f-connection fType="bezier" [fReassignDisabled]="false"
+          <f-connection [fType]="connection.type==='role' ? EFConnectionType.BEZIER : EFConnectionType.STRAIGHT"
+            [fReassignDisabled]="false"
             [fOutputId]="connection.from + '/' + connection.type"
             [fInputId]="connection.to">
           </f-connection>
