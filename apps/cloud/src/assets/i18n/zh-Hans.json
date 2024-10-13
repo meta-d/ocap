@@ -497,7 +497,8 @@
       "SavedSuccessfully": "保存成功",
       "UpdatedSuccessfully": "更新成功",
       "UploadSuccessfully": "上传成功",
-      "NoRecordsFoundinFile": "文件中未找到记录"
+      "NoRecordsFoundinFile": "文件中未找到记录",
+      "UnsavedChanges": "未保存的更改"
     },
     "NOTES": {
       "ORGANIZATIONS": {

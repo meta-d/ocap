@@ -1,15 +1,14 @@
+import { IUser, IXpertRole, TXpertTeamDraft } from '@metad/contracts'
+import { convertToUrlPath } from '@metad/server-common'
 import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
-import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { assign } from 'lodash'
 import { FindConditions, IsNull, Repository } from 'typeorm'
-import { KnowledgebaseService } from '../knowledgebase'
-import { XpertRole } from './xpert-role.entity'
-import { IUser, IXpertRole, TXpertTeamDraft } from '@metad/contracts'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { XpertRolePublishCommand } from './commands'
-import { convertToUrlPath } from '@metad/server-common'
+import { XpertRole } from './xpert-role.entity'
 
 @Injectable()
 export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRole> {
@@ -32,10 +31,12 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 
 	async validateTitle(title: string) {
 		const name = convertToUrlPath(title)
-		const { items } = await this.findAll({ where: {
-			name,
-			latest: true
-		}})
+		const { items } = await this.findAll({
+			where: {
+				name,
+				latest: true
+			}
+		})
 
 		return items
 	}
@@ -71,9 +72,12 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 	}
 
 	async getTeam(id: string) {
-		const team = await this.findOne(id, { relations: ['members', 'toolsets', 'knowledgebases'] })
+		const team = await this.findOne(id, { relations: ['followers', 'toolsets', 'knowledgebases'] })
 		if (!team.draft) {
-			const { items } = await this.findAll({ where: { workspaceId: team.workspaceId, teamRoleId: team.id }, relations: ['members', 'toolsets', 'knowledgebases'] })
+			const { items } = await this.findAll({
+				where: { workspaceId: team.workspaceId, teamRoleId: team.id },
+				relations: ['followers', 'toolsets', 'knowledgebases']
+			})
 			assembleXpertRole(team, items, [])
 		}
 		return team
@@ -98,7 +102,7 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		return xpert.draft
 	}
 
-	async publish(id: string,) {
+	async publish(id: string) {
 		return await this.commandBus.execute(new XpertRolePublishCommand(id))
 	}
 
@@ -119,16 +123,19 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 	}
 }
 
+/**
+ * Assembling the team member tree
+ */
 function assembleXpertRole(role: IXpertRole, items: IXpertRole[], assembles: string[]) {
 	if (assembles.includes(role.id)) {
 		return role
 	}
-	role.members = role.members?.map((m) => items.find((item) => item.id === m.id) ?? m)
+	role.followers = role.followers?.map((m) => items.find((item) => item.id === m.id) ?? m)
 
-	if (role.members) {
-	  for (const member of role.members) {
-		assembleXpertRole(member, items, assembles)
-	  }
+	if (role.followers) {
+		for (const follower of role.followers) {
+			assembleXpertRole(follower, items, assembles)
+		}
 	}
 
 	return role

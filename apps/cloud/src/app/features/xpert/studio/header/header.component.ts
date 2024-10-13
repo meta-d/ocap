@@ -1,7 +1,7 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, computed, inject, signal } from '@angular/core'
-import { TranslateService } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { getErrorMessage, ToastrService, XpertRoleService } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { formatRelative } from 'date-fns'
@@ -9,11 +9,12 @@ import { sortBy } from 'lodash-es'
 import { getDateLocale } from '../../../../@core'
 import { XpertStudioApiService } from '../domain'
 import { XpertStudioComponent } from '../studio.component'
+import { ActivatedRoute, Router } from '@angular/router'
 
 @Component({
   selector: 'xpert-studio-header',
   standalone: true,
-  imports: [CommonModule, CdkMenuModule, MaterialModule],
+  imports: [CommonModule, CdkMenuModule, MaterialModule, TranslateModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -23,12 +24,15 @@ export class XpertStudioHeaderComponent {
   readonly apiService = inject(XpertStudioApiService)
   readonly #toastr = inject(ToastrService)
   readonly #translate = inject(TranslateService)
+  readonly router = inject(Router)
+  readonly route = inject(ActivatedRoute)
 
   readonly team = computed(() => this.xpertStudioComponent.team())
   readonly version = computed(() => this.team()?.version)
   readonly latest = computed(() => this.team()?.latest)
   readonly versions = computed(() => sortBy(this.xpertStudioComponent.versions(), 'version'))
   readonly draft = computed(() => this.apiService.draft())
+  readonly unsaved = this.apiService.unsaved
   readonly draftSavedDate = computed(() => {
     if (this.draft()?.savedAt) {
       return new Date(this.draft().savedAt).toLocaleTimeString()
@@ -66,5 +70,9 @@ export class XpertStudioHeaderComponent {
 
   resume() {
     this.apiService.resume()
+  }
+
+  selectVersion(id: string) {
+    this.router.navigate(['..', id], {relativeTo: this.route})
   }
 }

@@ -1,5 +1,10 @@
 <div>
-  <div class="flex items-center h-[18px] text-sm opacity-50">
+  <div class="flex items-center gap-2 h-[18px] text-sm opacity-50">
+    @if (unsaved()) {
+      <span class="w-2 h-2 rounded-full bg-green-500 shadow-md shadow-green-400"
+        [matTooltip]="'PAC.Messages.UnsavedChanges' | translate: {Default: 'Unsaved changes'} ">
+      </span>
+    }
     @if (draftSavedDate()) {
       <span>自动保存 {{draftSavedDate()}}</span>
     }
@@ -244,7 +249,7 @@
 <ng-template #versionMenu>
   <div class="ngm-cdk-menu" cdkMenu>
     @for (item of versions(); track item.version) {
-      <button class="example-menu-item" cdkMenuItem>{{item.version}}
+      <button class="ngm-cdk-menu-item" cdkMenuItem (click)="selectVersion(item.id)">{{item.version}}
         @if (item.version === version()) {
             <div class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-blue-200 text-blue-700 rounded-lg">
                 current

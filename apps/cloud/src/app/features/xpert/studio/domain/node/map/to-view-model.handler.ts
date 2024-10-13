@@ -48,9 +48,9 @@ export class ToNodeViewModelHandler implements IHandler<void, TXpertTeamNode[]> 
 
 function handleRoles(role: IXpertRole) {
   const roles = []
-  for (const member of role.members ?? []) {
+  for (const member of role.followers ?? []) {
     roles.push(member)
-    if (member.members) {
+    if (member.followers) {
       roles.push(...handleRoles(member))
     }
   }
@@ -59,9 +59,9 @@ function handleRoles(role: IXpertRole) {
 
 function handleKnowledgebases(role: IXpertRole) {
   const items = []
-  for (const member of role.members ?? []) {
+  for (const member of role.followers ?? []) {
     items.push(...(member.knowledgebases ?? []))
-    if (member.members) {
+    if (member.followers) {
       items.push(...handleKnowledgebases(member))
     }
   }
@@ -70,9 +70,9 @@ function handleKnowledgebases(role: IXpertRole) {
 
 function handleToolsets(role: IXpertRole) {
   const items = []
-  for (const member of role.members ?? []) {
+  for (const member of role.followers ?? []) {
     items.push(...(member.toolsets ?? []))
-    if (member.members) {
+    if (member.followers) {
       items.push(...handleToolsets(member))
     }
   }

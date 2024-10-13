@@ -54,9 +54,17 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
    */
   teamRole?: IXpertRole
   /**
+   * Leader: Team Leader
+   */
+  leader?: IXpertRole
+  /**
    * 下属员工
    */
-  members?: IXpertRole[]
+  // members?: IXpertRole[]
+  /**
+   * Followers: people who carry out the decisions made by the leader
+   */
+  followers?: IXpertRole[]
   /**
    * 所使用的工具集
    */

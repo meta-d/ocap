@@ -67,6 +67,7 @@ export class XpertStudioApiService {
   )
 
   readonly draft = signal<TXpertTeamDraft>(null)
+  readonly unsaved = signal(false)
   readonly stateHistories = signal<TStateHistory[]>([])
   readonly viewModel = toSignal(this.store.pipe(map((state) => state.draft)))
 
@@ -105,10 +106,14 @@ export class XpertStudioApiService {
       map(() => calculateHash(JSON.stringify(this.storage))),
       distinctUntilChanged(),
       map(() => this.storage),
+      tap(() => this.unsaved.set(true)),
       debounceTime(5 * 1000),
       switchMap((draft) => this.xpertRoleService.saveDraft(this.storage.team.id, draft))
     )
-    .subscribe((draft) => this.draft.set(draft))
+    .subscribe((draft) => {
+      this.unsaved.set(false)
+      this.draft.set(draft)
+    })
 
   public initRole(role: IXpertRole) {
     this.team.set(role)
@@ -129,6 +134,9 @@ export class XpertStudioApiService {
     }))
 
     this.#reload.next(EReloadReason.INIT)
+    if (!role.draft) {
+        this.autoLayout()
+    }
   }
 
   public resume() {
@@ -140,22 +148,6 @@ export class XpertStudioApiService {
   public refresh() {
     this.#refresh$.next()
   }
-
-  // public get(): TXpertTeamDraft {
-  //   this.viewModel.set(this.storage && {
-  //     team: this.storage.team,
-  //     roles: [],
-  //     // knowledges: new ToKnowledgeViewModelHandler(this.storage).handle(),
-  //     connections: new ToConnectionViewModelHandler(this.storage).handle(),
-  //     nodes: new ToNodeViewModelHandler(this.storage).handle()
-  //   })
-  //   return this.viewModel()
-  // }
-
-  // public removeRole(key: string) {
-  //   new RemoveRoleHandler(this.storage).handle(new RemoveRoleRequest(key))
-  //   this.#reload.next(EReloadReason.JUST_RELOAD)
-  // }
 
   public getNode(key: string) {
     return this.viewModel().nodes.find((item) => item.key === key)
@@ -226,7 +218,7 @@ export class XpertStudioApiService {
 
   public autoLayout() {
     new LayoutHandler(this.store).handle(new LayoutRequest('TB'))
-    this.#reload.next(EReloadReason.AUTO_LAYOUT)
+    // this.#reload.next(EReloadReason.AUTO_LAYOUT)
   }
 }
 

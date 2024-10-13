@@ -186,8 +186,14 @@ export class XpertHomeComponent {
       })
       .afterClosed()
       .pipe(switchMap((confirm) => (confirm ? this.xpertService.delete(xpert.id) : EMPTY)))
-      .subscribe((xpert) => {
-        this.refresh()
+      .subscribe({
+        next: () => {
+          this.#toastr.success('PAC.Messages.DeletedSuccessfully', {Default: 'Deleted successfully!'}, xpert.title)
+          this.refresh()
+        },
+        error: (error) => {
+          this.#toastr.error(getErrorMessage(error))
+        }
       })
   }
 }

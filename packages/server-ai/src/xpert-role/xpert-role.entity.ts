@@ -118,17 +118,24 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	@Column({ nullable: true })
 	teamRoleId?: string
 
+	// Members
+	// @ManyToMany(() => XpertRole)
+	// @JoinTable({
+	// 	name: 'xpert_role_member'
+	// })
+	// members?: IXpertRole[]
+
 	/*
     |--------------------------------------------------------------------------
     | @ManyToMany 
     |--------------------------------------------------------------------------
     */
-   	// Members
+   	// Followers
 	@ManyToMany(() => XpertRole)
 	@JoinTable({
-		name: 'xpert_role_member'
+		name: 'xpert_role_follower'
 	})
-	members?: IXpertRole[]
+	followers?: IXpertRole[]
 
 	// Xpert role's knowledgebases
 	@ManyToMany(() => Knowledgebase, {

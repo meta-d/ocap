@@ -17,15 +17,15 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
   }
 
   create(entity: Partial<IXpertRole>) {
-    return this.httpClient.post<IXpertRole>(`${API_XPERT_ROLE}`, entity).pipe(tap(() => this.refresh()))
+    return this.httpClient.post<IXpertRole>(this.apiBaseUrl, entity).pipe(tap(() => this.refresh()))
   }
 
   update(id: string, entity: Partial<IXpertRole>) {
-    return this.httpClient.put<IXpertRole>(`${API_XPERT_ROLE}/${id}`, entity).pipe(tap(() => this.refresh()))
+    return this.httpClient.put<IXpertRole>(this.apiBaseUrl + `/${id}`, entity).pipe(tap(() => this.refresh()))
   }
 
   delete(id: string) {
-    return this.httpClient.delete(`${API_XPERT_ROLE}/${id}`).pipe(tap(() => this.refresh()))
+    return this.httpClient.delete(this.apiBaseUrl + `/${id}`).pipe(tap(() => this.refresh()))
   }
 
   refresh() {
@@ -37,7 +37,7 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
   }
 
   getVersions(id: string) {
-    return this.httpClient.get<{id: string; key: string; version: string; latest: boolean;}[]>(this.apiBaseUrl + `/${id}/version`)
+    return this.httpClient.get<{id: string; version: string; latest: boolean;}[]>(this.apiBaseUrl + `/${id}/version`)
   }
 
   saveDraft(id: string, draft: TXpertTeamDraft) {

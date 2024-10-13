@@ -32,7 +32,7 @@ function handleConntections(role: IXpertRole) {
     })
   })
 
-  for (const member of role.members ?? []) {
+  for (const member of role.followers ?? []) {
     const from = role.id
     const to = member.id
     connections.push({
@@ -42,7 +42,7 @@ function handleConntections(role: IXpertRole) {
       to
     })
 
-    if (member.members) {
+    if (member.followers) {
       connections.push(...handleConntections(member))
     }
   }
