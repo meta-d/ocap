@@ -14,7 +14,7 @@ export class UpdateRoleHandler implements IHandler<UpdateRoleRequest> {
       if (!node) {
         throw new Error(`Xpert with key ${request.key} not found`)
       }
-      assign(node, request.entity)
+      assign(node.entity, request.entity)
       return {
         draft
       }

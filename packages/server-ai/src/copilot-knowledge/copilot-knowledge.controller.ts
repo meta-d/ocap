@@ -1,4 +1,4 @@
-import { IXpertRole, IPagination } from '@metad/contracts'
+import { IPagination, IXpert } from '@metad/contracts'
 import { Body, Controller, Get, HttpStatus, Logger, Post, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -78,7 +78,7 @@ export class CopilotKnowledgeController extends CrudController<CopilotKnowledge>
 	@Post('bulk')
 	async createBulk(
 		@Body('examples') entities: CopilotKnowledge[],
-		@Body('roles') roles: IXpertRole[],
+		@Body('roles') roles: IXpert[],
 		@Body('options') options: { createRole: boolean; clearRole: boolean }
 	) {
 		return this.service.createBulk(entities, roles, options)

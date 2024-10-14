@@ -4,7 +4,6 @@ import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
 import { IXpertWorkspace } from './xpert-workspace.model'
 import { IUser } from '../user.model'
-import { IXpertRole } from './xpert-role.model'
 import { IXpertAgent } from './xpert-agent.model'
 
 /**
@@ -52,6 +51,8 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
 
   deletedAt?: Date
 
+  agent?: IXpertAgent
+  
   // Many to one
   /**
    * 所属的工作空间
@@ -94,7 +95,7 @@ export enum XpertTypeEnum {
 // Xpert team draft types
 
 export type TXpertTeamDraft = {
-  team: IXpertRole
+  team: IXpert
 
   savedAt?: Date
   nodes: TXpertTeamNode[]
@@ -103,7 +104,7 @@ export type TXpertTeamDraft = {
 }
 
 
-export type TXpertTeamNodeType = 'role' | 'knowledge' | 'toolset'
+export type TXpertTeamNodeType = 'agent' | 'knowledge' | 'toolset'
 
 export type TXpertTeamNode = {
   key: string
@@ -112,8 +113,8 @@ export type TXpertTeamNode = {
   hash?: string
 } & (
   | {
-      type: 'role'
-      entity: IXpertRole
+      type: 'agent'
+      entity: IXpertAgent
     }
   | {
       type: 'knowledge'
@@ -146,7 +147,8 @@ export type TXpertTeamGroup = {
   position: IPoint
   size?: ISize
   parentId?: string
-  team: IXpertRole
+  team: IXpert
+  agent?: IXpertAgent
 }
 
 export interface TXpertTeamConnection {

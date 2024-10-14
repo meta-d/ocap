@@ -1,13 +1,13 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { JSONValue } from '../core.model'
-import { IXpertRole } from './xpert-role.model'
+import { IXpert } from './xpert.model'
 
 export interface IChatConversation extends IBasePerTenantAndOrganizationEntityModel {
   key: string
   title?: string
 
-  roleId?: string | null
-  role?: IXpertRole
+  xpertId?: string | null
+  xpert?: IXpert
   
   options?: {
     knowledgebases: string[]
@@ -47,7 +47,7 @@ export enum ChatGatewayEvent {
 
 export type ChatGatewayMessage = {
   organizationId?: string;
-  role?: {
+  xpert?: {
     id: string
 		knowledgebases?: string[]
     toolsets: string[] | null

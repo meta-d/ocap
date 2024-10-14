@@ -1,9 +1,9 @@
-import { IChatConversation, IXpertRole } from '@metad/contracts'
+import { IChatConversation, IXpert } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
-import { XpertRole } from '../core/entities/internal'
+import { Xpert } from '../core/entities/internal'
 
 @Entity('chat_conversation')
 export class ChatConversation extends TenantOrganizationBaseEntity implements IChatConversation {
@@ -36,14 +36,16 @@ export class ChatConversation extends TenantOrganizationBaseEntity implements IC
     | @ManyToOne 
     |--------------------------------------------------------------------------
     */
-	@ApiProperty({ type: () => XpertRole })
-	@ManyToOne(() => XpertRole)
+	@ApiProperty({ type: () => Xpert })
+	@ManyToOne(() => Xpert, {
+		onDelete: 'CASCADE'
+	})
 	@JoinColumn()
-	role?: IXpertRole
+	xpert?: IXpert
 
 	@ApiProperty({ type: () => String })
-	@RelationId((it: ChatConversation) => it.role)
+	@RelationId((it: ChatConversation) => it.xpert)
 	@IsString()
 	@Column({ nullable: true })
-	roleId?: string
+	xpertId?: string
 }

@@ -1,6 +1,6 @@
 import { IHandler } from '@foblex/mediator'
 import { Store, StoreDef } from '@ngneat/elf'
-import { uuid, XpertRoleTypeEnum } from 'apps/cloud/src/app/@core'
+import { uuid, XpertTypeEnum } from 'apps/cloud/src/app/@core'
 import { IStudioStore } from '../../types'
 import { CreateNodeRequest } from './create.request'
 
@@ -17,17 +17,16 @@ export class CreateNodeHandler implements IHandler<CreateNodeRequest> {
         }
       }
 
+      const key = request.entity?.id ?? uuid()
       let entity = null
       switch(request.type) {
-        case 'role': {
+        case 'agent': {
           entity = {
-            type: XpertRoleTypeEnum.Agent,
-            title: uuid(),
+            type: XpertTypeEnum.Agent,
+            key,
           }
         }
       }
-
-      const key = request.entity?.id ?? uuid()
 
       draft.nodes.push({
         type: request.type,

@@ -17,6 +17,7 @@ import {
   convertConfigurationSchema,
   IXpertToolset,
   KnowledgebaseService,
+  TAvatar,
   ToastrService,
   TOOLSET_TYPES,
   XpertToolsetService
@@ -64,7 +65,7 @@ export class XpertToolsetComponent extends UpsertEntityComponent<IXpertToolset> 
 
   readonly formGroup = this.fb.group({
     id: new FormControl<string>(null),
-    avatar: new FormControl<string>(null),
+    avatar: new FormControl<TAvatar>(null),
     name: new FormControl<string>(null),
     description: new FormControl<string>(null),
     type: new FormControl<string>(null),

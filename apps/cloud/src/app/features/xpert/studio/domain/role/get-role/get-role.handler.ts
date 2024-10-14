@@ -1,6 +1,5 @@
 import { IHandler } from '@foblex/mediator'
 import { IXpertRole } from 'apps/cloud/src/app/@core'
-import { findXpertRole } from '../../studio.storage'
 import { GetRoleRequest } from './get-role.request'
 
 export class GetRoleHandler implements IHandler<GetRoleRequest> {

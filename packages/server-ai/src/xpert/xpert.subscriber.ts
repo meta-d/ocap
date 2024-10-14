@@ -1,19 +1,19 @@
 import { convertToUrlPath } from '@metad/server-common'
 import { EntitySubscriberInterface, EventSubscriber, InsertEvent } from 'typeorm'
-import { XpertRole } from './xpert-role.entity'
+import { Xpert } from './xpert.entity'
 
 @EventSubscriber()
-export class XpertRoleSubscriber implements EntitySubscriberInterface<XpertRole> {
+export class XpertSubscriber implements EntitySubscriberInterface<Xpert> {
 	/**
-	 * Indicates that this subscriber only listen to StorageFile events.
+	 * Indicates that this subscriber only listen to Xpert events.
 	 */
 	listenTo() {
-		return XpertRole
+		return Xpert
 	}
 
-	beforeInsert(event: InsertEvent<XpertRole>): Promise<any> | void {
-		if (!event.entity.name) {
-			event.entity.name = convertToUrlPath(event.entity.title)
+	beforeInsert(event: InsertEvent<Xpert>): Promise<any> | void {
+		if (!event.entity.slug) {
+			event.entity.slug = convertToUrlPath(event.entity.name)
 		}
 	}
 }

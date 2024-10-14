@@ -24,8 +24,8 @@ export class RemoveNodeHandler implements IHandler<RemoveNodeRequest> {
     switch(node.type) {
       case 'knowledge':
         return EReloadReason.KNOWLEDGE_REMOVED
-      case 'role':
-        return EReloadReason.ROLE_REMOVED
+      case 'agent':
+        return EReloadReason.AGENT_REMOVED
     }
   }
 }

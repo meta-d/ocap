@@ -1,7 +1,7 @@
 @if (!isRoot()) {
   <div fNodeInput [fInputId]="node().key" fInputConnectableSide="top" class="top"></div>
 }
-<div fNodeOutput [fOutputId]="node().key + '/role'" fOutputConnectableSide="bottom" class="bottom" [fOutputMultiple]="true"></div>
+<div fNodeOutput [fOutputId]="node().key + '/agent'" fOutputConnectableSide="bottom" class="bottom" [fOutputMultiple]="true"></div>
 <div class="node-output-right flex flex-col gap-1 absolute -right-[6px] top-1/2 -mt-3">
   <div fNodeOutput [fOutputId]="node().key + '/knowledge'" fOutputConnectableSide="right" [fOutputMultiple]="true"></div>
   <div fNodeOutput [fOutputId]="node().key + '/toolset'" fOutputConnectableSide="right" [fOutputMultiple]="true"></div>
@@ -9,7 +9,7 @@
 
 @if (xpertRole()) {
   <div class="flex justify-start items-center px-3 pt-3 pb-2">
-    <pac-avatar [imageUrl]="xpertRole().avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+    <pac-avatar [avatar]="xpertRole().avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
     <div class="flex flex-col">
       <span class="text-lg">{{xpertRole().title}}</span>
     </div>
@@ -24,7 +24,7 @@
       @for (toolset of toolsets(); track toolset.id) {
         <xpert-studio-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
           hover:bg-black/5 dark:hover:bg-white/10">
-          <pac-avatar [imageUrl]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+          <pac-avatar [avatar]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
           <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
         </xpert-studio-role-toolset>
       }

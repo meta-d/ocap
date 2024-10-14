@@ -16,7 +16,7 @@ export class LayoutHandler implements IHandler<LayoutRequest> {
       // Create a new directed graph 
       const g = new Graph()
       g.setGraph({ rankdir: request.rankdir })
-      draft.nodes.filter((_) => _.type === 'role').forEach((node) => {
+      draft.nodes.filter((_) => _.type === 'agent').forEach((node) => {
         g.setNode(node.key, { width: 300, height: 100, ...(node.position ?? {}) })
       })
       draft.connections.forEach((conn) => {

@@ -2,7 +2,7 @@ import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
-import { IXpert } from './xpert.model'
+import { IPoint, IXpert } from './xpert.model'
 
 /**
  * Expert agent, ai agent for the xperts.
@@ -23,18 +23,24 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
    */
   options?: TXpertAgentOptions
 
-  // Many to many relationship
-  toolsets?: IXpertToolset[]
-  knowledgebases?: IKnowledgebase[]
-
   // Many to one
   xpertId?: string
   xpert?: IXpert
 
   leader?: IXpertAgent
   leaderKey?: string
+  followers?: IXpertAgent[]
+
+  // Many to many
+  collaborators?: IXpert[]
+  collaboratorNames?: string[]
+  toolsets?: IXpertToolset[]
+  toolsetIds?: string[]
+  knowledgebases?: IKnowledgebase[]
+  knowledgebaseIds?: string[]
 }
 
 export type TXpertAgentOptions = {
   //
+  position?: IPoint
 }

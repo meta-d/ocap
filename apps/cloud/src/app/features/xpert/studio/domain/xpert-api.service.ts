@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { IPoint } from '@foblex/2d'
-import { IKnowledgebase, IXpertRole, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '../../../../@core/types'
+import { IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '../../../../@core/types'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { KnowledgebaseService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
@@ -60,7 +60,7 @@ export class XpertStudioApiService {
 
   readonly #refresh$ = new BehaviorSubject<void>(null)
 
-  readonly team = signal<IXpertRole>(null)
+  readonly team = signal<IXpert>(null)
   readonly versions = toSignal(this.#refresh$.pipe(
     switchMap(() => this.paramId$.pipe(distinctUntilChanged())),
     switchMap((id) => this.xpertRoleService.getVersions(id))
@@ -96,7 +96,7 @@ export class XpertStudioApiService {
         combineLatest([
           this.paramId$.pipe(
             distinctUntilChanged(),
-            switchMap((id) => this.xpertRoleService.getTeam(id, { relations: ['workspace'] })),
+            switchMap((id) => this.xpertRoleService.getTeam(id, { relations: ['workspace', 'agent'] })),
             tap((role) => {
               this.#stateHistory.clear()
               this.draft.set(role.draft)
@@ -122,7 +122,7 @@ export class XpertStudioApiService {
       this.draft.set(draft)
     })
 
-  public initRole(role: IXpertRole) {
+  public initRole(role: IXpert) {
     this.team.set(role)
     this.store.update((state) => ({
       draft: (role.draft
@@ -214,11 +214,11 @@ export class XpertStudioApiService {
     event && this.#reload.next(event)
   }
   // Role node
-  public createRole(position: IPoint): void {
-    new CreateNodeHandler(this.store).handle(new CreateNodeRequest('role', position))
-    this.#reload.next(EReloadReason.ROLE_CREATED)
+  public createAgent(position: IPoint): void {
+    new CreateNodeHandler(this.store).handle(new CreateNodeRequest('agent', position))
+    this.#reload.next(EReloadReason.AGENT_CREATED)
   }
-  public createTeam(position: IPoint, team: IXpertRole) {
+  public createTeam(position: IPoint, team: IXpert) {
     new CreateTeamHandler(this.store).handle(new CreateTeamRequest(position, team))
     this.#reload.next(EReloadReason.TEAM_ADDED)
   }
@@ -226,7 +226,7 @@ export class XpertStudioApiService {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('toolset', position, toolset))
     this.#reload.next(EReloadReason.TOOLSET_CREATED)
   }
-  public updateXpertRole(key: string, entity: Partial<IXpertRole>) {
+  public updateXpertAgent(key: string, entity: Partial<IXpertAgent>) {
     return new UpdateRoleHandler(this.store).handle(new UpdateRoleRequest(key, entity))
   }
 

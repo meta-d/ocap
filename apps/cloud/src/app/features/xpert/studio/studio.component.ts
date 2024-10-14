@@ -42,14 +42,14 @@ import { AppService } from '../../../app.service'
 import {
   XpertStudioContextMenuComponent,
   XpertStudioNodeKnowledgeComponent,
-  XpertStudioRoleComponent
+  XpertStudioNodeAgentComponent,
+  XpertStudioNodeToolsetComponent
 } from './components'
 import { EReloadReason, SelectionService, XpertStudioApiService } from './domain'
 import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { XpertStudioNodeToolsetComponent } from './components/toolset/toolset.component'
 
 
 @Component({
@@ -72,7 +72,7 @@ import { XpertStudioNodeToolsetComponent } from './components/toolset/toolset.co
     ToolsetCardComponent,
     XpertStudioToolbarComponent,
     XpertStudioContextMenuComponent,
-    XpertStudioRoleComponent,
+    XpertStudioNodeAgentComponent,
     XpertStudioNodeKnowledgeComponent,
     XpertStudioNodeToolsetComponent,
     XpertStudioHeaderComponent,
@@ -114,6 +114,7 @@ export class XpertStudioComponent {
 
   readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
+  readonly rootAgent = computed(() => this.team()?.agent)
   readonly nodes = computed(() => this.viewModel()?.nodes)
   readonly teams = computed(() => this.viewModel()?.teams)
   readonly connections = computed(() => this.viewModel()?.connections)

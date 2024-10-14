@@ -12,7 +12,7 @@
         @if (option.isSelected()) {
           <mat-icon class="absolute left-1" fontSet="material-icons-outlined" color="accent">check_small</mat-icon>
         }
-        <pac-avatar [imageUrl]="item.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+        <pac-avatar [avatar]="item.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
         <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="item.name">{{item.name}}</span>
       </li>
     }

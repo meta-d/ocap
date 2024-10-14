@@ -14,7 +14,7 @@ import {
   ToastrService,
   uuid,
   XpertRoleService,
-  XpertRoleTypeEnum
+  XpertTypeEnum
 } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
 
@@ -26,19 +26,19 @@ import { MaterialModule } from '../../../@shared'
   styleUrl: './blank.component.scss'
 })
 export class XpertNewBlankComponent {
-  XpertRoleTypeEnum = XpertRoleTypeEnum
+  eXpertTypeEnum = XpertTypeEnum
   readonly #dialogRef = inject(MatDialogRef<XpertNewBlankComponent>)
   readonly #dialogData = inject<{ workspace: IXpertWorkspace }>(MAT_DIALOG_DATA)
   readonly xpertService = inject(XpertRoleService)
   readonly #toastr = inject(ToastrService)
 
-  readonly type = model<XpertRoleTypeEnum>(XpertRoleTypeEnum.Agent)
-  readonly title = model<string>()
+  readonly type = model<XpertTypeEnum>(XpertTypeEnum.Agent)
+  readonly name = model<string>()
   readonly description = model<string>()
 
   public checking = false
   readonly validatedTitle = toSignal(
-    toObservable(this.title).pipe(
+    toObservable(this.name).pipe(
       debounceTime(500),
       switchMap((title) => (title ? this.validateTitle(title).pipe(map((items) => !items.length)) : of(true)))
     )
@@ -53,10 +53,13 @@ export class XpertNewBlankComponent {
     this.xpertService
       .create({
         type: this.type(),
-        title: this.title(),
+        name: this.name(),
         description: this.description(),
         latest: true,
-        workspaceId: this.#dialogData?.workspace?.id
+        workspaceId: this.#dialogData?.workspace?.id,
+        agent: {
+          key: uuid()
+        }
       })
       .subscribe({
         next: (xpert) => {

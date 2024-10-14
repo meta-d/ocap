@@ -3,8 +3,9 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IUser } from '../user.model'
 import { AiProviderRole, ICopilot } from './copilot.model'
-import { IXpertRole } from './xpert-role.model'
 import { IXpertTool } from './xpert-tool.model'
+import { IXpert } from './xpert.model'
+import { TAvatar } from './types'
 
 export type XpertToolsetType = string
 export type TXpertToolset = {
@@ -18,7 +19,7 @@ export type TXpertToolset = {
   /**
    * avatar url
    */
-  avatar?: string
+  avatar?: TAvatar
   /**
    * Priority role of AI provider
    * @default `AiProviderRole.Secondary`
@@ -42,7 +43,7 @@ export type XpertToolContext = {
   copilot: ICopilot
   chatModel: unknown // BaseChatModel in langchain
   roleContext: Record<string, any>
-  role: IXpertRole
+  xpert: IXpert
 }
 
 export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()
@@ -50,7 +51,7 @@ export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()
 TOOLSET_TYPES.set('TavilySearch', {
   name: 'TavilySearch',
   description: 'Tavily Search is a robust search API tailored specifically for LLM Agents.',
-  avatar: '/assets/icons/tavily.ico',
+  avatar: {url: '/assets/icons/tavily.ico'},
   schema: {
     type: 'object',
     properties: {
@@ -65,7 +66,7 @@ TOOLSET_TYPES.set('TavilySearch', {
 TOOLSET_TYPES.set('DuckDuckGo', {
   name: 'DuckDuckGo',
   description: 'DuckDuckGo Search.',
-  avatar: '/assets/icons/duckduckgo-icon.webp',
+  avatar: {url: '/assets/icons/duckduckgo-icon.webp'},
   schema: {
     type: 'object',
     properties: {
@@ -86,14 +87,14 @@ TOOLSET_TYPES.set('DuckDuckGo', {
 TOOLSET_TYPES.set('Wikipedia', {
   name: 'Wikipedia',
   description: 'Wikipedia Query.',
-  avatar: '/assets/icons/wikipedia-icon.png',
+  avatar: {url: '/assets/icons/wikipedia-icon.png'},
 })
 
 TOOLSET_TYPES.set('ChatDB', {
   name: 'ChatDB',
   description: 'ChatDB Tools.',
   category: 'command',
-  avatar: '/assets/images/chatbi.jpg',
+  avatar: {url: '/assets/images/chatbi.jpg'},
   aiProviderRole: AiProviderRole.Primary,
   schema: {
     type: 'object',
@@ -145,7 +146,7 @@ TOOLSET_TYPES.set('ChatBI', {
   name: 'ChatBI',
   description: 'Chat with BI.',
   category: 'command',
-  avatar: '/assets/images/chatbi.jpg',
+  avatar: {url: '/assets/images/chatbi.jpg'},
   aiProviderRole: AiProviderRole.Primary,
   schema: {
     type: 'object',
@@ -264,7 +265,7 @@ export const TOOLSETS: IXpertToolset[] = [
     id: '5',
     name: 'SearchApi',
     description: 'SearchApi for Search',
-    avatar: '/assets/icons/search-api.png',
+    avatar: {url: '/assets/icons/search-api.png'},
     tools: [
       {
         name: 'SearchApi',
@@ -294,7 +295,7 @@ export const TOOLSETS: IXpertToolset[] = [
     id: '7',
     name: 'ExaSearch',
     description: 'Exa is a knowledge API for AI and developers.',
-    avatar: '/assets/icons/exa-ai.png',
+    avatar: {url: '/assets/icons/exa-ai.png'},
     tools: [
       {
         name: 'ExaSearch',
@@ -310,7 +311,7 @@ export const TOOLSETS: IXpertToolset[] = [
     name: 'SearxngSearch',
     description:
       'SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.',
-    avatar: '/assets/icons/searxng.svg',
+    avatar: {url: '/assets/icons/searxng.svg'},
     tools: [
       {
         name: 'SearxngSearch',

@@ -1,4 +1,4 @@
-import { AiProvider, ICopilot, IKnowledgebase, KnowledgebaseParserConfig, KnowledgebasePermission } from '@metad/contracts'
+import { AiProvider, ICopilot, IKnowledgebase, KnowledgebaseParserConfig, KnowledgebasePermission, TAvatar } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { Optional } from '@nestjs/common'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
@@ -20,11 +20,11 @@ export class Knowledgebase extends TenantOrganizationBaseEntity implements IKnow
 	@Column({ nullable: true, length: 20 })
 	language?: 'Chinese' | 'English'
 
-	@ApiPropertyOptional({ type: () => String })
-	@IsString()
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
 	@Optional()
-	@Column({ nullable: true })
-	avatar?: string
+	@Column({ type: 'json', nullable: true })
+	avatar?: TAvatar
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()

@@ -1,4 +1,4 @@
-import { IXpertTool, IXpertToolset } from '@metad/contracts'
+import { IXpertTool, IXpertToolset, TAvatar } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
@@ -28,11 +28,11 @@ export class XpertToolset extends TenantOrganizationBaseEntity implements IXpert
 	@Column({ nullable: true, length: 500 })
 	description?: string
 
-	@ApiPropertyOptional({ type: () => String })
-	@IsString()
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
 	@IsOptional()
-	@Column({ nullable: true })
-	avatar?: string
+	@Column({ type: 'json', nullable: true })
+	avatar?: TAvatar
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()

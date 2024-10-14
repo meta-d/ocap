@@ -24,6 +24,7 @@ import {
 	ManyToMany,
 	ManyToOne,
 	OneToMany,
+	OneToOne,
 	RelationId
 } from 'typeorm'
 import { Knowledgebase, XpertAgent, XpertToolset, XpertWorkspace } from '../core/entities/internal'
@@ -126,6 +127,16 @@ export class Xpert extends TenantOrganizationBaseEntity implements IXpert {
 	// Soft delete column that records the date/time when the entity was soft-deleted
 	@DeleteDateColumn() // Indicates that this column is used for soft-delete
 	deletedAt?: Date
+
+	/*
+    |--------------------------------------------------------------------------
+    | @OneToOne
+    |--------------------------------------------------------------------------
+    */
+	@OneToOne(() => XpertAgent, (agent: XpertAgent) => agent.xpert, {
+		cascade: ["insert", "update", "remove", "soft-remove", "recover"]
+	})
+    agent?: IXpertAgent
 
 	/*
     |--------------------------------------------------------------------------

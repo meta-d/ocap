@@ -7,7 +7,8 @@ import {
 	AiProviderRole,
 	ICopilot,
 	ICopilotKnowledge,
-	IXpertRole,
+	IXpert,
+	XpertTypeEnum,
 } from '@metad/contracts'
 import { DATABASE_POOL_TOKEN, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -21,8 +22,8 @@ import { CopilotService } from '../copilot/copilot.service'
 import { CopilotKnowledge } from './copilot-knowledge.entity'
 import { createEmbeddings } from '../copilot/llm'
 import { isEqual } from 'date-fns/isEqual'
-import { XpertRoleCreateCommand } from '../xpert-role'
 import { pick } from '@metad/server-common'
+import { XpertCreateCommand } from '../xpert'
 
 @Injectable()
 export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<CopilotKnowledge> {
@@ -257,7 +258,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 
 	async createBulk(
 		entities: ICopilotKnowledge[],
-		roles: IXpertRole[],
+		roles: IXpert[],
 		options: { createRole: boolean; clearRole: boolean }
 	) {
 		const tenantId = RequestContext.currentTenantId()
@@ -268,7 +269,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		if (roles) {
 			for await (const role of roles) {
 				try {
-					await this.commandBus.execute(new XpertRoleCreateCommand(role))
+					await this.commandBus.execute(new XpertCreateCommand({...role, type: XpertTypeEnum.Copilot}))
 				} catch (error) {}
 			}
 		}
@@ -277,7 +278,7 @@ export class CopilotKnowledgeService extends TenantOrganizationAwareCrudService<
 		if (createRole) {
 			for await (const role of compact(roleNames).filter((role) => !roles.find((r) => r.name === role))) {
 				try {
-					await this.commandBus.execute(new XpertRoleCreateCommand({ name: role }))
+					await this.commandBus.execute(new XpertCreateCommand({ name: role, type: XpertTypeEnum.Copilot }))
 				} catch (error) {}
 			}
 		}

@@ -12,7 +12,7 @@
             active:scale-95 transition-transform
            hover:bg-black/5 dark:hover:bg-white/10"
             (click)="selectRole(role)"
-          ><pac-avatar [imageUrl]="role.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{role.title}}</li>
+          ><pac-avatar [avatar]="role.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{role.title}}</li>
         }
       </ul>
 
@@ -71,7 +71,7 @@
     <div #contentContainer class="flex-1 overflow-auto">
       @if (!conversationId() && !messages()?.length && role()) {
         <div class="w-full h-full flex flex-col justify-center items-center gap-4">
-          <pac-avatar class="mb-3 h-16 w-16 rounded-full overflow-hidden" [imageUrl]="role().avatar" />
+          <pac-avatar class="mb-3 h-16 w-16 rounded-full overflow-hidden" [avatar]="role().avatar" />
 
           <div class="w-full flex flex-col items-center gap-2">
             <p class="text-xl">{{role().title}}</p>

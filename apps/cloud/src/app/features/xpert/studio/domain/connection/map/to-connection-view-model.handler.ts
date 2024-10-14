@@ -32,19 +32,19 @@ function handleConntections(role: IXpertRole) {
     })
   })
 
-  for (const member of role.followers ?? []) {
-    const from = role.id
-    const to = member.id
-    connections.push({
-      type: 'role',
-      key: from + '/' + to,
-      from,
-      to
-    })
+  // for (const member of role.followers ?? []) {
+  //   const from = role.id
+  //   const to = member.id
+  //   connections.push({
+  //     type: 'role',
+  //     key: from + '/' + to,
+  //     from,
+  //     to
+  //   })
 
-    if (member.followers) {
-      connections.push(...handleConntections(member))
-    }
-  }
+  //   if (member.followers) {
+  //     connections.push(...handleConntections(member))
+  //   }
+  // }
   return connections
 }

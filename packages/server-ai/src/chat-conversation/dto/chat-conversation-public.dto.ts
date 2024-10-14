@@ -1,13 +1,13 @@
+import { IXpert } from '@metad/contracts'
 import { Expose, Transform, TransformFnParams } from 'class-transformer'
-import { XpertRolePublicDTO } from '../../xpert-role/dto'
+import { XpertPublicDTO } from '../../xpert/dto'
 import { ChatConversation } from '../conversation.entity'
-import { IXpertRole } from '@metad/contracts'
 
 @Expose()
 export class ChatConversationPublicDTO extends ChatConversation {
-
-	@Transform((params: TransformFnParams) => (params.value ? new XpertRolePublicDTO(params.value) : null))
-	declare role?: IXpertRole
+	
+	@Transform((params: TransformFnParams) => (params.value ? new XpertPublicDTO(params.value) : null))
+	declare xpert?: IXpert
 
 	constructor(partial: ChatConversation) {
 		super()

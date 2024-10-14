@@ -13,7 +13,6 @@ import { EventHandlers } from './core/events'
 import { GraphragModule } from './graphrag/graphrag.module'
 import { KnowledgeDocumentModule } from './knowledge-document/index'
 import { KnowledgebaseModule } from './knowledgebase/index'
-import { XpertRoleModule } from './xpert-role/index'
 import { XpertToolModule } from './xpert-tool/index'
 import { XpertToolsetModule } from './xpert-toolset/index'
 import { XpertAgentModule } from './xpert-agent/index'
@@ -37,7 +36,6 @@ import { XpertModule } from './xpert'
 		GraphragModule,
 		XpertModule,
 		XpertAgentModule,
-		XpertRoleModule,
 		XpertToolModule,
 		XpertToolsetModule,
 		XpertWorkspaceModule

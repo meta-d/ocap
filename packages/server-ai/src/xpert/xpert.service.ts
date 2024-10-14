@@ -73,14 +73,14 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 
 	async getTeam(id: string,  options?: OptionParams<Xpert>) {
 		const { relations } = options ?? {}
-		const team = await this.findOne(id, { relations: compact([...(relations ?? []), 'followers', 'toolsets', 'knowledgebases']) })
-		if (!team.draft) {
-			const { items } = await this.findAll({
-				where: { workspaceId: team.workspaceId ?? IsNull(), teamRoleId: team.id },
-				relations: ['followers', 'toolsets', 'knowledgebases']
-			})
-			// assembleXpert(team, items, [])
-		}
+		const team = await this.findOne(id, { relations: compact([...(relations ?? []), 'agents', 'toolsets', 'knowledgebases']) })
+		// if (!team.draft) {
+		// 	const { items } = await this.findAll({
+		// 		where: { workspaceId: team.workspaceId ?? IsNull(), teamRoleId: team.id },
+		// 		relations: ['followers', 'toolsets', 'knowledgebases']
+		// 	})
+		// 	// assembleXpert(team, items, [])
+		// }
 		return team
 	}
 

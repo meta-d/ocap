@@ -6,9 +6,9 @@ import { AvatarComponent } from 'apps/cloud/src/app/@shared'
 import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
 
 @Component({
-  selector: 'xpert-studio-role',
-  templateUrl: './role.component.html',
-  styleUrls: ['./role.component.scss'],
+  selector: 'xpert-studio-node-agent',
+  templateUrl: './agent.component.html',
+  styleUrls: ['./agent.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FFlowModule, MatIcon, AvatarComponent, XpertStudioRoleToolsetComponent],
@@ -18,10 +18,10 @@ import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
     '(contextmenu)': 'emitSelectionChangeEvent($event)'
   }
 })
-export class XpertStudioRoleComponent {
+export class XpertStudioNodeAgentComponent {
   readonly elementRef = inject(ElementRef)
 
-  readonly node = input<TXpertTeamNode & {type: 'role'}>()
+  readonly node = input<TXpertTeamNode & {type: 'agent'}>()
   readonly isRoot = input<boolean>(false)
   readonly xpertRole = computed(() => this.node().entity)
 
@@ -34,6 +34,5 @@ export class XpertStudioRoleComponent {
   protected emitSelectionChangeEvent(event: MouseEvent): void {
     this.hostElement.focus()
     event.preventDefault()
-    // this.selectionService.setColumn(this.tableId, this.column.id);
   }
 }

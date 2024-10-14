@@ -1,5 +1,4 @@
 import { IHandler } from '@foblex/mediator'
-import { removeXpertRole } from '../../studio.storage'
 import { RemoveRoleRequest } from './remove-role.request'
 
 export class RemoveRoleHandler implements IHandler<RemoveRoleRequest> {

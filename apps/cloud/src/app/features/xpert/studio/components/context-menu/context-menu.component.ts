@@ -62,9 +62,9 @@ export class XpertStudioContextMenuComponent {
     })
   }
 
-  public createRole(menu: CdkMenu): void {
+  public createAgent(menu: CdkMenu): void {
     menu.menuStack.closeAll()
-    this.apiService.createRole(this.root.contextMenuPosition)
+    this.apiService.createAgent(this.root.contextMenuPosition)
   }
 
   public addTeam(team: IXpertRole): void {

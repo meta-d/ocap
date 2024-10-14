@@ -6,12 +6,12 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 import { MaterialModule } from '../../../../@shared/index'
 import { SelectionService } from '../domain'
 import { XpertStudioComponent } from '../studio.component'
-import { XpertStudioPanelRoleComponent } from './xpert-role/role.component'
+import { XpertStudioPanelAgentComponent } from './xpert-agent/agent.component'
 
 @Component({
   selector: 'xpert-studio-panel',
   standalone: true,
-  imports: [CommonModule, CdkMenuModule, MaterialModule, DensityDirective, XpertStudioPanelRoleComponent],
+  imports: [CommonModule, CdkMenuModule, MaterialModule, DensityDirective, XpertStudioPanelAgentComponent],
   templateUrl: './panel.component.html',
   styleUrl: './panel.component.scss'
 })
@@ -22,9 +22,9 @@ export class XpertStudioPanelComponent {
   readonly visible = model(false)
 
   readonly selectedNode = toSignal(this.selectionService.singleNode$)
-  readonly role = computed(() => {
+  readonly entity = computed(() => {
     const selectedNode = this.selectedNode()
-    if (selectedNode?.type === 'role') {
+    if (selectedNode?.type === 'agent') {
       return selectedNode.entity
     }
     return null

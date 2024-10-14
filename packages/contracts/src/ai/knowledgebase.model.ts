@@ -2,6 +2,7 @@ import { AiProvider } from './ai.model'
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { ICopilot } from './copilot.model'
 import { IStorageFile } from '../storage-file.model'
+import { TAvatar } from './types'
 
 export type KnowledgebaseParserConfig = {
   pages?: number[][]
@@ -27,7 +28,7 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
   /**
    * avatar base64 string
    */
-  avatar?: string
+  avatar?: TAvatar
   /**
    * KB description
    */

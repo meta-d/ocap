@@ -1,4 +1,4 @@
-import { IKnowledgebase } from '@metad/contracts'
+import { IKnowledgebase, TAvatar } from '@metad/contracts'
 import { Exclude, Expose } from 'class-transformer'
 import { Knowledgebase } from '../knowledgebase.entity'
 
@@ -14,7 +14,7 @@ export class KnowledgebasePublicDTO extends Knowledgebase {
 	declare language?: 'Chinese' | 'English'
 
 	@Expose()
-	declare avatar?: string
+	declare avatar?: TAvatar
 
 	@Expose()
 	declare description?: string

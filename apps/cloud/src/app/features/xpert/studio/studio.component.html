@@ -17,7 +17,7 @@
         <f-connection-for-create></f-connection-for-create>
         <f-snap-connection fType="bezier" [fSnapThreshold]="100"></f-snap-connection>
         @for (connection of connections(); track connection.key) {
-          <f-connection [fType]="connection.type==='role' ? EFConnectionType.BEZIER : EFConnectionType.STRAIGHT"
+          <f-connection [fType]="connection.type==='agent' ? EFConnectionType.BEZIER : EFConnectionType.STRAIGHT"
             [fReassignDisabled]="false"
             [fOutputId]="connection.from + '/' + connection.type"
             [fInputId]="connection.to">
@@ -35,8 +35,8 @@
             (click)="onSelectNode($event, node)"
           >
           @switch (node.type) {
-            @case('role') {
-              <xpert-studio-role [node]="node" [isRoot]="team().id === node.key" class=""/>
+            @case('agent') {
+              <xpert-studio-node-agent [node]="node" [isRoot]="rootAgent().id === node.key" class=""/>
             }
             @case('knowledge') {
               <xpert-studio-node-knowledge [node]="node" class=""/>
@@ -68,7 +68,7 @@
             [fNodeParentId]="group.id"
             [fNodePosition]="group.position"
           >
-            <xpert-studio-role [node]="{key: group.team.id, type: 'role', entity: group.team, position: null}" [isRoot]="true" class=""/>
+            <xpert-studio-node-agent [node]="{key: group.team.id, type: 'agent', entity: group.agent, position: null}" [isRoot]="true" class=""/>
           </div>
         }
       </f-canvas>

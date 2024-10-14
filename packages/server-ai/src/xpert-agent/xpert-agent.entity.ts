@@ -2,7 +2,7 @@ import { IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TAvatar, TXpertAgen
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, OneToOne, RelationId } from 'typeorm'
 import { Xpert } from '../core/entities/internal'
 
 @Entity('xpert_agent')
@@ -14,8 +14,8 @@ export class XpertAgent extends TenantOrganizationBaseEntity implements IXpertAg
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Column({ length: 100 })
-	name: string
+	@Column({ nullable: true, length: 100 })
+	name?: string
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -49,40 +49,28 @@ export class XpertAgent extends TenantOrganizationBaseEntity implements IXpertAg
 
 	/*
     |--------------------------------------------------------------------------
-    | @ManyToMany 
+    | @OneToOne
     |--------------------------------------------------------------------------
     */
-	// Xpert role's knowledgebases
-	@ApiPropertyOptional({ type: () => Object })
-	@IsJSON()
-	@Column({ type: 'json', nullable: true })
-	knowledgebases?: IKnowledgebase[]
+	@ApiProperty({ type: () => Xpert })
+	@OneToOne(() => Xpert, {
+		nullable: true,
+	})
+	@JoinColumn()
+	xpert: IXpert
 
-	// Toolsets
-	@ApiPropertyOptional({ type: () => Object })
-	@IsJSON()
-	@Column({ type: 'json', nullable: true })
-	toolsets?: IXpertToolset[]
+	@ApiProperty({ type: () => String, readOnly: true })
+	@RelationId((it: XpertAgent) => it.xpert)
+	@IsString()
+	@Index()
+	@Column({ nullable: true })
+	readonly xpertId: string
 
 	/*
     |--------------------------------------------------------------------------
     | @ManyToOne
     |--------------------------------------------------------------------------
     */
-	@ApiProperty({ type: () => Xpert })
-	@ManyToOne(() => Xpert, {
-		nullable: true,
-		onDelete: 'CASCADE'
-	})
-	@JoinColumn()
-	xpert?: IXpert
-
-	@ApiProperty({ type: () => String })
-	@RelationId((it: XpertAgent) => it.xpert)
-	@IsString()
-	@Column({ nullable: true })
-	xpertId?: string
-
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@IsOptional()
@@ -90,4 +78,31 @@ export class XpertAgent extends TenantOrganizationBaseEntity implements IXpertAg
 	leaderKey?: string
 
 	leader?: IXpertAgent
+	// @OneToMany
+	followers?: IXpertAgent[]
+
+	/*
+    |--------------------------------------------------------------------------
+    | @ManyToMany 
+    |--------------------------------------------------------------------------
+    */
+	// Xpert role's knowledgebases
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@Column({ type: 'json', nullable: true })
+	knowledgebaseIds?: string[]
+	knowledgebases?: IKnowledgebase[]
+
+	// Toolsets
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@Column({ type: 'json', nullable: true })
+	toolsetIds?: string[]
+	toolsets?: IXpertToolset[]
+
+	collaborators?: IXpert[]
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@Column({ type: 'json', nullable: true })
+	collaboratorNames?: string[]
 }

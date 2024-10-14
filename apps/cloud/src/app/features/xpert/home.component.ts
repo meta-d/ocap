@@ -38,7 +38,7 @@ import {
   routeAnimations,
   ToastrService,
   XpertRoleService,
-  XpertRoleTypeEnum,
+  XpertTypeEnum,
   XpertWorkspaceService
 } from '../../@core'
 import { AvatarComponent, MaterialModule, UserPipe } from '../../@shared'
@@ -77,7 +77,7 @@ import { isNil, omitBy } from 'lodash-es'
 })
 export class XpertHomeComponent {
   DisplayBehaviour = DisplayBehaviour
-  XpertRoleTypeEnum = XpertRoleTypeEnum
+  XpertRoleTypeEnum = XpertTypeEnum
 
   readonly appService = inject(AppService)
   readonly router = inject(Router)
@@ -114,7 +114,7 @@ export class XpertHomeComponent {
     )
   })
 
-  readonly types = model<XpertRoleTypeEnum>(null)
+  readonly types = model<XpertTypeEnum>(null)
   readonly type = computed(() => this.types()?.[0])
 
   constructor() {

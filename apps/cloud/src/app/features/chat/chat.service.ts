@@ -28,7 +28,6 @@ import {
   IXpertToolset,
   IKnowledgebase,
   LanguagesEnum,
-  uuid,
 } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, XpertRoleService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
@@ -141,9 +140,9 @@ export class ChatService {
         if (data) {
           this.conversation.set(data)
           this.knowledgebases.set(
-            data.options?.knowledgebases?.map((id) => data.role?.knowledgebases?.find((item) => item.id === id)).filter(nonNullable)
+            data.options?.knowledgebases?.map((id) => data.xpert?.knowledgebases?.find((item) => item.id === id)).filter(nonNullable)
           )
-          this.toolsets.set(data.options?.toolsets?.map((id) => data.role?.toolsets?.find((item) => item.id === id)))
+          this.toolsets.set(data.options?.toolsets?.map((id) => data.xpert?.toolsets?.find((item) => item.id === id)))
         } else {
           // New empty conversation
           this.conversation.set({} as IChatConversation)
@@ -155,7 +154,7 @@ export class ChatService {
     .subscribe({
       next: ([conversation, roles]) => {
         if (conversation) {
-          this.role$.next(roles?.find((role) => role.id === conversation.roleId))
+          this.role$.next(roles?.find((role) => role.id === conversation.xpertId))
         }
       },
       error: (error) => {
@@ -320,7 +319,7 @@ export class ChatService {
   message(id: string, content: string) {
     return this.chatService.message({
       event: ChatGatewayEvent.MessageStream,
-      role: {
+      xpert: {
         id: this.role$.value?.id,
         knowledgebases: this.knowledgebases().map(({ id }) => id),
         toolsets: this.toolsets()?.map(({ id }) => id)

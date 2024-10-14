@@ -15,6 +15,7 @@ import {
   IXpertRole,
   KnowledgebaseService,
   OrderTypeEnum,
+  TAvatar,
   ToastrService,
   XpertRoleService,
   XpertToolsetService
@@ -62,7 +63,7 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
 
   readonly formGroup = this.fb.group({
     id: new FormControl<string>(null),
-    avatar: new FormControl<string>(null),
+    avatar: new FormControl<TAvatar>(null),
     name: new FormControl<string>(null),
     title: new FormControl(null),
     titleCN: new FormControl(null),

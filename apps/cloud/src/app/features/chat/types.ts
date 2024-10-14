@@ -1,10 +1,11 @@
-import { XpertRoleTypeEnum } from '../../@core/types'
+import { XpertTypeEnum } from '../../@core/types'
 
 export const COMMON_COPILOT_ROLE = {
+  slug: null,
   id: null,
   name: 'common',
   title: 'Common',
   titleCN: '通用',
   description: '通用角色',
-  type: XpertRoleTypeEnum.Agent
+  type: XpertTypeEnum.Agent
 }

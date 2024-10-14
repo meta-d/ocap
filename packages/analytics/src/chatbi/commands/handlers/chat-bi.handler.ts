@@ -252,16 +252,16 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 	}
 
 	async registerChatModels(dsCoreService: DSCoreService, context: XpertToolContext) {
-		const { tenantId, organizationId, role } = context
+		const { tenantId, organizationId, xpert } = context
 		const { items } = await this.modelService.findAll({
 			where: { tenantId, organizationId },
-			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators', 'roles'],
+			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators', 'xperts'],
 			order: {
 				visits: OrderTypeEnum.DESC
 			}
 		})
 
-		const models = items.filter((item) => role ? item.roles.some((_) => _.id === role.id) : true)
+		const models = items.filter((item) => xpert ? item.xperts.some((_) => _.id === xpert.id) : true)
 			// .map((item) => ({ ...item, model: convertOcapSemanticModel(item.model) }))
 
 		// Register all models

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
 import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
-import { IKnowledgebase, IXpertRole, TXpertTeamNode } from '@metad/contracts'
+import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
 import { AvatarComponent } from 'apps/cloud/src/app/@shared'
 
 @Component({

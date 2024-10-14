@@ -10,7 +10,7 @@ export class CreateConnectionHandler implements IHandler<CreateConnectionRequest
     this.store.update((state) => {
       const draft = structuredClone(state.draft)
 
-      const outputId = removeSuffix(request.outputId, '/role', '/knowledge', '/toolset')
+      const outputId = removeSuffix(request.outputId, '/agent', '/knowledge', '/toolset')
       // Remove old connection
       if (request.oldFInputId) {
         draft.connections = draft.connections.filter((item) => !(item.from === outputId && item.to === request.oldFInputId))

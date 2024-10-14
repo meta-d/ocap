@@ -3,7 +3,7 @@ import {
 	ChatGatewayMessage,
 	ChatUserMessage,
 	IChatConversation,
-	IXpertRole,
+	IXpert,
 	IXpertToolset,
 } from '@metad/contracts'
 import { NgmLanguageEnum } from '@metad/copilot'
@@ -11,7 +11,6 @@ import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { isNil } from 'lodash'
 import { Observable } from 'rxjs'
-import { FindXpertRoleQuery } from '../../../xpert-role'
 import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
 import { CopilotCheckLimitCommand } from '../../../copilot-user'
@@ -19,6 +18,7 @@ import { ChatConversationAgent } from '../../chat-conversation'
 import { ChatService } from '../../chat.service'
 import { ChatCommand } from '../chat.command'
 import { FindXpertToolsetsQuery } from '../../../xpert-toolset/index'
+import { FindXpertQuery } from '../../../xpert'
 
 
 @CommandHandler(ChatCommand)
@@ -31,7 +31,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 	) {}
 
 	public async execute(command: ChatCommand): Promise<Observable<any>> {
-		const { tenantId, organizationId, user, role, data } = command.input
+		const { tenantId, organizationId, user, xpert, data } = command.input
 		const { conversationId, id, language, content } = data as ChatUserMessage
 
 		return new Observable<ChatGatewayMessage>((subscriber) => {
@@ -44,11 +44,11 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 								tenantId,
 								organizationId,
 								createdById: user.id,
-								roleId: role?.id,
+								xpertId: xpert?.id,
 								title: content, // 改成 AI 自动总结标题
 								options: {
-									knowledgebases: role?.knowledgebases,
-									toolsets: role?.toolsets
+									knowledgebases: xpert?.knowledgebases,
+									toolsets: xpert?.toolsets
 								}
 							}
 						})
@@ -66,16 +66,16 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 					)
 				}
 
-				let copilotRole: IXpertRole = null
-				if (role?.id) {
-					copilotRole = await this.queryBus.execute<FindXpertRoleQuery, IXpertRole>(
-						new FindXpertRoleQuery({ tenantId, organizationId, id: role.id })
+				let _xpert: IXpert = null
+				if (xpert?.id) {
+					_xpert = await this.queryBus.execute<FindXpertQuery, IXpert>(
+						new FindXpertQuery({ tenantId, organizationId, id: xpert.id })
 					)
 				}
 
 				if (!this.chatService.getConversation(chatConversation.id)) {
 					await this.chatService.fetchCopilots(tenantId, organizationId)
-					const toolsets = await this.queryBus.execute<FindXpertToolsetsQuery, IXpertToolset[]>(new FindXpertToolsetsQuery(role?.toolsets ?? []))
+					const toolsets = await this.queryBus.execute<FindXpertToolsetsQuery, IXpertToolset[]>(new FindXpertToolsetsQuery(xpert?.toolsets ?? []))
 
 					try {
 						this.chatService.setConversation(
@@ -88,7 +88,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 								this.chatService,
 								this.commandBus,
 								this.queryBus
-							).createAgentGraph(copilotRole, toolsets)
+							).createAgentGraph(_xpert, toolsets)
 						)
 					} catch (error) {
 						subscriber.next({
@@ -108,8 +108,8 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				if (language) {
 					conversation.updateState({ language: this.languagePrompt(language) })
 				}
-				if (copilotRole) {
-					conversation.updateState({ role: copilotRole.prompt })
+				if (_xpert) {
+					conversation.updateState({ role: _xpert.agent.prompt })
 				}
 
 				const answerId = shortuuid()

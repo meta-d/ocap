@@ -1,4 +1,4 @@
-import { IXpertRole } from '../ai'
+import { IXpert } from '../ai'
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IIntegration } from '../integration.model'
 import { ISemanticModel } from './semantic-model'
@@ -13,7 +13,7 @@ export interface IChatBIModel extends IBasePerTenantAndOrganizationEntityModel {
   options?: ChatBIModelOptions
 
   // ManyToMany
-  roles?: IXpertRole[]
+  xperts?: IXpert[]
   integrations?: IIntegration[]
 }
 
