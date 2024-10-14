@@ -27,6 +27,9 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
   xpertId?: string
   xpert?: IXpert
 
+  teamId?: string
+  team?: IXpert
+
   leader?: IXpertAgent
   leaderKey?: string
   followers?: IXpertAgent[]

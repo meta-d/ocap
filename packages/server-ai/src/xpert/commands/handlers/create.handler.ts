@@ -14,10 +14,9 @@ export class XpertCreateHandler implements ICommandHandler<XpertCreateCommand> {
 		const entity = command.input
 		const result = await this.roleService.findOneOrFail({ where: { name: entity.name } })
 		if (result.success) {
-			throw new Error(`Role with name ${entity.name} already exists`)
+			throw new Error(`Xpert with name ${entity.name} already exists`)
 		}
 
 		return await this.roleService.create(entity)
 	}
 }
-

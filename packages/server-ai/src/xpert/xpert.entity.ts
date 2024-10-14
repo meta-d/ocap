@@ -145,7 +145,7 @@ export class Xpert extends TenantOrganizationBaseEntity implements IXpert {
     */
 	// AI Agents
 	@ApiProperty({ type: () => XpertAgent, isArray: true })
-	@OneToMany(() => XpertAgent, (agent) => agent.xpert)
+	@OneToMany(() => XpertAgent, (agent) => agent.team)
 	agents?: IXpertAgent[]
 
 	/*

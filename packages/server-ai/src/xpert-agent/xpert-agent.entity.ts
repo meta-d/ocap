@@ -2,7 +2,7 @@ import { IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TAvatar, TXpertAgen
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, Index, JoinColumn, OneToOne, RelationId } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, RelationId } from 'typeorm'
 import { Xpert } from '../core/entities/internal'
 
 @Entity('xpert_agent')
@@ -71,6 +71,20 @@ export class XpertAgent extends TenantOrganizationBaseEntity implements IXpertAg
     | @ManyToOne
     |--------------------------------------------------------------------------
     */
+	@ApiProperty({ type: () => Xpert })
+	@ManyToOne(() => Xpert, {
+		nullable: true,
+		onDelete: 'CASCADE'
+	})
+	@JoinColumn()
+	team?: IXpert
+
+	@ApiProperty({ type: () => String })
+	@RelationId((it: XpertAgent) => it.team)
+	@IsString()
+	@Column({ nullable: true })
+	teamId?: string
+
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@IsOptional()

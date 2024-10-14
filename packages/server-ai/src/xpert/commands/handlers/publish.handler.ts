@@ -8,36 +8,37 @@ import { IsNull, Not, Repository } from 'typeorm'
 import { Xpert } from '../../xpert.entity'
 import { XpertService } from '../../xpert.service'
 import { XpertPublishCommand } from '../publish.command'
-import { InjectRepository } from '@nestjs/typeorm'
+import { XpertAgentService } from '../../../xpert-agent'
 
 @CommandHandler(XpertPublishCommand)
 export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand> {
 	readonly #logger = new Logger(XpertPublishHandler.name)
 
 	constructor(
-		@InjectRepository(Xpert)
-		private readonly repository: Repository<Xpert>,
-		private readonly roleService: XpertService
+		// @InjectRepository(Xpert)
+		// private readonly repository: Repository<Xpert>,
+		private readonly xpertService: XpertService,
+		private readonly xpertAgentService: XpertAgentService,
 	) {}
 
-	public async execute(command: XpertPublishCommand): Promise<void> {
+	public async execute(command: XpertPublishCommand): Promise<Xpert> {
 		const id = command.id
-		const xpertRole = await this.repository.findOne(id, { relations: ['followers', 'knowledgebases', 'toolsets'] })
+		const xpertRole = await this.xpertService.findOne(id, { relations: ['agent', 'agents', 'knowledgebases', 'toolsets'] })
 
 		if (!xpertRole.draft) {
-			throw new NotFoundException(`No drafts found`)
+			throw new NotFoundException(`No draft found on Xpert '${xpertRole.name}'`)
 		}
 
-		const { items: allVersionRoles } = await this.roleService.findAll({
+		const { items: allVersionXperts } = await this.xpertService.findAll({
 			where: {
 				workspaceId: xpertRole.workspaceId ?? IsNull(),
 				name: xpertRole.name
 			}
 		})
 
-		const allVersions = allVersionRoles.map((role) => role.version)
+		const allVersions = allVersionXperts.map((_) => _.version)
 
-		if (allVersionRoles.length === 1) {
+		if (allVersionXperts.length === 1) {
 			xpertRole.latest = true
 		}
 
@@ -58,26 +59,26 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		}
 
 		// Check
-		// const draft = xpertRole.draft
-		// this.check(draft)
+		const draft = xpertRole.draft
+		this.check(draft)
 
 		// // await this.repository.queryRunner.connect()
 		// // await this.repository.queryRunner.startTransaction()
 		// // try {
-		// 	// Back up the current version
-		// 	if (currentVersion) {
-		// 		await this.saveTeamVersion(xpertRole, version)
-		// 	}
+			// Back up the current version
+			if (currentVersion) {
+				await this.saveTeamVersion(xpertRole, version)
+			}
 
-		// 	xpertRole.version = version
-		// 	xpertRole.draft = null
-		// 	xpertRole.publishAt = new Date()
+			xpertRole.version = version
+			xpertRole.draft = null
+			xpertRole.publishAt = new Date()
 
-		// 	await this.publish(xpertRole, version, draft)
+			await this.publish(xpertRole, version, draft)
 
 		// 	// await this.repository.queryRunner.commitTransaction()
 
-		// 	return xpertRole
+			return xpertRole
 		// // } catch (err) {
 		// 	// since we have errors lets rollback the changes we made
 		// 	// await this.repository.queryRunner.rollbackTransaction()
@@ -89,52 +90,52 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		// return null		
 	}
 
-	// /**
-	//  * Backup current version
-	//  * 
-	//  * @param team Team (leader)
-	//  * @param version New version
-	//  */
-	// async saveTeamVersion(team: Xpert, version: string) {
-	// 	// Retrieve all members of the current version
-	// 	const { items: backupMembers } = await this.roleService.findAll({
-	// 		where: {
-	// 			id: Not(team.id),
-	// 			workspaceId: team.workspaceId ?? IsNull(),
-	// 			teamRoleId: team.id,
-	// 			version: team.version ?? IsNull()
-	// 		},
-	// 		relations: ['followers', 'knowledgebases', 'toolsets']
-	// 	})
+	/**
+	 * Backup current version
+	 * 
+	 * @param team Team (leader)
+	 * @param version New version
+	 */
+	async saveTeamVersion(team: Xpert, version: string) {
+		const oldTeam: IXpert = {
+			...omit(team, 'id'),
+			latest: false,
+			draft: null,
+		}
 
-	// 	// team.draft = null
-	// 	const oldTeam = {
-	// 		...omit(team, 'id'),
-	// 		latest: false,
-	// 		draft: null,
-	// 		teamRoleId: null
-	// 	}
+		// Update to new version, leaving space for the old version as a backup
+		team.version = version
+		await this.xpertService.save(team)
+		// backup old version
+		const newTeam = await this.xpertService.create(oldTeam)
 
-	// 	// Update to new version, leaving space for the old version as a backup
-	// 	team.version = version
-	// 	await this.roleService.save(team)
-	// 	// backup old version
-	// 	const newTeam = await this.roleService.create(oldTeam)
-		
-	// 	// Map old id to new backup id
-	// 	const mapNew = {}
-	// 	for await (const role of backupMembers) {
-	// 		if (role) {
-	// 			await this.saveTeamFollowerVersion(role, version, newTeam, backupMembers, mapNew)
-	// 		}
-	// 	}
+		// Copy all agents
+		for await (const agent of team.agents) {
+			await this.xpertAgentService.create({
+				...omit(agent, 'id'),
+				teamId: newTeam.id,
+				tenantId: newTeam.tenantId,
+				organizationId: newTeam.organizationId,
+			})
+		}
+		await this.xpertAgentService.create({
+			...omit(team.agent, 'id'),
+			xpertId: newTeam.id,
+			tenantId: newTeam.tenantId,
+			organizationId: newTeam.organizationId,
+		})
+	}
 
-	// 	// Update backup new team followers relations
-	// 	const newfollowers = team.followers.map((follower) => ({id: mapNew[follower.id] ?? follower.id})) as IXpert[]
-	// 	newTeam.followers = newfollowers
-	// 	newTeam.teamRoleId = newTeam.id
-	// 	await this.roleService.save(newTeam)
-	// }
+	/**
+	 * Publish draft of team to new version
+	 * 
+	 * @param team Team (leader)
+	 * @param version New version
+	 * @param draft Team draft
+	 */
+    async publish(team: IXpert, version: string, draft: TXpertTeamDraft) {
+
+	}
 
 	// /**
 	//  * Backup xpert, backup followers firstly before backup xpert self.
@@ -290,12 +291,12 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 	// 	}
 	// }
 
-	// check(draft: TXpertTeamDraft) {
-	// 	// Check all nodes have been connected
-	// 	draft.nodes.forEach((node) => {
-	// 		if (!draft.connections.some((connection) => connection.from === node.key || connection.to === node.key)) {
-	// 			throw new HttpException(`There are free Xperts!`, 500)
-	// 		}
-	// 	})
-	// }
+	check(draft: TXpertTeamDraft) {
+		// Check all nodes have been connected
+		draft.nodes.forEach((node) => {
+			if (!draft.connections.some((connection) => connection.from === node.key || connection.to === node.key)) {
+				throw new HttpException(`There are free Xpert agents!`, 500)
+			}
+		})
+	}
 }

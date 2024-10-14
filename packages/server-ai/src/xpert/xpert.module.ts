@@ -9,6 +9,7 @@ import { XpertService } from './xpert.service'
 import { CommandHandlers } from './commands/handlers/index'
 import { KnowledgebaseModule } from '../knowledgebase'
 import { QueryHandlers } from './queries/handlers'
+import { XpertAgentModule } from '../xpert-agent'
 
 @Module({
     imports: [
@@ -16,7 +17,8 @@ import { QueryHandlers } from './queries/handlers'
         TypeOrmModule.forFeature([Xpert]),
         TenantModule,
         CqrsModule,
-        forwardRef(() => KnowledgebaseModule)
+        forwardRef(() => KnowledgebaseModule),
+        forwardRef(() => XpertAgentModule),
     ],
     controllers: [XpertController],
     providers: [XpertService, ...CommandHandlers, ...QueryHandlers],
