@@ -1,7 +1,7 @@
 import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace, XpertRoleTypeEnum, TXpertTeamDraft } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsBoolean, IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from 'typeorm'
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, RelationId } from 'typeorm'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { Knowledgebase, XpertToolset, XpertWorkspace } from '../core/entities/internal'
 
@@ -96,7 +96,10 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
     */
     // belongs to Workspace
 	@ApiProperty({ type: () => XpertWorkspace })
-	@ManyToOne(() => XpertWorkspace)
+	@ManyToOne(() => XpertWorkspace, {
+		nullable: true,
+		onDelete: 'RESTRICT'
+	})
 	@JoinColumn()
 	workspace?: IXpertWorkspace
 
@@ -108,7 +111,10 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	
 	// belongs to Team
 	@ApiProperty({ type: () => XpertRole })
-	@ManyToOne(() => XpertRole)
+	@ManyToOne(() => XpertRole, {
+		nullable: true,
+		onDelete: 'CASCADE'
+	})
 	@JoinColumn()
 	teamRole?: IXpertRole
 
@@ -118,12 +124,30 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	@Column({ nullable: true })
 	teamRoleId?: string
 
-	// Members
-	// @ManyToMany(() => XpertRole)
-	// @JoinTable({
-	// 	name: 'xpert_role_member'
-	// })
-	// members?: IXpertRole[]
+	// belongs to Leader
+	@ApiProperty({ type: () => XpertRole })
+	@ManyToOne(() => XpertRole, {
+		nullable: true,
+		onDelete: 'SET NULL'
+	})
+	@JoinColumn()
+	leader?: IXpertRole
+
+	@ApiProperty({ type: () => String })
+	@RelationId((it: XpertRole) => it.leader)
+	@IsString()
+	@Column({ nullable: true })
+	leaderId?: string
+
+	/*
+    |--------------------------------------------------------------------------
+    | @OneToMany 
+    |--------------------------------------------------------------------------
+    */
+	// Members of leader
+	@ApiProperty({ type: () => XpertRole, isArray: true })
+	@OneToMany(() => XpertRole, (member) => member.leader)
+	members?: IXpertRole[]
 
 	/*
     |--------------------------------------------------------------------------

@@ -4,20 +4,25 @@ import { HttpException, Logger, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { nonNullable } from '@metad/copilot'
 import { assign } from 'lodash'
-import { IsNull, Not } from 'typeorm'
+import { IsNull, Not, Repository } from 'typeorm'
 import { XpertRole } from '../../xpert-role.entity'
 import { XpertRoleService } from '../../xpert-role.service'
 import { XpertRolePublishCommand } from '../publish.command'
+import { InjectRepository } from '@nestjs/typeorm'
 
 @CommandHandler(XpertRolePublishCommand)
 export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublishCommand> {
 	readonly #logger = new Logger(XpertRolePublishHandler.name)
 
-	constructor(private readonly roleService: XpertRoleService) {}
+	constructor(
+		@InjectRepository(XpertRole)
+		private readonly repository: Repository<XpertRole>,
+		private readonly roleService: XpertRoleService
+	) {}
 
 	public async execute(command: XpertRolePublishCommand): Promise<XpertRole> {
 		const id = command.id
-		const xpertRole = await this.roleService.findOne(id, { relations: ['followers'] })
+		const xpertRole = await this.repository.findOne(id, { relations: ['followers', 'knowledgebases', 'toolsets'] })
 
 		if (!xpertRole.draft) {
 			throw new NotFoundException(`No drafts found`)
@@ -25,14 +30,12 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 
 		const { items: allVersionRoles } = await this.roleService.findAll({
 			where: {
-				workspaceId: xpertRole.workspaceId,
+				workspaceId: xpertRole.workspaceId ?? IsNull(),
 				name: xpertRole.name
 			}
 		})
 
-		const allVersions = allVersionRoles.map((role) => {
-			return role.version
-		})
+		const allVersions = allVersionRoles.map((role) => role.version)
 
 		if (allVersionRoles.length === 1) {
 			xpertRole.latest = true
@@ -58,51 +61,94 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 		const draft = xpertRole.draft
 		this.check(draft)
 
-		if (currentVersion) {
-			await this.saveTeamVersion(xpertRole, version)
+		await this.repository.queryRunner.connect()
+		await this.repository.queryRunner.startTransaction()
+		try {
+			// Back up the current version
+			if (currentVersion) {
+				await this.saveTeamVersion(xpertRole, version)
+			}
+
+			xpertRole.version = version
+			xpertRole.draft = null
+			xpertRole.publishAt = new Date()
+
+			await this.publish(xpertRole, version, draft)
+
+			await this.repository.queryRunner.commitTransaction()
+
+			return xpertRole
+		} catch (err) {
+			// since we have errors lets rollback the changes we made
+			await this.repository.queryRunner.rollbackTransaction()
+		} finally {
+			// you need to release a queryRunner which was manually instantiated
+			await this.repository.queryRunner.release()
 		}
-		
-		xpertRole.version = version
-		xpertRole.draft = null
-		xpertRole.publishAt = new Date()
 
-		await this.publish(xpertRole, version, draft)
-
-		return xpertRole
+		return null		
 	}
 
+	/**
+	 * Backup current version
+	 * 
+	 * @param team Team (leader)
+	 * @param version New version
+	 */
 	async saveTeamVersion(team: XpertRole, version: string) {
-		team.draft = null
-		const oldTeam = {
-			...omit(team, 'id'),
-			latest: false,
-		}
-
-		team.version = version
-		await this.roleService.save(team)
-
-		const newTeam = await this.roleService.create(oldTeam)
-
-		const { items } = await this.roleService.findAll({
+		// Retrieve all members of the current version
+		const { items: backupMembers } = await this.roleService.findAll({
 			where: {
 				id: Not(team.id),
-				workspaceId: team.workspaceId,
+				workspaceId: team.workspaceId ?? IsNull(),
 				teamRoleId: team.id,
 				version: team.version ?? IsNull()
 			},
-			relations: ['followers']
+			relations: ['followers', 'knowledgebases', 'toolsets']
 		})
 
-		for await (const role of items) {
-			await this.saveTeamFollowerVersion(role, version, newTeam, items, {})
+		// team.draft = null
+		const oldTeam = {
+			...omit(team, 'id'),
+			latest: false,
+			draft: null,
+			teamRoleId: null
 		}
+
+		// Update to new version, leaving space for the old version as a backup
+		team.version = version
+		await this.roleService.save(team)
+		// backup old version
+		const newTeam = await this.roleService.create(oldTeam)
+		
+		// Map old id to new backup id
+		const mapNew = {}
+		for await (const role of backupMembers) {
+			await this.saveTeamFollowerVersion(role, version, newTeam, backupMembers, mapNew)
+		}
+
+		// Update backup new team followers relations
+		const newfollowers = team.followers.map((follower) => ({id: mapNew[follower.id] ?? follower.id})) as IXpertRole[]
+		newTeam.followers = newfollowers
+		newTeam.teamRoleId = newTeam.id
+		await this.roleService.save(newTeam)
 	}
 
+	/**
+	 * Backup xpert, backup followers firstly before backup xpert self.
+	 * 
+	 * @param role Xpert
+	 * @param version New version
+	 * @param team Team
+	 * @param members All old members
+	 * @param mapNew Store the new backup members
+	 * @returns 
+	 */
 	async saveTeamFollowerVersion(
 		role: IXpertRole,
 		version: string,
 		team: IXpertRole,
-		followers: IXpertRole[],
+		members: IXpertRole[],
 		mapNew: Record<string, string>
 	) {
 		const newfollowers = []
@@ -110,13 +156,16 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 			if (mapNew[member.id]) {
 				newfollowers.push({ id: mapNew[member.id] })
 			} else if (member.workspaceId === role.workspaceId && member.teamRoleId === role.teamRoleId) {
-				const index = followers.findIndex((item) => item.id === member.id)
-				if (index > -1 && followers[index].id !== role.id) {
-					const _member = followers[index]
-					followers[index] = null
-					const newMember = await this.saveTeamFollowerVersion(_member, version, team, followers, mapNew)
+				// Backup version if follower is same workspace and same team.
+				const index = members.findIndex((item) => item.id === member.id)
+				if (index > -1 && members[index].id !== role.id) {
+					const _member = members[index]
+					members[index] = null
+					const newMember = await this.saveTeamFollowerVersion(_member, version, team, members, mapNew)
 					mapNew[_member.id] = newMember.id
 				}
+			} else {
+				newfollowers.push({ id: member.id })
 			}
 		}
 
@@ -124,29 +173,32 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 			...omit(role, 'id'),
 			latest: false,
 			teamRoleId: team.id,
-			followers: newfollowers
+			followers: newfollowers,
+			draft: null
 		}
+
+		// Update to new version, leaving space for the old version as a backup
 		role.version = version
 		await this.roleService.save(role as XpertRole)
+		// backup old version
 		return await this.roleService.create(oldRole)
 	}
 
 	/**
 	 * Publish draft of team to new version
 	 * 
-	 * @param team 
-	 * @param version 
-	 * @param draft 
+	 * @param team Team (leader)
+	 * @param version New version
+	 * @param draft Team draft
 	 */
     async publish(team: IXpertRole, version: string, draft: TXpertTeamDraft) {
-
 		// All followers in this team
 		const { items } = await this.roleService.findAll({
 			where: {
 				id: Not(team.id),
-				workspaceId: team.workspaceId,
+				workspaceId: team.workspaceId ?? IsNull(),
 				teamRoleId: team.id,
-				version: team.version ?? IsNull()
+				version: version
 			},
 			relations: ['followers']
 		})
@@ -169,6 +221,7 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 			} else {
 				let entity = null
 				if (node.entity.id === team.id) {
+					// Is team leader
 					entity = team
 					assign(
 						entity,
@@ -183,14 +236,26 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 							'options',
 						)
 					)
-					entity.teamRoleId = team.id
 				} else if (node.entity.teamRoleId === team.id) {
 					entity = await this.roleService.findOne(node.entity.id)
-					assign(entity, node.entity)
-					entity.version = version
+					assign(
+						entity, 
+						pick(
+							node.entity,
+							'title',
+							'titleCN',
+							'description',
+							'prompt',
+							'starters',
+							'avatar',
+							'options',
+						)
+					)
 				}
 				
 				if (entity) {
+					entity.teamRoleId = team.id
+					entity.version = version
 					await this.roleService.save(entity)
 					rolesMap[node.key] = {
 						node,

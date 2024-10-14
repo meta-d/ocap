@@ -75,7 +75,7 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		const team = await this.findOne(id, { relations: ['followers', 'toolsets', 'knowledgebases'] })
 		if (!team.draft) {
 			const { items } = await this.findAll({
-				where: { workspaceId: team.workspaceId, teamRoleId: team.id },
+				where: { workspaceId: team.workspaceId ?? IsNull(), teamRoleId: team.id },
 				relations: ['followers', 'toolsets', 'knowledgebases']
 			})
 			assembleXpertRole(team, items, [])

@@ -99,11 +99,13 @@ export class XpertHomeComponent {
   readonly refresh$ = new BehaviorSubject<void>(null)
   readonly xpertRoles = derivedAsync(() => {
     const where = {
-      type: this.type()
+      type: this.type(),
+      latest: true
     }
+    const workspace = this.workspace()
     return this.refresh$.pipe(
       switchMap(() =>
-        this.xpertService.getAllByWorkspace(this.workspace(), {
+        this.xpertService.getAllByWorkspace(workspace, {
           where: omitBy(where, isNil),
           relations: ['createdBy']
         })

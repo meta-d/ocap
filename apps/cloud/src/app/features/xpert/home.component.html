@@ -326,6 +326,11 @@
     <label class="px-2 pb-2">{{ 'PAC.KEY_WORDS.Workspaces' | translate: { Default: 'Workspaces' } }}</label>
     <div class="max-h-64 w-56 overflow-y-auto" (click)="$event.stopPropagation()">
       <ul class="ngm-cdk-listbox">
+        <li class="ngm-cdk-option flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10"
+            (click)="switchWorkspace(null)"
+        >
+          {{ 'Default' }}
+        </li>
         @for (item of workspaces(); track item.name) {
           <li
             class="ngm-cdk-option flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10"
