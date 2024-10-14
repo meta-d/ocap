@@ -1,5 +1,5 @@
 import { TXpertTeamDraft } from '@metad/contracts'
-import { CrudController, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
+import { CrudController, OptionParams, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
 import {
 	Body,
 	Controller,
@@ -43,8 +43,8 @@ export class XpertRoleController extends CrudController<XpertRole> {
 	}
 
 	@Get(':id/team')
-	async getTeam(@Param('id') id: string) {
-		return this.service.getTeam(id)
+	async getTeam(@Param('id') id: string, @Query('data', ParseJsonPipe) data: OptionParams<XpertRole>) {
+		return this.service.getTeam(id, data)
 	}
 
 	@Get(':id/version')

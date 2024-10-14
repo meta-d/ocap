@@ -19,6 +19,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { IPoint, IRect, PointExtensions } from '@foblex/2d'
 import {
   EFConnectionType,
+  EFResizeHandleType,
   FCanvasComponent,
   FCreateConnectionEvent,
   FFlowComponent,
@@ -28,7 +29,6 @@ import {
   FZoomDirective
 } from '@foblex/flow'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { nonBlank } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
@@ -87,6 +87,7 @@ import { XpertStudioNodeToolsetComponent } from './components/toolset/toolset.co
 export class XpertStudioComponent {
   DisplayBehaviour = DisplayBehaviour
   EFConnectionType = EFConnectionType
+  public eResizeHandleType = EFResizeHandleType
 
   readonly appService = inject(AppService)
   readonly router = inject(Router)
@@ -114,6 +115,7 @@ export class XpertStudioComponent {
   readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
   readonly nodes = computed(() => this.viewModel()?.nodes)
+  readonly teams = computed(() => this.viewModel()?.teams)
   readonly connections = computed(() => this.viewModel()?.connections)
 
   public isSingleSelection: boolean = true

@@ -47,6 +47,30 @@
           }
           </div>
         }
+
+        @for (group of teams(); track group.id) {
+          <div fGroup [fGroupId]="group.id" [fGroupParentId]="group.parentId" [fGroupPosition]="group.position"
+            [fGroupSize]="group.size" fDragHandle>
+            <div class="group-title">{{ group.title }}</div>
+            <div fResizeHandle [fResizeHandleType]="eResizeHandleType.LEFT_TOP"></div>
+            <div fResizeHandle [fResizeHandleType]="eResizeHandleType.RIGHT_TOP"></div>
+            <div fResizeHandle [fResizeHandleType]="eResizeHandleType.LEFT_BOTTOM"></div>
+            <div fResizeHandle [fResizeHandleType]="eResizeHandleType.RIGHT_BOTTOM"></div>
+
+            <div fNodeInput [fInputId]="group.id" fInputConnectableSide="top" class="top"></div>
+          </div>
+        }
+
+        @for (group of teams(); track group.id) {
+          <div class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
+            fNode [fNodeId]="group.team.id"
+            fDragHandle
+            [fNodeParentId]="group.id"
+            [fNodePosition]="group.position"
+          >
+            <xpert-studio-role [node]="{key: group.team.id, type: 'role', entity: group.team, position: null}" [isRoot]="true" class=""/>
+          </div>
+        }
       </f-canvas>
 
       <f-selection-area></f-selection-area>

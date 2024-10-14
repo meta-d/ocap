@@ -50,3 +50,61 @@ f-flow {
 .f-selection-area {
   background-color: var(--selection-area-color);
 }
+
+
+.f-group {
+  display: block;
+  background-color: var(--team-group-bg);
+  padding: 30px;
+  @apply border border-solid border-transparent;
+
+  .group-title {
+    font-size: 16px;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+  }
+
+  &.f-selected {
+    @apply border border-solid border-primary-500;
+
+    .f-resize-handle {
+      display: block;
+    }
+  }
+}
+
+.f-resize-handle {
+  --resize-handle-size: 16px;
+  --resize-handle-offset: -8px;
+  display: none;
+  position: absolute;
+  width: var(--resize-handle-size);
+  height: var(--resize-handle-size);
+  border-radius: 1px;
+  @apply border border-solid border-primary-500 bg-components-card-bg;
+
+  &.f-resize-handle-left-top {
+    top: var(--resize-handle-offset);
+    left: var(--resize-handle-offset);
+    cursor: nwse-resize;
+  }
+
+  &.f-resize-handle-right-top {
+    top: var(--resize-handle-offset);
+    right: var(--resize-handle-offset);
+    cursor: nesw-resize;
+  }
+
+  &.f-resize-handle-left-bottom {
+    bottom: var(--resize-handle-offset);
+    left: var(--resize-handle-offset);
+    cursor: nesw-resize;
+  }
+
+  &.f-resize-handle-right-bottom {
+    bottom: var(--resize-handle-offset);
+    right: var(--resize-handle-offset);
+    cursor: nwse-resize;
+  }
+}

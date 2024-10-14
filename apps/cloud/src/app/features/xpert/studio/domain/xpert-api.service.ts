@@ -1,7 +1,7 @@
-import { inject, Injectable, signal } from '@angular/core'
+import { computed, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { IPoint, IRect } from '@foblex/2d'
-import { IKnowledgebase, IXpertRole, IXpertTool, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '../../../../@core/types'
+import { IPoint } from '@foblex/2d'
+import { IKnowledgebase, IXpertRole, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '../../../../@core/types'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { KnowledgebaseService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
@@ -23,14 +23,14 @@ import {
 } from 'rxjs'
 import { CreateConnectionHandler, CreateConnectionRequest, ToConnectionViewModelHandler } from './connection'
 import {
-  MoveRoleHandler,
-  MoveRoleRequest,
   UpdateRoleHandler,
   UpdateRoleRequest
 } from './role'
 import { EReloadReason, IStudioStore, TStateHistory } from './types'
 import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest, RemoveNodeHandler, RemoveNodeRequest, ToNodeViewModelHandler, UpdateNodeHandler, UpdateNodeRequest } from './node'
 import { LayoutHandler, LayoutRequest } from './layout'
+import { nonNullable } from '@metad/core'
+import { CreateTeamHandler, CreateTeamRequest } from './team'
 
 @Injectable()
 export class XpertStudioApiService {
@@ -80,6 +80,15 @@ export class XpertStudioApiService {
     map(({items}) => items),
     shareReplay(1)
   )
+  readonly workspace = computed(() => this.team()?.workspace, { equal: (a, b) => a?.id === b?.id})
+
+  readonly teams$ = toObservable(this.team).pipe(
+    filter(nonNullable),
+    map((team) => team?.workspace),
+    distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
+    switchMap((workspace) => this.xpertRoleService.getAllByWorkspace(workspace, {where: {latest: true}})),
+    map(({items}) => items.filter((_) => _.id !== this.team().id))
+  )
 
   private saveDraftSub = this.#refresh$
     .pipe(
@@ -87,7 +96,7 @@ export class XpertStudioApiService {
         combineLatest([
           this.paramId$.pipe(
             distinctUntilChanged(),
-            switchMap((id) => this.xpertRoleService.getTeam(id)),
+            switchMap((id) => this.xpertRoleService.getTeam(id, { relations: ['workspace'] })),
             tap((role) => {
               this.#stateHistory.clear()
               this.draft.set(role.draft)
@@ -208,6 +217,10 @@ export class XpertStudioApiService {
   public createRole(position: IPoint): void {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('role', position))
     this.#reload.next(EReloadReason.ROLE_CREATED)
+  }
+  public createTeam(position: IPoint, team: IXpertRole) {
+    new CreateTeamHandler(this.store).handle(new CreateTeamRequest(position, team))
+    this.#reload.next(EReloadReason.TEAM_ADDED)
   }
   createToolset(position: IPoint, toolset: IXpertToolset): void {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('toolset', position, toolset))

@@ -1,7 +1,10 @@
 <ng-template>
   <div #menu="cdkMenu" cdkMenu class="ngm-cdk-menu">
     <div cdkMenuItem class="ngm-cdk-menu-item" (click)="createRole(menu)">
-      <span>添加成员</span>
+      <span>新建成员</span>
+    </div>
+    <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="teamsMenu">
+      <span>添加外部成员</span>
     </div>
     <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="knowledgeMenu">
       <span>添加知识库</span>
@@ -24,5 +27,13 @@
 <ng-template #toolsetMenu>
   <div cdkMenu class="ngm-cdk-menu flex flex-col">
     <xpert-studio-toolset-menu class="overflow-auto" />
+  </div>
+</ng-template>
+
+<ng-template #teamsMenu>
+  <div cdkMenu class="ngm-cdk-menu flex flex-col">
+    @for (team of teams(); track team.id) {
+      <div cdkMenuItem class="ngm-cdk-menu-item" (click)="addTeam(team)">{{team.title}}</div>
+    }
   </div>
 </ng-template>

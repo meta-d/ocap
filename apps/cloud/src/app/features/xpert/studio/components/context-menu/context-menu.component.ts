@@ -8,6 +8,8 @@ import { SelectionService } from '../../domain/selection.service'
 import { XpertStudioComponent } from '../../studio.component'
 import { XpertStudioKnowledgeMenuComponent } from '../knowledge-menu/knowledge.component'
 import { XpertStudioToolsetMenuComponent } from '../toolset-menu/toolset.component'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { IXpertRole } from 'apps/cloud/src/app/@core'
 
 @Component({
   selector: 'xpert-studio-context-menu',
@@ -39,6 +41,8 @@ export class XpertStudioContextMenuComponent {
 
   public node: string | null = null
 
+  readonly teams = toSignal(this.apiService.teams$)
+
   public ngOnInit(): void {
     this.subscriptions.add(this.subscribeToSelectionChanges())
   }
@@ -61,6 +65,12 @@ export class XpertStudioContextMenuComponent {
   public createRole(menu: CdkMenu): void {
     menu.menuStack.closeAll()
     this.apiService.createRole(this.root.contextMenuPosition)
+  }
+
+  public addTeam(team: IXpertRole): void {
+    // menu.menuStack.closeAll()
+    console.log(team)
+    this.apiService.createTeam(this.root.contextMenuPosition, team)
   }
 
   public deleteNode(menu: CdkMenu, node: string): void {

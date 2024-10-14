@@ -115,6 +115,7 @@ export type TXpertTeamDraft = {
   savedAt?: Date
   nodes: TXpertTeamNode[]
   connections: TXpertTeamConnection[]
+  teams?: TXpertTeamGroup[]
 }
 
 export type TXpertTeamNodeType = 'role' | 'knowledge' | 'toolset'
@@ -152,6 +153,18 @@ export interface ISize {
 
 export interface IRect extends IPoint, Partial<ISize> {
   gravityCenter?: IPoint;
+}
+
+export type TXpertTeamGroup = {
+  id: string
+  title: string
+  position: IPoint
+  size?: ISize
+  parentId?: string
+  team: IXpertRole
+  // nodes: TXpertTeamNode[]
+  // connections: TXpertTeamConnection[]
+  // teams?: TXpertTeamGroup[]
 }
 
 export interface TXpertTeamConnection {

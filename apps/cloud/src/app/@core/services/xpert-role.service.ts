@@ -5,6 +5,7 @@ import { API_XPERT_ROLE } from '../constants/app.constants'
 import { IXpertRole, TXpertTeamDraft } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 import { toParams } from '@metad/ocap-angular/core'
+import { PaginationParams, toHttpParams } from '@metad/cloud/state'
 
 @Injectable({ providedIn: 'root' })
 export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> {
@@ -32,8 +33,8 @@ export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> 
     this.#refresh.next()
   }
 
-  getTeam(id: string) {
-    return this.httpClient.get<IXpertRole>(this.apiBaseUrl + `/${id}/team`)
+  getTeam(id: string, options?: PaginationParams<IXpertRole>) {
+    return this.httpClient.get<IXpertRole>(this.apiBaseUrl + `/${id}/team`, { params: toHttpParams(options)})
   }
 
   getVersions(id: string) {

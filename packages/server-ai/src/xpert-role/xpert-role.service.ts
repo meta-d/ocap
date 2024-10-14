@@ -1,10 +1,10 @@
 import { IUser, IXpertRole, TXpertTeamDraft } from '@metad/contracts'
 import { convertToUrlPath } from '@metad/server-common'
-import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { OptionParams, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
-import { assign } from 'lodash'
+import { assign, compact } from 'lodash'
 import { FindConditions, IsNull, Repository } from 'typeorm'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { XpertRolePublishCommand } from './commands'
@@ -71,8 +71,9 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 		})
 	}
 
-	async getTeam(id: string) {
-		const team = await this.findOne(id, { relations: ['followers', 'toolsets', 'knowledgebases'] })
+	async getTeam(id: string,  options?: OptionParams<XpertRole>) {
+		const { relations } = options ?? {}
+		const team = await this.findOne(id, { relations: compact([...(relations ?? []), 'followers', 'toolsets', 'knowledgebases']) })
 		if (!team.draft) {
 			const { items } = await this.findAll({
 				where: { workspaceId: team.workspaceId ?? IsNull(), teamRoleId: team.id },
@@ -150,5 +151,6 @@ function assembleXpertRole(role: IXpertRole, items: IXpertRole[], assembles: str
 		}
 	}
 
+	assembles.push(role.id)
 	return role
 }
