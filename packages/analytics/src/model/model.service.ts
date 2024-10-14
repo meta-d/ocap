@@ -1,5 +1,5 @@
 import { BusinessAreaRole, IUser } from '@metad/contracts'
-import { ITryRequest, REDIS_CLIENT, RequestContext, User } from '@metad/server-core'
+import { FindOptionsWhere, ITryRequest, REDIS_CLIENT, RequestContext, User } from '@metad/server-core'
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -48,7 +48,7 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	 */
 	protected findConditionsWithTenantByUser(
 		user: User
-	): FindConditions<SemanticModel>[] | FindConditions<SemanticModel> | ObjectLiteral | string {
+	): FindOptionsWhere<SemanticModel> {
 		const organizationId = RequestContext.getOrganizationId()
 		const organizationWhere = organizationId
 			? {

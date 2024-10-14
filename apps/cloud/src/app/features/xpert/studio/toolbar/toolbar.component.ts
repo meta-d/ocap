@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { XpertStudioComponent } from '../studio.component'
@@ -17,7 +17,8 @@ import { AppearanceDirective } from '@metad/ocap-angular/core'
     AppearanceDirective
   ],
   templateUrl: './toolbar.component.html',
-  styleUrl: './toolbar.component.scss'
+  styleUrl: './toolbar.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class XpertStudioToolbarComponent {
   readonly xpertStudioComponent = inject(XpertStudioComponent)

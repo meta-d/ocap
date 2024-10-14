@@ -61,9 +61,9 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 		const draft = xpertRole.draft
 		this.check(draft)
 
-		await this.repository.queryRunner.connect()
-		await this.repository.queryRunner.startTransaction()
-		try {
+		// await this.repository.queryRunner.connect()
+		// await this.repository.queryRunner.startTransaction()
+		// try {
 			// Back up the current version
 			if (currentVersion) {
 				await this.saveTeamVersion(xpertRole, version)
@@ -75,16 +75,16 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 
 			await this.publish(xpertRole, version, draft)
 
-			await this.repository.queryRunner.commitTransaction()
+			// await this.repository.queryRunner.commitTransaction()
 
 			return xpertRole
-		} catch (err) {
+		// } catch (err) {
 			// since we have errors lets rollback the changes we made
-			await this.repository.queryRunner.rollbackTransaction()
-		} finally {
+			// await this.repository.queryRunner.rollbackTransaction()
+		// } finally {
 			// you need to release a queryRunner which was manually instantiated
-			await this.repository.queryRunner.release()
-		}
+			// await this.repository.queryRunner.release()
+		// }
 
 		return null		
 	}
@@ -124,7 +124,9 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 		// Map old id to new backup id
 		const mapNew = {}
 		for await (const role of backupMembers) {
-			await this.saveTeamFollowerVersion(role, version, newTeam, backupMembers, mapNew)
+			if (role) {
+				await this.saveTeamFollowerVersion(role, version, newTeam, backupMembers, mapNew)
+			}
 		}
 
 		// Update backup new team followers relations
@@ -153,20 +155,18 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 	) {
 		const newfollowers = []
 		for await (const member of role.followers) {
-			if (mapNew[member.id]) {
-				newfollowers.push({ id: mapNew[member.id] })
-			} else if (member.workspaceId === role.workspaceId && member.teamRoleId === role.teamRoleId) {
+			if (!mapNew[member.id] && member.workspaceId === role.workspaceId && member.teamRoleId === role.teamRoleId) {
 				// Backup version if follower is same workspace and same team.
-				const index = members.findIndex((item) => item.id === member.id)
+				const index = members.findIndex((item) => item?.id === member.id)
 				if (index > -1 && members[index].id !== role.id) {
 					const _member = members[index]
 					members[index] = null
-					const newMember = await this.saveTeamFollowerVersion(_member, version, team, members, mapNew)
-					mapNew[_member.id] = newMember.id
+					await this.saveTeamFollowerVersion(_member, version, team, members, mapNew)
+				} else {
+					throw new NotFoundException(`Team ${team.title} 总的 Xpert ${role.title} 的成员 ${member.title} 在数据库记录中未找到`)
 				}
-			} else {
-				newfollowers.push({ id: member.id })
 			}
+			newfollowers.push({ id: mapNew[member.id] ?? member.id })
 		}
 
 		const oldRole = {
@@ -181,7 +181,11 @@ export class XpertRolePublishHandler implements ICommandHandler<XpertRolePublish
 		role.version = version
 		await this.roleService.save(role as XpertRole)
 		// backup old version
-		return await this.roleService.create(oldRole)
+		const backupRole = await this.roleService.create(oldRole)
+
+		mapNew[role.id] = backupRole.id
+
+		return backupRole
 	}
 
 	/**

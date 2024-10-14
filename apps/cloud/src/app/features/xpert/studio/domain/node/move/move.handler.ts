@@ -14,22 +14,10 @@ export class MoveNodeHandler implements IHandler<MoveNodeRequest> {
       if (!node) {
         throw new Error(`Team node with key ${node.key} not found`)
       }
-      node.position = request.position
-      // switch(node.type) {
-      //   case 'knowledge': {
-          
-      //     node.position = request.position
-      //     break
-      //   }
-      //   case 'role': {
-      //     const role = findXpertRole([...state.roles, state.team], node.key)
-      //     if (!role) {
-      //       throw new Error(`Xpert with key ${node.key} not found`)
-      //     }
-      //     role.position = request.position
-      //     break
-      //   }
-      // }
+      node.position = {
+        ...(node.position ?? {}),
+        ...request.position
+      }
 
       return { draft }
     })

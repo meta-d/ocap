@@ -1,8 +1,8 @@
-import { IPoint } from '@foblex/2d'
+import { IRect } from 'apps/cloud/src/app/@core'
 
 export class MoveNodeRequest {
   constructor(
     public readonly key: string,
-    public readonly position: IPoint
+    public readonly position: IRect
   ) {}
 }

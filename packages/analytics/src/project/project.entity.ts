@@ -11,7 +11,7 @@ import {
 } from '@metad/contracts'
 import { StorageFile, Tag, TenantOrganizationBaseEntity, User } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsOptional, IsString } from 'class-validator'
+import { IsDateString, IsOptional, IsString } from 'class-validator'
 import {
 	Column,
 	DeleteDateColumn,
@@ -43,11 +43,16 @@ export class Project extends TenantOrganizationBaseEntity implements IProject {
 	@Column({ nullable: true, default: ProjectStatusEnum.Progressing })
 	status?: ProjectStatusEnum
 
-	/**
-	 * Soft Delete
-	 */
-	@ApiPropertyOptional({ type: () => 'timestamptz' })
-	@DeleteDateColumn({ nullable: true })
+	// Soft Delete
+	@ApiPropertyOptional({
+		type: 'string',
+		format: 'date-time',
+		example: '2024-10-14T06:20:32.232Z'
+	})
+	@IsOptional()
+	@IsDateString()
+	// Soft delete column that records the date/time when the entity was soft-deleted
+	@DeleteDateColumn() // Indicates that this column is used for soft-delete
 	deletedAt?: Date
 
 	@ApiProperty({ type: () => User })

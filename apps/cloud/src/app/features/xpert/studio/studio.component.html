@@ -30,6 +30,7 @@
             fDragHandle
             [fNodePosition]="node.position"
             (fNodePositionChange)="moveNode($event, node.key)"
+            (fNodeSizeChange)="onSizeChange($event, node)"
             (mousedown)="onMouseDown($event)"
             (click)="onSelectNode($event, node)"
           >

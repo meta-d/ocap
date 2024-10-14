@@ -1,4 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { IUser } from '../user.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { IXpertToolset } from './xpert-toolset.model'
 import { IXpertWorkspace } from './xpert-workspace.model'
@@ -61,6 +62,13 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
    * 下属员工
    */
   // members?: IXpertRole[]
+
+  /**
+   * More configuration
+   */
+  options?: TXpertRoleOptions
+
+  // Many to many relationship
   /**
    * Followers: people who carry out the decisions made by the leader
    */
@@ -70,15 +78,13 @@ export interface IXpertRole extends IBasePerTenantAndOrganizationEntityModel {
    */
   toolsets?: IXpertToolset[]
   /**
-   * More configuration
-   */
-  options?: TXpertRoleOptions
-
-  // Many to many relationship
-  /**
-   * 有权限检索的知识库
+   * Knowledge base with permission to search
    */
   knowledgebases?: IKnowledgebase[]
+  /**
+   * The corresponding person in charge, whose has the authority to execute this digital expert
+   */
+  managers?: IUser[]
 }
 
 export type TXpertRoleOptions = {
@@ -116,7 +122,7 @@ export type TXpertTeamNodeType = 'role' | 'knowledge' | 'toolset'
 export type TXpertTeamNode = {
   key: string
   type: TXpertTeamNodeType
-  position: IPoint
+  position: IRect
   hash?: string
 } & (
   | {
@@ -136,6 +142,16 @@ export type TXpertTeamNode = {
 export interface IPoint {
   x: number
   y: number
+}
+
+export interface ISize {
+  width: number;
+  height: number;
+}
+
+
+export interface IRect extends IPoint, Partial<ISize> {
+  gravityCenter?: IPoint;
 }
 
 export interface TXpertTeamConnection {

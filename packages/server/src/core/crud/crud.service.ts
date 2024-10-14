@@ -6,6 +6,7 @@ import {
 	FindManyOptions,
 	FindOneOptions,
 	Repository,
+	SaveOptions,
 	SelectQueryBuilder,
 	UpdateResult
 } from 'typeorm';
@@ -13,13 +14,13 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { mergeMap } from 'rxjs/operators';
 import { of, throwError } from 'rxjs';
 import * as moment from 'moment';
-import { environment as env } from '@metad/server-config';
 import { BaseEntity } from '../entities/internal';
 import { ICrudService } from './icrud.service';
 import { IPagination } from '@metad/contracts';
 import { ITryRequest } from './try-request';
 import { filterQuery } from './query-builder';
 import { RequestContext } from '../context';
+import { FindOptionsWhere } from './FindOptionsWhere';
 
 export abstract class CrudService<T extends BaseEntity>
 	implements ICrudService<T> {
@@ -180,6 +181,22 @@ export abstract class CrudService<T extends BaseEntity>
 		return record;
 	}
 
+	/**
+	 * Finds first entity that matches given where condition.
+	 * If entity was not found in the database - returns null.
+	 *
+	 * @param options
+	 * @returns
+	 */
+	public async findOneByWhereOptions(options: FindOptionsWhere<T>): Promise<T | null> {
+		const record: T = await this.repository.findOne(options as FindOptionsWhere<T>);
+
+		if (!record) {
+			throw new NotFoundException(`The requested record was not found`);
+		}
+		return this.serialize(record);
+	}
+
 	public async create(entity: DeepPartial<T>, ...options: any[]): Promise<T> {
 		const obj = this.repository.create(entity);
 		// createBy user
@@ -247,6 +264,77 @@ export abstract class CrudService<T extends BaseEntity>
 		} catch (err) {
 			throw new NotFoundException(`The record was not found`, err);
 		}
+	}
+
+	/**
+	 * Softly deletes entities by a given criteria.
+	 * This method sets a flag or timestamp indicating the entity is considered deleted.
+	 * It does not actually remove the entity from the database, allowing for recovery or audit purposes.
+	 *
+	 * @param criteria - Entity ID or condition to identify which entities to soft-delete.
+	 * @param options - Additional options for the operation.
+	 * @returns {Promise<UpdateResult | DeleteResult>} - Result indicating success or failure.
+	 */
+	public async softDelete(
+		criteria: string | number | FindOptionsWhere<T>
+	): Promise<UpdateResult | T> {
+		try {
+			// Perform soft delete using TypeORM
+			return await this.repository.softDelete(criteria)
+		} catch (error) {
+			throw new NotFoundException(`The record was not found or could not be soft-deleted`, error);
+		}
+	}
+
+	/**
+	 * Softly removes an entity from the database.
+	 *
+	 * @param id - The unique identifier of the entity to be softly removed.
+	 * @param options - Optional parameters for finding the entity
+	 * @param saveOptions - Additional save options for the ORM operation
+	 * @returns A promise that resolves to the softly removed entity.
+	 */
+	public async softRemove(id: T['id'], options?: FindOneOptions<T>, saveOptions?: SaveOptions): Promise<T> {
+		try {
+			// Ensure the employee exists before attempting soft deletion
+			const entity = await this.findOneByIdString(id, options);
+			// TypeORM soft removes entities via its repository
+			return await this.repository.softRemove<DeepPartial<T>>(entity as DeepPartial<T>, saveOptions);
+		} catch (error) {
+			// If any error occurs, rethrow it as a NotFoundException with additional context.
+			throw new NotFoundException(`An error occurred during soft removal: ${error.message}`, error);
+		}
+	}
+
+	/**
+	 * Soft-recover a previously soft-deleted entity.
+	 *
+	 * Depending on the ORM, this method restores a soft-deleted entity by resetting its deletion indicator.
+	 *
+	 * @param entity - The soft-deleted entity to recover.
+	 * @param options - Optional settings for database save operations.
+	 * @returns A promise that resolves with the recovered entity.
+	 */
+	public async softRecover(id: T['id'], options?: FindOneOptions<T>, saveOptions?: SaveOptions): Promise<T> {
+		try {
+			// Ensure the entity exists before attempting soft recover
+			const entity = await this.findOneByIdString(id, options);
+			// Use TypeORM's recover method to restore the entity
+			return await this.repository.recover(entity as DeepPartial<T>, saveOptions);
+		} catch (error) {
+			// If any error occurs, rethrow it as a NotFoundException with additional context.
+			throw new NotFoundException(`An error occurred during restoring entity: ${error.message}`);
+		}
+	}
+
+	/**
+	 * Serializes the provided entity based on the ORM type.
+	 * @param entity The entity to be serialized.
+	 * @returns The serialized entity.
+	 */
+	protected serialize(entity: T): T {
+		// If using other ORM types, return the entity as is
+		return entity;
 	}
 
 	/**

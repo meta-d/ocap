@@ -1,13 +1,13 @@
-import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace, XpertRoleTypeEnum, TXpertTeamDraft } from '@metad/contracts'
+import { AiBusinessRole, IXpertRole, IXpertToolset, IKnowledgebase, TXpertRoleOptions, IXpertWorkspace, XpertRoleTypeEnum, TXpertTeamDraft, IUser } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsBoolean, IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, RelationId } from 'typeorm'
-import { TenantOrganizationBaseEntity } from '@metad/server-core'
+import { IsBoolean, IsDateString, IsJSON, IsOptional, IsString } from 'class-validator'
+import { Column, DeleteDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, RelationId } from 'typeorm'
+import { TenantOrganizationBaseEntity, User } from '@metad/server-core'
 import { Knowledgebase, XpertToolset, XpertWorkspace } from '../core/entities/internal'
 
 
 @Entity('xpert_role')
-@Index(['tenantId', 'organizationId', 'type', 'name', 'version', 'latest'], { unique: true })
+@Index(['tenantId', 'organizationId', 'type', 'name', 'version', 'latest', 'deletedAt'], { unique: true })
 export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRole {
 
 	@ApiPropertyOptional({ type: () => String })
@@ -88,6 +88,18 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
 	draft?: TXpertTeamDraft
+
+	// Soft Delete
+	@ApiPropertyOptional({
+		type: 'string',
+		format: 'date-time',
+		example: '2024-10-14T06:20:32.232Z'
+	})
+	@IsOptional()
+	@IsDateString()
+	// Soft delete column that records the date/time when the entity was soft-deleted
+	@DeleteDateColumn() // Indicates that this column is used for soft-delete
+	deletedAt?: Date
 
 	/*
     |--------------------------------------------------------------------------
@@ -180,4 +192,12 @@ export class XpertRole extends TenantOrganizationBaseEntity implements IXpertRol
 		name: 'xpert_role_toolset'
 	})
 	toolsets?: IXpertToolset[]
+
+	@ManyToMany(() => User, {
+		onUpdate: 'CASCADE',
+	})
+	@JoinTable({
+		name: 'xpert_role_manager'
+	})
+	managers?: IUser[]
 }

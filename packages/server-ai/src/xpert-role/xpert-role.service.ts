@@ -121,6 +121,18 @@ export class XpertRoleService extends TenantOrganizationAwareCrudService<XpertRo
 			latest: role.latest
 		}))
 	}
+	
+	async deleteXpert(id: string) {
+		const xpert = await this.findOne(id)
+
+		if (xpert.latest) {
+			// Delete all versions if it is latest version
+			return await this.softDelete({ name: xpert.name, deletedAt: IsNull() })
+		} else {
+			// Delete current version team
+			return await this.softDelete(xpert.id)
+		}
+	}
 }
 
 /**

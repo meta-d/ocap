@@ -161,7 +161,7 @@ export class ProjectController extends CrudController<Project> {
 	@HttpCode(HttpStatus.ACCEPTED)
 	@Delete(':id')
 	@UsePipes(new ValidationPipe({ whitelist: true }))
-	async delete(@Param('id', UUIDValidationPipe) projectId: string): Promise<UpdateResult> {
+	async delete(@Param('id', UUIDValidationPipe) projectId: string): Promise<Project | UpdateResult> {
 		return await this.projectService.softDelete(projectId)
 	}
 }

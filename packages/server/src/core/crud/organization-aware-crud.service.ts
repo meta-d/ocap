@@ -7,6 +7,7 @@ import { TenantOrganizationBaseEntity } from '../entities/internal'
 import { ICrudService } from './icrud.service'
 import { TenantAwareCrudService } from './tenant-aware-crud.service'
 import { ITryRequest } from './try-request'
+import { FindOptionsWhere } from './FindOptionsWhere'
 
 /**
  * This abstract class adds tenantId and organizationId to all query filters if a user is available in the current RequestContext
@@ -24,7 +25,7 @@ export abstract class TenantOrganizationAwareCrudService<
 
 	protected findConditionsWithTenantByUser(
 		user: User
-	): FindConditions<T>[] | FindConditions<T> | ObjectLiteral | string {
+	): FindOptionsWhere<T> {
 		const organizationId = RequestContext.getOrganizationId()
 		const organizationWhere = organizationId
 			? {
@@ -41,7 +42,7 @@ export abstract class TenantOrganizationAwareCrudService<
 				id: user.tenantId,
 			},
 			...organizationWhere,
-		}
+		} as FindOptionsWhere<T>
 	}
 
 	protected findConditionsWithTenant(
@@ -242,31 +243,6 @@ export abstract class TenantOrganizationAwareCrudService<
 			return super.create(entityWithTenant, ...options)
 		}
 		return super.create(entity, ...options)
-	}
-
-	/**
-	 * Soft Delete entity by id and current tenant id
-	 *
-	 * @param id entity id
-	 * @returns
-	 */
-	async softDelete(id: string, options?: IBasePerTenantAndOrganizationEntityModel): Promise<UpdateResult> {
-		const { organizationId } = options ?? {}
-		try {
-			await this.findOneByIdString(id, {
-				where: {
-					tenantId: RequestContext.currentTenantId(),
-					organizationId: organizationId ?? RequestContext.getOrganizationId()
-				}
-			});
-			return await this.repository.softDelete({
-				id,
-				tenantId: RequestContext.currentTenantId(),
-				organizationId: organizationId ?? RequestContext.getOrganizationId()
-			} as any);
-		} catch (error) {
-			throw new BadRequestException(error.message);
-		}
 	}
 
 	/**

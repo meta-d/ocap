@@ -1,6 +1,8 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, computed, inject, signal } from '@angular/core'
+import { ActivatedRoute, Router } from '@angular/router'
+import { nonBlank } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { getErrorMessage, ToastrService, XpertRoleService } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
@@ -9,7 +11,6 @@ import { sortBy } from 'lodash-es'
 import { getDateLocale } from '../../../../@core'
 import { XpertStudioApiService } from '../domain'
 import { XpertStudioComponent } from '../studio.component'
-import { ActivatedRoute, Router } from '@angular/router'
 
 @Component({
   selector: 'xpert-studio-header',
@@ -30,7 +31,10 @@ export class XpertStudioHeaderComponent {
   readonly team = computed(() => this.xpertStudioComponent.team())
   readonly version = computed(() => this.team()?.version)
   readonly latest = computed(() => this.team()?.latest)
-  readonly versions = computed(() => sortBy(this.xpertStudioComponent.versions(), 'version'))
+  readonly versions = computed(() => {
+    const versions = this.apiService.versions()?.filter(nonBlank)
+    return sortBy(versions, 'version')
+  })
   readonly draft = computed(() => this.apiService.draft())
   readonly unsaved = this.apiService.unsaved
   readonly draftSavedDate = computed(() => {
@@ -60,10 +64,12 @@ export class XpertStudioHeaderComponent {
           { Default: 'Published successfully' },
           `v${result.version}`
         )
+        this.publishing.set(false)
         this.apiService.refresh()
       },
       error: (error) => {
         this.#toastr.error(getErrorMessage(error))
+        this.publishing.set(false)
       }
     })
   }
@@ -73,6 +79,6 @@ export class XpertStudioHeaderComponent {
   }
 
   selectVersion(id: string) {
-    this.router.navigate(['..', id], {relativeTo: this.route})
+    this.router.navigate(['..', id], { relativeTo: this.route })
   }
 }

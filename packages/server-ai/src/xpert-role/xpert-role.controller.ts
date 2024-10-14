@@ -1,9 +1,12 @@
 import { TXpertTeamDraft } from '@metad/contracts'
-import { CrudController, ParseJsonPipe, RequestContext, TransformInterceptor } from '@metad/server-core'
+import { CrudController, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
 import {
 	Body,
 	Controller,
+	Delete,
 	Get,
+	HttpCode,
+	HttpStatus,
 	Logger,
 	Param,
 	Post,
@@ -11,10 +14,11 @@ import {
 	UseInterceptors
 } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { XpertRole } from './xpert-role.entity'
 import { XpertRoleService } from './xpert-role.service'
 import { XpertRolePublicDTO } from './dto'
+import { DeleteResult } from 'typeorm'
 
 @ApiTags('XpertRole')
 @ApiBearerAuth()
@@ -59,5 +63,22 @@ export class XpertRoleController extends CrudController<XpertRole> {
 	@Post(':id/publish')
 	async publish(@Param('id') id: string) {
 		return this.service.publish(id)
+	}
+
+	@ApiOperation({ summary: 'Delete record' })
+	@ApiResponse({
+		status: HttpStatus.NO_CONTENT,
+		description: 'The record has been successfully deleted'
+	})
+	@ApiResponse({
+		status: HttpStatus.NOT_FOUND,
+		description: 'Record not found'
+	})
+	@HttpCode(HttpStatus.ACCEPTED)
+	@Delete(':id')
+	async delete(@Param('id', UUIDValidationPipe) id: string, 
+		...options: any[]
+	): Promise<XpertRole | DeleteResult> {
+		return this.service.deleteXpert(id)
 	}
 }

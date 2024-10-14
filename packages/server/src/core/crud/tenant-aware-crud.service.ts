@@ -15,6 +15,7 @@ import { TenantBaseEntity, User } from '../entities/internal';
 import { CrudService } from './crud.service';
 import { ICrudService } from './icrud.service';
 import { ITryRequest } from './try-request';
+import { FindOptionsWhere } from './FindOptionsWhere';
 
 /**
  * This abstract class adds tenantId to all query filters if a user is available in the current RequestContext
@@ -32,12 +33,12 @@ export abstract class TenantAwareCrudService<T extends TenantBaseEntity>
 
 	protected findConditionsWithTenantByUser(
 		user: IUser		
-	): FindConditions<T>[] | FindConditions<T> | ObjectLiteral | string {		
+	): FindOptionsWhere<T> {		
 		return {
 					tenant: {
 						id: user.tenantId
 					}
-			  };
+			  } as FindOptionsWhere<T>;
 	}
 
 	protected findConditionsWithTenant(
@@ -226,6 +227,21 @@ export abstract class TenantAwareCrudService<T extends TenantBaseEntity>
 		);
 	}
 
+	/**
+	 * Finds first entity that matches given where condition with current tenant.
+	 * If entity was not found in the database - returns null.
+	 *
+	 * @param options
+	 * @returns
+	 */
+	public async findOneByWhereOptions(options: FindOptionsWhere<T>): Promise<T> {
+		const user = RequestContext.currentUser();
+		return await super.findOneByWhereOptions({
+			...options,
+			...this.findConditionsWithTenantByUser(user)
+		});
+	}
+
 	public async create(entity: DeepPartial<T>, ...options: any[]): Promise<T> {
 		const tenantId = RequestContext.currentTenantId();
 		if (tenantId) {
@@ -304,24 +320,39 @@ export abstract class TenantAwareCrudService<T extends TenantBaseEntity>
 	}
 
 	/**
-	 * Soft Delete entity by id and current tenant id
+	 * Softly deletes entities by a given criteria.
+	 * This method sets a flag or timestamp indicating the entity is considered deleted.
+	 * It does not actually remove the entity from the database, allowing for recovery or audit purposes.
 	 *
-	 * @param id entity id
-	 * @returns
+	 * @param criteria - Entity ID or complex query to identify which entity to soft-delete.
+	 * @param options - Additional options for the operation.
+	 * @returns {Promise<DeleteResult>} - Result indicating success or failure.
 	 */
-	async softDelete(id: string, options?: IBasePerTenantEntityModel): Promise<UpdateResult> {
+	public async softDelete(
+		criteria: string | number | FindOptionsWhere<T>,
+		options?: FindOneOptions<T>
+	): Promise<UpdateResult | T> {
 		try {
-			await this.findOneByIdString(id, {
-				where: {
-					tenantId: RequestContext.currentTenantId(),
-				}
-			});
-			return await this.repository.softDelete({
-				id,
-				tenantId: RequestContext.currentTenantId()
-			} as any);
-		} catch (error) {
-			throw new BadRequestException(error.message);
+			let record: T | null;
+
+			// If the criteria is a string, assume it's an ID and find the record by ID.
+			if (typeof criteria === 'string') {
+				record = await this.findOneByIdString(criteria, options);
+			} else {
+				// Otherwise, consider it a more complex query and find the record by those options.
+				record = await this.findOneByWhereOptions(criteria as FindOptionsWhere<T>);
+			}
+
+			// If no record is found, throw a NotFoundException.
+			if (!record) {
+				throw new NotFoundException(`The requested record was not found`);
+			}
+
+			// Proceed with the soft-delete operation from the superclass.
+			return await this.repository.softDelete(criteria);
+		} catch (err) {
+			// If any error occurs, rethrow it as a NotFoundException with additional context.
+			throw new NotFoundException(`The record was not found or could not be soft-deleted`, err);
 		}
 	}
 

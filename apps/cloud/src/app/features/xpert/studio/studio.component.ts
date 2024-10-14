@@ -16,7 +16,7 @@ import {
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { IPoint, PointExtensions } from '@foblex/2d'
+import { IPoint, IRect, PointExtensions } from '@foblex/2d'
 import {
   EFConnectionType,
   FCanvasComponent,
@@ -113,7 +113,6 @@ export class XpertStudioComponent {
 
   readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
-  readonly versions = computed(() => this.apiService.versions()?.filter(nonBlank))
   readonly nodes = computed(() => this.viewModel()?.nodes)
   readonly connections = computed(() => this.viewModel()?.connections)
 
@@ -187,6 +186,10 @@ export class XpertStudioComponent {
     this.isSingleSelection = event.connections.length + event.nodes.length === 1
     this.selectionService.setNodes(event.nodes)
     this.#cdr.markForCheck()
+  }
+
+  public onSizeChange(event: IRect, node: TXpertTeamNode) {
+    this.apiService.updateNode(node.key, {position: event})
   }
 
   private mousePosition = {
