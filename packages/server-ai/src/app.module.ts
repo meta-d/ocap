@@ -18,6 +18,7 @@ import { XpertToolModule } from './xpert-tool/index'
 import { XpertToolsetModule } from './xpert-toolset/index'
 import { XpertAgentModule } from './xpert-agent/index'
 import { XpertWorkspaceModule } from './xpert-workspace'
+import { XpertModule } from './xpert'
 
 @Module({
 	imports: [
@@ -34,6 +35,7 @@ import { XpertWorkspaceModule } from './xpert-workspace'
 		CopilotUserModule,
 		CopilotOrganizationModule,
 		GraphragModule,
+		XpertModule,
 		XpertAgentModule,
 		XpertRoleModule,
 		XpertToolModule,

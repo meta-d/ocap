@@ -3,6 +3,7 @@ import { IUser } from '../user.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { IXpertToolset } from './xpert-toolset.model'
 import { IXpertWorkspace } from './xpert-workspace.model'
+import { TXpertTeamDraft } from './xpert.model'
 
 /**
  * Expert role, business role for the xperts.
@@ -105,71 +106,4 @@ export type TXpertRoleOptions = {
 export enum XpertRoleTypeEnum {
   Agent = 'agent',
   Copilot = 'copilot'
-}
-
-// Xpert team draft types
-
-export type TXpertTeamDraft = {
-  team: IXpertRole
-
-  savedAt?: Date
-  nodes: TXpertTeamNode[]
-  connections: TXpertTeamConnection[]
-  teams?: TXpertTeamGroup[]
-}
-
-export type TXpertTeamNodeType = 'role' | 'knowledge' | 'toolset'
-
-export type TXpertTeamNode = {
-  key: string
-  type: TXpertTeamNodeType
-  position: IRect
-  hash?: string
-} & (
-  | {
-      type: 'role'
-      entity: IXpertRole
-    }
-  | {
-      type: 'knowledge'
-      entity: IKnowledgebase
-    }
-    | {
-      type: 'toolset'
-      entity: IXpertToolset
-    }
-)
-
-export interface IPoint {
-  x: number
-  y: number
-}
-
-export interface ISize {
-  width: number;
-  height: number;
-}
-
-
-export interface IRect extends IPoint, Partial<ISize> {
-  gravityCenter?: IPoint;
-}
-
-export type TXpertTeamGroup = {
-  id: string
-  title: string
-  position: IPoint
-  size?: ISize
-  parentId?: string
-  team: IXpertRole
-  // nodes: TXpertTeamNode[]
-  // connections: TXpertTeamConnection[]
-  // teams?: TXpertTeamGroup[]
-}
-
-export interface TXpertTeamConnection {
-  key: string
-  from: string
-  to: string
-  type: TXpertTeamNodeType
 }

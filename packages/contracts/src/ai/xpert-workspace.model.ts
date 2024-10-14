@@ -1,5 +1,6 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IUser } from '../user.model'
+import { IXpert } from './xpert.model'
 
 /**
  * Expert Workspace
@@ -7,14 +8,17 @@ import { IUser } from '../user.model'
 export interface IXpertWorkspace extends IBasePerTenantAndOrganizationEntityModel {
   name: string
   description?: string
+  status: TXpertWorkspaceStatus
+  settings?: TXpertWorkspaceSettings
 
+  // Many to one
   ownerId: string
   owner?: IUser
+
+  // One to many
+  xperts?: IXpert[]
+
   members?: IUser[]
-
-  status: TXpertWorkspaceStatus
-
-  settings?: TXpertWorkspaceSettings
 }
 
 export type TXpertWorkspaceSettings = {

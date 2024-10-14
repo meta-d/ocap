@@ -8,6 +8,7 @@ import {
 	CopilotUser,
 	Knowledgebase,
 	KnowledgeDocument,
+	Xpert,
 	XpertAgent,
 	XpertRole,
 	XpertTool,
@@ -25,9 +26,10 @@ export const ALL_AI_ENTITIES = [
 	Knowledgebase,
 	KnowledgeDocument,
 	ChatConversation,
+	Xpert,
 	XpertAgent,
 	XpertRole,
 	XpertTool,
 	XpertToolset,
-	XpertWorkspace
+	XpertWorkspace,
 ]
