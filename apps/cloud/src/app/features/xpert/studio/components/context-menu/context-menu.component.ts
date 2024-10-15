@@ -1,6 +1,6 @@
 import { CdkMenu, CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, inject, TemplateRef, ViewChild } from '@angular/core'
+import { ChangeDetectorRef, Component, effect, inject, TemplateRef, ViewChild } from '@angular/core'
 import {MatTabsModule} from '@angular/material/tabs'
 import { Subscription } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
@@ -10,12 +10,13 @@ import { XpertStudioKnowledgeMenuComponent } from '../knowledge-menu/knowledge.c
 import { XpertStudioToolsetMenuComponent } from '../toolset-menu/toolset.component'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { IXpertRole } from 'apps/cloud/src/app/@core'
+import { XpertInlineProfileComponent } from 'apps/cloud/src/app/@shared/xpert'
 
 @Component({
   selector: 'xpert-studio-context-menu',
   exportAs: 'menuComponent',
   standalone: true,
-  imports: [CommonModule, CdkMenuModule, MatTabsModule, XpertStudioKnowledgeMenuComponent, XpertStudioToolsetMenuComponent],
+  imports: [CommonModule, CdkMenuModule, MatTabsModule, XpertStudioKnowledgeMenuComponent, XpertStudioToolsetMenuComponent, XpertInlineProfileComponent],
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.scss'
 })
@@ -41,7 +42,8 @@ export class XpertStudioContextMenuComponent {
 
   public node: string | null = null
 
-  readonly teams = toSignal(this.apiService.teams$)
+  readonly collaborators$ = this.apiService.collaborators$
+
 
   public ngOnInit(): void {
     this.subscriptions.add(this.subscribeToSelectionChanges())
@@ -67,10 +69,9 @@ export class XpertStudioContextMenuComponent {
     this.apiService.createAgent(this.root.contextMenuPosition)
   }
 
-  public addTeam(team: IXpertRole): void {
+  public addCollaborator(xpert: IXpertRole): void {
     // menu.menuStack.closeAll()
-    console.log(team)
-    this.apiService.createTeam(this.root.contextMenuPosition, team)
+    this.apiService.createCollaborator(this.root.contextMenuPosition, xpert)
   }
 
   public deleteNode(menu: CdkMenu, node: string): void {

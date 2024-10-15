@@ -17,9 +17,10 @@ export class XpertWorkspaceService extends OrganizationBaseCrudService<IXpertWor
 }
 
 export class XpertWorkspaceBaseCrudService<T> extends OrganizationBaseCrudService<T> {
-  getAllByWorkspace(workspace: IXpertWorkspace, options?: PaginationParams<T>) {
+  getAllByWorkspace(workspace: IXpertWorkspace, options?: PaginationParams<T>, published?: boolean) {
+    const params = toHttpParams(options)
     return this.httpClient.get<{ items: T[] }>(`${this.apiBaseUrl}/by-workspace/${workspace?.id}`, {
-      params: toHttpParams(options)
+      params: params.append('published', published)
     })
   }
 }

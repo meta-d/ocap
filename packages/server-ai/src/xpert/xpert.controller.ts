@@ -1,5 +1,5 @@
 import { TXpertTeamDraft } from '@metad/contracts'
-import { CrudController, OptionParams, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
+import { CrudController, OptionParams, PaginationParams, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
 import {
 	Body,
 	Controller,
@@ -34,8 +34,16 @@ export class XpertController extends CrudController<Xpert> {
 	}
 
 	@Get('by-workspace/:id')
-	async getAllByWorkspace(@Param('id') workspaceId: string, @Query('data', ParseJsonPipe) data: any) {
-		return this.service.getAllByWorkspace(workspaceId, data, RequestContext.currentUser())
+	async getAllByWorkspace(
+		@Param('id') workspaceId: string,
+		@Query('data', ParseJsonPipe) data: PaginationParams<Xpert>,
+		@Query('published') published?: boolean
+	) {
+		const result = await this.service.getAllByWorkspace(workspaceId, data, published, RequestContext.currentUser())
+		return {
+			...result,
+			items: result.items.map((item) => new XpertPublicDTO(item))
+		}
 	}
 	@Get('validate')
 	async validateTitle(@Query('title') title: string) {

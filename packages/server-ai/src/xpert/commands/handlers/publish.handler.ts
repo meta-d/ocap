@@ -1,12 +1,13 @@
-import { IXpert, IXpertAgent, TXpertTeamDraft, TXpertTeamNode } from '@metad/contracts'
+import { IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '@metad/contracts'
 import { omit, pick } from '@metad/server-common'
 import { BadRequestException, HttpException, Logger, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { IsNull, Not, Repository } from 'typeorm'
+import { IsNull } from 'typeorm'
 import { Xpert } from '../../xpert.entity'
 import { XpertService } from '../../xpert.service'
 import { XpertPublishCommand } from '../publish.command'
 import { XpertAgentService } from '../../../xpert-agent'
+import { uniq } from 'lodash'
 
 @CommandHandler(XpertPublishCommand)
 export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand> {
@@ -26,6 +27,8 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		if (!xpert.draft) {
 			throw new NotFoundException(`No draft found on Xpert '${xpert.name}'`)
 		}
+
+		this.#logger.verbose(`Draft of xpert '${xpert.name}':\n${JSON.stringify(xpert.draft, null, 2)}`)
 
 		const { items: allVersionXperts } = await this.xpertService.findAll({
 			where: {
@@ -68,10 +71,8 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 				await this.saveTeamVersion(xpert, version)
 			}
 
-			await this.publish(xpert, version, draft)
+			return await this.publish(xpert, version, draft)
 		// 	// await this.repository.queryRunner.commitTransaction()
-
-			return xpert
 		// // } catch (err) {
 		// 	// since we have errors lets rollback the changes we made
 		// 	// await this.repository.queryRunner.rollbackTransaction()
@@ -125,12 +126,22 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 	 * @param draft Xpert draft
 	 */
     async publish(xpert: Xpert, version: string, draft: TXpertTeamDraft) {
+		this.#logger.debug(`Publish Xpert '${xpert.name}' to new version '${version}'`)
+
 		const oldAgents = xpert.agents
 
 		// CURD Agents
 		const newAgents = []
 		const agentNodes = draft.nodes.filter((node) => node.type === 'agent') as (TXpertTeamNode & {type: 'agent'})[]
+		const totalToolsetIds = []
+		const totalKnowledgebaseIds = []
 		for await (const node of agentNodes) {
+			// Collect toolsetIds
+			const toolsetIds = draft.connections.filter((_) => _.type === 'toolset' && _.from === node.key).map((_) => _.to)
+			const knowledgebaseIds = draft.connections.filter((_) => _.type === 'knowledge' && _.from === node.key).map((_) => _.to)
+			totalToolsetIds.push(...toolsetIds)
+			totalKnowledgebaseIds.push(...knowledgebaseIds)
+
 			const oldAgent = oldAgents.find((item) => item.key === node.key)
 			// Calc the leader of agent
 			const conn = draft.connections.find((_) => _.type === 'agent' && _.to === node.key)
@@ -138,23 +149,28 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 			if (oldAgent) {
 				if (oldAgent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
 					throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
-				} else if (oldAgent.updatedAt.toISOString() < `${node.entity.updatedAt}`) {
+				} else {
 					// Update xpert agent
-					await this.xpertAgentService.update(oldAgent.id, {
+					const entity = {
 						...pickXpertAgent(node.entity),
-						leaderKey: conn?.from
-					})
+						leaderKey: conn?.from,
+						toolsetIds,
+						knowledgebaseIds
+					}
+					this.#logger.verbose(`Update xpert team agent (name/key='${oldAgent.name || oldAgent.key}', id='${oldAgent.id}') with value:\n${JSON.stringify(entity, null, 2)}`)
+					await this.xpertAgentService.update(oldAgent.id, entity)
 				}
 				newAgents.push(oldAgent)
 			} else if (node.key === xpert.agent.key) {
-				const oldAgent = xpert.agent
-				if (oldAgent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
+				if (xpert.agent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
 					throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
-				} else if (oldAgent.updatedAt.toISOString() < `${node.entity.updatedAt}`) {
-					// Update xpert agent
-					await this.xpertAgentService.update(oldAgent.id, {
-						...pickXpertAgent(node.entity),
-					})
+				}
+				// Update primary agent when update xpert through OneToOne relationship
+				xpert.agent = {
+					...xpert.agent,
+					...pickXpertAgent(node.entity),
+					toolsetIds,
+					knowledgebaseIds
 				}
 			} else {
 				// Create new xpert agent
@@ -164,7 +180,9 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 					tenantId: xpert.tenantId,
 					organizationId: xpert.organizationId,
 					teamId: xpert.id,
-					leaderKey: conn?.from
+					leaderKey: conn?.from,
+					toolsetIds,
+					knowledgebaseIds
 				})
 				newAgents.push(newAgent)
 			}
@@ -181,163 +199,20 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		xpert.version = version
 		xpert.draft = null
 		xpert.publishAt = new Date()
+		xpert.active = true
 		xpert.agents = newAgents
+		xpert.toolsets = uniq(totalToolsetIds).map((id) => ({id} as IXpertToolset))
+		xpert.knowledgebases = uniq(totalKnowledgebaseIds).map((id) => ({id} as IKnowledgebase))
+		// Recording graph node positions
+		xpert.options ??= {}
+		draft.nodes.forEach((node) => {
+			xpert.options[node.type] ??= {}
+			xpert.options[node.type][node.key] ??= {}
+			xpert.options[node.type][node.key].position = node.position
+		})
+
 		return await this.xpertService.save(xpert)
 	}
-
-	// /**
-	//  * Backup xpert, backup followers firstly before backup xpert self.
-	//  * 
-	//  * @param role Xpert
-	//  * @param version New version
-	//  * @param team Team
-	//  * @param members All old members
-	//  * @param mapNew Store the new backup members
-	//  * @returns 
-	//  */
-	// async saveTeamFollowerVersion(
-	// 	role: IXpert,
-	// 	version: string,
-	// 	team: IXpert,
-	// 	members: IXpert[],
-	// 	mapNew: Record<string, string>
-	// ) {
-	// 	const newfollowers = []
-	// 	for await (const member of role.followers) {
-	// 		if (!mapNew[member.id] && member.workspaceId === role.workspaceId && member.teamRoleId === role.teamRoleId) {
-	// 			// Backup version if follower is same workspace and same team.
-	// 			const index = members.findIndex((item) => item?.id === member.id)
-	// 			if (index > -1 && members[index].id !== role.id) {
-	// 				const _member = members[index]
-	// 				members[index] = null
-	// 				await this.saveTeamFollowerVersion(_member, version, team, members, mapNew)
-	// 			} else {
-	// 				throw new NotFoundException(`Team ${team.title} 总的 Xpert ${role.title} 的成员 ${member.title} 在数据库记录中未找到`)
-	// 			}
-	// 		}
-	// 		newfollowers.push({ id: mapNew[member.id] ?? member.id })
-	// 	}
-
-	// 	const oldRole = {
-	// 		...omit(role, 'id'),
-	// 		latest: false,
-	// 		teamRoleId: team.id,
-	// 		followers: newfollowers,
-	// 		draft: null
-	// 	}
-
-	// 	// Update to new version, leaving space for the old version as a backup
-	// 	role.version = version
-	// 	await this.roleService.save(role as Xpert)
-	// 	// backup old version
-	// 	const backupRole = await this.roleService.create(oldRole)
-
-	// 	mapNew[role.id] = backupRole.id
-
-	// 	return backupRole
-	// }
-
-	// /**
-	//  * Publish draft of team to new version
-	//  * 
-	//  * @param team Team (leader)
-	//  * @param version New version
-	//  * @param draft Team draft
-	//  */
-    // async publish(team: IXpert, version: string, draft: TXpertTeamDraft) {
-	// 	// All followers in this team
-	// 	const { items } = await this.roleService.findAll({
-	// 		where: {
-	// 			id: Not(team.id),
-	// 			workspaceId: team.workspaceId ?? IsNull(),
-	// 			teamRoleId: team.id,
-	// 			version: version
-	// 		},
-	// 		relations: ['followers']
-	// 	})
-
-	// 	// CURD followers
-	// 	const roleNodes = draft.nodes.filter((node) => node.type === 'role') as (TXpertTeamNode & {type: 'role'})[]
-	// 	const rolesMap = {}
-	// 	for await (const node of roleNodes) {
-	// 		if (!node.entity.id) {
-	// 			const entity = await this.roleService.create({
-	// 				...node.entity,
-	// 				version,
-	// 				teamRoleId: team.id,
-	// 				workspaceId: team.workspaceId,
-	// 			})
-	// 			rolesMap[node.key] = {
-	// 				node,
-	// 				entity
-	// 			}
-	// 		} else {
-	// 			let entity = null
-	// 			if (node.entity.id === team.id) {
-	// 				// Is team leader
-	// 				entity = team
-	// 				assign(
-	// 					entity,
-	// 					pick(
-	// 						draft.team,
-	// 						'title',
-	// 						'titleCN',
-	// 						'description',
-	// 						'prompt',
-	// 						'starters',
-	// 						'avatar',
-	// 						'options',
-	// 					)
-	// 				)
-	// 			} else if (node.entity.teamRoleId === team.id) {
-	// 				entity = await this.roleService.findOne(node.entity.id)
-	// 				assign(
-	// 					entity, 
-	// 					pick(
-	// 						node.entity,
-	// 						'title',
-	// 						'titleCN',
-	// 						'description',
-	// 						'prompt',
-	// 						'starters',
-	// 						'avatar',
-	// 						'options',
-	// 					)
-	// 				)
-	// 			}
-				
-	// 			if (entity) {
-	// 				entity.teamRoleId = team.id
-	// 				entity.version = version
-	// 				await this.roleService.save(entity)
-	// 				rolesMap[node.key] = {
-	// 					node,
-	// 					entity
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	// Delete followers
-	// 	for await (const oldEntity of items) {
-	// 		if (!rolesMap[oldEntity.id]) {
-	// 			await this.roleService.delete(oldEntity.id)
-	// 		}
-	// 	}
-
-	// 	// Update relations
-	// 	for await (const key of Object.keys(rolesMap)) {
-	// 		const { node, entity } = rolesMap[key]
-	// 		entity.followers = draft.connections.filter((conn) => conn.type === 'role' && conn.from === node.key)
-	// 										.map((conn) => rolesMap[conn.to]?.entity).filter(nonNullable)
-	// 		entity.knowledgebases = draft.connections.filter((conn) => conn.type === 'knowledge' && conn.from === node.key)
-	// 										.map((conn) => draft.nodes.find((_) => _.type === 'knowledge' && _.key === conn.to)?.entity)
-	// 										.filter(nonNullable)
-	// 		entity.toolsets = draft.connections.filter((conn) => conn.type === 'toolset' && conn.from === node.key)
-	// 										.map((conn) => draft.nodes.find((_) => _.type === 'toolset' && _.key === conn.to)?.entity)
-	// 										.filter(nonNullable)
-	// 		await this.roleService.save(entity)
-	// 	}
-	// }
 
 	check(draft: TXpertTeamDraft) {
 		// Check all nodes have been connected

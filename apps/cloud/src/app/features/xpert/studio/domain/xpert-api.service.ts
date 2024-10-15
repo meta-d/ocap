@@ -82,12 +82,13 @@ export class XpertStudioApiService {
   )
   readonly workspace = computed(() => this.team()?.workspace, { equal: (a, b) => a?.id === b?.id})
 
-  readonly teams$ = toObservable(this.team).pipe(
+  readonly collaborators$ = toObservable(this.team).pipe(
     filter(nonNullable),
     map((team) => team?.workspace),
     distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
-    switchMap((workspace) => this.xpertRoleService.getAllByWorkspace(workspace, {where: {latest: true}})),
-    map(({items}) => items.filter((_) => _.id !== this.team().id))
+    switchMap((workspace) => this.xpertRoleService.getAllByWorkspace(workspace, {where: {latest: true}}, true)),
+    map(({items}) => items.filter((_) => _.id !== this.team().id)),
+    shareReplay(1)
   )
 
   private saveDraftSub = this.#refresh$
@@ -218,7 +219,7 @@ export class XpertStudioApiService {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('agent', position))
     this.#reload.next(EReloadReason.AGENT_CREATED)
   }
-  public createTeam(position: IPoint, team: IXpert) {
+  public createCollaborator(position: IPoint, team: IXpert) {
     new CreateTeamHandler(this.store).handle(new CreateTeamRequest(position, team))
     this.#reload.next(EReloadReason.TEAM_ADDED)
   }

@@ -1,19 +1,39 @@
 import { IHandler } from '@foblex/mediator'
-import { IXpertRole, TXpertTeamConnection } from '../../../../../../@core/types'
+import { IXpertAgent, IXpertRole, TXpertTeamConnection } from '../../../../../../@core/types'
 
 export class ToConnectionViewModelHandler implements IHandler<void, TXpertTeamConnection[]> {
   constructor(private team: IXpertRole) {}
 
   public handle(): TXpertTeamConnection[] {
-    return handleConntections(this.team)
+    const xpert = this.team
+    const connections: TXpertTeamConnection[] = []
+
+    connections.push(...createAgentConnections(xpert.agent))
+    for (const agent of xpert.agents ?? []) {
+      connections.push(...createAgentConnections(agent))
+    }
+
+    return connections
   }
 }
 
-function handleConntections(xpert: IXpertRole) {
-  const connections: TXpertTeamConnection[] = []
-  xpert.knowledgebases?.forEach((_) => {
-    const from = xpert.agent.key
-    const to = _.id
+function createAgentConnections(agent: IXpertAgent) {
+  const connections = []
+  const from = agent.leaderKey
+  const to = agent.key
+  if (from && to) {
+    connections.push({
+      type: 'agent',
+      key: from + '/' + to,
+      from,
+      to
+    })
+  }
+
+  // knowledgebases
+  agent.knowledgebaseIds?.forEach((knowledgebaseId) => {
+    const from = agent.key
+    const to = knowledgebaseId
     connections.push({
       type: 'knowledge',
       key: from + '/' + to,
@@ -21,9 +41,11 @@ function handleConntections(xpert: IXpertRole) {
       to
     })
   })
-  xpert.toolsets?.forEach((_) => {
-    const from = xpert.agent.key
-    const to = _.id
+
+  // toolsets
+  agent.toolsetIds?.forEach((toolsetId) => {
+    const from = agent.key
+    const to = toolsetId
     connections.push({
       type: 'toolset',
       key: from + '/' + to,
@@ -31,19 +53,6 @@ function handleConntections(xpert: IXpertRole) {
       to
     })
   })
-
-  for (const agent of xpert.agents ?? []) {
-    const from = agent.leaderKey
-    const to = agent.key
-    if (from && to) {
-      connections.push({
-        type: 'agent',
-        key: from + '/' + to,
-        from,
-        to
-      })
-    }
-  }
 
   return connections
 }

@@ -45,5 +45,4 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
 
 export type TXpertAgentOptions = {
   //
-  position?: IPoint
 }

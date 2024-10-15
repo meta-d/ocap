@@ -84,7 +84,15 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
 }
 
 export type TXpertOptions = {
-  //
+  knowledge?: Record<string, {
+    position?: IPoint
+  }>
+  toolset?: Record<string, {
+    position?: IPoint
+  }>
+  agent?: Record<string, {
+    position?: IPoint
+  }>
 }
 
 export enum XpertTypeEnum {

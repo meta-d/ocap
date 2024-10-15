@@ -1,6 +1,5 @@
 import { IHandler } from '@foblex/mediator'
-import { IXpertRole, TXpertTeamNode, TXpertTeamNodeType } from 'apps/cloud/src/app/@core'
-import { uniqBy } from 'lodash-es'
+import { IXpertRole, TXpertTeamNode } from 'apps/cloud/src/app/@core'
 
 
 export class ToNodeViewModelHandler implements IHandler<void, TXpertTeamNode[]> {
@@ -13,77 +12,31 @@ export class ToNodeViewModelHandler implements IHandler<void, TXpertTeamNode[]> 
       return {
         type: 'agent',
         key: _.key,
-        position: _.options?.position,
+        position: this.team.options?.agent?.[_.key]?.position,
         entity: _
       } as TXpertTeamNode
     }))
 
-    // nodes.push(...[this.team, ...handleRoles(this.team)].map((x) => {
-    //   return {
-    //     type: 'role',
-    //     key: x.id,
-    //     position: x.position,
-    //     entity: x,
-    //   }
-    // }))
+    // knowledgebases
+    nodes.push(...(this.team.knowledgebases ?? []).map((x) => {
+      return {
+        key: x.id,
+        type: 'knowledge',
+        position: this.team.options?.knowledge?.[x.id]?.position,
+        entity: x,
+      } as TXpertTeamNode
+    }))
 
-    // // knowledgebases
-    // const knowledgebases = [...(this.team.knowledgebases ?? [])]
-    // knowledgebases.push(...handleKnowledgebases(this.team))
-    // nodes.push(...uniqBy(knowledgebases, 'id').map((x) => {
-    //   return {
-    //     key: x.id,
-    //     type: 'knowledge',
-    //     position: null,
-    //     entity: x,
-    //   }
-    // }))
-
-    // // Toolsets
-    // const toolsets = [...(this.team.toolsets ?? [])]
-    // toolsets.push(...handleToolsets(this.team))
-    // nodes.push(...uniqBy(toolsets, 'id').map((x) => {
-    //   return {
-    //     key: x.id,
-    //     type: 'toolset',
-    //     position: null,
-    //     entity: x,
-    //   }
-    // }))
+    // Toolsets
+    nodes.push(...(this.team.toolsets ?? []).map((x) => {
+      return {
+        key: x.id,
+        type: 'toolset',
+        position: this.team.options?.toolset?.[x.id]?.position,
+        entity: x,
+      } as TXpertTeamNode
+    }))
 
     return nodes
   }
 }
-
-// function handleRoles(role: IXpertRole) {
-//   const roles = []
-//   for (const member of role.followers ?? []) {
-//     roles.push(member)
-//     if (member.followers) {
-//       roles.push(...handleRoles(member))
-//     }
-//   }
-//   return roles
-// }
-
-// function handleKnowledgebases(role: IXpertRole) {
-//   const items = []
-//   for (const member of role.followers ?? []) {
-//     items.push(...(member.knowledgebases ?? []))
-//     if (member.followers) {
-//       items.push(...handleKnowledgebases(member))
-//     }
-//   }
-//   return items
-// }
-
-// function handleToolsets(role: IXpertRole) {
-//   const items = []
-//   for (const member of role.followers ?? []) {
-//     items.push(...(member.toolsets ?? []))
-//     if (member.followers) {
-//       items.push(...handleToolsets(member))
-//     }
-//   }
-//   return items
-// }

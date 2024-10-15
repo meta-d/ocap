@@ -32,8 +32,10 @@
 
 <ng-template #teamsMenu>
   <div cdkMenu class="ngm-cdk-menu flex flex-col">
-    @for (team of teams(); track team.id) {
-      <div cdkMenuItem class="ngm-cdk-menu-item" (click)="addTeam(team)">{{team.title}}</div>
+    @for (xpert of collaborators$ | async; track xpert.id) {
+      <div cdkMenuItem class="ngm-cdk-menu-item" (click)="addCollaborator(xpert)">
+        <xpert-inline-profile [xpert]="xpert" />
+      </div>
     }
   </div>
 </ng-template>

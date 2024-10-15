@@ -1,11 +1,11 @@
-import { IUser, IXpert, TXpertTeamDraft } from '@metad/contracts'
+import { IUser, TXpertTeamDraft } from '@metad/contracts'
 import { convertToUrlPath } from '@metad/server-common'
-import { OptionParams, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { OptionParams, PaginationParams, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { assign, compact } from 'lodash'
-import { FindConditions, IsNull, Repository } from 'typeorm'
+import { Any, FindConditions, IsNull, Not, Repository } from 'typeorm'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { XpertPublishCommand } from './commands'
 import { Xpert } from './xpert.entity'
@@ -41,7 +41,7 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 		return items
 	}
 
-	async getAllByWorkspace(workspaceId: string, data, user: IUser) {
+	async getAllByWorkspace(workspaceId: string, data: PaginationParams<Xpert>, published: boolean, user: IUser) {
 		const { relations, order, take } = data ?? {}
 		let { where } = data ?? {}
 		where = where ?? {}
@@ -49,7 +49,7 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 			where = {
 				...(<FindConditions<Xpert>>where),
 				workspaceId: IsNull(),
-				createdById: user.id
+				createdById: user.id,
 			}
 		} else {
 			const workspace = await this.queryBus.execute(new GetXpertWorkspaceQuery(user, { id: workspaceId }))
@@ -61,6 +61,9 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 				...(<FindConditions<Xpert>>where),
 				workspaceId: workspaceId
 			}
+		}
+		if (published) {
+			where.version = Not(IsNull())
 		}
 
 		return this.findAll({
