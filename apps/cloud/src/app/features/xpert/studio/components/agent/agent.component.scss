@@ -8,7 +8,20 @@
     border-radius: 0;
     width: 3px;
     height: 10px;
-    border: none;
+    // border: none;
+    @apply bg-blue-500;
+  }
+}
+
+.node-output-bottom {
+  .f-component.f-node-output {
+    position: relative;
+    bottom: 0;
+    left: initial;
+    border-radius: 0;
+    width: 10px;
+    height: 3px;
+    // border: none;
     @apply bg-blue-500;
   }
 }

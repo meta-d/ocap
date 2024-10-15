@@ -17,7 +17,7 @@
         <f-connection-for-create></f-connection-for-create>
         <f-snap-connection fType="bezier" [fSnapThreshold]="100"></f-snap-connection>
         @for (connection of connections(); track connection.key) {
-          <f-connection [fType]="connection.type==='agent' ? EFConnectionType.BEZIER : EFConnectionType.STRAIGHT"
+          <f-connection [fType]="connection.type==='agent' || connection.type==='xpert' ? EFConnectionType.BEZIER : EFConnectionType.STRAIGHT"
             [fReassignDisabled]="false"
             [fOutputId]="connection.from + '/' + connection.type"
             [fInputId]="connection.to">
@@ -27,8 +27,10 @@
         @for (node of nodes(); track node.key + node.hash) {
           <div class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
             fNode [fNodeId]="node.key"
+            [fNodeParentId]="node.parentId"
             fDragHandle
             [fNodePosition]="node.position"
+            [fNodeSize]="node.size"
             (fNodePositionChange)="moveNode($event, node.key)"
             (fNodeSizeChange)="onSizeChange($event, node)"
             (mousedown)="onMouseDown($event)"
@@ -36,7 +38,7 @@
           >
           @switch (node.type) {
             @case('agent') {
-              <xpert-studio-node-agent [node]="node" [isRoot]="rootAgent().id === node.key" class=""/>
+              <xpert-studio-node-agent [node]="node" [isRoot]="!!node.entity.xpertId" class=""/>
             }
             @case('knowledge') {
               <xpert-studio-node-knowledge [node]="node" class=""/>
@@ -48,27 +50,31 @@
           </div>
         }
 
-        @for (group of teams(); track group.id) {
-          <div fGroup [fGroupId]="group.id" [fGroupParentId]="group.parentId" [fGroupPosition]="group.position"
-            [fGroupSize]="group.size" fDragHandle>
-            <div class="group-title">{{ group.title }}</div>
+        @for (group of xperts(); track group.key) {
+          <div fGroup [fGroupId]="group.key" [fGroupParentId]="group.parentId" [fGroupPosition]="group.position"
+            [fGroupSize]="group.size" fDragHandle
+            (fGroupPositionChange)="moveXpertGroup($event, group.key)"
+            (fGroupSizeChange)="resizeXpertGroup($event, group.key)"
+          >
+            <div class="group-title">{{ group.entity.title }}</div>
             <div fResizeHandle [fResizeHandleType]="eResizeHandleType.LEFT_TOP"></div>
             <div fResizeHandle [fResizeHandleType]="eResizeHandleType.RIGHT_TOP"></div>
             <div fResizeHandle [fResizeHandleType]="eResizeHandleType.LEFT_BOTTOM"></div>
             <div fResizeHandle [fResizeHandleType]="eResizeHandleType.RIGHT_BOTTOM"></div>
 
-            <div fNodeInput [fInputId]="group.id" fInputConnectableSide="top" class="top"></div>
-          </div>
-        }
+            <div fNodeInput [fInputId]="group.key" fInputConnectableSide="top" class="top"></div>
 
-        @for (group of teams(); track group.id) {
-          <div class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
-            fNode [fNodeId]="group.team.id"
-            fDragHandle
-            [fNodeParentId]="group.id"
-            [fNodePosition]="group.position"
-          >
-            <xpert-studio-node-agent [node]="{key: group.team.id, type: 'agent', entity: group.agent, position: null}" [isRoot]="true" class=""/>
+            <div class="absolute right-1 top-1 flex items-center p-0.5 bg-white rounded-lg border-[0.5px] border-gray-100 shadow-xs text-gray-500">
+              <div class="flex items-center justify-center w-6 h-6 rounded-md cursor-pointer
+                hover:bg-black/5"
+                (click)="expandXpertTeam(group)">
+                @if (group.expanded) {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9995 13.4995 16.9493 18.4493 15.535 19.8635 12.9995 17.3279 12.9995 22.9995H10.9995L10.9995 17.3279 8.46646 19.861 7.05225 18.4468 11.9995 13.4995ZM10.9995.999512 10.9995 6.67035 8.46451 4.13535 7.05029 5.54956 12 10.4995 16.9497 5.54977 15.5355 4.13555 12.9995 6.67157V.999512L10.9995.999512Z"></path></svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9995 0.499512L16.9493 5.44926L15.535 6.86347L12.9995 4.32794V9.99951H10.9995L10.9995 4.32794L8.46646 6.86099L7.05225 5.44678L11.9995 0.499512ZM10.9995 13.9995L10.9995 19.6704L8.46451 17.1353L7.05029 18.5496L12 23.4995L16.9497 18.5498L15.5355 17.1356L12.9995 19.6716V13.9995H10.9995Z"></path></svg>
+                }
+              </div>
+            </div>
           </div>
         }
       </f-canvas>

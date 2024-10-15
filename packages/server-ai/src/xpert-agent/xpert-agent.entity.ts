@@ -113,9 +113,9 @@ export class XpertAgent extends TenantOrganizationBaseEntity implements IXpertAg
 	toolsetIds?: string[]
 	toolsets?: IXpertToolset[]
 
-	collaborators?: IXpert[]
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()
 	@Column({ type: 'json', nullable: true })
 	collaboratorNames?: string[]
+	collaborators?: IXpert[]
 }

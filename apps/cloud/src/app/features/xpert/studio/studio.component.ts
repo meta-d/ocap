@@ -36,7 +36,7 @@ import { NGXLogger } from 'ngx-logger'
 import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
 import { delay, map, startWith } from 'rxjs/operators'
-import { ToastrService, TXpertTeamNode, XpertRoleService, XpertWorkspaceService } from '../../../@core'
+import { IXpert, ToastrService, TXpertTeamNode, XpertRoleService, XpertWorkspaceService } from '../../../@core'
 import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import {
@@ -115,9 +115,30 @@ export class XpertStudioComponent {
   readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
   readonly rootAgent = computed(() => this.team()?.agent)
-  readonly nodes = computed(() => this.viewModel()?.nodes)
-  readonly teams = computed(() => this.viewModel()?.teams)
-  readonly connections = computed(() => this.viewModel()?.connections)
+  readonly nodes = computed(() => {
+    const viewModelNodes = this.viewModel()?.nodes ?? []
+    const nodes = viewModelNodes.filter((_) => _.type !== 'xpert')
+    const xpertNodes = viewModelNodes.filter((_) => _.type === 'xpert') as any
+    xpertNodes.forEach((node) => {
+      if (node.nodes) {
+        nodes.push(...node.nodes.map((_) => ({
+          ..._,
+          parentId: node.key
+        } as any)))
+      }
+    })
+    return nodes
+  })
+  readonly xperts = computed(() => this.viewModel()?.nodes.filter((_) => _.type === 'xpert') as (TXpertTeamNode & {type: 'xpert'})[])
+  readonly connections = computed(() => {
+    const viewModelConnections = [...(this.viewModel()?.connections ?? [])]
+    this.viewModel()?.nodes?.filter((_) => _.type === 'xpert').forEach((node: any) => {
+      if (node.connections) {
+        viewModelConnections.push(...node.connections)
+      }
+    })
+    return viewModelConnections
+  })
 
   public isSingleSelection: boolean = true
 
@@ -183,6 +204,16 @@ export class XpertStudioComponent {
 
   public moveNode(point: IPoint, key: string): void {
     this.apiService.moveNode(key, point)
+  }
+
+  public moveXpertGroup(point: IPoint, key: string): void {
+    this.apiService.moveNode(key, point)
+  }
+  public resizeXpertGroup(point: IRect, key: string): void {
+    this.apiService.resizeNode(key, point)
+  }
+  public expandXpertTeam(xpert: TXpertTeamNode) {
+    this.apiService.expandXpertNode(xpert.key)
   }
 
   public selectionChanged(event: FSelectionChangeEvent): void {

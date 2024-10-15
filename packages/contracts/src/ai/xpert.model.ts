@@ -1,10 +1,10 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { IXpertToolset } from './xpert-toolset.model'
+import { IUser } from '../user.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
-import { IXpertWorkspace } from './xpert-workspace.model'
-import { IUser } from '../user.model'
 import { IXpertAgent } from './xpert-agent.model'
+import { IXpertToolset } from './xpert-toolset.model'
+import { IXpertWorkspace } from './xpert-workspace.model'
 
 /**
  * Digital Expert
@@ -24,7 +24,7 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
    * 对话开场白
    */
   starters?: string[]
-  
+
   /**
    * More configuration
    */
@@ -52,7 +52,7 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
   deletedAt?: Date
 
   agent?: IXpertAgent
-  
+
   // Many to one
   /**
    * 所属的工作空间
@@ -73,7 +73,7 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
    * 调用此专家的任务协调者
    */
   leaders?: IXpert[]
-  
+
   knowledgebases?: IKnowledgebase[]
   toolsets?: IXpertToolset[]
 
@@ -84,15 +84,30 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
 }
 
 export type TXpertOptions = {
-  knowledge?: Record<string, {
-    position?: IPoint
-  }>
-  toolset?: Record<string, {
-    position?: IPoint
-  }>
-  agent?: Record<string, {
-    position?: IPoint
-  }>
+  knowledge?: Record<
+    string,
+    {
+      position?: IPoint
+    }
+  >
+  toolset?: Record<
+    string,
+    {
+      position?: IPoint
+    }
+  >
+  agent?: Record<
+    string,
+    {
+      position?: IPoint
+    }
+  >
+  xpert?: Record<
+    string,
+    {
+      position?: IPoint
+    }
+  >
 }
 
 export enum XpertTypeEnum {
@@ -108,17 +123,17 @@ export type TXpertTeamDraft = {
   savedAt?: Date
   nodes: TXpertTeamNode[]
   connections: TXpertTeamConnection[]
-  teams?: TXpertTeamGroup[]
 }
 
-
-export type TXpertTeamNodeType = 'agent' | 'knowledge' | 'toolset'
+export type TXpertTeamNodeType = 'agent' | 'knowledge' | 'toolset' | 'xpert'
 
 export type TXpertTeamNode = {
   key: string
   type: TXpertTeamNodeType
   position: IRect
+  size?: ISize
   hash?: string
+  parentId?: string
 } & (
   | {
       type: 'agent'
@@ -128,9 +143,16 @@ export type TXpertTeamNode = {
       type: 'knowledge'
       entity: IKnowledgebase
     }
-    | {
+  | {
       type: 'toolset'
       entity: IXpertToolset
+    }
+  | {
+      type: 'xpert'
+      entity: IXpert
+      nodes?: TXpertTeamNode[]
+      connections?: TXpertTeamConnection[]
+      expanded?: boolean
     }
 )
 
@@ -140,13 +162,12 @@ export interface IPoint {
 }
 
 export interface ISize {
-  width: number;
-  height: number;
+  width: number
+  height: number
 }
 
-
 export interface IRect extends IPoint, Partial<ISize> {
-  gravityCenter?: IPoint;
+  gravityCenter?: IPoint
 }
 
 export type TXpertTeamGroup = {

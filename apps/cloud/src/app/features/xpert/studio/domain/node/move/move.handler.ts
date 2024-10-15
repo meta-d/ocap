@@ -10,15 +10,35 @@ export class MoveNodeHandler implements IHandler<MoveNodeRequest> {
     this.store.update((s) => {
       const draft = structuredClone(s.draft)
 
-      const node = draft.nodes.find((item) => item.key === request.key)
-      if (!node) {
-        throw new Error(`Team node with key ${node.key} not found`)
-      }
-      node.position = {
-        ...(node.position ?? {}),
-        ...request.position
+      let _node = null
+      for (const node of draft.nodes) {
+        if (node.key === request.key) {
+          _node = node
+        }
+        if (_node) {
+          break
+        }
+        if (node.type === 'xpert' && node.nodes) {
+          for (const sub of node.nodes) {
+            if (sub.key === request.key) {
+              _node = sub
+            }
+            if (_node) {
+              break
+            }
+          }
+        }
       }
 
+      if (_node) {
+        _node.position = {
+          ...(_node.position ?? {}),
+          ...request.position
+        }
+      } else {
+        // throw new Error(`Team node with key ${request.key} not found`)
+      }
+      
       return { draft }
     })
   }

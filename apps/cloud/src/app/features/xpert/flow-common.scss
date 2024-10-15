@@ -114,10 +114,10 @@
 }
 @mixin connectors {
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  border: 0.2px solid var(--node-border-color);
+  // border: 0.2px solid var(--node-border-color);
   background-color: var(--node-background-color);
   &.left {
     left: -8px;
@@ -130,7 +130,7 @@
     transform: translateY(-50%);
   }
   &.top {
-    top: -8px;
+    top: -6px;
     left: 50%;
     transform: translateX(-50%);
   }

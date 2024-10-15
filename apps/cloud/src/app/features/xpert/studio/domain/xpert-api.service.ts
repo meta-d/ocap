@@ -1,10 +1,10 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { IPoint } from '@foblex/2d'
-import { IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '../../../../@core/types'
+import { IPoint, IRect } from '@foblex/2d'
+import { getErrorMessage, IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '../../../../@core/types'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
-import { KnowledgebaseService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import { KnowledgebaseService, ToastrService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import * as CryptoJS from 'crypto-js'
 import { isEqual, negate } from 'lodash-es'
 import { injectParams } from 'ngxtension/inject-params'
@@ -22,12 +22,8 @@ import {
   tap
 } from 'rxjs'
 import { CreateConnectionHandler, CreateConnectionRequest, ToConnectionViewModelHandler } from './connection'
-import {
-  UpdateRoleHandler,
-  UpdateRoleRequest
-} from './role'
 import { EReloadReason, IStudioStore, TStateHistory } from './types'
-import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest, RemoveNodeHandler, RemoveNodeRequest, ToNodeViewModelHandler, UpdateNodeHandler, UpdateNodeRequest } from './node'
+import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest, RemoveNodeHandler, RemoveNodeRequest, ToNodeViewModelHandler, UpdateAgentHandler, UpdateAgentRequest, UpdateNodeHandler, UpdateNodeRequest } from './node'
 import { LayoutHandler, LayoutRequest } from './layout'
 import { nonNullable } from '@metad/core'
 import { CreateTeamHandler, CreateTeamRequest } from './team'
@@ -38,6 +34,7 @@ export class XpertStudioApiService {
   readonly xpertRoleService = inject(XpertRoleService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly toolsetService = inject(XpertToolsetService)
+  readonly #toastr = inject(ToastrService)
 
   // private storage: IStudioStorage = null
   readonly store = createStore({ name: 'xpertStudio' }, withProps<IStudioStore>({ draft: null }))
@@ -97,7 +94,7 @@ export class XpertStudioApiService {
         combineLatest([
           this.paramId$.pipe(
             distinctUntilChanged(),
-            switchMap((id) => this.xpertRoleService.getTeam(id, { relations: ['workspace', 'agent'] })),
+            switchMap((id) => this.getXpertTeam(id)),
             tap((role) => {
               this.#stateHistory.clear()
               this.draft.set(role.draft)
@@ -142,9 +139,13 @@ export class XpertStudioApiService {
     }))
 
     this.#reload.next(EReloadReason.INIT)
-    if (!role.draft) {
-        this.autoLayout()
-    }
+    // if (!role.draft) {
+    //     this.autoLayout()
+    // }
+  }
+
+  private getXpertTeam(id: string) {
+    return this.xpertRoleService.getTeam(id, { relations: ['agent', 'executors', 'executors.agent'] })
   }
 
   public resume() {
@@ -206,6 +207,30 @@ export class XpertStudioApiService {
     new MoveNodeHandler(this.store).handle(new MoveNodeRequest(key, position))
     this.#reload.next(EReloadReason.MOVED)
   }
+  public resizeNode(key: string, size: IRect) {
+    this.store.update((state) => {
+      const draft = structuredClone(state.draft)
+      const node = draft.nodes.find((node) => node.key === key)
+      if (node) {
+        node.size = size
+      }
+      return {draft}
+    })
+    this.#reload.next(EReloadReason.RESIZE)
+  }
+  public expandXpertNode(key: string) {
+    this.store.update((state) => {
+      const draft = structuredClone(state.draft)
+      const node = draft.nodes.find((node) => node.type === 'xpert' && node.key === key) as TXpertTeamNode & {type: 'xpert'}
+      if (node) {
+        node.expanded = !node.expanded
+      }
+      return {draft}
+    })
+    
+    this.#reload.next(EReloadReason.JUST_RELOAD)
+  }
+
   public updateNode(key: string, value: Partial<TXpertTeamNode>): void {
     new UpdateNodeHandler(this.store).handle(new UpdateNodeRequest(key, value))
   }
@@ -219,16 +244,23 @@ export class XpertStudioApiService {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('agent', position))
     this.#reload.next(EReloadReason.AGENT_CREATED)
   }
-  public createCollaborator(position: IPoint, team: IXpert) {
-    new CreateTeamHandler(this.store).handle(new CreateTeamRequest(position, team))
-    this.#reload.next(EReloadReason.TEAM_ADDED)
+  public async createCollaborator(position: IPoint, team: IXpert) {
+    this.getXpertTeam(team.id).subscribe({
+      next: (xpert) => {
+        new CreateTeamHandler(this.store).handle(new CreateTeamRequest(position, xpert))
+        this.#reload.next(EReloadReason.XPERT_ADDED)
+      },
+      error: (error) => {
+        this.#toastr.error(getErrorMessage(error))
+      }
+    })
   }
   public createToolset(position: IPoint, toolset: IXpertToolset): void {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('toolset', position, toolset))
     this.#reload.next(EReloadReason.TOOLSET_CREATED)
   }
   public updateXpertAgent(key: string, entity: Partial<IXpertAgent>) {
-    return new UpdateRoleHandler(this.store).handle(new UpdateRoleRequest(key, entity))
+    return new UpdateAgentHandler(this.store).handle(new UpdateAgentRequest(key, entity))
   }
 
   public autoLayout() {

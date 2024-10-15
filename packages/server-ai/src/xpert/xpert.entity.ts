@@ -174,23 +174,25 @@ export class Xpert extends TenantOrganizationBaseEntity implements IXpert {
     |--------------------------------------------------------------------------
     */
 	// Executors
-	@ManyToMany(() => Xpert, {
+	@ManyToMany(() => Xpert, (x) => x.leaders, {
 		onUpdate: 'CASCADE',
 		onDelete: 'CASCADE'
 	})
 	@JoinTable({
-		name: 'xpert_to_executor'
+		name: 'xpert_to_executor',
+		joinColumn: {
+            name: 'leaderId',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'executorId',
+            referencedColumnName: 'id',
+        },
 	})
 	executors?: IXpert[]
 
 	// Leaders
-	@ManyToMany(() => Xpert, {
-		onUpdate: 'CASCADE',
-		onDelete: 'CASCADE'
-	})
-	@JoinTable({
-		name: 'xpert_to_leader'
-	})
+	@ManyToMany(() => Xpert, (x) => x.executors)
 	leaders?: IXpert[]
 
 	// Xpert role's knowledgebases

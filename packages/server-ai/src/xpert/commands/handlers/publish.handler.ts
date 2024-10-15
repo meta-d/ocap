@@ -133,14 +133,19 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		// CURD Agents
 		const newAgents = []
 		const agentNodes = draft.nodes.filter((node) => node.type === 'agent') as (TXpertTeamNode & {type: 'agent'})[]
+		const xpertNodes = draft.nodes.filter((node) => node.type === 'xpert') as (TXpertTeamNode & {type: 'xpert'})[]
 		const totalToolsetIds = []
 		const totalKnowledgebaseIds = []
+		const totalXpertIds = []
 		for await (const node of agentNodes) {
 			// Collect toolsetIds
 			const toolsetIds = draft.connections.filter((_) => _.type === 'toolset' && _.from === node.key).map((_) => _.to)
 			const knowledgebaseIds = draft.connections.filter((_) => _.type === 'knowledge' && _.from === node.key).map((_) => _.to)
+			const xpertIds = draft.connections.filter((_) => _.type === 'xpert' && _.from === node.key).map((_) => _.to)
 			totalToolsetIds.push(...toolsetIds)
 			totalKnowledgebaseIds.push(...knowledgebaseIds)
+			totalXpertIds.push(...xpertIds)
+			const collaboratorNames = xpertIds.map((id) => xpertNodes.find((_) => _.key === id)?.entity.name).filter(Boolean)
 
 			const oldAgent = oldAgents.find((item) => item.key === node.key)
 			// Calc the leader of agent
@@ -155,7 +160,8 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 						...pickXpertAgent(node.entity),
 						leaderKey: conn?.from,
 						toolsetIds,
-						knowledgebaseIds
+						knowledgebaseIds,
+						collaboratorNames
 					}
 					this.#logger.verbose(`Update xpert team agent (name/key='${oldAgent.name || oldAgent.key}', id='${oldAgent.id}') with value:\n${JSON.stringify(entity, null, 2)}`)
 					await this.xpertAgentService.update(oldAgent.id, entity)
@@ -170,7 +176,8 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 					...xpert.agent,
 					...pickXpertAgent(node.entity),
 					toolsetIds,
-					knowledgebaseIds
+					knowledgebaseIds,
+					collaboratorNames
 				}
 			} else {
 				// Create new xpert agent
@@ -182,7 +189,8 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 					teamId: xpert.id,
 					leaderKey: conn?.from,
 					toolsetIds,
-					knowledgebaseIds
+					knowledgebaseIds,
+					collaboratorNames
 				})
 				newAgents.push(newAgent)
 			}
@@ -203,6 +211,7 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		xpert.agents = newAgents
 		xpert.toolsets = uniq(totalToolsetIds).map((id) => ({id} as IXpertToolset))
 		xpert.knowledgebases = uniq(totalKnowledgebaseIds).map((id) => ({id} as IKnowledgebase))
+		xpert.executors = uniq(totalXpertIds).map((id) => ({id} as IXpert))
 		// Recording graph node positions
 		xpert.options ??= {}
 		draft.nodes.forEach((node) => {

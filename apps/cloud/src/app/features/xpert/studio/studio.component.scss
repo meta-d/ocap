@@ -31,7 +31,27 @@
       background-color: var(--disabled-color);
     }
   }
+
+  .f-node.f-component {
+    .f-component.f-node-output {
+      svg {
+        visibility: hidden;
+      }
+    }
+    &:hover {
+      .f-component.f-node-output {
+        @apply w-3 h-3 rounded-full border border-primary-400;
+        svg {
+          visibility: visible;
+        }
+        &:hover {
+          @apply transition-all origin-center scale-150;
+        }
+      }
+    }
+  }
 }
+
 f-flow {
   height: 100%;
 }

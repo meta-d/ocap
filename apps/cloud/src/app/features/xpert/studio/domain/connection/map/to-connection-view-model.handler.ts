@@ -1,5 +1,5 @@
 import { IHandler } from '@foblex/mediator'
-import { IXpertAgent, IXpertRole, TXpertTeamConnection } from '../../../../../../@core/types'
+import { IXpert, IXpertAgent, IXpertRole, TXpertTeamConnection } from '../../../../../../@core/types'
 
 export class ToConnectionViewModelHandler implements IHandler<void, TXpertTeamConnection[]> {
   constructor(private team: IXpertRole) {}
@@ -8,16 +8,16 @@ export class ToConnectionViewModelHandler implements IHandler<void, TXpertTeamCo
     const xpert = this.team
     const connections: TXpertTeamConnection[] = []
 
-    connections.push(...createAgentConnections(xpert.agent))
+    connections.push(...createAgentConnections(xpert.agent, this.team.executors))
     for (const agent of xpert.agents ?? []) {
-      connections.push(...createAgentConnections(agent))
+      connections.push(...createAgentConnections(agent, this.team.executors))
     }
 
     return connections
   }
 }
 
-function createAgentConnections(agent: IXpertAgent) {
+function createAgentConnections(agent: IXpertAgent, collaborators: IXpert[]) {
   const connections = []
   const from = agent.leaderKey
   const to = agent.key
@@ -29,6 +29,21 @@ function createAgentConnections(agent: IXpertAgent) {
       to
     })
   }
+
+  // collaborators
+  agent.collaboratorNames?.forEach((name) => {
+    const collaborator = collaborators.find((_) => _.name === name)
+    if (collaborator) {
+      const from = agent.key
+      const to = collaborator.id
+      connections.push({
+        type: 'xpert',
+        key: from + '/' + to,
+        from,
+        to
+      })
+    }
+  })
 
   // knowledgebases
   agent.knowledgebaseIds?.forEach((knowledgebaseId) => {

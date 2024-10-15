@@ -4,8 +4,8 @@ import { OptionParams, PaginationParams, RequestContext, TenantOrganizationAware
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
-import { assign, compact } from 'lodash'
-import { Any, FindConditions, IsNull, Not, Repository } from 'typeorm'
+import { assign, uniq } from 'lodash'
+import { FindConditions, IsNull, Not, Repository } from 'typeorm'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { XpertPublishCommand } from './commands'
 import { Xpert } from './xpert.entity'
@@ -49,7 +49,7 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 			where = {
 				...(<FindConditions<Xpert>>where),
 				workspaceId: IsNull(),
-				createdById: user.id,
+				createdById: user.id
 			}
 		} else {
 			const workspace = await this.queryBus.execute(new GetXpertWorkspaceQuery(user, { id: workspaceId }))
@@ -74,16 +74,11 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 		})
 	}
 
-	async getTeam(id: string,  options?: OptionParams<Xpert>) {
+	async getTeam(id: string, options?: OptionParams<Xpert>) {
 		const { relations } = options ?? {}
-		const team = await this.findOne(id, { relations: compact([...(relations ?? []), 'agents', 'toolsets', 'knowledgebases']) })
-		// if (!team.draft) {
-		// 	const { items } = await this.findAll({
-		// 		where: { workspaceId: team.workspaceId ?? IsNull(), teamRoleId: team.id },
-		// 		relations: ['followers', 'toolsets', 'knowledgebases']
-		// 	})
-		// 	// assembleXpert(team, items, [])
-		// }
+		const team = await this.findOne(id, {
+			relations: uniq([...(relations ?? []), 'agents', 'toolsets', 'knowledgebases'])
+		})
 		return team
 	}
 
@@ -125,7 +120,7 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 			latest: role.latest
 		}))
 	}
-	
+
 	async deleteXpert(id: string) {
 		const xpert = await this.findOne(id)
 

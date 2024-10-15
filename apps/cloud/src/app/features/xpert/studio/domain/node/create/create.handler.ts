@@ -1,6 +1,6 @@
 import { IHandler } from '@foblex/mediator'
 import { Store, StoreDef } from '@ngneat/elf'
-import { uuid, XpertTypeEnum } from 'apps/cloud/src/app/@core'
+import { TXpertTeamNode, uuid, XpertTypeEnum } from 'apps/cloud/src/app/@core'
 import { IStudioStore } from '../../types'
 import { CreateNodeRequest } from './create.request'
 
@@ -28,12 +28,15 @@ export class CreateNodeHandler implements IHandler<CreateNodeRequest> {
         }
       }
 
-      draft.nodes.push({
+      const node = {
         type: request.type,
         key,
         position: request.position,
         entity: request.entity ?? entity
-      })
+      } as TXpertTeamNode
+
+      draft.nodes.push(node)
+
       return {
         draft
       }
