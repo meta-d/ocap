@@ -9,10 +9,10 @@ export class ToConnectionViewModelHandler implements IHandler<void, TXpertTeamCo
   }
 }
 
-function handleConntections(role: IXpertRole) {
+function handleConntections(xpert: IXpertRole) {
   const connections: TXpertTeamConnection[] = []
-  role.knowledgebases?.forEach((_) => {
-    const from = role.id
+  xpert.knowledgebases?.forEach((_) => {
+    const from = xpert.agent.key
     const to = _.id
     connections.push({
       type: 'knowledge',
@@ -21,8 +21,8 @@ function handleConntections(role: IXpertRole) {
       to
     })
   })
-  role.toolsets?.forEach((_) => {
-    const from = role.id
+  xpert.toolsets?.forEach((_) => {
+    const from = xpert.agent.key
     const to = _.id
     connections.push({
       type: 'toolset',
@@ -32,19 +32,18 @@ function handleConntections(role: IXpertRole) {
     })
   })
 
-  // for (const member of role.followers ?? []) {
-  //   const from = role.id
-  //   const to = member.id
-  //   connections.push({
-  //     type: 'role',
-  //     key: from + '/' + to,
-  //     from,
-  //     to
-  //   })
+  for (const agent of xpert.agents ?? []) {
+    const from = agent.leaderKey
+    const to = agent.key
+    if (from && to) {
+      connections.push({
+        type: 'agent',
+        key: from + '/' + to,
+        from,
+        to
+      })
+    }
+  }
 
-  //   if (member.followers) {
-  //     connections.push(...handleConntections(member))
-  //   }
-  // }
   return connections
 }

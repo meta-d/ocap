@@ -195,7 +195,7 @@ export class XpertStudioApiService {
   }
 
   // Knowledge
-  createKnowledge(position: IPoint, knowledge: IKnowledgebase): void {
+  public createKnowledge(position: IPoint, knowledge: IKnowledgebase): void {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('knowledge', position, knowledge))
     this.#reload.next(EReloadReason.KNOWLEDGE_CREATED)
   }
@@ -222,7 +222,7 @@ export class XpertStudioApiService {
     new CreateTeamHandler(this.store).handle(new CreateTeamRequest(position, team))
     this.#reload.next(EReloadReason.TEAM_ADDED)
   }
-  createToolset(position: IPoint, toolset: IXpertToolset): void {
+  public createToolset(position: IPoint, toolset: IXpertToolset): void {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('toolset', position, toolset))
     this.#reload.next(EReloadReason.TOOLSET_CREATED)
   }

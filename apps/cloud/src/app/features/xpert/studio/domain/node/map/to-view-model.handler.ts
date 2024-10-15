@@ -9,7 +9,7 @@ export class ToNodeViewModelHandler implements IHandler<void, TXpertTeamNode[]> 
   public handle(): TXpertTeamNode[] {
     const nodes: TXpertTeamNode[] = []
 
-    nodes.push(...[this.team.agent].map((_) => {
+    nodes.push(...[this.team.agent, ...this.team.agents].map((_) => {
       return {
         type: 'agent',
         key: _.key,

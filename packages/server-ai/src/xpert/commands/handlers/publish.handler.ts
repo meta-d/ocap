@@ -1,9 +1,7 @@
-import { IXpert, TXpertTeamDraft, TXpertTeamNode } from '@metad/contracts'
+import { IXpert, IXpertAgent, TXpertTeamDraft, TXpertTeamNode } from '@metad/contracts'
 import { omit, pick } from '@metad/server-common'
-import { HttpException, Logger, NotFoundException } from '@nestjs/common'
+import { BadRequestException, HttpException, Logger, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { nonNullable } from '@metad/copilot'
-import { assign } from 'lodash'
 import { IsNull, Not, Repository } from 'typeorm'
 import { Xpert } from '../../xpert.entity'
 import { XpertService } from '../../xpert.service'
@@ -23,26 +21,26 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 
 	public async execute(command: XpertPublishCommand): Promise<Xpert> {
 		const id = command.id
-		const xpertRole = await this.xpertService.findOne(id, { relations: ['agent', 'agents', 'knowledgebases', 'toolsets'] })
+		const xpert = await this.xpertService.findOne(id, { relations: ['agent', 'agents', 'knowledgebases', 'toolsets'] })
 
-		if (!xpertRole.draft) {
-			throw new NotFoundException(`No draft found on Xpert '${xpertRole.name}'`)
+		if (!xpert.draft) {
+			throw new NotFoundException(`No draft found on Xpert '${xpert.name}'`)
 		}
 
 		const { items: allVersionXperts } = await this.xpertService.findAll({
 			where: {
-				workspaceId: xpertRole.workspaceId ?? IsNull(),
-				name: xpertRole.name
+				workspaceId: xpert.workspaceId ?? IsNull(),
+				name: xpert.name
 			}
 		})
 
 		const allVersions = allVersionXperts.map((_) => _.version)
 
 		if (allVersionXperts.length === 1) {
-			xpertRole.latest = true
+			xpert.latest = true
 		}
 
-		const currentVersion = xpertRole.version
+		const currentVersion = xpert.version
 		let version = null
 		if (currentVersion) {
 			const versions = currentVersion.split('.')
@@ -59,7 +57,7 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		}
 
 		// Check
-		const draft = xpertRole.draft
+		const draft = xpert.draft
 		this.check(draft)
 
 		// // await this.repository.queryRunner.connect()
@@ -67,18 +65,13 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		// // try {
 			// Back up the current version
 			if (currentVersion) {
-				await this.saveTeamVersion(xpertRole, version)
+				await this.saveTeamVersion(xpert, version)
 			}
 
-			xpertRole.version = version
-			xpertRole.draft = null
-			xpertRole.publishAt = new Date()
-
-			await this.publish(xpertRole, version, draft)
-
+			await this.publish(xpert, version, draft)
 		// 	// await this.repository.queryRunner.commitTransaction()
 
-			return xpertRole
+			return xpert
 		// // } catch (err) {
 		// 	// since we have errors lets rollback the changes we made
 		// 	// await this.repository.queryRunner.rollbackTransaction()
@@ -101,6 +94,8 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 			...omit(team, 'id'),
 			latest: false,
 			draft: null,
+			agent: null,
+			agents: null
 		}
 
 		// Update to new version, leaving space for the old version as a backup
@@ -114,27 +109,80 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 			await this.xpertAgentService.create({
 				...omit(agent, 'id'),
 				teamId: newTeam.id,
-				tenantId: newTeam.tenantId,
-				organizationId: newTeam.organizationId,
 			})
 		}
 		await this.xpertAgentService.create({
 			...omit(team.agent, 'id'),
 			xpertId: newTeam.id,
-			tenantId: newTeam.tenantId,
-			organizationId: newTeam.organizationId,
 		})
 	}
 
 	/**
 	 * Publish draft of team to new version
 	 * 
-	 * @param team Team (leader)
+	 * @param xpert Xpert
 	 * @param version New version
-	 * @param draft Team draft
+	 * @param draft Xpert draft
 	 */
-    async publish(team: IXpert, version: string, draft: TXpertTeamDraft) {
+    async publish(xpert: Xpert, version: string, draft: TXpertTeamDraft) {
+		const oldAgents = xpert.agents
 
+		// CURD Agents
+		const newAgents = []
+		const agentNodes = draft.nodes.filter((node) => node.type === 'agent') as (TXpertTeamNode & {type: 'agent'})[]
+		for await (const node of agentNodes) {
+			const oldAgent = oldAgents.find((item) => item.key === node.key)
+			// Calc the leader of agent
+			const conn = draft.connections.find((_) => _.type === 'agent' && _.to === node.key)
+			
+			if (oldAgent) {
+				if (oldAgent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
+					throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
+				} else if (oldAgent.updatedAt.toISOString() < `${node.entity.updatedAt}`) {
+					// Update xpert agent
+					await this.xpertAgentService.update(oldAgent.id, {
+						...pickXpertAgent(node.entity),
+						leaderKey: conn?.from
+					})
+				}
+				newAgents.push(oldAgent)
+			} else if (node.key === xpert.agent.key) {
+				const oldAgent = xpert.agent
+				if (oldAgent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
+					throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
+				} else if (oldAgent.updatedAt.toISOString() < `${node.entity.updatedAt}`) {
+					// Update xpert agent
+					await this.xpertAgentService.update(oldAgent.id, {
+						...pickXpertAgent(node.entity),
+					})
+				}
+			} else {
+				// Create new xpert agent
+				const newAgent = await this.xpertAgentService.create({
+					key: node.key,
+					...pickXpertAgent(node.entity),
+					tenantId: xpert.tenantId,
+					organizationId: xpert.organizationId,
+					teamId: xpert.id,
+					leaderKey: conn?.from
+				})
+				newAgents.push(newAgent)
+			}
+		}
+
+		// Delete unused agents
+		for await (const agent of oldAgents) {
+			if (!newAgents.some((_) => _.id === agent.id)) {
+				await this.xpertAgentService.delete(agent.id)
+			}
+		}
+
+		// Update xpert
+		xpert.version = version
+		xpert.draft = null
+		xpert.publishAt = new Date()
+		xpert.agents = newAgents
+		return await this.xpertService.save(xpert)
 	}
 
 	// /**
@@ -299,4 +347,20 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 			}
 		})
 	}
+}
+
+export function pickXpertAgent(agent: IXpertAgent) {
+return pick(
+	agent,
+	'name',
+	'title',
+	'description',
+	'avatar',
+	'prompt',
+	'options',
+	'leaderKey', // todo
+	'collaboratorNames',
+	'toolsetIds',
+	'knowledgebaseIds',
+  )
 }
