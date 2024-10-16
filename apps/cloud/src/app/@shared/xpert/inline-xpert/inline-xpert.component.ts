@@ -1,14 +1,19 @@
-import { Component, input } from '@angular/core'
+import { Component, computed, input } from '@angular/core'
 import { IXpert } from '../../../@core'
 import { AvatarComponent } from '../../files'
+import { XpertAvatarComponent } from '../avatar/avatar.component'
 
 @Component({
   standalone: true,
   selector: 'xpert-inline-profile',
-  template: `<pac-avatar [avatar]="xpert()?.avatar" class="xpert-avatar shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" /><span class="xpert-title">{{xpert().title}}</span>`,
+  template: `<xpert-avatar [avatar]="avatar()" class="xpert-avatar shrink-0 overflow-hidden rounded-full" /><span class="xpert-title">{{xpert().title}}</span>`,
   styleUrl: 'inline-xpert.component.scss',
-  imports: [AvatarComponent]
+  imports: [XpertAvatarComponent]
 })
 export class XpertInlineProfileComponent {
   readonly xpert = input<IXpert>()
+  readonly avatar = computed(() => this.xpert()?.avatar ?? {
+    emoji: '🤖',
+    background: 'rgb(213, 245, 246)'
+  })
 }

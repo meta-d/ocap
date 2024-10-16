@@ -15,7 +15,7 @@ import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { IXpertAgent, XpertRoleService } from 'apps/cloud/src/app/@core'
-import { AvatarComponent, MaterialModule } from 'apps/cloud/src/app/@shared'
+import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
@@ -33,9 +33,10 @@ import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.componen
     MaterialModule,
     FormsModule,
     TranslateModule,
-    AvatarComponent,
+    XpertAvatarComponent,
     NgmHighlightVarDirective,
-    XpertStudioPanelRoleToolsetComponent
+    XpertStudioPanelRoleToolsetComponent,
+    CopilotModelSelectComponent
   ],
   host: {
     tabindex: '-1',

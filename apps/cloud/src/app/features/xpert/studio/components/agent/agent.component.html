@@ -13,16 +13,16 @@
   <div fNodeOutput [fOutputId]="node().key + '/toolset'" fOutputConnectableSide="right" [fOutputMultiple]="true"></div>
 </div>
 
-@if (xpertRole()) {
-  <div class="flex justify-start items-center px-3 pt-3 pb-2">
-    <pac-avatar [avatar]="xpertRole().avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
-    <div class="flex flex-col">
-      <span class="text-lg">{{xpertRole().title}}</span>
+@if (xpertAgent()) {
+  <div class="max-w-full flex justify-start items-center px-3 pt-3 pb-2 overflow-hidden">
+    <xpert-avatar [avatar]="xpertAgent().avatar" small class="shrink-0 mr-2 rounded-lg overflow-hidden shadow-sm" />
+    <div class="flex flex-col overflow-hidden">
+      <span class="text-base font-semibold uppercase truncate">{{xpertAgent().title}}</span>
     </div>
   </div>
   
   <div class="px-3 pb-2 flex flex-col items-stretch">
-      <p class="text-sm text-token-text-secondary text-left">{{xpertRole().description}}</p>
+      <p class="text-sm text-token-text-secondary text-left">{{xpertAgent().description}}</p>
   
       @if (toolsets()?.length) {
         <label class="mt-4 text-left">Tools:</label>
@@ -30,7 +30,7 @@
       @for (toolset of toolsets(); track toolset.id) {
         <xpert-studio-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
           hover:bg-black/5 dark:hover:bg-white/10">
-          <pac-avatar [avatar]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+          <xpert-avatar [avatar]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
           <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
         </xpert-studio-role-toolset>
       }

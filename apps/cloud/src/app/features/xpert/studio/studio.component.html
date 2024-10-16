@@ -38,7 +38,7 @@
           >
             @switch (node.type) {
               @case('agent') {
-                <xpert-studio-node-agent [node]="node" [isRoot]="rootAgent().key === node.key" class=""/>
+                <xpert-studio-node-agent [node]="node" [isRoot]="rootAgent().key === node.key || node.parentId && !!node.entity.xpertId" class=""/>
               }
               @case('knowledge') {
                 <xpert-studio-node-knowledge [node]="node" class=""/>

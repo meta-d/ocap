@@ -18,6 +18,7 @@ import { XpertToolsetModule } from './xpert-toolset/index'
 import { XpertAgentModule } from './xpert-agent/index'
 import { XpertWorkspaceModule } from './xpert-workspace'
 import { XpertModule } from './xpert'
+import { CopilotModelModule } from './copilot-model'
 
 @Module({
 	imports: [
@@ -30,6 +31,7 @@ import { XpertModule } from './xpert'
 		CopilotCheckpointModule,
 		AIModule,
 		CopilotModule,
+		CopilotModelModule,
 		CopilotKnowledgeModule,
 		CopilotUserModule,
 		CopilotOrganizationModule,

@@ -1,5 +1,6 @@
 import {
 	AiBusinessRole,
+	ICopilotModel,
 	IKnowledgebase,
 	IUser,
 	IXpert,
@@ -27,7 +28,7 @@ import {
 	OneToOne,
 	RelationId
 } from 'typeorm'
-import { Knowledgebase, XpertAgent, XpertToolset, XpertWorkspace } from '../core/entities/internal'
+import { CopilotModel, Knowledgebase, XpertAgent, XpertToolset, XpertWorkspace } from '../core/entities/internal'
 
 @Entity('xpert')
 @Index(['tenantId', 'organizationId', 'type', 'slug', 'version', 'latest', 'deletedAt'], { unique: true })
@@ -133,10 +134,26 @@ export class Xpert extends TenantOrganizationBaseEntity implements IXpert {
     | @OneToOne
     |--------------------------------------------------------------------------
     */
+	@ApiProperty({ type: () => XpertAgent })
 	@OneToOne(() => XpertAgent, (agent: XpertAgent) => agent.xpert, {
 		cascade: ["insert", "update", "remove", "soft-remove", "recover"]
 	})
     agent?: IXpertAgent
+
+	// Copilot Model
+	@ApiProperty({ type: () => CopilotModel })
+	@OneToOne(() => CopilotModel, {
+		nullable: true,
+		cascade: ["insert", "update", "remove", "soft-remove", "recover"]
+	})
+	@JoinColumn()
+	copilotModel?: ICopilotModel
+
+	@ApiProperty({ type: () => String })
+	@RelationId((it: Xpert) => it.copilotModel)
+	@IsString()
+	@Column({ nullable: true })
+	copilotModelId?: string
 
 	/*
     |--------------------------------------------------------------------------

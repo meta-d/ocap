@@ -1,6 +1,7 @@
 import {
 	ChatConversation,
 	Copilot,
+	CopilotModel,
 	CopilotCheckpoint,
 	CopilotCheckpointWrites,
 	CopilotKnowledge,
@@ -17,6 +18,7 @@ import {
 
 export const ALL_AI_ENTITIES = [
 	Copilot,
+	CopilotModel,
 	CopilotKnowledge,
 	CopilotOrganization,
 	CopilotUser,

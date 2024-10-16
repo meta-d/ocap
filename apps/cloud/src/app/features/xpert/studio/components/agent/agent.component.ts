@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input
 import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
 import { XpertStudioRoleToolsetComponent } from './toolset/toolset.component'
-import { AvatarComponent } from 'apps/cloud/src/app/@shared'
 import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
+import { XpertAvatarComponent } from 'apps/cloud/src/app/@shared'
 
 @Component({
   selector: 'xpert-studio-node-agent',
@@ -11,7 +11,7 @@ import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
   styleUrls: ['./agent.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, AvatarComponent, XpertStudioRoleToolsetComponent],
+  imports: [FFlowModule, MatIcon, XpertAvatarComponent, XpertStudioRoleToolsetComponent],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',
@@ -23,9 +23,9 @@ export class XpertStudioNodeAgentComponent {
 
   readonly node = input<TXpertTeamNode & {type: 'agent'}>()
   readonly isRoot = input<boolean>(false)
-  readonly xpertRole = computed(() => this.node().entity)
+  readonly xpertAgent = computed(() => this.node().entity)
 
-  readonly toolsets = computed(() => this.xpertRole()?.toolsets)
+  readonly toolsets = computed(() => this.xpertAgent()?.toolsets)
 
   private get hostElement(): HTMLElement {
     return this.elementRef.nativeElement

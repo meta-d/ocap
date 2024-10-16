@@ -1,9 +1,9 @@
-import { IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TAvatar, TXpertAgentOptions } from '@metad/contracts'
+import { ICopilotModel, IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TAvatar, TXpertAgentOptions } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, RelationId } from 'typeorm'
-import { Xpert } from '../core/entities/internal'
+import { CopilotModel, Xpert } from '../core/entities/internal'
 
 @Entity('xpert_agent')
 export class XpertAgent extends TenantOrganizationBaseEntity implements IXpertAgent {
@@ -64,6 +64,21 @@ export class XpertAgent extends TenantOrganizationBaseEntity implements IXpertAg
 	@IsString()
 	@Column({ nullable: true })
 	readonly xpertId: string
+
+	// Copilot Model
+	@ApiProperty({ type: () => CopilotModel })
+	@OneToOne(() => CopilotModel, {
+		nullable: true,
+		cascade: ["insert", "update", "remove", "soft-remove", "recover"]
+	})
+	@JoinColumn()
+	copilotModel?: ICopilotModel
+
+	@ApiProperty({ type: () => String })
+	@RelationId((it: Xpert) => it.copilotModel)
+	@IsString()
+	@Column({ nullable: true })
+	copilotModelId?: string
 
 	/*
     |--------------------------------------------------------------------------

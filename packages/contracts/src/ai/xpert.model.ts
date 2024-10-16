@@ -1,5 +1,6 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IUser } from '../user.model'
+import { ICopilotModel } from './copilot-model.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
 import { IXpertAgent } from './xpert-agent.model'
@@ -59,6 +60,10 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
    */
   workspaceId?: string
   workspace?: IXpertWorkspace
+
+  // Used copilot model
+  copilotModel?: ICopilotModel
+  copilotModelId?: string
 
   // One to many
   agents?: IXpertAgent[]

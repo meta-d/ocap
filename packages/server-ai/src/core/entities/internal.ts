@@ -1,4 +1,5 @@
 export * from '../../copilot/copilot.entity'
+export * from '../../copilot-model/copilot-model.entity'
 export * from '../../copilot-knowledge/copilot-knowledge.entity'
 export * from '../../copilot-organization/copilot-organization.entity'
 export * from '../../copilot-user/copilot-user.entity'
