@@ -215,6 +215,9 @@ export class XpertStudioComponent {
   public expandXpertTeam(xpert: TXpertTeamNode) {
     this.apiService.expandXpertNode(xpert.key)
   }
+  public removeNode(key: string) {
+    this.apiService.removeNode(key)
+  }
 
   public selectionChanged(event: FSelectionChangeEvent): void {
     this.isSingleSelection = event.connections.length + event.nodes.length === 1

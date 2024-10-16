@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { IPoint, IRect } from '@foblex/2d'
-import { getErrorMessage, IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TXpertTeamDraft, TXpertTeamNode } from '../../../../@core/types'
+import { nonNullable } from '@metad/core'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { KnowledgebaseService, ToastrService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
@@ -21,12 +21,35 @@ import {
   switchMap,
   tap
 } from 'rxjs'
+import {
+  getErrorMessage,
+  IKnowledgebase,
+  IXpert,
+  IXpertAgent,
+  IXpertToolset,
+  TXpertTeamDraft,
+  TXpertTeamNode
+} from '../../../../@core/types'
 import { CreateConnectionHandler, CreateConnectionRequest, ToConnectionViewModelHandler } from './connection'
-import { EReloadReason, IStudioStore, TStateHistory } from './types'
-import { CreateNodeHandler, CreateNodeRequest, MoveNodeHandler, MoveNodeRequest, RemoveNodeHandler, RemoveNodeRequest, ToNodeViewModelHandler, UpdateAgentHandler, UpdateAgentRequest, UpdateNodeHandler, UpdateNodeRequest } from './node'
 import { LayoutHandler, LayoutRequest } from './layout'
-import { nonNullable } from '@metad/core'
+import {
+  CreateNodeHandler,
+  CreateNodeRequest,
+  MoveNodeHandler,
+  MoveNodeRequest,
+  RemoveNodeHandler,
+  RemoveNodeRequest,
+  ToNodeViewModelHandler,
+  UpdateAgentHandler,
+  UpdateAgentRequest,
+  UpdateNodeHandler,
+  UpdateNodeRequest
+} from './node'
 import { CreateTeamHandler, CreateTeamRequest } from './team'
+import { EReloadReason, IStudioStore, TStateHistory } from './types'
+import { ExpandTeamHandler } from './team/expand/expand.handler'
+import { ExpandTeamRequest } from './team/expand/expand.request'
+
 
 @Injectable()
 export class XpertStudioApiService {
@@ -58,33 +81,36 @@ export class XpertStudioApiService {
   readonly #refresh$ = new BehaviorSubject<void>(null)
 
   readonly team = signal<IXpert>(null)
-  readonly versions = toSignal(this.#refresh$.pipe(
-    switchMap(() => this.paramId$.pipe(distinctUntilChanged())),
-    switchMap((id) => this.xpertRoleService.getVersions(id))
-  ))
+  readonly versions = toSignal(
+    this.#refresh$.pipe(
+      switchMap(() => this.paramId$.pipe(distinctUntilChanged())),
+      switchMap((id) => this.xpertRoleService.getVersions(id))
+    )
+  )
 
   readonly draft = signal<TXpertTeamDraft>(null)
   readonly unsaved = signal(false)
   readonly stateHistories = signal<TStateHistory[]>([])
   readonly viewModel = toSignal(this.store.pipe(map((state) => state.draft)))
+  readonly collaboratorDetails = signal<Record<string, IXpert>>({})
 
   // knowledgebases
   readonly knowledgebases$ = this.knowledgebaseService.getAllInOrg().pipe(
-    map(({items}) => items),
+    map(({ items }) => items),
     shareReplay(1)
   )
   readonly toolsets$ = this.toolsetService.getAllInOrg().pipe(
-    map(({items}) => items),
+    map(({ items }) => items),
     shareReplay(1)
   )
-  readonly workspace = computed(() => this.team()?.workspace, { equal: (a, b) => a?.id === b?.id})
+  readonly workspace = computed(() => this.team()?.workspace, { equal: (a, b) => a?.id === b?.id })
 
   readonly collaborators$ = toObservable(this.team).pipe(
     filter(nonNullable),
     map((team) => team?.workspace),
     distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
-    switchMap((workspace) => this.xpertRoleService.getAllByWorkspace(workspace, {where: {latest: true}}, true)),
-    map(({items}) => items.filter((_) => _.id !== this.team().id)),
+    switchMap((workspace) => this.xpertRoleService.getAllByWorkspace(workspace, { where: { latest: true } }, true)),
+    map(({ items }) => items.filter((_) => _.id !== this.team().id)),
     shareReplay(1)
   )
 
@@ -99,12 +125,19 @@ export class XpertStudioApiService {
               this.#stateHistory.clear()
               this.draft.set(role.draft)
               this.initRole(role)
-              this.stateHistories.update(() => [{reason: EReloadReason.INIT, cursor: this.#stateHistory.getPast().length}])
+              this.stateHistories.update(() => [
+                { reason: EReloadReason.INIT, cursor: this.#stateHistory.getPast().length }
+              ])
             })
           ),
           this.#reload.pipe(
             filter((event) => event !== EReloadReason.INIT),
-            tap((event) => this.stateHistories.update((state) => [...state, {reason: event, cursor: this.#stateHistory.getPast().length}]))
+            tap((event) =>
+              this.stateHistories.update((state) => [
+                ...state,
+                { reason: event, cursor: this.#stateHistory.getPast().length }
+              ])
+            )
           )
         ])
       ),
@@ -144,7 +177,7 @@ export class XpertStudioApiService {
     // }
   }
 
-  private getXpertTeam(id: string) {
+  public getXpertTeam(id: string) {
     return this.xpertRoleService.getTeam(id, { relations: ['agent', 'executors', 'executors.agent'] })
   }
 
@@ -214,20 +247,13 @@ export class XpertStudioApiService {
       if (node) {
         node.size = size
       }
-      return {draft}
+      return { draft }
     })
     this.#reload.next(EReloadReason.RESIZE)
   }
+
   public expandXpertNode(key: string) {
-    this.store.update((state) => {
-      const draft = structuredClone(state.draft)
-      const node = draft.nodes.find((node) => node.type === 'xpert' && node.key === key) as TXpertTeamNode & {type: 'xpert'}
-      if (node) {
-        node.expanded = !node.expanded
-      }
-      return {draft}
-    })
-    
+    new ExpandTeamHandler(this.store, this).handle(new ExpandTeamRequest(key))
     this.#reload.next(EReloadReason.JUST_RELOAD)
   }
 

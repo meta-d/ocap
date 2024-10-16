@@ -1,7 +1,5 @@
-export class GetRoleRequest {
-
+export class ExpandTeamRequest {
   constructor(
     public readonly key: string
-  ) {
-  }
+  ) {}
 }

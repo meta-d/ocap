@@ -1,22 +1,28 @@
 import { CdkMenu, CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, effect, inject, TemplateRef, ViewChild } from '@angular/core'
-import {MatTabsModule} from '@angular/material/tabs'
+import { ChangeDetectorRef, Component, inject, TemplateRef, ViewChild } from '@angular/core'
+import { MatTabsModule } from '@angular/material/tabs'
+import { IXpertRole } from 'apps/cloud/src/app/@core'
+import { XpertInlineProfileComponent } from 'apps/cloud/src/app/@shared/xpert'
 import { Subscription } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
 import { SelectionService } from '../../domain/selection.service'
 import { XpertStudioComponent } from '../../studio.component'
 import { XpertStudioKnowledgeMenuComponent } from '../knowledge-menu/knowledge.component'
 import { XpertStudioToolsetMenuComponent } from '../toolset-menu/toolset.component'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { IXpertRole } from 'apps/cloud/src/app/@core'
-import { XpertInlineProfileComponent } from 'apps/cloud/src/app/@shared/xpert'
 
 @Component({
   selector: 'xpert-studio-context-menu',
   exportAs: 'menuComponent',
   standalone: true,
-  imports: [CommonModule, CdkMenuModule, MatTabsModule, XpertStudioKnowledgeMenuComponent, XpertStudioToolsetMenuComponent, XpertInlineProfileComponent],
+  imports: [
+    CommonModule,
+    CdkMenuModule,
+    MatTabsModule,
+    XpertStudioKnowledgeMenuComponent,
+    XpertStudioToolsetMenuComponent,
+    XpertInlineProfileComponent
+  ],
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.scss'
 })
@@ -43,7 +49,6 @@ export class XpertStudioContextMenuComponent {
   public node: string | null = null
 
   readonly collaborators$ = this.apiService.collaborators$
-
 
   public ngOnInit(): void {
     this.subscriptions.add(this.subscribeToSelectionChanges())

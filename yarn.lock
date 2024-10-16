@@ -3808,10 +3808,10 @@
   dependencies:
     tslib "^2.3.0"
 
-"@foblex/flow@^16.0.3":
-  version "16.0.3"
-  resolved "https://registry.yarnpkg.com/@foblex/flow/-/flow-16.0.3.tgz#f2f09c0ef57540ca8890a719b3d025d06ba04d55"
-  integrity sha512-JuJJckIurBfdL9MPv+tROHpSuiM08Mms7q7VsgDN50Y6H8Z6avPU4FCxK2qclUNSjMkNj7P0XA8Sb1n739ozog==
+"@foblex/flow@^16.0.5":
+  version "16.0.5"
+  resolved "https://registry.yarnpkg.com/@foblex/flow/-/flow-16.0.5.tgz#2c47c3dc1440fbe7d9bba002488c945a13640e99"
+  integrity sha512-dCcaobSZS46YwwYQ4UxyWj2j7EaLtgTomOW/KMvnjgU4yQjIWqGSWbtHLqNKdyvsC/sUraY3KY3P282wCcUcIg==
   dependencies:
     tslib "^2.3.0"
 

@@ -52,6 +52,17 @@
   }
 }
 
+.f-node.f-component, .f-group.f-component {
+  .node-toolbar {
+    @apply invisible;
+  }
+  &:hover, &.f-selected {
+    .node-toolbar {
+      @apply visible;
+    }
+  }
+}
+
 f-flow {
   height: 100%;
 }
@@ -66,16 +77,14 @@ f-flow {
   cursor: default;
 }
 
-
 .f-selection-area {
   background-color: var(--selection-area-color);
 }
 
-
 .f-group {
   display: block;
   background-color: var(--team-group-bg);
-  padding: 30px;
+  padding: 15px;
   @apply border border-solid border-transparent;
 
   .group-title {
