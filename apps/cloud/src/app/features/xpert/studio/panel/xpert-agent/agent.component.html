@@ -33,7 +33,8 @@
 
 <div class="px-4 pb-4 space-y-4 mt-2 w-full">
 
-  <copilot-model-select [inheritModel]="{model: 'gpt-4o'}" />
+  <copilot-model-select [inheritModel]="{model: 'gpt-4o'}" [modelType]="eModelType.LLM" [(copilotModel)]="copilotModel" 
+    (copilotModelChange)="updateCopilotModel($event)" />
 
   <div class="relative shadow-md ngm-card-border-gradient self-stretch">
     <div class="rounded-xl bg-component-card-bg">

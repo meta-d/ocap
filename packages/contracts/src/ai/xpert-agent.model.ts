@@ -3,6 +3,7 @@ import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
 import { IPoint, IXpert } from './xpert.model'
+import { ICopilotModel } from './copilot-model.model'
 
 /**
  * Expert agent, ai agent for the xperts.
@@ -24,8 +25,10 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
   options?: TXpertAgentOptions
 
   // Many to one
-  xpertId?: string
   xpert?: IXpert
+  xpertId?: string
+  copilotModel?: ICopilotModel
+  copilotModelId?: string
 
   teamId?: string
   team?: IXpert

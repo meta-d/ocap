@@ -6,7 +6,9 @@ import { TenantModule } from '@metad/server-core'
 import { UserModule } from '@metad/server-core'
 import { CopilotController } from './copilot.controller'
 import { Copilot } from './copilot.entity'
+import { QueryHandlers } from './queries/handlers/index'
 import { CopilotService } from './copilot.service'
+import { AIProvidersModule } from '../ai-model/index'
 
 @Module({
 	imports: [
@@ -14,10 +16,11 @@ import { CopilotService } from './copilot.service'
 		TypeOrmModule.forFeature([Copilot]),
 		TenantModule,
 		CqrsModule,
-		UserModule
+		UserModule,
+		AIProvidersModule
 	],
 	controllers: [CopilotController],
-	providers: [CopilotService],
+	providers: [CopilotService, ...QueryHandlers],
 	exports: [CopilotService]
 })
 export class CopilotModule {}

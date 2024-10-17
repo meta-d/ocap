@@ -1,6 +1,5 @@
 import {
 	IPluginConfig,
-	DEFAULT_API_PORT,
 	DEFAULT_GRAPHQL_API_PATH,
 	DEFAULT_API_HOST,
 	DEFAULT_API_BASE_URL
@@ -10,6 +9,7 @@ import * as path from 'path';
 
 let assetPath;
 let assetPublicPath;
+let serverRoot;
 
 console.log('Plugin Config -> __dirname: ' + __dirname);
 console.log('Plugin Config -> process.cwd: ' + process.cwd());
@@ -18,20 +18,13 @@ console.log('Plugin Config -> process.cwd: ' + process.cwd());
 
 // for Docker
 if (__dirname.startsWith('/srv/pangolin')) {
-	assetPath = '/srv/pangolin/assets';
-	assetPublicPath = '/srv/pangolin/public';
+	serverRoot = '/srv/pangolin/';
+	assetPath = serverRoot + 'assets';
+	assetPublicPath = serverRoot + 'public';
 } else {
-	assetPath = path.join(
-		path.resolve(
-			__dirname,
-			'../../../',
-			...['apps', 'api', 'src', 'assets']
-		)
-	);
-
-	assetPublicPath = path.join(
-		path.resolve(__dirname, '../../../', ...['apps', 'api', 'public'])
-	);
+	serverRoot = path.resolve(__dirname, '../../../')
+	assetPath = path.join(serverRoot, ...['apps', 'api', 'src', 'assets'])
+	assetPublicPath = path.join(serverRoot, ...['apps', 'api', 'public'])
 }
 
 console.log('Plugin Config -> assetPath: ' + assetPath);
@@ -55,7 +48,8 @@ export const pluginConfig: IPluginConfig = {
 	},
 	assetOptions: {
 		assetPath: assetPath,
-		assetPublicPath: assetPublicPath
+		assetPublicPath: assetPublicPath,
+		serverRoot
 	},
 	// plugins: [KnowledgeBasePlugin, ChangelogPlugin]
 };
@@ -67,7 +61,7 @@ function getDbConfig(): ConnectionOptions {
 			: 'sqlite';
 
 	switch (dbType) {
-		case 'postgres':
+		case 'postgres': {
 			const ssl = process.env.DB_SSL_MODE === 'true' ? true : undefined;
 
 			return {
@@ -86,8 +80,9 @@ function getDbConfig(): ConnectionOptions {
 				synchronize: true,
 				uuidExtension: 'pgcrypto'
 			};
+		}
 
-		case 'sqlite':
+		case 'sqlite': {
 			const sqlitePath =
 				process.env.DB_PATH ||
 				path.join(
@@ -103,5 +98,6 @@ function getDbConfig(): ConnectionOptions {
 				logger: 'file',
 				synchronize: true
 			};
+		}
 	}
 }

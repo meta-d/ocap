@@ -15,8 +15,8 @@ export interface IGraphqlOptions {
 
 export interface IAssetOptions {
 	assetPath: string;
-
 	assetPublicPath: string;
+	serverRoot: string
 }
 export interface IApiServerOptions {
 	host?: string;

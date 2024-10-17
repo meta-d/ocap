@@ -1,18 +1,24 @@
-import { AIPermissionsEnum, IPagination } from '@metad/contracts'
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, UseInterceptors } from '@nestjs/common'
-import { CommandBus } from '@nestjs/cqrs'
+import { AIPermissionsEnum, IPagination, ModelType } from '@metad/contracts'
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common'
+import { QueryBus, CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { DeepPartial } from 'typeorm'
 import { CrudController, PaginationParams, TransformInterceptor, PermissionGuard, Permissions } from '@metad/server-core'
 import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
+import { FindCopilotModelsQuery } from './queries';
+
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
 @UseInterceptors(TransformInterceptor)
 @Controller()
 export class CopilotController extends CrudController<Copilot> {
-	constructor(private readonly service: CopilotService, private readonly commandBus: CommandBus) {
+	constructor(
+        private readonly service: CopilotService,
+        private readonly commandBus: CommandBus,
+        private readonly queryBus: QueryBus,
+    ) {
 		super(service)
 	}
 
@@ -44,5 +50,20 @@ export class CopilotController extends CrudController<Copilot> {
 	@Post()
 	async create(@Body() entity: DeepPartial<Copilot>): Promise<Copilot> {
 		return this.service.upsert(entity)
+	}
+
+    /**
+     * get models by model type
+     * @param type ModelType
+     * @returns 
+     */
+	@Get('models')
+	async getModels(@Query('type') type: ModelType) {
+        return this.queryBus.execute(new FindCopilotModelsQuery(type))
+	}
+
+	@Get('provider/:name/model-parameters')
+	async getModelParameters(@Query('model') model: string) {
+		return []
 	}
 }

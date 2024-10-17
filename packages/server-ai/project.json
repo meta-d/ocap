@@ -18,7 +18,8 @@
 					"packages/server-ai/**/*.hbs",
 					"packages/server-ai/**/*.mjml",
 					"packages/server-ai/**/*.csv",
-					"packages/server-ai/**/*.json"
+					"packages/server-ai/**/*.json",
+					"packages/server-ai/**/*.yaml"
 				]
 			}
 		},

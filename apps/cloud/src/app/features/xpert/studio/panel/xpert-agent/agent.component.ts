@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { IXpertAgent, XpertRoleService } from 'apps/cloud/src/app/@core'
+import { ICopilotModel, IXpertAgent, ModelType, XpertRoleService } from 'apps/cloud/src/app/@core'
 import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
@@ -45,6 +45,7 @@ import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.componen
   }
 })
 export class XpertStudioPanelAgentComponent {
+  eModelType = ModelType
   readonly regex = `{{(.*?)}}`
   readonly elementRef = inject(ElementRef)
   readonly apiService = inject(XpertStudioApiService)
@@ -69,12 +70,20 @@ export class XpertStudioPanelAgentComponent {
       .pipe(map((items) => !!items.filter((item) => item.id !== this.xpertAgent().id).length))
   })
 
+  readonly copilotModel = model<ICopilotModel>()
+
   constructor() {
     effect(() => {
       if (this.xpertAgent()) {
         this.prompt.set(this.xpertAgent().prompt)
+        this.copilotModel.set(this.xpertAgent().copilotModel)
       }
     }, { allowSignalWrites: true })
+
+    effect(() => {
+      console.log(`copilotModel:`, this.copilotModel())
+    })
+    
   }
 
   protected emitSelectionChangeEvent(event: MouseEvent): void {
@@ -103,5 +112,9 @@ export class XpertStudioPanelAgentComponent {
     console.log(this.promptInputElement().nativeElement)
     this.prompt.set(text)
     // this.apiService.updateXpertRole(this.key(), { prompt: text })
+  }
+
+  updateCopilotModel(model: ICopilotModel) {
+    this.apiService.updateXpertAgent(this.key(), { copilotModel: model })
   }
 }

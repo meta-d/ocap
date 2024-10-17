@@ -4,7 +4,7 @@ import { IPoint, IRect } from '@foblex/2d'
 import { nonNullable } from '@metad/core'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
-import { KnowledgebaseService, ToastrService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import { KnowledgebaseService, PACCopilotService, ToastrService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import * as CryptoJS from 'crypto-js'
 import { isEqual, negate } from 'lodash-es'
 import { injectParams } from 'ngxtension/inject-params'
@@ -27,6 +27,7 @@ import {
   IXpert,
   IXpertAgent,
   IXpertToolset,
+  ModelType,
   TXpertTeamDraft,
   TXpertTeamNode
 } from '../../../../@core/types'
@@ -57,6 +58,7 @@ export class XpertStudioApiService {
   readonly xpertRoleService = inject(XpertRoleService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly toolsetService = inject(XpertToolsetService)
+  readonly copilotService = inject(PACCopilotService)
   readonly #toastr = inject(ToastrService)
 
   // private storage: IStudioStorage = null
@@ -152,6 +154,8 @@ export class XpertStudioApiService {
       this.unsaved.set(false)
       this.draft.set(draft)
     })
+
+  
 
   public initRole(role: IXpert) {
     this.team.set(role)

@@ -103,4 +103,6 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 		}
 		return await this.findOne(entity.id)
 	}
+
+	
 }

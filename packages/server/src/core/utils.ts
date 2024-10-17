@@ -1,11 +1,14 @@
-import { sample } from 'underscore';
+import { Logger } from '@nestjs/common'
 import { IUser } from '@metad/contracts';
+import { getConfig } from '@metad/server-config';
+import { sample } from 'underscore';
 import * as moment from 'moment';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { getConfig } from '@metad/server-config';
 import * as chalk from 'chalk';
+import { load } from 'js-yaml'
+
 
 namespace Utils {
 	export function generatedLogoColor() {
@@ -156,7 +159,7 @@ export function getDateRange(
 export function getDateRangeFormat(
 	startDate: string | Date,
 	endDate: string | Date,
-	isFormat: boolean = false
+	isFormat = false
 ) {
 	let start: any = moment(startDate).startOf('day');
 	let end: any = moment(endDate).endOf('day');
@@ -191,4 +194,28 @@ export function getDateRangeFormat(
 
 export function vectorColor(value: string) {
 	return chalk.cyan(value)
+}
+
+export function loadYamlFile<T>(
+	filePath: string,
+	logger: Logger,
+	ignoreError = true, 
+	defaultValue: T = {} as T
+  ): T {
+	try {
+	  const fileContent = fs.readFileSync(filePath, 'utf-8');
+	  try {
+		const yamlContent = load(fileContent) as T;
+		return yamlContent || defaultValue;
+	  } catch (e) {
+		throw new Error(`Failed to load YAML file ${filePath}: ${e}`);
+	  }
+	} catch (e) {
+	  if (ignoreError) {
+		logger.debug(`Error loading YAML file: ${e}`);
+		return defaultValue;
+	  } else {
+		throw e;
+	  }
+	}
 }

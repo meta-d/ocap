@@ -14,6 +14,7 @@ process.cwd();
 
 let assetPath;
 let assetPublicPath;
+let serverRoot;
 
 console.log('Default Config -> __dirname: ' + __dirname);
 console.log('Plugin Config -> process.cwd: ' + process.cwd());
@@ -22,20 +23,13 @@ console.log('Plugin Config -> process.cwd: ' + process.cwd());
 
 // for Docker
 if (__dirname.startsWith('/srv/pangolin')) {
-	assetPath = '/srv/pangolin/assets';
-	assetPublicPath = '/srv/pangolin/public';
+	serverRoot = '/srv/pangolin/';
+	assetPath = serverRoot + 'assets';
+	assetPublicPath = serverRoot + 'public';
 } else {
-	assetPath = path.join(
-		path.resolve(
-			__dirname,
-			'../../../',
-			...['apps', 'api', 'src', 'assets']
-		)
-	);
-
-	assetPublicPath = path.join(
-		path.resolve(__dirname, '../../../', ...['apps', 'api', 'public'])
-	);
+	serverRoot = path.resolve(__dirname, '../../../')
+	assetPath = path.join(serverRoot, ...['apps', 'api', 'src', 'assets'])
+	assetPublicPath = path.join(serverRoot, ...['apps', 'api', 'public'])
 }
 
 console.log('Default Config -> assetPath: ' + assetPath);
@@ -68,6 +62,7 @@ export const defaultConfiguration: IPluginConfig = {
 	},
 	assetOptions: {
 		assetPath: assetPath,
-		assetPublicPath: assetPublicPath
+		assetPublicPath: assetPublicPath,
+		serverRoot
 	}
 };

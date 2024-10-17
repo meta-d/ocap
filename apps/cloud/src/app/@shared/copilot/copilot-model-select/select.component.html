@@ -14,7 +14,7 @@
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      class="w-4 h-4 mr-1.5 !w-5 !h-5"
+      class="w-4 h-4 mr-1.5"
       data-icon="OpenaiViolet"
       aria-hidden="true"
     >
@@ -24,8 +24,8 @@
         fill="white"
       ></path>
     </svg>
-    <div class="flex items-center truncate text-[13px] font-medium text-gray-800 mr-1.5 text-gray-900">
-      <div class="truncate" title="gpt-4o-mini">gpt-4o-mini</div>
+    <div class="flex items-center truncate text-[13px] font-medium text-gray-800 mr-1.5">
+      <div class="truncate" [title]="_copilotModel()?.model">{{_copilotModel()?.model}}</div>
       <div
         class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1 !text-gray-500 !border-black/8"
       >
@@ -731,9 +731,18 @@
 <ng-template #modelsMenu>
   <div cdkMenu class="ngm-cdk-menu">
     <div class="p-1">
-      <ngm-search class="mt-1 sticky"></ngm-search>
+      <ngm-search class="mt-1 sticky rounded-lg"></ngm-search>
       <div>
-        
+        <ul cdkListbox >
+          @for (copilot of copilotWithModels(); track copilot.id) {
+            <div class="text-base"><span class="uppercase">{{copilot.role}}</span> - {{copilot.providerWithModels?.label | i18n }}</div>
+            @for (model of copilot.providerWithModels?.models; track model.model) {
+              <li cdkMenuItem [cdkOption]="model" class="p-1 rounded-lg hover:bg-primary-100 hover:text-primary-600"
+                (click)="setModel(model.model)">
+                {{model.model}}</li>
+            }
+          }
+        </ul>
       </div>
     </div>
   </div>
