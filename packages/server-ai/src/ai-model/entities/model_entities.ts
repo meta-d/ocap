@@ -1,4 +1,4 @@
-import { ModelType } from "@metad/contracts";
+import { I18nObject, ProviderModel } from "@metad/contracts";
 
 export function valueOf<T>(enumObj: T, value: string): T[keyof T] {
     const enumValues = Object.values(enumObj);
@@ -6,19 +6,6 @@ export function valueOf<T>(enumObj: T, value: string): T[keyof T] {
         return value as T[keyof T];
     }
     throw new Error(`Invalid enum value: ${value}`);
-}
-
-export enum FetchFrom {
-    PREDEFINED_MODEL = "predefined-model",
-    CUSTOMIZABLE_MODEL = "customizable-model"
-}
-
-export enum ModelFeature {
-    TOOL_CALL = "tool-call",
-    MULTI_TOOL_CALL = "multi-tool-call",
-    AGENT_THOUGHT = "agent-thought",
-    VISION = "vision",
-    STREAM_TOOL_CALL = "stream-tool-call"
 }
 
 export enum DefaultParameterName {
@@ -38,31 +25,6 @@ export enum ParameterType {
     STRING = "string",
     BOOLEAN = "boolean",
     TEXT = "text"
-}
-
-export enum ModelPropertyKey {
-    MODE = "mode",
-    CONTEXT_SIZE = "context_size",
-    MAX_CHUNKS = "max_chunks",
-    FILE_UPLOAD_LIMIT = "file_upload_limit",
-    SUPPORTED_FILE_EXTENSIONS = "supported_file_extensions",
-    MAX_CHARACTERS_PER_CHUNK = "max_characters_per_chunk",
-    DEFAULT_VOICE = "default_voice",
-    VOICES = "voices",
-    WORD_LIMIT = "word_limit",
-    AUDIO_TYPE = "audio_type",
-    MAX_WORKERS = "max_workers"
-}
-
-export interface ProviderModel {
-    model: string;
-    label: I18nObject;
-    model_type: ModelType;
-    features?: ModelFeature[];
-    fetchFrom: FetchFrom;
-    modelProperties: Record<ModelPropertyKey, any>;
-    deprecated?: boolean;
-    modelConfig?: any;
 }
 
 export interface ParameterRule {
@@ -106,9 +68,4 @@ export interface PriceInfo {
     unit: number;
     totalAmount: number;
     currency: string;
-}
-
-export interface I18nObject {
-    en_US: string;
-    zh_Hans?: string;
 }

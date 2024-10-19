@@ -5,7 +5,11 @@ import { ICopilotModel, ModelType, PACCopilotService } from '../../../@core'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { CdkListboxModule } from '@angular/cdk/listbox'
-import { NgmI18nPipe } from '@metad/ocap-angular/core'
+import { NgmI18nPipe, nonBlank } from '@metad/ocap-angular/core'
+import { FormControl } from '@angular/forms'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { debounceTime } from 'rxjs'
+import { PopoverClose, PopoverComponent, PopoverTemplate } from '@ngx-popovers/popover'
 
 @Component({
   standalone: true,
@@ -13,8 +17,11 @@ import { NgmI18nPipe } from '@metad/ocap-angular/core'
     CommonModule,
     CdkMenuModule,
     CdkListboxModule,
+    PopoverClose,
+    PopoverComponent,
+    PopoverTemplate,
     NgmSearchComponent,
-    NgmI18nPipe
+    NgmI18nPipe,
   ],
   selector: 'copilot-model-select',
   templateUrl: 'select.component.html',
@@ -31,6 +38,27 @@ export class CopilotModelSelectComponent {
 
   readonly copilotWithModels = derivedAsync(() => {
     return this.copilotService.getCopilotModels(this.modelType())
+  })
+  readonly copilotWithModels$ = toObservable(this.copilotWithModels)
+
+  readonly searchControl = new FormControl()
+  readonly searchText = toSignal(this.searchControl.valueChanges.pipe(debounceTime(300)))
+  readonly searchedModels = computed(() => {
+    const searchText = this.searchText()
+    const copilots = this.copilotWithModels()
+    return searchText ? copilots?.map((_) => {
+      const models = _.providerWithModels.models.filter((m) => m.model.includes(searchText))
+      if (models.length) {
+        return {
+          ..._,
+          providerWithModels: {
+            ..._.providerWithModels,
+            models
+          }
+        }
+      }
+      return null
+    }).filter(nonBlank) : copilots
   })
 
   constructor() {

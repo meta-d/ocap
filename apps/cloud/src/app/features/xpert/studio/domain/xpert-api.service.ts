@@ -46,10 +46,10 @@ import {
   UpdateNodeHandler,
   UpdateNodeRequest
 } from './node'
-import { CreateTeamHandler, CreateTeamRequest } from './team'
+import { CreateTeamHandler, CreateTeamRequest, UpdateXpertHandler, UpdateXpertRequest } from './xpert'
 import { EReloadReason, IStudioStore, TStateHistory } from './types'
-import { ExpandTeamHandler } from './team/expand/expand.handler'
-import { ExpandTeamRequest } from './team/expand/expand.request'
+import { ExpandTeamHandler } from './xpert/expand/expand.handler'
+import { ExpandTeamRequest } from './xpert/expand/expand.request'
 
 
 @Injectable()
@@ -182,7 +182,7 @@ export class XpertStudioApiService {
   }
 
   public getXpertTeam(id: string) {
-    return this.xpertRoleService.getTeam(id, { relations: ['agent', 'executors', 'executors.agent'] })
+    return this.xpertRoleService.getTeam(id, { relations: ['agent', 'agents', 'agents.copilotModel', 'executors', 'executors.agent', 'executors.copilotModel', 'copilotModel'] })
   }
 
   public resume() {
@@ -291,6 +291,10 @@ export class XpertStudioApiService {
   }
   public updateXpertAgent(key: string, entity: Partial<IXpertAgent>) {
     return new UpdateAgentHandler(this.store).handle(new UpdateAgentRequest(key, entity))
+  }
+  public updateXpert(xpert: Partial<IXpert>) {
+    new UpdateXpertHandler(this.store).handle(new UpdateXpertRequest(xpert))
+    this.#reload.next(EReloadReason.XPERT_UPDATED)
   }
 
   public autoLayout() {

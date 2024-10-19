@@ -1,10 +1,10 @@
 import { Exclude, Expose, Transform } from 'class-transformer'
 import { IsOptional, IsString, ValidateNested } from 'class-validator'
-import { I18nObject, ProviderModel } from '../../ai-model/index'
 import { PublicAIModelDto } from './public-ai-model'
+import { I18nObject, IProviderEntity, ProviderCredentialSchema, ProviderModel } from '@metad/contracts'
 
 @Expose()
-export class ProviderWithModelsDto {
+export class ProviderWithModelsDto implements Partial<IProviderEntity> {
 	@IsString()
 	provider: string
 
@@ -20,10 +20,10 @@ export class ProviderWithModelsDto {
 	icon_large?: I18nObject
 
 	@Exclude()
-	model_credential_schema: unknown
+	model_credential_schema: ProviderCredentialSchema
 
 	@Exclude()
-	provider_credential_schema: unknown
+	provider_credential_schema: ProviderCredentialSchema
 
 	@Transform(({ value }) => value && value.map((_) => new PublicAIModelDto(_)))
 	models: ProviderModel[]

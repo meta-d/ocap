@@ -1,14 +1,22 @@
+import { FetchFrom, ModelType } from '@metad/contracts'
 import { Injectable, Logger } from '@nestjs/common'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import * as path from 'path'
 import { ModelProvider } from './ai-provider'
-import { AIModelEntity, PriceInfo, PriceType, DefaultParameterName, FetchFrom, PARAMETER_RULE_TEMPLATE, ParameterRule, valueOf } from './entities'
-import { ModelType } from '@metad/contracts'
+import {
+	AIModelEntity,
+	DefaultParameterName,
+	PARAMETER_RULE_TEMPLATE,
+	ParameterRule,
+	PriceInfo,
+	PriceType,
+	valueOf
+} from './entities'
 
 @Injectable()
 export abstract class AIModel {
-    protected logger = new Logger(AIModel.name)
+	protected logger = new Logger(AIModel.name)
 	protected modelSchemas: AIModelEntity[] | null = null
 
 	constructor(
@@ -75,7 +83,7 @@ export abstract class AIModel {
 
 		for (const file of modelSchemaFiles) {
 			const filePath = path.join(providerModelTypePath, file)
-            
+
 			const yamlContent = fs.readFileSync(filePath, 'utf8')
 			const yamlData = yaml.load(yamlContent) as Record<string, any>
 
@@ -103,7 +111,7 @@ export abstract class AIModel {
 		const modelMap = new Map(models.map((m) => [m.model, m]))
 
 		if (modelMap.has(model)) {
-			return modelMap.get(model)!
+			return modelMap.get(model)
 		}
 
 		if (credentials) {
@@ -119,37 +127,37 @@ export abstract class AIModel {
 	): Promise<AIModelEntity | null>
 
 	private processParameterRules(yamlData: Record<string, any>): void {
-        const newParameterRules: any[] = [];
-        const parameterRules = yamlData.parameter_rules || [];
-    
-        for (let parameterRule of parameterRules) {
-            if (parameterRule.use_template) {
-                try {
-                    const defaultParameterName = valueOf(DefaultParameterName, parameterRule.use_template)
-                    const defaultParameterRule = getDefaultParameterRuleVariableMap(defaultParameterName);
-                    const copyDefaultParameterRule = { ...defaultParameterRule, ...parameterRule };
-                    parameterRule = copyDefaultParameterRule;
-                } catch (error) {
-                    // Handle error if necessary
-                }
-            }
-    
-            if (!parameterRule.label) {
-                parameterRule.label = { zh_Hans: parameterRule.name, en_US: parameterRule.name };
-            }
-    
-            newParameterRules.push(parameterRule);
-        }
-    
-        yamlData.parameter_rules = newParameterRules;
-    }
-    
-    private processLabel(yamlData: Record<string, any>): void {
-        if (!yamlData.label) {
-            yamlData.label = { zh_Hans: yamlData.model, en_US: yamlData.model };
-        }
-        yamlData.fetch_from = FetchFrom.PREDEFINED_MODEL;
-    }
+		const newParameterRules: any[] = []
+		const parameterRules = yamlData.parameter_rules || []
+
+		for (let parameterRule of parameterRules) {
+			if (parameterRule.use_template) {
+				try {
+					const defaultParameterName = valueOf(DefaultParameterName, parameterRule.use_template)
+					const defaultParameterRule = getDefaultParameterRuleVariableMap(defaultParameterName)
+					const copyDefaultParameterRule = { ...defaultParameterRule, ...parameterRule }
+					parameterRule = copyDefaultParameterRule
+				} catch (error) {
+					// Handle error if necessary
+				}
+			}
+
+			if (!parameterRule.label) {
+				parameterRule.label = { zh_Hans: parameterRule.name, en_US: parameterRule.name }
+			}
+
+			newParameterRules.push(parameterRule)
+		}
+
+		yamlData.parameter_rules = newParameterRules
+	}
+
+	private processLabel(yamlData: Record<string, any>): void {
+		if (!yamlData.label) {
+			yamlData.label = { zh_Hans: yamlData.model, en_US: yamlData.model }
+		}
+		yamlData.fetch_from = FetchFrom.PREDEFINED_MODEL
+	}
 
 	private sortModelSchemas(modelSchemas: AIModelEntity[], providerModelTypePath: string): void {
 		// 实现模型架构排序逻辑
@@ -157,17 +165,17 @@ export abstract class AIModel {
 }
 
 function getDefaultParameterRuleVariableMap(name: DefaultParameterName): ParameterRule {
-    /**
-     * Get default parameter rule for given name
-     *
-     * @param name - parameter name
-     * @return parameter rule
-     */
-    const defaultParameterRule = PARAMETER_RULE_TEMPLATE[name];
+	/**
+	 * Get default parameter rule for given name
+	 *
+	 * @param name - parameter name
+	 * @return parameter rule
+	 */
+	const defaultParameterRule = PARAMETER_RULE_TEMPLATE[name]
 
-    if (!defaultParameterRule) {
-        throw new Error(`Invalid model parameter rule name ${name}`);
-    }
+	if (!defaultParameterRule) {
+		throw new Error(`Invalid model parameter rule name ${name}`)
+	}
 
-    return defaultParameterRule;
+	return defaultParameterRule
 }

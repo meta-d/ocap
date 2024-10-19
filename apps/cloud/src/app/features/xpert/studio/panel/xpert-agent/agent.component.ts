@@ -55,6 +55,8 @@ export class XpertStudioPanelAgentComponent {
   readonly xpertAgent = input<IXpertAgent>()
   readonly promptInputElement = viewChild('editablePrompt', { read: ElementRef<HTMLDivElement> })
 
+  readonly xpert = computed(() => this.apiService.viewModel()?.team)
+  readonly xpertCopilotModel = computed(() => this.xpert()?.copilotModel)
   readonly toolsets = computed(() => this.xpertAgent()?.toolsets)
   readonly title = computed(() => this.xpertAgent()?.title)
   readonly prompt = model<string>()

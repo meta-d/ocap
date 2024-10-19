@@ -1,3 +1,10 @@
 :host {
   @apply flex flex-col justify-start items-start;
 }
+
+.ngm-cdk-menu {
+  @apply p-1.5;
+}
+.ngm-cdk-menu-item {
+  @apply p-2;
+}

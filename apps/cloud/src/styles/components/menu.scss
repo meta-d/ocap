@@ -22,10 +22,10 @@
   .cdk-menu-item {
     @apply flex items-center bg-transparent whitespace-nowrap cursor-pointer border-none select-none px-4 rounded-md;
     min-width: 64px;
-    line-height: 36px;
+    // line-height: 36px;
 
     &:hover {
-      @apply bg-black/5 dark:bg-white/10;
+      @apply bg-black/2 dark:bg-white/5;
     }
   
     &.ngm-cdk-menu-item__disabled {

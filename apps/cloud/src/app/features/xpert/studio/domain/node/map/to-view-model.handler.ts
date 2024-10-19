@@ -25,6 +25,7 @@ function createXpertNodes(xpert: IXpert) {
       type: 'xpert',
       key: executor.id,
       position: xpert.options?.xpert?.[executor.id]?.position,
+      size: xpert.options?.xpert?.[executor.id]?.size,
       entity: executor,
       nodes: createXpertNodes(executor)
     } as TXpertTeamNode)

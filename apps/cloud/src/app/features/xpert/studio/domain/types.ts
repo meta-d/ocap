@@ -10,6 +10,7 @@ export enum EReloadReason {
   CONNECTION_CHANGED = 'connection_changed',
   MOVED = 'moved',
   XPERT_ADDED = 'xpert_added',
+  XPERT_UPDATED = 'xpert_updated',
   AGENT_CREATED = 'agent_created',
   AGENT_REMOVED = 'agent_removed',
   KNOWLEDGE_CREATED = 'knowledge_created',

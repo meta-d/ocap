@@ -196,7 +196,7 @@
   <div class="ngm-cdk-menu w-80" cdkMenu>
     <div class="flex flex-col p-4 text-gray-500">
       <div class="flex items-center h-6 font-medium uppercase mb-2">最新发布</div>
-      <div cdkMenuItem [cdkMenuTriggerFor]="versionMenu" class="ngm-cdk-menu-item flex justify-between items-center">
+      <div cdkMenuItem [cdkMenuTriggerFor]="versionMenu" class="ngm-cdk-menu-item flex justify-between items-center py-2">
         <div class="flex items-center mt-[3px] mb-[3px] font-medium text-sm">
           @if (version()) {
             {{ 'PAC.KEY_WORDS.Version' | translate: {Default: 'Version'} }}: {{version()}}
@@ -235,11 +235,11 @@
 </ng-template>
 
 <ng-template #versionMenu>
-  <div class="ngm-cdk-menu" cdkMenu>
+  <div class="ngm-cdk-menu p-2" cdkMenu>
     @for (item of versions(); track item.version) {
-      <button class="ngm-cdk-menu-item" cdkMenuItem (click)="selectVersion(item.id)">v{{item.version}}
+      <button class="ngm-cdk-menu-item p-2" cdkMenuItem (click)="selectVersion(item.id)">v{{item.version}}
         @if (item.version === version()) {
-            <div class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-blue-200 text-blue-700 rounded-lg">
+            <div class="ml-4 text-xs inline-flex items-center px-2 py-1 font-bold leading-sm uppercase bg-blue-200 text-blue-700 rounded-lg">
                 current
             </div>
         }

@@ -10,7 +10,6 @@ import {
   effect,
   inject,
   model,
-  signal,
   viewChild
 } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
@@ -31,13 +30,14 @@ import {
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
 import { delay, map, startWith } from 'rxjs/operators'
-import { IXpert, ToastrService, TXpertTeamNode, XpertRoleService, XpertWorkspaceService } from '../../../@core'
-import { MaterialModule, ToolsetCardComponent } from '../../../@shared'
+import { ICopilotModel, IXpert, ModelType, ToastrService, TXpertTeamNode, XpertRoleService, XpertWorkspaceService } from '../../../@core'
+import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import {
   XpertStudioContextMenuComponent,
@@ -49,7 +49,6 @@ import { EReloadReason, SelectionService, XpertStudioApiService } from './domain
 import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
-import { toSignal } from '@angular/core/rxjs-interop'
 
 
 @Component({
@@ -69,6 +68,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
     FFlowModule,
 
     NgmCommonModule,
+    CopilotModelSelectComponent,
     ToolsetCardComponent,
     XpertStudioToolbarComponent,
     XpertStudioContextMenuComponent,
@@ -87,6 +87,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
 export class XpertStudioComponent {
   DisplayBehaviour = DisplayBehaviour
   EFConnectionType = EFConnectionType
+  eModelType = ModelType
   public eResizeHandleType = EFResizeHandleType
 
   readonly appService = inject(AppService)
@@ -144,15 +145,16 @@ export class XpertStudioComponent {
 
   readonly viewModel = toSignal(this.apiService.store.pipe(map((state) => state.draft)))
   readonly panelVisible = model<boolean>(false)
+  readonly xpert = computed(() => this.viewModel()?.team)
+
+  readonly copilotModel = model<ICopilotModel>()
 
   constructor() {
     effect(
       () => {
-        //   if (this.xpertRole()) {
-        //     this.apiService.initRole(this.xpertRole())
-        //   }
-        //   // console.log(this.paramId(), this.xpertRole())
-        console.log(this.viewModel())
+        if (this.xpert()) {
+          this.copilotModel.set(this.xpert()?.copilotModel)
+        }
       },
       { allowSignalWrites: true }
     )
@@ -246,5 +248,9 @@ export class XpertStudioComponent {
       console.log(`Select node:`, node)
       this.panelVisible.set(true)
     }
+  }
+
+  public updateCopilotModel(value: ICopilotModel) {
+    this.apiService.updateXpert({ copilotModel: value })
   }
 }

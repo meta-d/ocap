@@ -3,10 +3,9 @@ import { loadYamlFile } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import * as path from 'path'
 import { AIModel } from './ai-model'
-import { AIModelEntity, ProviderModel } from './entities'
-import { ProviderEntity } from './model_providers/provider-types'
+import { AIModelEntity } from './entities'
 import { AIProviderRegistry } from './registry'
-import { ModelType } from '@metad/contracts'
+import { IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
 
 @Injectable()
 export abstract class ModelProvider {
@@ -16,7 +15,7 @@ export abstract class ModelProvider {
 	@Inject(ConfigService)
 	protected readonly configService: ConfigService
 
-	protected providerSchema: ProviderEntity | null = null
+	protected providerSchema: IProviderEntity | null = null
 
 	protected modelInstances: Map<ModelType, AIModel> = new Map()
 
@@ -34,7 +33,7 @@ export abstract class ModelProvider {
 		)
 	}
 
-	getProviderSchema(): ProviderEntity {
+	getProviderSchema(): IProviderEntity {
 		if (this.providerSchema) {
 			return this.providerSchema
 		}
@@ -46,7 +45,7 @@ export abstract class ModelProvider {
 		const yamlData = loadYamlFile(yamlPath, this.logger) as Record<string, any>
 
 		try {
-			this.providerSchema = new ProviderEntity(yamlData)
+			this.providerSchema = yamlData as IProviderEntity
 		} catch (e) {
 			throw new Error(`Invalid provider schema for ${this.name}: ${e.message}`)
 		}

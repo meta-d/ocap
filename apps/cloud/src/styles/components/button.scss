@@ -29,6 +29,13 @@
   }
 }
 
+.ngm-btn {
+  @apply relative flex items-center cursor-pointer pr-[30px] bg-gray-100 border border-gray-100 hover:border-gray-200;
+}
+.ngm-btn-sm {
+  @apply px-2 h-8 rounded-lg;
+}
+
 markdown.ngm-copilot-markdown .thinking-placeholder {
   @apply inline-block w-5 h-5 -mb-1 rounded-full bg-black dark:bg-white;
   animation: twinkling 2000ms infinite linear;

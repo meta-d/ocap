@@ -8,8 +8,8 @@ import { NgmCopilotService } from '@metad/copilot-angular'
 import { pick } from '@metad/ocap-core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, firstValueFrom, map, shareReplay, startWith, switchMap } from 'rxjs'
-import { ICopilot as IServerCopilot, ModelType } from '../types'
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, firstValueFrom, map, Observable, shareReplay, startWith, switchMap } from 'rxjs'
+import { ICopilotWithProvider, ICopilot as IServerCopilot, ModelType } from '../types'
 import { AgentService } from './agent.service'
 import { Store } from './store.service'
 import { XpertRoleService } from './xpert-role.service'
@@ -171,12 +171,12 @@ export class PACCopilotService extends NgmCopilotService {
     this.router.navigate(['settings', 'copilot'])
   }
 
-  private readonly modelsByType = new Map()
+  private readonly modelsByType = new Map<ModelType, Observable<ICopilotWithProvider[]>>()
 
   getCopilotModels(type: ModelType) {
     if (!this.modelsByType.get(type)) {
       this.modelsByType.set(type, this.refresh$.pipe(
-        switchMap(() => this.httpClient.get(API_COPILOT + '/models', { params: toParams({type}) })),
+        switchMap(() => this.httpClient.get<ICopilotWithProvider[]>(API_COPILOT + '/models', { params: toParams({type}) })),
         shareReplay(1)
       ))
     }

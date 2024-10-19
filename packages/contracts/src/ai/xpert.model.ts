@@ -93,24 +93,28 @@ export type TXpertOptions = {
     string,
     {
       position?: IPoint
+      size?: ISize
     }
   >
   toolset?: Record<
     string,
     {
       position?: IPoint
+      size?: ISize
     }
   >
   agent?: Record<
     string,
     {
       position?: IPoint
+      size?: ISize
     }
   >
   xpert?: Record<
     string,
     {
       position?: IPoint
+      size?: ISize
     }
   >
 }

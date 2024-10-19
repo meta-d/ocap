@@ -6,7 +6,7 @@ import { XpertAvatarComponent } from '../avatar/avatar.component'
 @Component({
   standalone: true,
   selector: 'xpert-inline-profile',
-  template: `<xpert-avatar [avatar]="avatar()" class="xpert-avatar shrink-0 overflow-hidden rounded-full" /><span class="xpert-title">{{xpert().title}}</span>`,
+  template: `<xpert-avatar [avatar]="avatar()" class="xpert-avatar shrink-0 overflow-hidden rounded-lg shadow-sm" /><span class="xpert-title">{{xpert().title}}</span>`,
   styleUrl: 'inline-xpert.component.scss',
   imports: [XpertAvatarComponent]
 })

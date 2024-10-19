@@ -49,7 +49,11 @@ module.exports = {
         'components-card-bg': 'var(--color-components-card-bg)',
         'components-panel-bg': 'var(--color-components-panel-bg)',
         'components-panel-border': 'var(--color-components-panel-border)',
-      }
+      },
+      opacity: {
+        2: '0.02',
+        8: '0.08',
+      },
     },
     fontFamily: {
       notoColorEmoji: "'Noto Color Emoji', sans-serif;"
@@ -61,5 +65,6 @@ module.exports = {
       textColor: ['disabled'],
     },
   },
-  plugins: []
+  plugins: [
+  ]
 }

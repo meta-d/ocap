@@ -22,7 +22,7 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 
 	public async execute(command: XpertPublishCommand): Promise<Xpert> {
 		const id = command.id
-		const xpert = await this.xpertService.findOne(id, { relations: ['agent', 'agents', 'knowledgebases', 'toolsets'] })
+		const xpert = await this.xpertService.findOne(id, { relations: ['agent', 'copilotModel', 'agents', 'agents.copilotModel', 'knowledgebases', 'toolsets'] })
 
 		if (!xpert.draft) {
 			throw new NotFoundException(`No draft found on Xpert '${xpert.name}'`)
@@ -92,11 +92,12 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 	 */
 	async saveTeamVersion(team: Xpert, version: string) {
 		const oldTeam: IXpert = {
-			...omit(team, 'id'),
+			...omit(team, 'id', 'copilotModelId'),
 			latest: false,
 			draft: null,
 			agent: null,
-			agents: null
+			agents: null,
+			copilotModel: team.copilotModel ? omit(team.copilotModel, 'id') : null
 		}
 
 		// Update to new version, leaving space for the old version as a backup
@@ -108,13 +109,15 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		// Copy all agents
 		for await (const agent of team.agents) {
 			await this.xpertAgentService.create({
-				...omit(agent, 'id'),
+				...omit(agent, 'id', 'copilotModelId'),
 				teamId: newTeam.id,
+				copilotModel: agent.copilotModel ? omit(agent.copilotModel, 'id') : null
 			})
 		}
 		await this.xpertAgentService.create({
-			...omit(team.agent, 'id'),
+			...omit(team.agent, 'id', 'copilotModelId'),
 			xpertId: newTeam.id,
+			copilotModel: team.agent.copilotModel ? omit(team.agent.copilotModel, 'id') : null
 		})
 	}
 
@@ -161,7 +164,8 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 						leaderKey: conn?.from,
 						toolsetIds,
 						knowledgebaseIds,
-						collaboratorNames
+						collaboratorNames,
+
 					}
 					this.#logger.verbose(`Update xpert team agent (name/key='${oldAgent.name || oldAgent.key}', id='${oldAgent.id}') with value:\n${JSON.stringify(entity, null, 2)}`)
 					await this.xpertAgentService.update(oldAgent.id, entity)
@@ -208,6 +212,7 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		xpert.draft = null
 		xpert.publishAt = new Date()
 		xpert.active = true
+		xpert.copilotModel = draft.team.copilotModel
 		xpert.agents = newAgents
 		xpert.toolsets = uniq(totalToolsetIds).map((id) => ({id} as IXpertToolset))
 		xpert.knowledgebases = uniq(totalKnowledgebaseIds).map((id) => ({id} as IKnowledgebase))
@@ -218,6 +223,7 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 			xpert.options[node.type] ??= {}
 			xpert.options[node.type][node.key] ??= {}
 			xpert.options[node.type][node.key].position = node.position
+			xpert.options[node.type][node.key].size = node.size
 		})
 
 		return await this.xpertService.save(xpert)
@@ -246,5 +252,6 @@ return pick(
 	'collaboratorNames',
 	'toolsetIds',
 	'knowledgebaseIds',
+	'copilotModel'
   )
 }
