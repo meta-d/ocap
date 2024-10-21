@@ -7,6 +7,7 @@
     "@langchain/baidu-qianfan": "0.1.0",
     "@langchain/cohere": "0.3.0",
     "@langchain/exa": "0.1.0",
+    "@langchain/openai": "0.3.0",
     "@langchain/mistralai": "0.1.1",
     "duck-duck-scrape": "^2.2.5",
     "epub2": "^3.0.2",

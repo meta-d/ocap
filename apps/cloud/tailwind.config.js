@@ -49,11 +49,17 @@ module.exports = {
         'components-card-bg': 'var(--color-components-card-bg)',
         'components-panel-bg': 'var(--color-components-panel-bg)',
         'components-panel-border': 'var(--color-components-panel-border)',
+        'components-button-primary-text': 'var(--color-components-button-primary-text)',
+        'components-button-primary-border': 'var(--color-components-button-primary-border)',
+        'components-button-primary-bg': 'var(--color-components-button-primary-bg)'
       },
       opacity: {
         2: '0.02',
         8: '0.08',
       },
+      scale: {
+        98: '0.98'
+      }
     },
     fontFamily: {
       notoColorEmoji: "'Noto Color Emoji', sans-serif;"

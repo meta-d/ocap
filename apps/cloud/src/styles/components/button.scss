@@ -29,11 +29,23 @@
   }
 }
 
-.ngm-btn {
-  @apply relative flex items-center cursor-pointer pr-[30px] bg-gray-100 border border-gray-100 hover:border-gray-200;
+.ngm-btn, .btn {
+  @apply relative flex items-center cursor-pointer pr-[30px]
+    active:scale-98 active:translate-y-0.5 transition-all
+   bg-gray-100 border border-gray-100 hover:border-gray-200;
 }
-.ngm-btn-sm {
+.ngm-btn-sm, .btn-sm {
   @apply px-2 h-8 rounded-lg;
+}
+.btn-primary {
+  @apply shadow-md text-components-button-primary-text bg-components-button-primary-bg border-components-button-primary-border;
+}
+.btn-medium {
+  height: 2rem;
+  border-radius: .5rem;
+  padding-left: .875rem;
+  padding-right: .875rem;
+  font-size: 13px;
 }
 
 markdown.ngm-copilot-markdown .thinking-placeholder {

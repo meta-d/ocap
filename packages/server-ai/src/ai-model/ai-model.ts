@@ -1,4 +1,4 @@
-import { FetchFrom, ModelType } from '@metad/contracts'
+import { FetchFrom, ICopilot, ModelType } from '@metad/contracts'
 import { Injectable, Logger } from '@nestjs/common'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
@@ -13,6 +13,7 @@ import {
 	PriceType,
 	valueOf
 } from './entities'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
 @Injectable()
 export abstract class AIModel {
@@ -27,6 +28,10 @@ export abstract class AIModel {
 	}
 
 	abstract validateCredentials(model: string, credentials: Record<string, any>): Promise<void>
+
+	getChatModel(copilot: ICopilot): BaseChatModel {
+		throw new Error(`Unsupport chat model!`)
+	}
 
 	async getPrice(
 		model: string,
@@ -162,6 +167,7 @@ export abstract class AIModel {
 	private sortModelSchemas(modelSchemas: AIModelEntity[], providerModelTypePath: string): void {
 		// 实现模型架构排序逻辑
 	}
+
 }
 
 function getDefaultParameterRuleVariableMap(name: DefaultParameterName): ParameterRule {

@@ -666,7 +666,7 @@
             <div class="text-base"><span class="uppercase">{{copilot.role}}</span> - {{copilot.providerWithModels?.label | i18n }}</div>
             @for (model of copilot.providerWithModels?.models; track model.model) {
               <li cdkMenuItem class="p-2 rounded-lg cursor-pointer hover:bg-primary-100 hover:text-primary-600"
-                (click)="setModel(model.model);">
+                (click)="setModel(copilot, model.model);">
                 {{model.model}}
               </li>
             }

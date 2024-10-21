@@ -1,4 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { ModelType } from './ai-model.model'
 import { ICopilot } from './copilot.model'
 
 export interface ICopilotModel extends IBasePerTenantAndOrganizationEntityModel {
@@ -14,6 +15,7 @@ export interface ICopilotModel extends IBasePerTenantAndOrganizationEntityModel 
   referencedModel?: ICopilotModel
   referencedId?: string
 
+  modelType?: ModelType
   model?: string
 
   /** 

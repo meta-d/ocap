@@ -1,15 +1,13 @@
+import { ChatOpenAI } from '@langchain/openai'
+import { ICopilot, ModelType } from '@metad/contracts'
 import { Injectable } from '@nestjs/common'
 import { AIModel } from '../../../ai-model'
 import { ModelProvider } from '../../../ai-provider'
 import { AIModelEntity } from '../../../entities'
-import { ModelType } from '@metad/contracts'
 
 @Injectable()
 export class OpenAILargeLanguageModel extends AIModel {
-
-	constructor(
-		readonly modelProvider: ModelProvider,
-	) {
+	constructor(readonly modelProvider: ModelProvider) {
 		super(modelProvider, ModelType.LLM)
 	}
 
@@ -21,5 +19,26 @@ export class OpenAILargeLanguageModel extends AIModel {
 		credentials: Record<string, any>
 	): Promise<AIModelEntity | null> {
 		throw new Error('Method not implemented.')
+	}
+
+	getChatModel(copilot: ICopilot) {
+		return new ChatOpenAI({
+			apiKey: copilot.apiKey,
+			configuration: {
+				baseURL: copilot.apiHost || null,
+			},
+			model: copilot.defaultModel,
+			temperature: 0,
+			callbacks: [
+				{
+					handleLLMEnd(output) {
+						// tokenRecord({
+						// 	copilot,
+						// 	tokenUsed: output.llmOutput?.totalTokens ?? sumTokenUsage(output)
+						// })
+					}
+				}
+			]
+		})
 	}
 }

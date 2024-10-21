@@ -7,13 +7,17 @@ import { MaterialModule } from '../../../../@shared/index'
 import { SelectionService } from '../domain'
 import { XpertStudioComponent } from '../studio.component'
 import { XpertStudioPanelAgentComponent } from './xpert-agent/agent.component'
+import { IfAnimation } from 'apps/cloud/src/app/@core'
 
 @Component({
   selector: 'xpert-studio-panel',
   standalone: true,
   imports: [CommonModule, CdkMenuModule, MaterialModule, DensityDirective, XpertStudioPanelAgentComponent],
   templateUrl: './panel.component.html',
-  styleUrl: './panel.component.scss'
+  styleUrl: './panel.component.scss',
+  animations: [
+    IfAnimation
+  ]
 })
 export class XpertStudioPanelComponent {
   readonly xpertStudioComponent = inject(XpertStudioComponent)

@@ -8,6 +8,7 @@ import { XpertToolset } from './xpert-toolset.entity'
 import { XpertToolsetService } from './xpert-toolset.service'
 import { QueryHandlers } from './queries/handlers'
 import { CopilotModule } from '../copilot'
+import { CommandHandlers } from './commands/handlers'
 
 
 @Module({
@@ -20,7 +21,7 @@ import { CopilotModule } from '../copilot'
 		CopilotModule
 	],
 	controllers: [XpertToolsetController],
-	providers: [XpertToolsetService, ...QueryHandlers],
+	providers: [XpertToolsetService, ...QueryHandlers, ...CommandHandlers],
 	exports: [XpertToolsetService]
 })
 export class XpertToolsetModule {}

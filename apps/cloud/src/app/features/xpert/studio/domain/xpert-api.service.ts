@@ -289,8 +289,11 @@ export class XpertStudioApiService {
     new CreateNodeHandler(this.store).handle(new CreateNodeRequest('toolset', position, toolset))
     this.#reload.next(EReloadReason.TOOLSET_CREATED)
   }
-  public updateXpertAgent(key: string, entity: Partial<IXpertAgent>) {
-    return new UpdateAgentHandler(this.store).handle(new UpdateAgentRequest(key, entity))
+  public updateXpertAgent(key: string, entity: Partial<IXpertAgent>, options?: {emitEvent: boolean}) {
+    new UpdateAgentHandler(this.store).handle(new UpdateAgentRequest(key, entity))
+    if (options?.emitEvent == null || options.emitEvent) {
+      this.#reload.next(EReloadReason.XPERT_UPDATED)
+    }
   }
   public updateXpert(xpert: Partial<IXpert>) {
     new UpdateXpertHandler(this.store).handle(new UpdateXpertRequest(xpert))

@@ -8,18 +8,21 @@ import {
   inject,
   input,
   model,
+  signal,
   viewChild
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilotModel, IXpertAgent, ModelType, XpertRoleService } from 'apps/cloud/src/app/@core'
+import { ICopilotModel, IfAnimation, IXpertAgent, ModelType, XpertRoleService } from 'apps/cloud/src/app/@core'
 import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
 import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
+import { XpertStudioPanelAgentExecutionComponent } from '../agent-execution/execution.component'
+
 
 @Component({
   selector: 'xpert-studio-panel-agent',
@@ -36,13 +39,17 @@ import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.componen
     XpertAvatarComponent,
     NgmHighlightVarDirective,
     XpertStudioPanelRoleToolsetComponent,
-    CopilotModelSelectComponent
+    CopilotModelSelectComponent,
+    XpertStudioPanelAgentExecutionComponent
   ],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',
     '(contextmenu)': 'emitSelectionChangeEvent($event)'
-  }
+  },
+  animations: [
+    IfAnimation
+  ]
 })
 export class XpertStudioPanelAgentComponent {
   eModelType = ModelType
@@ -74,6 +81,8 @@ export class XpertStudioPanelAgentComponent {
 
   readonly copilotModel = model<ICopilotModel>()
 
+  readonly openedExecution = signal(false)
+
   constructor() {
     effect(() => {
       if (this.xpertAgent()) {
@@ -95,28 +104,33 @@ export class XpertStudioPanelAgentComponent {
   }
 
   onNameChange(event: string) {
-    this.apiService.updateXpertAgent(this.key(), { name: event })
+    this.apiService.updateXpertAgent(this.key(), { name: event }, {emitEvent: false})
   }
   onTitleChange(event: string) {
     this.apiService.updateXpertAgent(this.key(), {
       title: event
-    })
+    }, {emitEvent: false})
   }
   onDescChange(event: string) {
-    this.apiService.updateXpertAgent(this.key(), { description: event })
+    this.apiService.updateXpertAgent(this.key(), { description: event }, {emitEvent: false})
   }
   onBlur() {
     this.apiService.reload()
   }
   onPromptChange() {
     const text = this.promptInputElement().nativeElement.textContent
-    console.log(text)
-    console.log(this.promptInputElement().nativeElement)
     this.prompt.set(text)
-    // this.apiService.updateXpertRole(this.key(), { prompt: text })
+    this.apiService.updateXpertAgent(this.key(), { prompt: text })
   }
 
   updateCopilotModel(model: ICopilotModel) {
     this.apiService.updateXpertAgent(this.key(), { copilotModel: model })
+  }
+
+  openExecution() {
+    this.openedExecution.set(true)
+  }
+  closeExecution() {
+    this.openedExecution.set(false)
   }
 }

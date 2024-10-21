@@ -1,7 +1,7 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, computed, effect, inject, input, model } from '@angular/core'
-import { ICopilotModel, ModelType, PACCopilotService } from '../../../@core'
+import { ICopilot, ICopilotModel, ModelType, PACCopilotService } from '../../../@core'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { CdkListboxModule } from '@angular/cdk/listbox'
@@ -67,10 +67,12 @@ export class CopilotModelSelectComponent {
     })
   }
 
-  setModel(model: string) {
+  setModel(copilot: ICopilot, model: string) {
     this.copilotModel.set({
       ...(this._copilotModel() ?? {}),
-      model
+      model,
+      copilotId: copilot.id,
+      modelType: this.modelType()
     })
   }
 }

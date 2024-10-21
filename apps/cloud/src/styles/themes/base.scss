@@ -29,6 +29,9 @@
   --color-components-panel-bg: #fff;
   --color-components-panel-border: #10182814;
   --color-components-card-bg: white;
+  --color-components-button-primary-text: white;
+  --color-components-button-primary-border: grey;
+  --color-components-button-primary-bg: theme('colors.blue.500');
 }
 
 :root .dark {
@@ -53,4 +56,7 @@
   --color-components-panel-bg: #222225;
   --color-components-panel-border: theme('colors.neutral.600');
   --color-components-card-bg: #16181c;
+  --color-components-button-primary-text: white;
+  --color-components-button-primary-border: grey;
+  --color-components-button-primary-bg: theme('colors.blue.500');
 }

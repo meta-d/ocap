@@ -151,7 +151,7 @@ export class CommandToolset extends BaseToolset {
 
 export function createToolset(
 	toolset: IXpertToolset,
-	context: {
+	context?: {
 		tenantId: string
 		organizationId: string
 		toolsetService: XpertToolsetService

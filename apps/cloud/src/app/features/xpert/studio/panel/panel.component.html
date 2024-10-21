@@ -1,5 +1,5 @@
 @if (selectedNode() && visible()) {
-  <div class="relative mr-2 h-full">
+  <div class="relative mr-2 h-full flex" @ifAnimationTrigger>
     @if (selectedNode().entity) {
       @switch (selectedNode().type) {
         @case('agent') {

@@ -1,3 +1,4 @@
+import { ICopilot, IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
 import { ConfigService } from '@metad/server-config'
 import { loadYamlFile } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -5,7 +6,6 @@ import * as path from 'path'
 import { AIModel } from './ai-model'
 import { AIModelEntity } from './entities'
 import { AIProviderRegistry } from './registry'
-import { IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
 
 @Injectable()
 export abstract class ModelProvider {
@@ -26,11 +26,7 @@ export abstract class ModelProvider {
 	abstract validateProviderCredentials(credentials: Record<string, any>): Promise<void>
 
 	getProviderServerPath() {
-		return path.join(
-			this.configService.assetOptions.serverRoot,
-			this.MyFolderPath,
-			this.name
-		)
+		return path.join(this.configService.assetOptions.serverRoot, this.MyFolderPath, this.name)
 	}
 
 	getProviderSchema(): IProviderEntity {
@@ -39,8 +35,6 @@ export abstract class ModelProvider {
 		}
 
 		const yamlPath = path.join(this.getProviderServerPath(), `${this.name}.yaml`)
-
-		console.log(yamlPath)
 
 		const yamlData = loadYamlFile(yamlPath, this.logger) as Record<string, any>
 
@@ -110,5 +104,9 @@ export abstract class ModelProvider {
 			}
 		})
 		return models
+	}
+
+	getChatModel(copilot: ICopilot) {
+		return this.getModelInstance(ModelType.LLM)?.getChatModel(copilot)
 	}
 }

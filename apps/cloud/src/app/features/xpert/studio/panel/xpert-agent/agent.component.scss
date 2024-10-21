@@ -1,5 +1,5 @@
 :host {
-  @apply flex flex-col justify-start items-start;
+  @apply flex-1 flex flex-col justify-start items-start relative;
 }
 
 .mat-mdc-input-element {

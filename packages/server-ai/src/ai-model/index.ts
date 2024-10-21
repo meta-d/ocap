@@ -1,3 +1,6 @@
 export * from './entities/index'
 export * from './types/types'
 export * from './model_providers/index'
+export * from './providers.module'
+export * from './providers.service'
+export * from './queries/index'
