@@ -1,0 +1,23 @@
+<header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+    <h4 style="pointer-events: none;">
+      {{ 'PAC.MODEL.CreateQuery' | translate: { Default: 'Create Query' } }}
+    </h4>
+</header>
+
+<div mat-dialog-content>
+  <pac-xpert-tool-configure />
+</div>
+
+<div mat-dialog-actions>
+    <div ngmButtonGroup>
+      <button mat-stroked-button mat-dialog-close cdkFocusInitial>
+        {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
+      </button>
+    </div>
+
+    <div ngmButtonGroup>
+      <button mat-raised-button color="accent" >
+        {{ 'PAC.ACTIONS.CREATE' | translate: { Default: 'Create' } }}
+      </button>
+    </div>
+</div>

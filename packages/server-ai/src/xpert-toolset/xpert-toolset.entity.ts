@@ -1,4 +1,4 @@
-import { IXpertTool, IXpertToolset, TAvatar } from '@metad/contracts'
+import { IXpertTool, IXpertToolset, TAvatar, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
@@ -20,7 +20,7 @@ export class XpertToolset extends TenantOrganizationBaseEntity implements IXpert
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@Column({ nullable: true, length: 10 })
-	category?: 'command' | string | null
+	category?: 'command' | XpertToolsetCategoryEnum
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
@@ -39,6 +39,24 @@ export class XpertToolset extends TenantOrganizationBaseEntity implements IXpert
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
 	options?: Record<string, any>
+
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	credentials?: Record<string, any>
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	schema?: string
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	schemaType?: 'openapi_json' | 'openapi_yaml'
 
 	/*
     |--------------------------------------------------------------------------

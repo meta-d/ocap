@@ -1,9 +1,8 @@
 import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
 import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
-import { ZodObjectAny } from '@langchain/core/dist/types/zod'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { BaseToolkit, StructuredToolInterface, tool } from '@langchain/core/tools'
-import { AiProviderRole, ICopilot, IUser, IXpertToolset, XpertToolContext } from '@metad/contracts'
+import { BaseToolkit, DynamicStructuredTool, StructuredToolInterface, Tool, tool, ToolParams } from '@langchain/core/tools'
+import { AiProviderRole, ICopilot, IUser, IXpertToolset, ToolParameter, ToolProviderCredentials, XpertToolContext } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { CommandBus } from '@nestjs/cqrs'
 import { jsonSchemaToZod } from 'json-schema-to-zod'
@@ -11,15 +10,200 @@ import { z } from 'zod'
 import { createLLM, ProviderRolePriority } from '../copilot'
 import { CopilotTokenRecordCommand } from '../copilot-user'
 import { XpertToolsetService } from './xpert-toolset.service'
+import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
+import { RunnableConfig } from '@langchain/core/runnables'
+import { IToolRuntime, TBaseToolsetOptions, ToolDescription, ToolIdentity, ToolProviderIdentity } from './types'
 
 
-export class BaseToolset extends BaseToolkit {
-	tools: StructuredToolInterface<ZodObjectAny>[]
+export abstract class BaseToolset<T extends StructuredToolInterface = Tool> extends BaseToolkit {
+	// For langchain
+	tools: T[]
 
-	constructor(private _toolset: IXpertToolset) {
+	constructor(
+		protected toolset: IXpertToolset,
+		options?: TBaseToolsetOptions,
+	) {
 		super()
+		this.identity = options?.identity,
+		this.credentialsSchema = options?.credentialsSchema
+	}
+
+	getTools() {
+		return this.tools
+	}
+
+	getTool(toolName: string) {
+		return this.getTools().find((tool) => tool.name === toolName)
+	}
+
+    identity?: ToolProviderIdentity;
+    credentialsSchema?: { [key: string]: ToolProviderCredentials };
+
+    getCredentialsSchema(): { [key: string]: ToolProviderCredentials } {
+        return { ...this.credentialsSchema };
+    }
+
+    // getParameters(toolName: string): ToolParameter[] {
+    //     const tool = this.getTools().find(tool => tool.identity.name === toolName);
+    //     if (!tool) {
+    //         throw new ToolNotFoundError(`tool ${toolName} not found`);
+    //     }
+    //     return tool.parameters;
+    // }
+
+    // get providerType(): ToolProviderType {
+    //     return ToolProviderType.BUILT_IN;
+    // }
+
+    // validateParameters(toolId: number, toolName: string, toolParameters: { [key: string]: any }): void {
+    //     const toolParametersSchema = this.getParameters(toolName);
+
+    //     const toolParametersNeedToValidate: { [key: string]: ToolParameter } = {};
+    //     for (const parameter of toolParametersSchema) {
+    //         toolParametersNeedToValidate[parameter.name] = parameter;
+    //     }
+
+    //     for (const parameter in toolParameters) {
+    //         if (!(parameter in toolParametersNeedToValidate)) {
+    //             throw new ToolParameterValidationError(`parameter ${parameter} not found in tool ${toolName}`);
+    //         }
+
+    //         const parameterSchema = toolParametersNeedToValidate[parameter];
+    //         if (parameterSchema.type === ToolParameter.ToolParameterType.STRING) {
+    //             if (typeof toolParameters[parameter] !== 'string') {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} should be string`);
+    //             }
+    //         } else if (parameterSchema.type === ToolParameter.ToolParameterType.NUMBER) {
+    //             if (typeof toolParameters[parameter] !== 'number') {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} should be number`);
+    //             }
+
+    //             if (parameterSchema.min !== undefined && toolParameters[parameter] < parameterSchema.min) {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} should be greater than ${parameterSchema.min}`);
+    //             }
+
+    //             if (parameterSchema.max !== undefined && toolParameters[parameter] > parameterSchema.max) {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} should be less than ${parameterSchema.max}`);
+    //             }
+    //         } else if (parameterSchema.type === ToolParameter.ToolParameterType.BOOLEAN) {
+    //             if (typeof toolParameters[parameter] !== 'boolean') {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} should be boolean`);
+    //             }
+    //         } else if (parameterSchema.type === ToolParameter.ToolParameterType.SELECT) {
+    //             if (typeof toolParameters[parameter] !== 'string') {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} should be string`);
+    //             }
+
+    //             const options = parameterSchema.options;
+    //             if (!Array.isArray(options)) {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} options should be list`);
+    //             }
+
+    //             if (!options.map(option => option.value).includes(toolParameters[parameter])) {
+    //                 throw new ToolParameterValidationError(`parameter ${parameter} should be one of ${options}`);
+    //             }
+    //         }
+
+    //         delete toolParametersNeedToValidate[parameter];
+    //     }
+
+    //     for (const parameter in toolParametersNeedToValidate) {
+    //         const parameterSchema = toolParametersNeedToValidate[parameter];
+    //         if (parameterSchema.required) {
+    //             throw new ToolParameterValidationError(`parameter ${parameter} is required`);
+    //         }
+
+    //         if (parameterSchema.default !== undefined) {
+    //             toolParameters[parameter] = ToolParameterConverter.castParameterByType(parameterSchema.default, parameterSchema.type);
+    //         }
+    //     }
+    // }
+
+    // validateCredentialsFormat(credentials: { [key: string]: any }): void {
+    //     const credentialsSchema = this.credentialsSchema;
+    //     if (!credentialsSchema) {
+    //         return;
+    //     }
+
+    //     const credentialsNeedToValidate: { [key: string]: ToolProviderCredentials } = {};
+    //     for (const credentialName in credentialsSchema) {
+    //         credentialsNeedToValidate[credentialName] = credentialsSchema[credentialName];
+    //     }
+
+    //     for (const credentialName in credentials) {
+    //         if (!(credentialName in credentialsNeedToValidate)) {
+    //             throw new ToolProviderCredentialValidationError(`credential ${credentialName} not found in provider ${this.identity.name}`);
+    //         }
+
+    //         const credentialSchema = credentialsNeedToValidate[credentialName];
+    //         if (!credentialSchema.required && credentials[credentialName] === null) {
+    //             continue;
+    //         }
+
+    //         if ([ToolProviderCredentials.CredentialsType.SECRET_INPUT, ToolProviderCredentials.CredentialsType.TEXT_INPUT].includes(credentialSchema.type)) {
+    //             if (typeof credentials[credentialName] !== 'string') {
+    //                 throw new ToolProviderCredentialValidationError(`credential ${credentialName} should be string`);
+    //             }
+    //         } else if (credentialSchema.type === ToolProviderCredentials.CredentialsType.SELECT) {
+    //             if (typeof credentials[credentialName] !== 'string') {
+    //                 throw new ToolProviderCredentialValidationError(`credential ${credentialName} should be string`);
+    //             }
+
+    //             const options = credentialSchema.options;
+    //             if (!Array.isArray(options)) {
+    //                 throw new ToolProviderCredentialValidationError(`credential ${credentialName} options should be list`);
+    //             }
+
+    //             if (!options.map(option => option.value).includes(credentials[credentialName])) {
+    //                 throw new ToolProviderCredentialValidationError(`credential ${credentialName} should be one of ${options}`);
+    //             }
+    //         }
+
+    //         delete credentialsNeedToValidate[credentialName];
+    //     }
+
+    //     for (const credentialName in credentialsNeedToValidate) {
+    //         const credentialSchema = credentialsNeedToValidate[credentialName];
+    //         if (credentialSchema.required) {
+    //             throw new ToolProviderCredentialValidationError(`credential ${credentialName} is required`);
+    //         }
+
+    //         if (credentialSchema.default !== undefined) {
+    //             let defaultValue = credentialSchema.default;
+    //             if ([ToolProviderCredentials.CredentialsType.SECRET_INPUT, ToolProviderCredentials.CredentialsType.TEXT_INPUT, ToolProviderCredentials.CredentialsType.SELECT].includes(credentialSchema.type)) {
+    //                 defaultValue = String(defaultValue);
+    //             }
+
+    //             credentials[credentialName] = defaultValue;
+    //         }
+    //     }
+    // }
+
+}
+
+export interface IBaseTool {
+    identity?: ToolIdentity
+    description?: ToolDescription
+    parameters?: ToolParameter[]
+	runtime: IToolRuntime
+}
+
+export abstract class BaseTool extends Tool {
+	name: string
+	description: string
+
+	protected _call(arg: any, runManager?: CallbackManagerForToolRun, parentConfig?: RunnableConfig): Promise<any> {
+		throw new Error('Method not implemented.')
+	}
+
+	runtime: IToolRuntime = null
+
+	constructor(protected base?: IBaseTool, fields?: ToolParams) {
+		super(fields)
+		this.runtime = base?.runtime
 	}
 }
+
 
 export class TavilySearchToolset extends BaseToolset {
 	constructor(toolset: IXpertToolset) {
@@ -47,9 +231,9 @@ export class DuckDuckGoToolset extends BaseToolset {
 	}
 }
 
-export class CommandToolset extends BaseToolset {
+export class CommandToolset extends BaseToolset<DynamicStructuredTool<z.AnyZodObject>> {
 	constructor(
-		private toolset: IXpertToolset,
+		toolset: IXpertToolset,
 		private tenantId: string,
 		private organizationId: string,
 		private toolsetService: XpertToolsetService,
@@ -149,6 +333,9 @@ export class CommandToolset extends BaseToolset {
 	}
 }
 
+/**
+ * @deprecated use BaseToolset class
+ */
 export function createToolset(
 	toolset: IXpertToolset,
 	context?: {

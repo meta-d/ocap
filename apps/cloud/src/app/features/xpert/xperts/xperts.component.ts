@@ -2,30 +2,16 @@ import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  inject,
-  model,
-  signal,
-  viewChild
-} from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, viewChild } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import {
-  NgmCommonModule,
-  NgmConfirmUniqueComponent,
-  NgmTagsComponent
-} from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmDeleteComponent, NgmTagsComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
+import { isNil, omitBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, EMPTY } from 'rxjs'
@@ -33,21 +19,18 @@ import { map, switchMap } from 'rxjs/operators'
 import {
   getErrorMessage,
   IXpertRole,
-  IXpertWorkspace,
   routeAnimations,
   ToastrService,
   XpertService,
   XpertToolsetCategoryEnum,
   XpertTypeEnum,
   XpertWorkspaceService
-} from '../../@core'
-import { AvatarComponent, MaterialModule, UserPipe } from '../../@shared'
-import { AppService } from '../../app.service'
-import { WorkspaceSettingsComponent } from './workspace-settings/settings.component'
-import { isNil, omitBy } from 'lodash-es'
-
-export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
-
+} from '../../../@core'
+import { AvatarComponent, MaterialModule, UserPipe } from '../../../@shared'
+import { AppService } from '../../../app.service'
+import { XpertNewBlankComponent } from '../blank/blank.component'
+import { XpertHomeComponent } from '../home.component'
+import { XpertStudioCreateToolComponent } from '../tools/create/create.component'
 
 @Component({
   standalone: true,
@@ -66,20 +49,18 @@ export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
 
     NgmCommonModule,
     AvatarComponent,
-    NgmTagsComponent,
     UserPipe,
     AppearanceDirective
   ],
-  selector: 'pac-xpert-home',
-  templateUrl: './home.component.html',
-  styleUrl: 'home.component.scss',
+  selector: 'pac-xpert-xperts',
+  templateUrl: './xperts.component.html',
+  styleUrl: 'xperts.component.scss',
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class XpertHomeComponent {
+export class XpertStudioXpertsComponent {
   DisplayBehaviour = DisplayBehaviour
   XpertRoleTypeEnum = XpertTypeEnum
-  XpertToolsetCategory = XpertToolsetCategoryEnum
 
   readonly appService = inject(AppService)
   readonly router = inject(Router)
@@ -89,14 +70,15 @@ export class XpertHomeComponent {
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
+  readonly homeComponent = inject(XpertHomeComponent)
 
   readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
 
   readonly isMobile = this.appService.isMobile
   readonly lang = this.appService.lang
 
-  readonly workspaces = toSignal(this.workspaceService.getAllInOrg().pipe(map(({ items }) => items)))
-  readonly workspace = signal<IXpertWorkspace>(null)
+  readonly workspace = this.homeComponent.workspace
+  readonly type = this.homeComponent.type
 
   readonly refresh$ = new BehaviorSubject<void>(null)
   readonly xperts = derivedAsync(() => {
@@ -116,25 +98,44 @@ export class XpertHomeComponent {
     )
   })
 
-  readonly types = model<XpertTypeEnum>(null)
-  readonly type = computed(() => this.types()?.[0])
+  readonly isXperts = computed(() => Object.values(XpertTypeEnum).includes(this.type() as XpertTypeEnum))
+  readonly isTools = computed(() => this.type() === XpertToolsetCategoryEnum.API )
 
-  switchWorkspace(item: IXpertWorkspace) {
-    this.workspace.set(item)
+  refresh() {
+    this.refresh$.next()
   }
 
-  newWorkspace() {
+  newBlank() {
     this.#dialog
-      .open(NgmConfirmUniqueComponent, {
+      .open(XpertNewBlankComponent, {
+        disableClose: true,
         data: {
-          title: `Create New Workspace`
+          workspace: this.workspace()
         }
       })
       .afterClosed()
-      .pipe(switchMap((name) => (name ? this.workspaceService.create({ name }) : EMPTY)))
+      .subscribe((xpert) => {
+        if (xpert) {
+          this.router.navigate([xpert.id], { relativeTo: this.route })
+        }
+      })
+  }
+
+  deleteXpert(xpert: IXpertRole) {
+    this.#dialog
+      .open(NgmConfirmDeleteComponent, {
+        data: {
+          // title: xpert.title,
+          value: xpert.name,
+          information: `Delete all data of xpert ${xpert.title}?`
+        }
+      })
+      .afterClosed()
+      .pipe(switchMap((confirm) => (confirm ? this.xpertService.delete(xpert.id) : EMPTY)))
       .subscribe({
-        next: (workspace) => {
-          this.#toastr.success(`PAC.Messages.CreatedSuccessfully`, { Default: 'Created Successfully!' })
+        next: () => {
+          this.#toastr.success('PAC.Messages.DeletedSuccessfully', { Default: 'Deleted successfully!' }, xpert.title)
+          this.refresh()
         },
         error: (error) => {
           this.#toastr.error(getErrorMessage(error))
@@ -142,19 +143,20 @@ export class XpertHomeComponent {
       })
   }
 
-  refresh() {
-    this.refresh$.next()
-  }
-
-  openSettings() {
+  createTool() {
     this.#dialog
-      .open(WorkspaceSettingsComponent, {
-        data: {
-          title: `Create New Workspace`
-        }
-      })
-      .afterClosed()
-      .subscribe()
+    .open(XpertStudioCreateToolComponent, {
+      data: {
+      }
+    })
+    .afterClosed()
+    .subscribe({
+      next: () => {
+        this.#toastr.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created Successfully!' })
+      },
+      error: (error) => {
+        this.#toastr.error(getErrorMessage(error))
+      }
+    })
   }
-
 }

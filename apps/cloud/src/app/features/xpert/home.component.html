@@ -1,12 +1,9 @@
 <div
-  class="sticky top-0 flex justify-between items-center gap-4 pt-4 px-12 pb-2 leading-[56px] bg-gray-100 z-20 flex-wrap gap-y-2"
+  class="sticky top-0 flex justify-between items-center gap-4 pt-4 px-12 pb-2 leading-[56px] z-20 flex-wrap gap-y-2"
 >
   <div class="flex justify-start items-center gap-4">
     <div
       type="button"
-      aria-haspopup="menu"
-      aria-expanded="false"
-      data-state="closed"
       class="group flex-0 flex cursor-poin ter items-center gap-1 rounded-lg py-1.5 px-3 text-lg font-semibold overflow-hidden whitespace-nowrap bg-white text-token-text-secondary hover:bg-token-main-surface-secondary"
       [cdkMenuTriggerFor]="workspaceMenu"
     >
@@ -33,8 +30,7 @@
     <ul class="relative flex" cdkListbox cdkListboxS [(ngModel)]="types">
       <li
         [cdkOption]="null"
-        class="mr-1 px-3 py-[7px] h-[32px] flex items-center rounded-lg font-medium leading-[18px] cursor-pointer shadow-xs active:scale-95 transition-transform hover:bg-white"
-        [ngClass]="type() ? '' : 'text-primary-600 bg-white'"
+        class="xpert-list-option" [ngClass]="{active: !type() }"
       >
         <svg
           viewBox="0 0 24 24"
@@ -51,8 +47,7 @@
       </li>
       <li
         [cdkOption]="XpertRoleTypeEnum.Agent"
-        class="mr-1 px-3 py-[7px] h-[32px] flex items-center rounded-lg border-[0.5px] border-transparent text-gray-700 text-[13px] font-medium leading-[18px] cursor-pointer active:scale-95 transition-transform hover:bg-white"
-        [ngClass]="type() === XpertRoleTypeEnum.Agent ? 'text-primary-600 bg-white' : ''"
+        class="xpert-list-option" [ngClass]="{active: type() === XpertRoleTypeEnum.Agent }"
       >
         <svg
           viewBox="0 0 24 24"
@@ -69,8 +64,7 @@
       </li>
       <li
         [cdkOption]="XpertRoleTypeEnum.Copilot"
-        class="mr-1 px-3 py-[7px] h-[32px] flex items-center rounded-lg border-[0.5px] border-transparent text-gray-700 text-[13px] font-medium leading-[18px] cursor-pointer active:scale-95 transition-transform hover:bg-white"
-        [ngClass]="type() === XpertRoleTypeEnum.Copilot ? 'text-primary-600 bg-white' : ''"
+        class="xpert-list-option" [ngClass]="{active: type() === XpertRoleTypeEnum.Copilot }"
       >
         <svg
           viewBox="0 0 24 24"
@@ -85,255 +79,59 @@
           ></path></svg
         >Copilot
       </li>
+
+      <li [cdkOption]="XpertToolsetCategory.BUILTIN"
+          class="xpert-list-option" [ngClass]="{active: type() === XpertToolsetCategory.BUILTIN }">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[14px] h-[14px] mr-1">
+          <g id="Icon">
+            <g id="Solid">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 2.91667C5.83333 2.27233 6.35567 1.75 7 1.75C7.64433 1.75 8.16667 2.27233 8.16667 2.91667C8.16667 3.561 7.64433 4.08333 7 4.08333C6.35567 4.08333 5.83333 3.561 5.83333 2.91667Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 7C5.83333 6.35567 6.35567 5.83333 7 5.83333C7.64433 5.83333 8.16667 6.35567 8.16667 7C8.16667 7.64433 7.64433 8.16667 7 8.16667C6.35567 8.16667 5.83333 7.64433 5.83333 7Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 11.0833C5.83333 10.439 6.35567 9.91667 7 9.91667C7.64433 9.91667 8.16667 10.439 8.16667 11.0833C8.16667 11.7277 7.64433 12.25 7 12.25C6.35567 12.25 5.83333 11.7277 5.83333 11.0833Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M9.91667 2.91667C9.91667 2.27233 10.439 1.75 11.0833 1.75C11.7277 1.75 12.25 2.27233 12.25 2.91667C12.25 3.561 11.7277 4.08333 11.0833 4.08333C10.439 4.08333 9.91667 3.561 9.91667 2.91667Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M9.91667 7C9.91667 6.35567 10.439 5.83333 11.0833 5.83333C11.7277 5.83333 12.25 6.35567 12.25 7C12.25 7.64433 11.7277 8.16667 11.0833 8.16667C10.439 8.16667 9.91667 7.64433 9.91667 7Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M9.91667 11.0833C9.91667 10.439 10.439 9.91667 11.0833 9.91667C11.7277 9.91667 12.25 10.439 12.25 11.0833C12.25 11.7277 11.7277 12.25 11.0833 12.25C10.439 12.25 9.91667 11.7277 9.91667 11.0833Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M1.75 2.91667C1.75 2.27233 2.27233 1.75 2.91667 1.75C3.561 1.75 4.08333 2.27233 4.08333 2.91667C4.08333 3.561 3.561 4.08333 2.91667 4.08333C2.27233 4.08333 1.75 3.561 1.75 2.91667Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M1.75 7C1.75 6.35567 2.27233 5.83333 2.91667 5.83333C3.561 5.83333 4.08333 6.35567 4.08333 7C4.08333 7.64433 3.561 8.16667 2.91667 8.16667C2.27233 8.16667 1.75 7.64433 1.75 7Z" fill="currentColor"></path>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M1.75 11.0833C1.75 10.439 2.27233 9.91667 2.91667 9.91667C3.561 9.91667 4.08333 10.439 4.08333 11.0833C4.08333 11.7277 3.561 12.25 2.91667 12.25C2.27233 12.25 1.75 11.7277 1.75 11.0833Z" fill="currentColor"></path>
+            </g>
+          </g>
+        </svg>Built-in</li>
+      <li [cdkOption]="XpertToolsetCategory.API"
+        class="xpert-list-option" [ngClass]="{active: type() === XpertToolsetCategory.API}">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[14px] h-[14px] mr-1" data-icon="Colors" aria-hidden="true">
+          <g id="colors" clip-path="url(#clip0_18499_53582)">
+            <path id="Icon" d="M7.00032 11.9422C7.61954 12.4964 8.43724 12.8334 9.33366 12.8334C11.2667 12.8334 12.8337 11.2664 12.8337 9.33342C12.8337 7.71938 11.7411 6.36051 10.2552 5.95602M3.74543 5.95601C2.25954 6.3605 1.16699 7.71937 1.16699 9.33341C1.16699 11.2664 2.734 12.8334 4.66699 12.8334C6.59999 12.8334 8.16699 11.2664 8.16699 9.33341C8.16699 8.87813 8.08006 8.44314 7.92189 8.04415M10.5003 4.66675C10.5003 6.59974 8.93332 8.16675 7.00033 8.16675C5.06733 8.16675 3.50033 6.59974 3.50033 4.66675C3.50033 2.73375 5.06733 1.16675 7.00033 1.16675C8.93332 1.16675 10.5003 2.73375 10.5003 4.66675Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
+          </g>
+          <defs><clipPath id="clip0_18499_53582"><rect width="14" height="14" fill="white"></rect></clipPath></defs>
+        </svg>Custom</li>
+      <li [cdkOption]="XpertToolsetCategory.WORKFLOW"
+        class="xpert-list-option" [ngClass]="{active: type() === XpertToolsetCategory.WORKFLOW }">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[14px] h-[14px] mr-1" >
+          <g id="route" clip-path="url(#clip0_3167_28693)">
+            <path id="Icon" d="M6.70866 2.91699H6.96206C8.73962 2.91699 9.6284 2.91699 9.96578 3.23624C10.2574 3.51221 10.3867 3.91874 10.3079 4.31245C10.2168 4.76792 9.49122 5.28116 8.03999 6.30763L5.66899 7.98468C4.21777 9.01116 3.49215 9.5244 3.40106 9.97987C3.32233 10.3736 3.45157 10.7801 3.7432 11.0561C4.08059 11.3753 4.96937 11.3753 6.74693 11.3753H7.29199M4.66699 2.91699C4.66699 3.88349 3.88349 4.66699 2.91699 4.66699C1.95049 4.66699 1.16699 3.88349 1.16699 2.91699C1.16699 1.95049 1.95049 1.16699 2.91699 1.16699C3.88349 1.16699 4.66699 1.95049 4.66699 2.91699ZM12.8337 11.0837C12.8337 12.0502 12.0502 12.8337 11.0837 12.8337C10.1172 12.8337 9.33366 12.0502 9.33366 11.0837C9.33366 10.1172 10.1172 9.33366 11.0837 9.33366C12.0502 9.33366 12.8337 10.1172 12.8337 11.0837Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
+          </g>
+          <defs><clipPath id="clip0_3167_28693"><rect width="14" height="14" fill="white"></rect></clipPath></defs>
+        </svg>Workflow</li>
     </ul>
   </div>
 </div>
 
-<div
-  class="relative grid content-start grid-cols-1 gap-4 px-12 pt-2 pb-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grow shrink-0"
->
-  <a
-    class="relative col-span-1 flex flex-col justify-between min-h-[160px] bg-gray-200 rounded-xl border-[0.5px] border-black/5"
-    ><div class="grow p-2 rounded-t-xl">
-      <div class="px-6 pt-2 pb-1 text-xs font-medium leading-[18px] text-gray-500">创建应用</div>
-      <div
-        class="flex items-center mb-1 px-6 py-[7px] rounded-lg text-[13px] font-medium leading-[18px] text-gray-600 cursor-pointer hover:text-primary-600 hover:bg-white"
-        (click)="newBlank()"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          class="shrink-0 mr-2 w-4 h-4"
-          data-icon="FilePlus01"
-          aria-hidden="true"
-        >
-          <g id="file-plus-01">
-            <path
-              id="Icon"
-              d="M13.3332 6.99967V4.53301C13.3332 3.4129 13.3332 2.85285 13.1152 2.42503C12.9234 2.0487 12.6175 1.74274 12.2412 1.55099C11.8133 1.33301 11.2533 1.33301 10.1332 1.33301H5.8665C4.7464 1.33301 4.18635 1.33301 3.75852 1.55099C3.3822 1.74274 3.07624 2.0487 2.88449 2.42503C2.6665 2.85285 2.6665 3.4129 2.6665 4.53301V11.4663C2.6665 12.5864 2.6665 13.1465 2.88449 13.5743C3.07624 13.9506 3.3822 14.2566 3.75852 14.4484C4.18635 14.6663 4.7464 14.6663 5.8665 14.6663H7.99984M11.9998 13.9997V9.99967M9.99984 11.9997H13.9998"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></path>
-          </g></svg
-        >创建空白应用
-      </div>
-      <div
-        class="flex items-center px-6 py-[7px] rounded-lg text-[13px] font-medium leading-[18px] text-gray-600 cursor-pointer hover:text-primary-600 hover:bg-white"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          class="shrink-0 mr-2 w-4 h-4"
-          data-icon="FilePlus02"
-          aria-hidden="true"
-        >
-          <path
-            d="M13.3333 6.99992V4.53325C13.3333 3.41315 13.3333 2.85309 13.1153 2.42527C12.9236 2.04895 12.6176 1.74299 12.2413 1.55124C11.8135 1.33325 11.2534 1.33325 10.1333 1.33325H5.86666C4.74655 1.33325 4.1865 1.33325 3.75868 1.55124C3.38235 1.74299 3.07639 2.04895 2.88464 2.42527C2.66666 2.85309 2.66666 3.41315 2.66666 4.53325V11.4666C2.66666 12.5867 2.66666 13.1467 2.88464 13.5746C3.07639 13.9509 3.38235 14.2569 3.75868 14.4486C4.1865 14.6666 4.74655 14.6666 5.86666 14.6666H7.99999M9.33332 7.33325H5.33332M6.66666 9.99992H5.33332M10.6667 4.66659H5.33332M12 13.9999V9.99992M9.99999 11.9999H14"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          ></path></svg
-        >从应用模版创建
-      </div>
-    </div>
-    <div class="p-2 border-t-[0.5px] border-black/5 rounded-b-xl">
-      <div
-        class="flex items-center px-6 py-[7px] rounded-lg text-[13px] font-medium leading-[18px] text-gray-600 cursor-pointer hover:text-primary-600 hover:bg-white"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          class="shrink-0 mr-2 w-4 h-4"
-          data-icon="FileArrow01"
-          aria-hidden="true"
-        >
-          <g id="file-arrow-01">
-            <path
-              id="Vector"
-              d="M3.33333 12.333C3.33333 12.6426 3.33333 12.7974 3.35044 12.9274C3.4686 13.8249 4.17481 14.5311 5.07228 14.6492C5.20225 14.6663 5.35705 14.6663 5.66667 14.6663H10.8C11.9201 14.6663 12.4802 14.6663 12.908 14.4484C13.2843 14.2566 13.5903 13.9506 13.782 13.5743C14 13.1465 14 12.5864 14 11.4663V6.65849C14 6.16931 14 5.92472 13.9447 5.69454C13.8957 5.49047 13.8149 5.29538 13.7053 5.11644C13.5816 4.91461 13.4086 4.74165 13.0627 4.39575L10.9373 2.27027C10.5914 1.92436 10.4184 1.75141 10.2166 1.62773C10.0376 1.51807 9.84254 1.43726 9.63846 1.38827C9.40829 1.33301 9.1637 1.33301 8.67452 1.33301H5.66667C5.35705 1.33301 5.20225 1.33301 5.07228 1.35012C4.17481 1.46827 3.4686 2.17449 3.35044 3.07196M5.33333 5.99967L7.33333 7.99967M7.33333 7.99967L5.33333 9.99967M7.33333 7.99967H2"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></path>
-          </g></svg
-        >导入 DSL 文件
-      </div>
-    </div></a
-  >
-  @for (xpert of xperts(); track xpert.name) {
-    <div
-      class="group relative col-span-1 bg-white border-2 border-solid border-transparent rounded-xl shadow-sm min-h-[160px] flex flex-col transition-all duration-200 ease-in-out cursor-pointer hover:shadow-lg"
-      [routerLink]="['.', xpert.id]"
-    >
-      <div class="flex pt-[14px] px-[14px] pb-3 h-[66px] items-center gap-3 grow-0 shrink-0">
-        <div class="relative shrink-0">
-          <div class="w-10 h-10 bg-center bg-cover bg-no-repeat rounded-md"></div>
-        </div>
-        <div class="grow w-0 py-[1px]">
-          <div class="flex items-center text-sm leading-5 font-semibold text-gray-800">
-            <div class="truncate" title="Google">{{ xpert.title }}</div>
-          </div>
-          <div class="flex items-center text-[10px] leading-[18px] text-gray-500 font-medium">
-            <div class="truncate">作者&nbsp;{{ xpert.createdBy | user }}</div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="grow mb-2 px-[14px] max-h-[72px] text-xs leading-normal text-gray-500 line-clamp-2 group-hover:line-clamp-2 group-hover:max-h-[36px]"
-        title="{{ xpert.description }}"
-      >
-        {{ xpert.description }}
-      </div>
-      <div class="flex items-center shrink-0 mt-1 pt-1 pl-[14px] pr-[6px] pb-[6px] h-[42px]">
-        <div class="relative w-full flex items-center gap-1 py-[7px] rounded-md text-gray-500" title="搜索">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            class="shrink-0 w-3 h-3"
-            data-icon="Tag01"
-            aria-hidden="true"
-          >
-            <g id="Icon" clip-path="url(#clip0_17795_9693)">
-              <path
-                id="Icon_2"
-                d="M4.66699 4.6665H4.67283M1.16699 3.03317L1.16699 5.6433C1.16699 5.92866 1.16699 6.07134 1.19923 6.20561C1.22781 6.32465 1.27495 6.43845 1.33891 6.54284C1.41106 6.66057 1.51195 6.76146 1.71373 6.96324L6.18709 11.4366C6.88012 12.1296 7.22664 12.4761 7.62621 12.606C7.97769 12.7202 8.35629 12.7202 8.70777 12.606C9.10735 12.4761 9.45386 12.1296 10.1469 11.4366L11.4371 10.1464C12.1301 9.45337 12.4766 9.10686 12.6065 8.70728C12.7207 8.35581 12.7207 7.9772 12.6065 7.62572C12.4766 7.22615 12.1301 6.87963 11.4371 6.1866L6.96372 1.71324C6.76195 1.51146 6.66106 1.41057 6.54332 1.33842C6.43894 1.27446 6.32514 1.22732 6.20609 1.19874C6.07183 1.1665 5.92915 1.1665 5.64379 1.1665L3.03366 1.1665C2.38026 1.1665 2.05357 1.1665 1.804 1.29366C1.58448 1.40552 1.406 1.58399 1.29415 1.80352C1.16699 2.05308 1.16699 2.37978 1.16699 3.03317ZM4.95866 4.6665C4.95866 4.82759 4.82808 4.95817 4.66699 4.95817C4.50591 4.95817 4.37533 4.82759 4.37533 4.6665C4.37533 4.50542 4.50591 4.37484 4.66699 4.37484C4.82808 4.37484 4.95866 4.50542 4.95866 4.6665Z"
-                stroke="currentColor"
-                stroke-width="1.25"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </g>
-            <defs>
-              <clipPath id="clip0_17795_9693"><rect width="14" height="14" fill="white"></rect></clipPath>
-            </defs>
-          </svg>
-          <div class="grow text-xs text-start leading-[18px] font-normal truncate">搜索</div>
-        </div>
-      </div>
-
-      <div
-        class="absolute bottom-1 left-0 right-0 items-center shrink-0 pt-1 pl-[14px] pr-[6px] pb-[6px] h-[42px]
-          hidden group-hover:flex"
-        (click)="$event.stopPropagation();"
-      >
-        <div class="grow flex items-center gap-1 w-0">
-          <div class="group-hover:!mr-0 mr-[41px] grow w-full">
-            <div class="relative" >
-              <div>
-                <button
-                  class="group style_popupBtn__nc4lA bg-gray-100 !bg-transparent !w-full !p-0 !border-0 !text-gray-500 hover:!bg-gray-100 hover:!text-gray-700"
-                  type="button"
-                >
-                  <div
-                    class="group/tip relative w-full flex items-center gap-1 px-2 py-[7px] rounded-md cursor-pointer hover:bg-gray-100"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="shrink-0 w-3 h-3"
-                    >
-                      <g id="Icon" clip-path="url(#clip0_17795_9693)">
-                        <path
-                          id="Icon_2"
-                          d="M4.66699 4.6665H4.67283M1.16699 3.03317L1.16699 5.6433C1.16699 5.92866 1.16699 6.07134 1.19923 6.20561C1.22781 6.32465 1.27495 6.43845 1.33891 6.54284C1.41106 6.66057 1.51195 6.76146 1.71373 6.96324L6.18709 11.4366C6.88012 12.1296 7.22664 12.4761 7.62621 12.606C7.97769 12.7202 8.35629 12.7202 8.70777 12.606C9.10735 12.4761 9.45386 12.1296 10.1469 11.4366L11.4371 10.1464C12.1301 9.45337 12.4766 9.10686 12.6065 8.70728C12.7207 8.35581 12.7207 7.9772 12.6065 7.62572C12.4766 7.22615 12.1301 6.87963 11.4371 6.1866L6.96372 1.71324C6.76195 1.51146 6.66106 1.41057 6.54332 1.33842C6.43894 1.27446 6.32514 1.22732 6.20609 1.19874C6.07183 1.1665 5.92915 1.1665 5.64379 1.1665L3.03366 1.1665C2.38026 1.1665 2.05357 1.1665 1.804 1.29366C1.58448 1.40552 1.406 1.58399 1.29415 1.80352C1.16699 2.05308 1.16699 2.37978 1.16699 3.03317ZM4.95866 4.6665C4.95866 4.82759 4.82808 4.95817 4.66699 4.95817C4.50591 4.95817 4.37533 4.82759 4.37533 4.6665C4.37533 4.50542 4.50591 4.37484 4.66699 4.37484C4.82808 4.37484 4.95866 4.50542 4.95866 4.6665Z"
-                          stroke="currentColor"
-                          stroke-width="1.25"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        ></path>
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_17795_9693"><rect width="14" height="14" fill="white"></rect></clipPath>
-                      </defs>
-                    </svg>
-                    <div class="grow text-xs text-start leading-[18px] font-normal truncate">添加标签</div>
-                  </div>
-                </button>
-              </div>
-            </div>
-            <div
-              style="
-                position: fixed;
-                top: 1px;
-                left: 1px;
-                width: 1px;
-                height: 0px;
-                padding: 0px;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0px, 0px, 0px, 0px);
-                white-space: nowrap;
-                border-width: 0px;
-                display: none;
-              "
-            ></div>
-          </div>
-        </div>
-        <div class="shrink-0 mx-1 w-[1px] h-[14px] bg-gray-200"></div>
-        <div class="shrink-0">
-          <div class="relative" >
-            <div>
-              <button
-                class="group bg-gray-100 !bg-transparent h-8 w-8 rounded-md border-none hover:!bg-black/5"
-                type="button"
-                [cdkMenuTriggerFor]="cardMenu"
-                [cdkMenuTriggerData]="{xpert: xpert}"
-              >
-                <div class="flex items-center justify-center w-8 h-8 cursor-pointer rounded-md">
-                  <svg
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="currentColor"
-                    class="remixicon w-4 h-4 text-gray-700"
-                  >
-                    <path
-                      d="M5 10C3.9 10 3 10.9 3 12C3 13.1 3.9 14 5 14C6.1 14 7 13.1 7 12C7 10.9 6.1 10 5 10ZM19 10C17.9 10 17 10.9 17 12C17 13.1 17.9 14 19 14C20.1 14 21 13.1 21 12C21 10.9 20.1 10 19 10ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z"
-                    ></path>
-                  </svg>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-</div>
+<router-outlet></router-outlet>
 
 <ng-template #workspaceMenu>
-  <div class="ngm-cdk-menu" cdkMenu displayDensity="cosy">
-    <label class="px-2 pb-2">{{ 'PAC.KEY_WORDS.Workspaces' | translate: { Default: 'Workspaces' } }}</label>
+  <div class="ngm-cdk-menu p-2" cdkMenu displayDensity="cosy">
+    <label class="px-2 pb-2 font-semibold">{{ 'PAC.KEY_WORDS.Workspaces' | translate: { Default: 'Workspaces' } }}</label>
     <div class="max-h-64 w-56 overflow-y-auto" (click)="$event.stopPropagation()">
       <ul class="ngm-cdk-listbox">
-        <li class="ngm-cdk-option flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10"
-            (click)="switchWorkspace(null)"
+        <li class="ngm-cdk-option p-2 flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10"
+          (click)="switchWorkspace(null)"
         >
           {{ 'Default' }}
         </li>
         @for (item of workspaces(); track item.name) {
           <li
-            class="ngm-cdk-option flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10"
+            class="ngm-cdk-option p-2 flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10"
             (click)="switchWorkspace(item)"
           >
             {{ item.name }}
@@ -347,23 +145,14 @@
       </ul>
     </div>
 
-    <button class="ngm-cdk-menu-item" cdkMenuItem (click)="newWorkspace()">
+    <button class="ngm-cdk-menu-item p-2" cdkMenuItem (click)="newWorkspace()">
       <mat-icon class="text-token-text-secondary mr-2">workspaces</mat-icon>
       {{ 'PAC.KEY_WORDS.New' | translate: { Default: 'New' } }}
     </button>
 
-    <button class="ngm-cdk-menu-item" cdkMenuItem (click)="openSettings()">
+    <button class="ngm-cdk-menu-item p-2" cdkMenuItem (click)="openSettings()">
       <mat-icon class="text-token-text-secondary mr-2">workspaces</mat-icon>
       {{ 'PAC.KEY_WORDS.Settings' | translate: { Default: 'Settings' } }}
-    </button>
-  </div>
-</ng-template>
-
-<ng-template #cardMenu let-xpert="xpert">
-  <div class="ngm-cdk-menu" cdkMenu >
-    <button class="ngm-cdk-menu-item" cdkMenuItem ngmAppearance="danger" (click)="deleteXpert(xpert)">
-      <mat-icon class="mr-2">delete</mat-icon>
-      {{ 'PAC.KEY_WORDS.Delete' | translate: { Default: 'Delete' } }}
     </button>
   </div>
 </ng-template>

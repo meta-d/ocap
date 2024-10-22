@@ -1,11 +1,12 @@
 import { IPagination } from '@metad/contracts'
 import { CrudController, PaginationParams, ParseJsonPipe, TransformInterceptor } from '@metad/server-core'
-import { Controller, Get, HttpStatus, Logger, Query, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Logger, Post, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ToolsetPublicDTO } from './dto'
 import { XpertToolset } from './xpert-toolset.entity'
 import { XpertToolsetService } from './xpert-toolset.service'
+import { ParserOpenAPISchemaCommand } from './commands'
 
 @ApiTags('XpertToolset')
 @ApiBearerAuth()
@@ -34,5 +35,10 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 			items: items.map((item) => new ToolsetPublicDTO(item)),
 			...rest
 		}
+	}
+
+	@Post('/tool-provider/openapi/schema')
+	async parseOpenAPISchema(@Body() {schema}: {schema: string}) {
+		return this.commandBus.execute(new ParserOpenAPISchemaCommand(schema))
 	}
 }

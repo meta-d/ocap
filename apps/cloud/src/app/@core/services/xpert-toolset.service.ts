@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core'
 import { OrganizationBaseCrudService } from '@metad/cloud/state'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, Observable, tap } from 'rxjs'
+import { BehaviorSubject } from 'rxjs'
 import { API_XPERT_TOOLSET } from '../constants/app.constants'
-import { IXpertToolset } from '../types'
+import { ApiProviderSchemaType, ApiToolBundle, IXpertToolset, ToolProviderCredentials } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class XpertToolsetService extends OrganizationBaseCrudService<IXpertToolset> {
@@ -13,5 +13,16 @@ export class XpertToolsetService extends OrganizationBaseCrudService<IXpertTools
 
   constructor() {
     super(API_XPERT_TOOLSET)
+  }
+
+  parserOpenAPISchema(schema: string) {
+    return this.httpClient.post<{
+      schema_type: ApiProviderSchemaType
+      parameters_schema: ApiToolBundle[]
+      credentials_schema: ToolProviderCredentials
+      warning: any
+    }>(this.apiBaseUrl + `/tool-provider/openapi/schema`, {
+      schema
+    })
   }
 }
