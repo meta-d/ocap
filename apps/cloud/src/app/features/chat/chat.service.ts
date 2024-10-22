@@ -29,7 +29,7 @@ import {
   IKnowledgebase,
   LanguagesEnum,
 } from '../../@core'
-import { ChatConversationService, ChatService as ChatServerService, XpertRoleService, ToastrService } from '../../@core/services'
+import { ChatConversationService, ChatService as ChatServerService, XpertService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { COMMON_COPILOT_ROLE } from './types'
 import { TranslateService } from '@ngx-translate/core'
@@ -40,7 +40,7 @@ import { NGXLogger } from 'ngx-logger'
 export class ChatService {
   readonly chatService = inject(ChatServerService)
   readonly conversationService = inject(ChatConversationService)
-  readonly copilotRoleService = inject(XpertRoleService)
+  readonly copilotRoleService = inject(XpertService)
   readonly appService = inject(AppService)
   readonly #translate = inject(TranslateService)
   readonly #logger = inject(NGXLogger)

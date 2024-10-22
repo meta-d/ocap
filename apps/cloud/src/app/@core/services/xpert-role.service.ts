@@ -8,7 +8,7 @@ import { toParams } from '@metad/ocap-angular/core'
 import { PaginationParams, toHttpParams } from '@metad/cloud/state'
 
 @Injectable({ providedIn: 'root' })
-export class XpertRoleService extends XpertWorkspaceBaseCrudService<IXpertRole> {
+export class XpertService extends XpertWorkspaceBaseCrudService<IXpertRole> {
   readonly #logger = inject(NGXLogger)
 
   readonly #refresh = new BehaviorSubject<void>(null)

@@ -2,14 +2,13 @@ import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, computed, effect, inject, input, model } from '@angular/core'
 import { ICopilot, ICopilotModel, ModelType, PACCopilotService } from '../../../@core'
-import { NgmSearchComponent } from '@metad/ocap-angular/common'
+import { NgmHighlightDirective, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { NgmI18nPipe, nonBlank } from '@metad/ocap-angular/core'
 import { FormControl } from '@angular/forms'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { debounceTime } from 'rxjs'
-import { PopoverClose, PopoverComponent, PopoverTemplate } from '@ngx-popovers/popover'
 
 @Component({
   standalone: true,
@@ -17,11 +16,9 @@ import { PopoverClose, PopoverComponent, PopoverTemplate } from '@ngx-popovers/p
     CommonModule,
     CdkMenuModule,
     CdkListboxModule,
-    PopoverClose,
-    PopoverComponent,
-    PopoverTemplate,
     NgmSearchComponent,
     NgmI18nPipe,
+    NgmHighlightDirective
   ],
   selector: 'copilot-model-select',
   templateUrl: 'select.component.html',

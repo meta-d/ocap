@@ -18,7 +18,7 @@ import { BehaviorSubject, EMPTY, combineLatestWith, map, pipe, switchMap } from 
 import {
   AiBusinessRole,
   CopilotExampleService,
-  XpertRoleService,
+  XpertService,
   ICopilotKnowledge,
   IXpertRole,
   LanguagesEnum,
@@ -39,7 +39,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
 
   readonly exampleService = inject(CopilotExampleService)
-  readonly roleService = inject(XpertRoleService)
+  readonly roleService = inject(XpertService)
   readonly _toastrService = inject(ToastrService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)

@@ -12,7 +12,7 @@ import { omit } from 'lodash-es'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { EMPTY, map, of, pipe, startWith, switchMap } from 'rxjs'
-import { ChatBIModelService, XpertRoleService, IChatBIModel, IntegrationService, ToastrService, routeAnimations } from '../../../../@core'
+import { ChatBIModelService, XpertService, IChatBIModel, IntegrationService, ToastrService, routeAnimations } from '../../../../@core'
 import { XpertRoleListComponent, IntegrationListComponent, MaterialModule, UpsertEntityComponent } from '../../../../@shared'
 import { ChatBIModelsComponent } from '../models/models.component'
 
@@ -38,7 +38,7 @@ export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> im
 
   readonly modelsService = inject(ModelsService)
   readonly chatbiModelService = inject(ChatBIModelService)
-  readonly roleService = inject(XpertRoleService)
+  readonly roleService = inject(XpertService)
   readonly integrationService = inject(IntegrationService)
   readonly _toastrService = inject(ToastrService)
   readonly fb = inject(FormBuilder)

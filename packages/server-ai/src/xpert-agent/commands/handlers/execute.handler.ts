@@ -2,20 +2,22 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, MessageContent, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { StateGraphArgs } from '@langchain/langgraph'
-import { ICopilot } from '@metad/contracts'
-import { AgentRecursionLimit } from '@metad/copilot'
+import { ICopilot, IXpertAgent } from '@metad/contracts'
+import { AgentRecursionLimit, isNil } from '@metad/copilot'
 import { RequestContext } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { uniqueId } from 'lodash'
-import { filter, from, map, Observable } from 'rxjs'
+import { filter, from, map, Observable, tap } from 'rxjs'
 import { AIModelGetOneQuery } from '../../../ai-model'
 import { AgentState, CopilotGetOneQuery, createCopilotAgentState, createReactAgent } from '../../../copilot'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint'
 import { BaseToolset, ToolsetGetToolsCommand } from '../../../xpert-toolset'
 import { XpertAgentService } from '../../xpert-agent.service'
-import { XpertAgentExecuteCommand } from '../execute.command'
+import { createXpertAgentTool, XpertAgentExecuteCommand } from '../execute.command'
 import { GetXpertAgentQuery } from '../../../xpert/queries'
+
+
 
 export type ChatAgentState = AgentState
 export const chatAgentState: StateGraphArgs<ChatAgentState>['channels'] = {
@@ -34,12 +36,12 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 	) {}
 
 	public async execute(command: XpertAgentExecuteCommand): Promise<Observable<MessageContent>> {
-		const { input, agent: _agent, xpert } = command
+		const { input, agentKey, xpert } = command
 		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
 		const user = RequestContext.currentUser()
 
-		const agent = await this.queryBus.execute(new GetXpertAgentQuery(xpert.id, _agent.key,))
+		const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(xpert.id, agentKey,))
 
 		let copilot: ICopilot = null
 		const copilotId = agent.copilotModel?.copilotId ?? xpert.copilotModel?.copilotId
@@ -59,6 +61,12 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		toolsets.forEach((toolset) => {
 			tools.push(...toolset.getTools())
 		})
+
+		if (agent.followers?.length) {
+			agent.followers.forEach((follower) => {
+				tools.push(createXpertAgentTool(this.commandBus, { xpert, agent: follower }))
+			})
+		}
 
 		const graph = createReactAgent({
 			state: chatAgentState,
@@ -82,6 +90,8 @@ ${agent.prompt}
 		const threadId = uniqueId()
 		const abortController = new AbortController()
 
+		this.#logger.debug(`Start chat with xpert '${xpert.name}' & agent '${agent.title}'`)
+		let prevEvent = ''
 		return from(
 			graph.streamEvents(
 				{
@@ -104,6 +114,22 @@ ${agent.prompt}
 			)
 		).pipe(
 			map(({ event, data, ...rest }: any) => {
+				// this.#logger.verbose(event, data, rest)
+				if (Logger.isLevelEnabled('verbose')) {
+					if (event === 'on_chat_model_stream') {
+						if (prevEvent === 'on_chat_model_stream') {
+							process.stdout.write('.')
+						} else {
+							this.#logger.verbose('on_chat_model_stream')
+						}
+					} else {
+						if (prevEvent === 'on_chat_model_stream') {
+							process.stdout.write('\n')
+						}
+						this.#logger.verbose(event)
+					}
+				}
+				prevEvent = event
 				switch (event) {
 					case 'on_chat_model_stream': {
 						const msg = data.chunk as AIMessageChunk
@@ -119,7 +145,12 @@ ${agent.prompt}
 					}
 				}
 			}),
-			filter((content) => !!content)
+			filter((content) => !isNil(content)),
+			tap({
+				complete: () => {
+					this.#logger.debug(`End chat.`)
+				},
+			})
 		)
 	}
 

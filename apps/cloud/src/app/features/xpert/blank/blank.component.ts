@@ -13,7 +13,7 @@ import {
   IXpertWorkspace,
   ToastrService,
   uuid,
-  XpertRoleService,
+  XpertService,
   XpertTypeEnum
 } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
@@ -29,7 +29,7 @@ export class XpertNewBlankComponent {
   eXpertTypeEnum = XpertTypeEnum
   readonly #dialogRef = inject(MatDialogRef<XpertNewBlankComponent>)
   readonly #dialogData = inject<{ workspace: IXpertWorkspace }>(MAT_DIALOG_DATA)
-  readonly xpertService = inject(XpertRoleService)
+  readonly xpertService = inject(XpertService)
   readonly #toastr = inject(ToastrService)
 
   readonly type = model<XpertTypeEnum>(XpertTypeEnum.Agent)

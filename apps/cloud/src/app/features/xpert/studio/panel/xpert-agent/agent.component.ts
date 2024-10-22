@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilotModel, IfAnimation, IXpertAgent, ModelType, XpertRoleService } from 'apps/cloud/src/app/@core'
+import { ICopilotModel, IfAnimation, IXpertAgent, ModelType, XpertService } from 'apps/cloud/src/app/@core'
 import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
@@ -56,7 +56,7 @@ export class XpertStudioPanelAgentComponent {
   readonly regex = `{{(.*?)}}`
   readonly elementRef = inject(ElementRef)
   readonly apiService = inject(XpertStudioApiService)
-  readonly xpertService = inject(XpertRoleService)
+  readonly xpertService = inject(XpertService)
 
   readonly key = input<string>()
   readonly xpertAgent = input<IXpertAgent>()

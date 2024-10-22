@@ -4,7 +4,7 @@ import { Component, computed, inject, signal } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { nonBlank } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { getErrorMessage, ToastrService, XpertRoleService } from 'apps/cloud/src/app/@core'
+import { getErrorMessage, ToastrService, XpertService } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { formatRelative } from 'date-fns'
 import { sortBy } from 'lodash-es'
@@ -21,7 +21,7 @@ import { XpertStudioComponent } from '../studio.component'
 })
 export class XpertStudioHeaderComponent {
   readonly xpertStudioComponent = inject(XpertStudioComponent)
-  readonly xpertRoleService = inject(XpertRoleService)
+  readonly xpertRoleService = inject(XpertService)
   readonly apiService = inject(XpertStudioApiService)
   readonly #toastr = inject(ToastrService)
   readonly #translate = inject(TranslateService)

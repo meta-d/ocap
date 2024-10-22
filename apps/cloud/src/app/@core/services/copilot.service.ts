@@ -5,16 +5,28 @@ import { Router } from '@angular/router'
 import { API_PREFIX, AuthService } from '@metad/cloud/state'
 import { AiProviderRole, BusinessRoleType, ICopilot } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/copilot-angular'
+import { toParams } from '@metad/core'
 import { pick } from '@metad/ocap-core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, firstValueFrom, map, Observable, shareReplay, startWith, switchMap } from 'rxjs'
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  firstValueFrom,
+  map,
+  Observable,
+  shareReplay,
+  startWith,
+  switchMap
+} from 'rxjs'
+import { API_COPILOT } from '../constants/app.constants'
 import { ICopilotWithProvider, ICopilot as IServerCopilot, ModelType } from '../types'
 import { AgentService } from './agent.service'
 import { Store } from './store.service'
-import { XpertRoleService } from './xpert-role.service'
-import { API_COPILOT } from '../constants/app.constants'
-import { toParams } from '@metad/core'
+import { XpertService } from './xpert-role.service'
+
 
 const baseUrl = environment.API_BASE_URL
 const API_CHAT = constructUrl(baseUrl) + '/api/ai/chat'
@@ -25,7 +37,7 @@ export class PACCopilotService extends NgmCopilotService {
   readonly #store = inject(Store)
   readonly httpClient = inject(HttpClient)
   readonly authService = inject(AuthService)
-  readonly roleService = inject(XpertRoleService)
+  readonly roleService = inject(XpertService)
   readonly router = inject(Router)
   readonly #agentService = inject(AgentService)
 
@@ -165,6 +177,8 @@ export class PACCopilotService extends NgmCopilotService {
       })
       return copilots
     })
+
+    this.refresh$.next(true)
   }
 
   enableCopilot(): void {
@@ -175,15 +189,20 @@ export class PACCopilotService extends NgmCopilotService {
 
   getCopilotModels(type: ModelType) {
     if (!this.modelsByType.get(type)) {
-      this.modelsByType.set(type, this.refresh$.pipe(
-        switchMap(() => this.httpClient.get<ICopilotWithProvider[]>(API_COPILOT + '/models', { params: toParams({type}) })),
-        shareReplay(1)
-      ))
+      this.modelsByType.set(
+        type,
+        this.refresh$.pipe(
+          switchMap(() =>
+            this.httpClient.get<ICopilotWithProvider[]>(API_COPILOT + '/models', { params: toParams({ type }) })
+          ),
+          shareReplay(1)
+        )
+      )
     }
     return this.modelsByType.get(type)
   }
 
-  getCopilotModelParameters(provider: string, ) {
+  getCopilotModelParameters(provider: string) {
     return this.httpClient.get(API_COPILOT + `/provider/${provider}/model-parameters`)
   }
 }

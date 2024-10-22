@@ -36,7 +36,7 @@ import { NGXLogger } from 'ngx-logger'
 import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
 import { delay, map, startWith } from 'rxjs/operators'
-import { ICopilotModel, IXpert, ModelType, ToastrService, TXpertTeamNode, XpertRoleService, XpertWorkspaceService } from '../../../@core'
+import { ICopilotModel, IXpert, ModelType, ToastrService, TXpertTeamNode, XpertService, XpertWorkspaceService } from '../../../@core'
 import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import {
@@ -97,7 +97,7 @@ export class XpertStudioComponent {
   readonly #dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
-  readonly xpertRoleService = inject(XpertRoleService)
+  readonly xpertRoleService = inject(XpertService)
   readonly paramId = injectParams('id')
   readonly apiService = inject(XpertStudioApiService)
   readonly selectionService = inject(SelectionService)

@@ -34,7 +34,7 @@ export class XpertAgentService extends XpertWorkspaceBaseCrudService<IXpertAgent
         body: JSON.stringify({
           input: data.input,
           agent: data.agent,
-          xpert: pick(data.xpert, 'id', 'copilotId', 'copilotModel')
+          xpert: pick(data.xpert, 'id', 'name', 'copilotId', 'copilotModel')
         }),
         signal: ctrl.signal,
         onmessage(msg) {

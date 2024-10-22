@@ -9,6 +9,8 @@
     "@langchain/exa": "0.1.0",
     "@langchain/openai": "0.3.0",
     "@langchain/mistralai": "0.1.1",
+    "@langchain/core": "0.3.13",
+    "@langchain/langgraph": "0.2.16",
     "duck-duck-scrape": "^2.2.5",
     "epub2": "^3.0.2",
     "html-to-text": "^7.1.2",

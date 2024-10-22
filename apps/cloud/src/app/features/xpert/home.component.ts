@@ -37,7 +37,7 @@ import {
   IXpertWorkspace,
   routeAnimations,
   ToastrService,
-  XpertRoleService,
+  XpertService,
   XpertTypeEnum,
   XpertWorkspaceService
 } from '../../@core'
@@ -86,7 +86,7 @@ export class XpertHomeComponent {
   readonly #dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
-  readonly xpertService = inject(XpertRoleService)
+  readonly xpertService = inject(XpertService)
 
   readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
 
@@ -97,7 +97,7 @@ export class XpertHomeComponent {
   readonly workspace = signal<IXpertWorkspace>(null)
 
   readonly refresh$ = new BehaviorSubject<void>(null)
-  readonly xpertRoles = derivedAsync(() => {
+  readonly xperts = derivedAsync(() => {
     const where = {
       type: this.type(),
       latest: true

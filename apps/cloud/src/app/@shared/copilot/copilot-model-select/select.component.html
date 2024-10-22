@@ -663,11 +663,16 @@
       <div>
         <ul cdkListbox >
           @for (copilot of searchedModels(); track copilot.id) {
-            <div class="text-base"><span class="uppercase">{{copilot.role}}</span> - {{copilot.providerWithModels?.label | i18n }}</div>
+            <div class="h-0.5 mx-4 my-2 rounded-full bg-neutral-100"></div>
+            <div class="text-base px-4 my-2 font-semibold"><span class="uppercase">{{copilot.role}}</span> - {{copilot.providerWithModels?.label | i18n }}</div>
             @for (model of copilot.providerWithModels?.models; track model.model) {
               <li cdkMenuItem class="p-2 rounded-lg cursor-pointer hover:bg-primary-100 hover:text-primary-600"
-                (click)="setModel(copilot, model.model);">
-                {{model.model}}
+                (click)="setModel(copilot, model.model);"
+                [ngmHighlight]="searchText()"
+                [content]="model.model"
+                customClasses="text-primary-600"
+                >
+                <span>{{model.model}}</span>
               </li>
             }
           }

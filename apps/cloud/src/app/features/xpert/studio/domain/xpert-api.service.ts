@@ -4,7 +4,7 @@ import { IPoint, IRect } from '@foblex/2d'
 import { nonNullable } from '@metad/core'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
-import { KnowledgebaseService, PACCopilotService, ToastrService, XpertRoleService, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import { KnowledgebaseService, PACCopilotService, ToastrService, XpertService, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import * as CryptoJS from 'crypto-js'
 import { isEqual, negate } from 'lodash-es'
 import { injectParams } from 'ngxtension/inject-params'
@@ -55,7 +55,7 @@ import { ExpandTeamRequest } from './xpert/expand/expand.request'
 @Injectable()
 export class XpertStudioApiService {
   readonly paramId = injectParams('id')
-  readonly xpertRoleService = inject(XpertRoleService)
+  readonly xpertRoleService = inject(XpertService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly toolsetService = inject(XpertToolsetService)
   readonly copilotService = inject(PACCopilotService)

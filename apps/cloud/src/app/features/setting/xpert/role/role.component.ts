@@ -17,7 +17,7 @@ import {
   OrderTypeEnum,
   TAvatar,
   ToastrService,
-  XpertRoleService,
+  XpertService,
   XpertToolsetService
 } from '../../../../@core'
 import { AvatarEditorComponent, MaterialModule, UpsertEntityComponent } from '../../../../@shared'
@@ -46,7 +46,7 @@ import { XpertRolesComponent } from '../roles/roles.component'
 export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
   DisplayBehaviour = DisplayBehaviour
 
-  readonly roleService = inject(XpertRoleService)
+  readonly roleService = inject(XpertService)
   readonly toolsetService = inject(XpertToolsetService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly rolesComponent = inject(XpertRolesComponent)
@@ -121,7 +121,7 @@ export class XpertRoleComponent extends UpsertEntityComponent<IXpertRole> {
       this.xpertRole.set(role)
     })
 
-  constructor(roleService: XpertRoleService) {
+  constructor(roleService: XpertService) {
     super(roleService)
 
     effect(
