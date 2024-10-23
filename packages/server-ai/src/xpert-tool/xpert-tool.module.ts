@@ -6,6 +6,7 @@ import { RouterModule } from 'nest-router'
 import { XpertToolController } from './xpert-tool.controller'
 import { XpertTool } from './xpert-tool.entity'
 import { XpertToolService } from './xpert-tool.service'
+import { CommandHandlers } from './commands/handlers'
 
 @Module({
 	imports: [
@@ -15,7 +16,7 @@ import { XpertToolService } from './xpert-tool.service'
 		CqrsModule
 	],
 	controllers: [XpertToolController],
-	providers: [XpertToolService],
+	providers: [XpertToolService, ...CommandHandlers],
 	exports: [XpertToolService]
 })
 export class XpertToolModule {}

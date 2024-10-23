@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { IPagination } from '@metad/contracts';
+import { FindOptionsWhere } from './FindOptionsWhere';
 
 export interface ICrudService<T> {
 	count(filter?: FindManyOptions<T>): Promise<number>;
@@ -24,4 +25,9 @@ export interface ICrudService<T> {
 		...options: any[]
 	): Promise<UpdateResult | T>;
 	delete(id: any, ...options: any[]): Promise<DeleteResult>;
+	softDelete(id: IDeleteCriteria<T>, ...options: any[]): Promise<UpdateResult | T>;
+	softRemove(id: string, ...options: any[]): Promise<T>;
+	softRecover(id: string, ...options: any[]): Promise<T>;
 }
+
+export type IDeleteCriteria<T> = string | number | FindOptionsWhere<T>

@@ -51,7 +51,10 @@ module.exports = {
         'components-panel-border': 'var(--color-components-panel-border)',
         'components-button-primary-text': 'var(--color-components-button-primary-text)',
         'components-button-primary-border': 'var(--color-components-button-primary-border)',
-        'components-button-primary-bg': 'var(--color-components-button-primary-bg)'
+        'components-button-primary-bg': 'var(--color-components-button-primary-bg)',
+        'components-input-bg': 'var(--color-components-input-bg)',
+        'components-list-option-bg': 'var(--color-components-list-option-bg)',
+        'components-list-option-active-bg': 'var(--color-components-list-option-active-bg)',
       },
       opacity: {
         2: '0.02',

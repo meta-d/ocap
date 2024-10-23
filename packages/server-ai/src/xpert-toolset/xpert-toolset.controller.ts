@@ -1,12 +1,14 @@
-import { IPagination } from '@metad/contracts'
-import { CrudController, PaginationParams, ParseJsonPipe, TransformInterceptor } from '@metad/server-core'
-import { Body, Controller, Get, HttpStatus, Logger, Post, Query, UseInterceptors } from '@nestjs/common'
+import { IPagination, IXpertTool } from '@metad/contracts'
+import { CrudController, PaginationParams, ParseJsonPipe, RequestContext, TransformInterceptor } from '@metad/server-core'
+import { Body, Controller, Get, HttpStatus, Logger, Param, Post, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ToolsetPublicDTO } from './dto'
 import { XpertToolset } from './xpert-toolset.entity'
 import { XpertToolsetService } from './xpert-toolset.service'
-import { ParserOpenAPISchemaCommand } from './commands'
+import { ParserOpenAPISchemaCommand } from './commands/'
+import { TestOpenAPICommand } from '../xpert-tool/commands/'
+import { TestToolDTO } from '../xpert-tool/dto/'
 
 @ApiTags('XpertToolset')
 @ApiBearerAuth()
@@ -19,6 +21,19 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 		private readonly commandBus: CommandBus
 	) {
 		super(service)
+	}
+
+	@Get('by-workspace/:id')
+	async getAllByWorkspace(
+		@Param('id') workspaceId: string,
+		@Query('data', ParseJsonPipe) data: PaginationParams<XpertToolset>,
+		@Query('published') published?: boolean
+	) {
+		const result = await this.service.getAllByWorkspace(workspaceId, data, published, RequestContext.currentUser())
+		return {
+			...result,
+			items: result.items //.map((item) => new XpertPublicDTO(item))
+		}
 	}
 
 	@ApiOperation({ summary: 'find all' })
@@ -40,5 +55,10 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 	@Post('/tool-provider/openapi/schema')
 	async parseOpenAPISchema(@Body() {schema}: {schema: string}) {
 		return this.commandBus.execute(new ParserOpenAPISchemaCommand(schema))
+	}
+
+	@Post('/tool-provider/openapi/test')
+	async testOpenAPI(@Body() tool: IXpertTool) {
+		return this.commandBus.execute(new TestOpenAPICommand(tool))
 	}
 }

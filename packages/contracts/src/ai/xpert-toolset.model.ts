@@ -1,12 +1,11 @@
-import { z } from 'zod'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IUser } from '../user.model'
 import { I18nObject } from './ai-model.model'
 import { AiProviderRole, ICopilot } from './copilot.model'
 import { TAvatar } from './types'
 import { IXpertTool } from './xpert-tool.model'
 import { IXpert } from './xpert.model'
+import { IBasePerWorkspaceEntityModel } from './xpert-workspace.model'
+
 
 export enum XpertToolsetCategoryEnum {
   BUILTIN = 'builtin',
@@ -50,7 +49,7 @@ export type TXpertToolset = {
 /**
  * Toolset for Xpert
  */
-export interface IXpertToolset extends IBasePerTenantAndOrganizationEntityModel, TXpertToolset {}
+export interface IXpertToolset extends IBasePerWorkspaceEntityModel, TXpertToolset {}
 
 export type XpertToolContext = {
   tenantId: string

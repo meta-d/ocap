@@ -29,10 +29,11 @@ import {
 	RelationId
 } from 'typeorm'
 import { CopilotModel, Knowledgebase, XpertAgent, XpertToolset, XpertWorkspace } from '../core/entities/internal'
+import { WorkspaceBaseEntity } from '../core/entities/base.entity'
 
 @Entity('xpert')
 @Index(['tenantId', 'organizationId', 'type', 'slug', 'version', 'latest', 'deletedAt'], { unique: true })
-export class Xpert extends TenantOrganizationBaseEntity implements IXpert {
+export class Xpert extends WorkspaceBaseEntity implements IXpert {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@Column({ length: 100 })
@@ -102,32 +103,11 @@ export class Xpert extends TenantOrganizationBaseEntity implements IXpert {
 	@Column({ nullable: true })
 	latest?: boolean
 
-	@ApiProperty({
-		type: 'string',
-		format: 'date-time',
-		example: '2023-11-21T06:20:32.232Z'
-	})
-	@IsOptional()
-	@Column({ nullable: true, type: 'timestamptz' })
-	publishAt?: Date
-
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
 	draft?: TXpertTeamDraft
-
-	// Soft Delete
-	@ApiPropertyOptional({
-		type: 'string',
-		format: 'date-time',
-		example: '2024-10-14T06:20:32.232Z'
-	})
-	@IsOptional()
-	@IsDateString()
-	// Soft delete column that records the date/time when the entity was soft-deleted
-	@DeleteDateColumn() // Indicates that this column is used for soft-delete
-	deletedAt?: Date
 
 	/*
     |--------------------------------------------------------------------------
@@ -164,26 +144,6 @@ export class Xpert extends TenantOrganizationBaseEntity implements IXpert {
 	@ApiProperty({ type: () => XpertAgent, isArray: true })
 	@OneToMany(() => XpertAgent, (agent) => agent.team)
 	agents?: IXpertAgent[]
-
-	/*
-    |--------------------------------------------------------------------------
-    | @ManyToOne
-    |--------------------------------------------------------------------------
-    */
-	// belongs to Workspace
-	@ApiProperty({ type: () => XpertWorkspace })
-	@ManyToOne(() => XpertWorkspace, {
-		nullable: true,
-		onDelete: 'RESTRICT'
-	})
-	@JoinColumn()
-	workspace?: IXpertWorkspace
-
-	@ApiProperty({ type: () => String })
-	@RelationId((it: Xpert) => it.workspace)
-	@IsString()
-	@Column({ nullable: true })
-	workspaceId?: string
 
 	/*
     |--------------------------------------------------------------------------

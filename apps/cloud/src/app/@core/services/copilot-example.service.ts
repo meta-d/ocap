@@ -6,13 +6,13 @@ import { NGXLogger } from 'ngx-logger'
 import { map, tap } from 'rxjs'
 import { API_COPILOT_KNOWLEDGE } from '../constants/app.constants'
 import { ICopilotKnowledge, IXpertRole } from '../types'
-import { XpertService } from './xpert-role.service'
+import { XpertService } from './xpert.service'
 
 @Injectable({ providedIn: 'root' })
 export class CopilotExampleService {
   readonly #logger = inject(NGXLogger)
   readonly httpClient = inject(HttpClient)
-  readonly roleService = inject(XpertService)
+  readonly xpertService = inject(XpertService)
 
   similaritySearch(
     query: string,
@@ -76,6 +76,6 @@ export class CopilotExampleService {
         roles,
         options
       })
-      .pipe(tap(() => this.roleService.refresh()))
+      .pipe(tap(() => this.xpertService.refresh()))
   }
 }

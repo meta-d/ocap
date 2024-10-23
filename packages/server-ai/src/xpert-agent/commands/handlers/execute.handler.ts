@@ -62,6 +62,8 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 			tools.push(...toolset.getTools())
 		})
 
+		this.#logger.debug(`Use tools:`, tools.map((_) => _.name + ': ' + _.description))
+
 		if (agent.followers?.length) {
 			agent.followers.forEach((follower) => {
 				tools.push(createXpertAgentTool(this.commandBus, { xpert, agent: follower }))

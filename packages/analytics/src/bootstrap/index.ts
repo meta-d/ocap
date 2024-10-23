@@ -12,7 +12,7 @@ import { BootstrapModule } from './bootstrap.module'
 const LOGGER_LEVELS = ['error', 'warn', 'log', 'debug', 'verbose'] as LogLevel[]
 const LoggerIndex = LOGGER_LEVELS.findIndex((value) => value === (process.env.LOGGER_LEVEL || 'warn'))
 
-export async function bootstrap() {
+export async function bootstrap(options: {title: string; version: string}) {
 	const app = await NestFactory.create(BootstrapModule, {
 		logger: LOGGER_LEVELS.slice(0, LoggerIndex + 1)
 	})
@@ -68,9 +68,9 @@ export async function bootstrap() {
 	// subscriptionService.setupJobs()
 
 	// Setup Swagger Module
-	const options = new DocumentBuilder().setTitle('Metad Cloud API').setVersion('1.0').addBearerAuth().build()
+	const swagger = new DocumentBuilder().setTitle(options.title).setVersion(options.version).addBearerAuth().build()
 
-	const document = SwaggerModule.createDocument(app, options)
+	const document = SwaggerModule.createDocument(app, swagger)
 	SwaggerModule.setup('swg', app, document)
 
 	app.enableShutdownHooks()

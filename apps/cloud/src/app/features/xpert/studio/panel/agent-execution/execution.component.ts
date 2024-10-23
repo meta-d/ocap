@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { IXpert, IXpertAgent, XpertAgentService } from 'apps/cloud/src/app/@core'
+import { getErrorMessage, IXpert, IXpertAgent, ToastrService, XpertAgentService } from 'apps/cloud/src/app/@core'
 import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
 import { MarkdownModule } from 'ngx-markdown'
 import { XpertStudioApiService } from '../../domain'
@@ -46,7 +46,8 @@ import { XpertStudioApiService } from '../../domain'
 export class XpertStudioPanelAgentExecutionComponent {
   readonly xpertAgentService = inject(XpertAgentService)
   readonly apiService = inject(XpertStudioApiService)
-
+  readonly #toastr = inject(ToastrService)
+  
   readonly xpert = input<IXpert>()
   readonly xpertAgent = input<IXpertAgent>()
 
@@ -54,7 +55,10 @@ export class XpertStudioPanelAgentExecutionComponent {
 
   readonly output = signal('')
 
+  readonly loading = signal(false)
+
   startRunAgent() {
+    this.loading.set(true)
     this.output.set('')
     this.xpertAgentService.chatAgent({
       input: this.input(),
@@ -62,8 +66,14 @@ export class XpertStudioPanelAgentExecutionComponent {
       xpert: this.xpert()
     }).subscribe({
       next: (msg) => {
-        // console.log(msg.data)
         this.output.update((state) => state + msg.data)
+      },
+      error: (error) => {
+        this.#toastr.error(getErrorMessage(error))
+        this.loading.set(false)
+      },
+      complete: () => {
+        this.loading.set(false)
       }
     })
   }

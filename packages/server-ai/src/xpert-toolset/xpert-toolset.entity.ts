@@ -1,12 +1,12 @@
 import { IXpertTool, IXpertToolset, TAvatar, XpertToolsetCategoryEnum } from '@metad/contracts'
-import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, OneToMany } from 'typeorm'
 import { XpertTool } from '../core/entities/internal'
+import { WorkspaceBaseEntity } from '../core/entities/base.entity'
 
 @Entity('xpert_toolset')
-export class XpertToolset extends TenantOrganizationBaseEntity implements IXpertToolset {
+export class XpertToolset extends WorkspaceBaseEntity implements IXpertToolset {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@Column()

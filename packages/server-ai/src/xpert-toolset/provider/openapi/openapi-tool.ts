@@ -6,7 +6,6 @@ import axios, { AxiosResponse } from 'axios'
 import { ToolParameterValidationError, ToolProviderCredentialValidationError } from '../../errors'
 import { BaseTool, IBaseTool } from '../../toolset'
 import { ApiBasedToolSchemaParser } from '../../utils/parser'
-import { zodToJsonSchema } from "zod-to-json-schema";
 
 const API_TOOL_DEFAULT_TIMEOUT = [
 	parseInt(process.env.API_TOOL_DEFAULT_CONNECT_TIMEOUT || '10'),
@@ -186,7 +185,7 @@ export class OpenAPITool extends BaseTool {
 					const properties = bodySchema.properties || {}
 					for (const name in properties) {
 						if (name in parameters) {
-							body[name] = this._convert_body_property_type(properties[name], parameters[name])
+							body[name] = ApiBasedToolSchemaParser.convertPropertyValueType(properties[name], parameters[name])
 						} else if (required.includes(name)) {
 							throw new ToolParameterValidationError(
 								`Missing required parameter ${name} in operation ${this.api_bundle.operation_id}`
@@ -226,91 +225,13 @@ export class OpenAPITool extends BaseTool {
 					timeout: 60000, // Example timeout, adjust as needed
 					maxRedirects: 5 // Example follow redirects, adjust as needed
 				})
+
 				return response
 			} catch (error) {
 				throw new Error(`HTTP request failed: ${error}`)
 			}
 		} else {
 			throw new Error(`Invalid HTTP method ${method}`)
-		}
-	}
-
-	_convert_body_property_any_of(
-		property: Record<string, any>,
-		value: any,
-		anyOf: Array<Record<string, any>>,
-		maxRecursive = 10
-	): any {
-		if (maxRecursive <= 0) {
-			throw new Error('Max recursion depth reached')
-		}
-		for (const option of anyOf || []) {
-			try {
-				if ('type' in option) {
-					if (option.type === 'integer' || option.type === 'int') {
-						return parseInt(value)
-					} else if (option.type === 'number') {
-						return value.includes('.') ? parseFloat(value) : parseInt(value)
-					} else if (option.type === 'string') {
-						return String(value)
-					} else if (option.type === 'boolean') {
-						if (String(value).toLowerCase() === 'true' || value === '1') {
-							return true
-						} else if (String(value).toLowerCase() === 'false' || value === '0') {
-							return false
-						}
-					} else if (option.type === 'null' && !value) {
-						return null
-					}
-				} else if ('anyOf' in option && Array.isArray(option.anyOf)) {
-					return this._convert_body_property_any_of(property, value, option.anyOf, maxRecursive - 1)
-				}
-			} catch (e) {
-				continue
-			}
-		}
-		return value
-	}
-
-	_convert_body_property_type(property: Record<string, any>, value: any): any {
-		try {
-			if ('type' in property) {
-				switch (property['type']) {
-					case 'integer':
-					case 'int':
-						return parseInt(value, 10)
-					case 'number':
-						return value.toString().includes('.') ? parseFloat(value) : parseInt(value, 10)
-					case 'string':
-						return String(value)
-					case 'boolean':
-						return Boolean(value)
-					case 'null':
-						return value === null ? null : value
-					case 'object':
-					case 'array':
-						if (typeof value === 'string') {
-							try {
-								// an array str like '[1,2]' also can convert to list [1,2] through JSON.parse
-								// JSON does not support single quotes, but we can support it
-								value = value.replace(/'/g, '"')
-								return JSON.parse(value)
-							} catch (error) {
-								return value
-							}
-						} else if (typeof value === 'object') {
-							return value
-						} else {
-							return value
-						}
-					default:
-						throw new Error(`Invalid type ${property['type']} for property ${property}`)
-				}
-			} else if ('anyOf' in property && Array.isArray(property['anyOf'])) {
-				return this._convert_body_property_any_of(property, value, property['anyOf'])
-			}
-		} catch (error) {
-			return value
 		}
 	}
 

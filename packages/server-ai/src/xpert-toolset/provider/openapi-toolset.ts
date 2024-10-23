@@ -40,7 +40,6 @@ export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
 
 		const tools: OpenAPITool[] = []
 		this.toolset.tools?.forEach((item) => {
-			// console.log(JSON.stringify(item.schema, null, 2));
 			tools.push(new OpenAPITool(item, {
 				runtime: {
 					credentials: this.toolset.credentials
@@ -52,17 +51,17 @@ export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
 		return tools
 	}
 
-	getTool(tool_name: string): OpenAPITool {
+	getTool(toolName: string): OpenAPITool {
 		if (!this.tools) {
 			this.getTools()
 		}
 
 		for (const tool of this.tools) {
-			if (tool.name === tool_name) {
+			if (tool.name === toolName) {
 				return tool
 			}
 		}
 
-		throw new Error(`tool ${tool_name} not found`)
+		throw new Error(`tool ${toolName} not found`)
 	}
 }

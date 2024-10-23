@@ -41,8 +41,10 @@
 
     <div class="mt-4 flex justify-between space-x-2">
         <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium w-0 grow space-x-2"
-          (click)="startRunAgent()">
-            <div>Start Run</div>
+          [disabled]="loading()"
+          (click)="startRunAgent()"
+        >
+          <div>Start Run</div>
         </button>
     </div>
 

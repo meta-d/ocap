@@ -419,6 +419,7 @@
     "ACTIONS": {
       "Add": "添加",
       "Cancel": "取消",
+      "Enter": "确认",
       "New": "新建",
       "Release": "发布",
       "Open": "打开",
@@ -1700,6 +1701,10 @@
       "ToolsetType": "工具集类型",
       "PublishedSuccessfully": "发布成功",
       "RunThisAgent": "运行此智能体",
+      "CreateTool": "创建工具",
+      "AuthorizationMethod": "授权方法",
+      "AuthorizationType": "认证方式",
+      "HttpHeaderKey": "Http Header Key，如果您不清楚它的用途,可以将其保持为 Authorization，或者将其设置为自定义值。",
       "Toolset": {
         
       }

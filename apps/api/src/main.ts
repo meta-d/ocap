@@ -19,7 +19,7 @@ if (command === 'seedModule') {
     process.exit(1)
   })
 } else {
-  bootstrap()
+  bootstrap({title: 'Xpert AI', version: '1.0'})
 }
 
 

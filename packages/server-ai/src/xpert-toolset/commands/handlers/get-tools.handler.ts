@@ -21,7 +21,8 @@ export class ToolsetGetToolsHandler implements ICommandHandler<ToolsetGetToolsCo
 		const { items: toolsets } = await this.toolsetService.findAll({
 			where: {
 				id: In(ids)
-			}
+			},
+			relations: ['tools']
 		})
 
 		return toolsets.map((toolset) => {

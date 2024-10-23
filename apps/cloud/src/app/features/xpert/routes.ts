@@ -3,6 +3,7 @@ import { XpertHomeComponent } from './home.component'
 import { XpertStudioComponent } from './studio/studio.component'
 import { XpertStudioXpertsComponent } from './xperts/xperts.component'
 import { XpertStudioToolsComponent } from './tools/tools.component'
+import { XpertStudioAPIToolComponent } from './tools'
 
 export const routes: Routes = [
   {
@@ -18,6 +19,10 @@ export const routes: Routes = [
         component: XpertStudioToolsComponent
       }
     ]
+  },
+  {
+    path: 'tool/:id',
+    component: XpertStudioAPIToolComponent,
   },
   {
     path: ':id',

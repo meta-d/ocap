@@ -30,8 +30,11 @@
   --color-components-panel-border: #10182814;
   --color-components-card-bg: white;
   --color-components-button-primary-text: white;
-  --color-components-button-primary-border: grey;
+  --color-components-button-primary-border: theme('colors.blue.500');
   --color-components-button-primary-bg: theme('colors.blue.500');
+  --color-components-input-bg: theme('colors.gray.100');
+  --color-components-list-option-bg: theme('colors.gray.50');
+  --color-components-list-option-active-bg: theme('colors.gray.100');
 }
 
 :root .dark {
@@ -57,6 +60,9 @@
   --color-components-panel-border: theme('colors.neutral.600');
   --color-components-card-bg: #16181c;
   --color-components-button-primary-text: white;
-  --color-components-button-primary-border: grey;
+  --color-components-button-primary-border: theme('colors.blue.500');
   --color-components-button-primary-bg: theme('colors.blue.500');
+  --color-components-input-bg: theme('colors.neutral.800');
+  --color-components-list-option-bg: theme('colors.neutral.800');
+  --color-components-list-option-active-bg: theme('colors.neutral.700');
 }

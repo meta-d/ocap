@@ -1,16 +1,15 @@
-import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IUser } from '../user.model'
 import { ICopilotModel } from './copilot-model.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
 import { IXpertAgent } from './xpert-agent.model'
 import { IXpertToolset } from './xpert-toolset.model'
-import { IXpertWorkspace } from './xpert-workspace.model'
+import { IBasePerWorkspaceEntityModel } from './xpert-workspace.model'
 
 /**
  * Digital Expert
  */
-export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
+export interface IXpert extends IBasePerWorkspaceEntityModel {
   slug: string
   name: string
   type: XpertTypeEnum
@@ -41,26 +40,13 @@ export interface IXpert extends IBasePerTenantAndOrganizationEntityModel {
   latest?: boolean
 
   /**
-   * Publish date of latest
-   */
-  publishAt?: Date
-
-  /**
    * 当前版本上的草稿
    */
   draft?: TXpertTeamDraft
 
-  deletedAt?: Date
-
   agent?: IXpertAgent
 
   // Many to one
-  /**
-   * 所属的工作空间
-   */
-  workspaceId?: string
-  workspace?: IXpertWorkspace
-
   // Used copilot model
   copilotModel?: ICopilotModel
   copilotModelId?: string

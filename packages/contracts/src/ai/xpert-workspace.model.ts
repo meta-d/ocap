@@ -24,4 +24,17 @@ export interface IXpertWorkspace extends IBasePerTenantAndOrganizationEntityMode
 export type TXpertWorkspaceSettings = {
   //
 }
-export type  TXpertWorkspaceStatus = 'active' | 'deprecated' | 'archived'
+export type TXpertWorkspaceStatus = 'active' | 'deprecated' | 'archived'
+
+export interface IBasePerWorkspaceEntityModel extends IBasePerTenantAndOrganizationEntityModel {
+  workspaceId?: string
+  workspace?: IXpertWorkspace
+  /**
+   * Publish date of latest
+   */
+  publishAt?: Date
+  /**
+   * Soft deleted
+   */
+  deletedAt?: Date
+}

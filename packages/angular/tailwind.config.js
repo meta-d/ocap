@@ -19,7 +19,8 @@ module.exports = {
           700: '#455A64',
           800: '#37474F',
           900: '#263238'
-        }
+        },
+        'components-input-bg': 'var(--color-components-input-bg)',
       }
     }
   },

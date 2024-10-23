@@ -1,13 +1,17 @@
+<form [formGroup]="formGroup" class="flex flex-col space-y-2">
   <div>
-    <div class="py-2 leading-5 text-sm font-medium text-gray-900">Name <span class="ml-1 text-red-500">*</span>
+    <div class="py-2 leading-5 font-medium text-gray-900">Name <span class="ml-1 text-red-500">*</span>
     </div>
     <div class="flex items-center justify-between gap-3">
       <span class="style_appIcon__qLtEt style_large__CrEss cursor-pointer overflow-hidden" style="background: rgb(254, 247, 195);">
-          <span class="emoji-mart-emoji" data-emoji-set="native">
-            <span style="font-family: EmojiMart, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Segoe UI&quot;, &quot;Apple Color Emoji&quot;, &quot;Twemoji Mozilla&quot;, &quot;Noto Color Emoji&quot;, &quot;Android Emoji&quot;;">🕵️</span>
-          </span>
+        <span class="emoji-mart-emoji" data-emoji-set="native">
+          <span style="font-family: EmojiMart, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Segoe UI&quot;, &quot;Apple Color Emoji&quot;, &quot;Twemoji Mozilla&quot;, &quot;Noto Color Emoji&quot;, &quot;Android Emoji&quot;;">🕵️</span>
+        </span>
       </span>
-      <input class="h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg grow" placeholder="Enter the tool name" value="">
+      <input class="ngm-input h-10 px-3 text-sm font-normal grow"
+        placeholder="Enter the tool name"
+        formControlName="name"
+        [ngClass]="{error: name.invalid && (name.dirty || name.touched)}">
     </div>
   </div>
   <div class="select-none">
@@ -44,15 +48,19 @@
         </div>
       </div>
     </div>
-    <textarea class="w-full h-[240px] px-3 py-2 leading-4 text-sm font-normal text-gray-900 bg-gray-100 rounded-lg overflow-y-auto" placeholder="Enter your OpenAPI schema here"
-      [(ngModel)]="schema"></textarea>
+    <textarea class="ngm-input w-full h-[240px] px-3 py-2 leading-4 text-sm font-normal text-gray-900 bg-gray-100 rounded-lg overflow-y-auto" placeholder="Enter your OpenAPI schema here"
+      formControlName="schema"
+      [ngClass]="{error: schema.invalid && (schema.dirty || schema.touched)}"
+    ></textarea>
   </div>
+  @if (!toolset()) {
   <div>
-    <div class="py-2 leading-5 text-sm font-medium text-gray-900">Available Tools</div>
+    <div class="py-2 leading-5 text-base font-medium text-gray-900">Available Tools</div>
     <div class="rounded-lg border border-gray-200 w-full overflow-x-auto">
-      <table class="w-full leading-[18px] text-xs text-gray-700 font-normal">
+      <table class="w-full leading-[18px] text-sm text-gray-700 font-normal">
         <thead class="text-gray-500 uppercase">
           <tr class="border-gray-200">
+            <th class="p-2 pl-3 font-medium">Enabled</th>
             <th class="p-2 pl-3 font-medium">Name</th>
             <th class="p-2 pl-3 font-medium w-[236px]">Description</th>
             <th class="p-2 pl-3 font-medium">Method</th>
@@ -60,13 +68,20 @@
             <th class="p-2 pl-3 font-medium w-[54px]">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          @for (api of availableTools(); track api.openapi.operationId) {
-            <tr class="border-gray-200">
-              <td class="p-2 pl-3 font-medium">{{api.operation_id}}</td>
-              <td class="p-2 pl-3 font-medium">{{api.summary}}</td>
-              <td class="p-2 pl-3 font-medium">{{api.method}}</td>
-              <td class="p-2 pl-3 font-medium">{{api.server_url}}</td>
+        <tbody formArrayName="tools">
+          @for (tool of tools.controls; track i; let i = $index) {
+            <tr class="border-gray-200" [formGroupName]="i">
+              <td class="p-2 pl-3 font-medium">
+                <input formControlName="enabled" id="tool-disabled-{{i}}" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              </td>
+              <td class="p-2 pl-3 font-medium">
+                <input formControlName="name" class="w-full ngm-input-inline ngm-input-sm">
+              </td>
+              <td class="p-2 pl-3 font-medium">
+                <input formControlName="description" class="w-full ngm-input-inline ngm-input-sm">
+              </td>
+              <td class="p-2 pl-3 font-medium">{{tool.value.options.api_bundle.method}}</td>
+              <td class="p-2 pl-3 font-medium">{{tool.value.options.api_bundle.server_url}}</td>
               <td class="pl-3 font-medium">
                 <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small space-x-1">
                   <div class="text-sm font-medium text-gray-700">Test</div>
@@ -78,10 +93,12 @@
       </table>
     </div>
   </div>
-  <div>
+  }
+  <div formGroupName="credentials">
     <div class="py-2 leading-5 text-sm font-medium text-gray-900">Authorization method</div>
-    <div class="flex items-center h-9 justify-between px-2.5 bg-gray-100 rounded-lg cursor-pointer">
-      <div class="text-sm font-normal text-gray-900">None</div>
+    <div class="flex items-center h-9 justify-between px-2.5 bg-gray-100 rounded-lg cursor-pointer"
+      (click)="openAuth()">
+      <div class="text-sm font-normal text-gray-900">{{'PAC.Xpert.Auth_' + credentials.value.auth_type | translate: {Default: credentials.value.auth_type} }}</div>
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-700 opacity-60" data-icon="Settings01" aria-hidden="true">
         <g id="Left Icon" clip-path="url(#clip0_11961_30603)">
           <g id="Icon">
@@ -117,3 +134,4 @@
     <div class="py-2 leading-5 text-sm font-medium text-gray-900">Custom disclaimer</div>
     <input class="w-full h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg grow" placeholder="Please enter custom disclaimer">
   </div>
+</form>

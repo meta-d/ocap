@@ -17,6 +17,10 @@ export type XpertToolType = {
   options?: Record<string, any>
   type?: 'command' | 'agent' | 'browser' | null
   schema?: Record<string, any>
+  /**
+   * Default input parameters of tool
+   */
+  parameters?: Record<string, any>
 
   /**
    * Priority role of AI provider

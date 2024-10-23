@@ -7,6 +7,7 @@ import { ToolParameterForm, ToolParameterType } from '../types';
 import type { JSONSchema4 } from "json-schema";
 import type { ParameterObject } from "openapi-typescript/src/types";
 import { ToolApiSchemaError, ToolNotSupportedError, ToolProviderNotFoundError } from '../errors';
+import { lowerCase } from 'lodash';
 
 
 export class ApiBasedToolSchemaParser {
@@ -384,4 +385,91 @@ export class ApiBasedToolSchemaParser {
           }
       }
 
+
+	static convertPropertyAnyOf(
+		property: Record<string, any>,
+		value: any,
+		anyOf: Array<Record<string, any>>,
+		maxRecursive = 10
+	): any {
+		if (maxRecursive <= 0) {
+			throw new Error('Max recursion depth reached')
+		}
+		for (const option of anyOf || []) {
+			try {
+				if ('type' in option) {
+					if (option.type === 'integer' || option.type === 'int') {
+						const _value = parseInt(value)
+						if (isNaN(_value)) {
+							continue
+						}
+						return _value
+					} else if (option.type === 'number') {
+						const _value = value.includes('.') ? parseFloat(value) : parseInt(value)
+						if (isNaN(_value)) {
+							continue
+						}
+						return _value
+					} else if (option.type === 'string') {
+						return String(value)
+					} else if (option.type === 'boolean') {
+						if (String(value).toLowerCase() === 'true' || value === '1') {
+							return true
+						} else if (String(value).toLowerCase() === 'false' || value === '0') {
+							return false
+						}
+					} else if (option.type === 'null' && !value) {
+						return null
+					}
+				} else if ('anyOf' in option && Array.isArray(option.anyOf)) {
+					return ApiBasedToolSchemaParser.convertPropertyAnyOf(property, value, option.anyOf, maxRecursive - 1)
+				}
+			} catch (e) {
+				continue
+			}
+		}
+		return value
+	}
+
+	static convertPropertyValueType(property: Record<string, any>, value: any): any {
+		try {
+			if ('type' in property) {
+				switch (property['type']) {
+					case 'integer':
+					case 'int':
+						return parseInt(value, 10)
+					case 'number':
+						return value.toString().includes('.') ? parseFloat(value) : parseInt(value, 10)
+					case 'string':
+						return String(value)
+					case 'boolean':
+						return lowerCase(value) === 'false' ? false : Boolean(value)
+					case 'null':
+						return value === null ? null : value
+					case 'object':
+					case 'array':
+						if (typeof value === 'string') {
+							try {
+								// an array str like '[1,2]' also can convert to list [1,2] through JSON.parse
+								// JSON does not support single quotes, but we can support it
+								value = value.replace(/'/g, '"')
+								return JSON.parse(value)
+							} catch (error) {
+								return value
+							}
+						} else if (typeof value === 'object') {
+							return value
+						} else {
+							return value
+						}
+					default:
+						throw new Error(`Invalid type ${property['type']} for property ${property}`)
+				}
+			} else if ('anyOf' in property && Array.isArray(property['anyOf'])) {
+				return ApiBasedToolSchemaParser.convertPropertyAnyOf(property, value, property['anyOf'])
+			}
+		} catch (error) {
+			return value
+		}
+	}
 }

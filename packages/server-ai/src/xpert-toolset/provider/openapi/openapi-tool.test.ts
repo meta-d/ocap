@@ -67,6 +67,7 @@ describe('OpenAPITool', () => {
 		const result = tool.validate_and_parse_response(response)
 		expect(result).toBe(JSON.stringify({ message: 'Success' }))
 	})
+
 })
 
 describe('OpenAPITool: Open Meteo', () => {

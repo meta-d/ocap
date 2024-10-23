@@ -25,7 +25,7 @@ import { API_COPILOT } from '../constants/app.constants'
 import { ICopilotWithProvider, ICopilot as IServerCopilot, ModelType } from '../types'
 import { AgentService } from './agent.service'
 import { Store } from './store.service'
-import { XpertService } from './xpert-role.service'
+import { XpertService } from './xpert.service'
 
 
 const baseUrl = environment.API_BASE_URL
@@ -37,7 +37,7 @@ export class PACCopilotService extends NgmCopilotService {
   readonly #store = inject(Store)
   readonly httpClient = inject(HttpClient)
   readonly authService = inject(AuthService)
-  readonly roleService = inject(XpertService)
+  readonly xpertService = inject(XpertService)
   readonly router = inject(Router)
   readonly #agentService = inject(AgentService)
 
@@ -60,7 +60,7 @@ export class PACCopilotService extends NgmCopilotService {
       this.copilots.set(result.items)
     })
 
-  private roleSub = this.roleService
+  private roleSub = this.xpertService
     .getAll()
     .pipe(
       map(({ items }) => items),

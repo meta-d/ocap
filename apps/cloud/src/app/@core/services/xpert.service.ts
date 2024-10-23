@@ -2,13 +2,13 @@ import { inject, Injectable } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, tap } from 'rxjs'
 import { API_XPERT_ROLE } from '../constants/app.constants'
-import { IXpertRole, TXpertTeamDraft } from '../types'
+import { IXpert, TXpertTeamDraft } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 import { toParams } from '@metad/ocap-angular/core'
 import { PaginationParams, toHttpParams } from '@metad/cloud/state'
 
 @Injectable({ providedIn: 'root' })
-export class XpertService extends XpertWorkspaceBaseCrudService<IXpertRole> {
+export class XpertService extends XpertWorkspaceBaseCrudService<IXpert> {
   readonly #logger = inject(NGXLogger)
 
   readonly #refresh = new BehaviorSubject<void>(null)
@@ -17,12 +17,12 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpertRole> {
     super(API_XPERT_ROLE)
   }
 
-  create(entity: Partial<IXpertRole>) {
-    return this.httpClient.post<IXpertRole>(this.apiBaseUrl, entity).pipe(tap(() => this.refresh()))
+  create(entity: Partial<IXpert>) {
+    return this.httpClient.post<IXpert>(this.apiBaseUrl, entity).pipe(tap(() => this.refresh()))
   }
 
-  update(id: string, entity: Partial<IXpertRole>) {
-    return this.httpClient.put<IXpertRole>(this.apiBaseUrl + `/${id}`, entity).pipe(tap(() => this.refresh()))
+  update(id: string, entity: Partial<IXpert>) {
+    return this.httpClient.put<IXpert>(this.apiBaseUrl + `/${id}`, entity).pipe(tap(() => this.refresh()))
   }
 
   delete(id: string) {
@@ -33,8 +33,8 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpertRole> {
     this.#refresh.next()
   }
 
-  getTeam(id: string, options?: PaginationParams<IXpertRole>) {
-    return this.httpClient.get<IXpertRole>(this.apiBaseUrl + `/${id}/team`, { params: toHttpParams(options)})
+  getTeam(id: string, options?: PaginationParams<IXpert>) {
+    return this.httpClient.get<IXpert>(this.apiBaseUrl + `/${id}/team`, { params: toHttpParams(options)})
   }
 
   getVersions(id: string) {
@@ -46,11 +46,11 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpertRole> {
   }
 
   publish(id: string) {
-    return this.httpClient.post<IXpertRole>(this.apiBaseUrl + `/${id}/publish`, {})
+    return this.httpClient.post<IXpert>(this.apiBaseUrl + `/${id}/publish`, {})
   }
 
   validateTitle(title: string) {
-    return this.httpClient.get<IXpertRole[]>(this.apiBaseUrl + `/validate`, {
+    return this.httpClient.get<IXpert[]>(this.apiBaseUrl + `/validate`, {
       params: toParams({title})
     })
   }

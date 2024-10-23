@@ -3,4 +3,7 @@ import { prepare } from './core/prepare'
 
 prepare()
 
-bootstrap()
+bootstrap({
+    title: 'Xpert AI Debug',
+    version: '1.0'
+})

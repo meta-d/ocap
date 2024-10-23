@@ -99,22 +99,22 @@ export class XpertHomeComponent {
   readonly workspace = signal<IXpertWorkspace>(null)
 
   readonly refresh$ = new BehaviorSubject<void>(null)
-  readonly xperts = derivedAsync(() => {
-    const where = {
-      type: this.type(),
-      latest: true
-    }
-    const workspace = this.workspace()
-    return this.refresh$.pipe(
-      switchMap(() =>
-        this.xpertService.getAllByWorkspace(workspace, {
-          where: omitBy(where, isNil),
-          relations: ['createdBy']
-        })
-      ),
-      map(({ items }) => items.filter((item) => item.latest))
-    )
-  })
+  // readonly xperts = derivedAsync(() => {
+  //   const where = {
+  //     type: this.type(),
+  //     latest: true
+  //   }
+  //   const workspace = this.workspace()
+  //   return this.refresh$.pipe(
+  //     switchMap(() =>
+  //       this.xpertService.getAllByWorkspace(workspace, {
+  //         where: omitBy(where, isNil),
+  //         relations: ['createdBy']
+  //       })
+  //     ),
+  //     map(({ items }) => items.filter((item) => item.latest))
+  //   )
+  // })
 
   readonly types = model<XpertTypeEnum>(null)
   readonly type = computed(() => this.types()?.[0])

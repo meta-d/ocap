@@ -23,6 +23,7 @@ import {
   ToastrService,
   XpertService,
   XpertToolsetCategoryEnum,
+  XpertToolsetService,
   XpertTypeEnum,
   XpertWorkspaceService
 } from '../../../@core'
@@ -70,6 +71,7 @@ export class XpertStudioXpertsComponent {
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
+  readonly toolsetService = inject(XpertToolsetService)
   readonly homeComponent = inject(XpertHomeComponent)
 
   readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
@@ -98,7 +100,24 @@ export class XpertStudioXpertsComponent {
     )
   })
 
-  readonly isXperts = computed(() => Object.values(XpertTypeEnum).includes(this.type() as XpertTypeEnum))
+  readonly toolsets = derivedAsync(() => {
+    const where = {
+      category: this.type(),
+      // type: 'openapi'
+    }
+    const workspace = this.workspace()
+    return this.refresh$.pipe(
+      switchMap(() =>
+        this.toolsetService.getAllByWorkspace(workspace, {
+          where: omitBy(where, isNil),
+          relations: ['createdBy']
+        })
+      ),
+      map(({ items }) => items)
+    )
+  })
+
+  readonly isXperts = computed(() => !this.type() || Object.values(XpertTypeEnum).includes(this.type() as XpertTypeEnum))
   readonly isTools = computed(() => this.type() === XpertToolsetCategoryEnum.API )
 
   refresh() {
@@ -151,11 +170,10 @@ export class XpertStudioXpertsComponent {
     })
     .afterClosed()
     .subscribe({
-      next: () => {
-        this.#toastr.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created Successfully!' })
-      },
-      error: (error) => {
-        this.#toastr.error(getErrorMessage(error))
+      next: (toolset) => {
+        if (toolset) {
+          this.refresh()
+        }
       }
     })
   }

@@ -135,4 +135,38 @@ describe('ApiBasedToolSchemaParser', () => {
             zodSchema.parse({ param1: 123 });
         }).toThrow();
     });
+
+
+	it('convertPropertyValueType should correctly convert values based on type', () => {
+		const propertyInteger = { type: 'integer' }
+		const propertyNumber = { type: 'number' }
+		const propertyString = { type: 'string' }
+		const propertyBoolean = { type: 'boolean' }
+		const propertyNull = { type: 'null' }
+		const propertyObject = { type: 'object' }
+		const propertyArray = { type: 'array' }
+
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyInteger, '123')).toBe(123)
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyNumber, '123.45')).toBe(123.45)
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyString, 123)).toBe('123')
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyBoolean, 'true')).toBe(true)
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyBoolean, 'false')).toBe(false)
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyNull, null)).toBe(null)
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyObject, '{"key": "value"}')).toEqual({ key: 'value' })
+		expect(ApiBasedToolSchemaParser.convertPropertyValueType(propertyArray, '[1, 2, 3]')).toEqual([1, 2, 3])
+	})
+
+	it('convertPropertyAnyOf should correctly convert values based on anyOf schema', () => {
+		const anyOfSchema = [
+			{ type: 'integer' },
+			{ type: 'boolean' },
+			{ type: 'string' },
+		]
+
+		expect(ApiBasedToolSchemaParser.convertPropertyAnyOf({}, '123', anyOfSchema)).toBe(123)
+		expect(ApiBasedToolSchemaParser.convertPropertyAnyOf({}, 'true', anyOfSchema)).toBe(true)
+		expect(ApiBasedToolSchemaParser.convertPropertyAnyOf({}, 'hello', anyOfSchema)).toBe('hello')
+		expect(ApiBasedToolSchemaParser.convertPropertyAnyOf({}, 'false', anyOfSchema)).toBe(false)
+		expect(ApiBasedToolSchemaParser.convertPropertyAnyOf({}, '456.78', anyOfSchema)).toBe(456)
+	})
 })

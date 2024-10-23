@@ -19,6 +19,9 @@ export abstract class BaseToolset<T extends StructuredToolInterface = Tool> exte
 	// For langchain
 	tools: T[]
 
+	identity?: ToolProviderIdentity;
+    credentialsSchema?: { [key: string]: ToolProviderCredentials };
+
 	constructor(
 		protected toolset: IXpertToolset,
 		options?: TBaseToolsetOptions,
@@ -35,9 +38,6 @@ export abstract class BaseToolset<T extends StructuredToolInterface = Tool> exte
 	getTool(toolName: string) {
 		return this.getTools().find((tool) => tool.name === toolName)
 	}
-
-    identity?: ToolProviderIdentity;
-    credentialsSchema?: { [key: string]: ToolProviderCredentials };
 
     getCredentialsSchema(): { [key: string]: ToolProviderCredentials } {
         return { ...this.credentialsSchema };
