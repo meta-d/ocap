@@ -1,0 +1,15 @@
+@switch (message().type) {
+  @case ('human') {
+    <copilot-message-content [content]="content()" />
+  }
+  @case ('ai') {
+    <copilot-message-content [content]="content()" />
+  }
+  @case ('tool') {
+    <div class="">
+      <div class="flex items-center mb-1">Tool: {{toolMessage().name}}</div>
+      <div class="mb-2">{{toolMessage().tool_call_id}}</div>
+      <div class="mb-2">{{toolMessage().content}}</div>
+    </div>
+  }
+}

@@ -6,6 +6,7 @@ import { RouterModule } from 'nest-router'
 import { XpertAgentExecutionController } from './agent-execution.controller'
 import { XpertAgentExecution } from './agent-execution.entity'
 import { XpertAgentExecutionService } from './agent-execution.service'
+import { CommandHandlers } from './commands/handlers'
 
 @Module({
 	imports: [
@@ -15,7 +16,7 @@ import { XpertAgentExecutionService } from './agent-execution.service'
 		CqrsModule
 	],
 	controllers: [XpertAgentExecutionController],
-	providers: [XpertAgentExecutionService],
+	providers: [XpertAgentExecutionService, ...CommandHandlers],
 	exports: [XpertAgentExecutionService]
 })
 export class XpertAgentExecutionModule {}

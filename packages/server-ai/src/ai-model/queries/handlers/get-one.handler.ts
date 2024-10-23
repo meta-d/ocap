@@ -9,6 +9,6 @@ export class AIModelGetOneHandler implements IQueryHandler<AIModelGetOneQuery> {
 
 	public async execute(command: AIModelGetOneQuery): Promise<BaseChatModel> {
 		const modelProvider = this.service.getProvider(command.copilot.provider)
-		return modelProvider.getChatModel(command.copilot)
+		return modelProvider.getChatModel(command.copilot, command.copilotModel)
 	}
 }

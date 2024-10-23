@@ -10,17 +10,30 @@ export class XpertAgentExecuteCommand implements ICommand {
 	constructor(
 		public readonly input: string,
 		public readonly agentKey: string,
-		public readonly xpert: IXpert
+		public readonly xpert: IXpert,
+		public readonly options: {
+			executionId: string
+		}
 	) {}
 }
 
-export function createXpertAgentTool(commandBus: CommandBus, config: { xpert: IXpert; agent: IXpertAgent }) {
-	const { agent, xpert } = config
-	console.log(agent.key, ':', agent.description)
+/**
+ * Create agent of xpert as tool to execute
+ * 
+ * @param commandBus 
+ * @param config 
+ * @returns 
+ */
+export function createXpertAgentTool(
+	commandBus: CommandBus,
+	config: { xpert: IXpert; agent: IXpertAgent; options: { executionId: string } }
+) {
+	const { agent, xpert, options } = config
+	// console.log(agent.key, ':', agent.description)
 	return tool(
 		async (args, config) => {
-			const obs = await commandBus.execute(new XpertAgentExecuteCommand(args.input, agent.key, xpert))
-			// 
+			const obs = await commandBus.execute(new XpertAgentExecuteCommand(args.input, agent.key, xpert, options))
+			//
 			return await lastValueFrom(obs.pipe(reduce((acc, val) => acc + val, '')))
 		},
 		{

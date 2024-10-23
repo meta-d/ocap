@@ -14,7 +14,7 @@
                             </g>
                         </svg>
                     </div>
-                    <div class="mx-0.5 text-xs font-medium text-gray-700 max-w-[150px] truncate" title="Start">Start</div>
+                    <div class="mx-0.5 text-sm font-medium text-gray-700 max-w-[150px] truncate" title="Start">Start</div>
                     <svg width="5" height="12" viewBox="0 0 5 12" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-0.5" data-icon="Line3" aria-hidden="true">
                         <path id="Line 3" d="M1 11.3545L3.94174 0.645781" stroke="#D0D5DD" stroke-linecap="round"></path>
                     </svg>
@@ -29,7 +29,7 @@
                             </g>
                         </g>
                     </svg>
-                    <div class="ml-0.5 text-xs font-medium max-w-[150px] truncate" title="role">role</div>
+                    <div class="ml-0.5 text-sm font-medium max-w-[150px] truncate" title="role">role</div>
                 </div>
             </div>
         </div>
@@ -48,11 +48,55 @@
         </button>
     </div>
 
-    <div class="mt-8 p-2 text-sm max-h-80 overflow-auto rounded-xl bg-neutral-100 ">
+    <div class="p-4">
+      <div class="px-3 py-[10px] rounded-lg border-[0.5px] border-[rbga(0,0,0,0.05)] shadow-xs !bg-[#ecfdf3]">
+        <div class="flex">
+          <div class="flex-[33%] max-w-[120px]">
+            <div class="text-sm leading-[18px] font-medium text-gray-400">STATUS</div>
+            <div class="flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold !text-[#039855]">
+              <div class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)]"></div>
+              <span>SUCCESS</span>
+            </div>
+          </div>
+          <div class="flex-[33%] max-w-[152px]">
+            <div class="text-sm leading-[18px] font-medium text-gray-400">ELAPSED TIME</div>
+            <div class="flex items-center gap-1 h-[18px] text-gray-700 text-sm leading-3 font-semibold">
+              <span>3.281s</span>
+            </div>
+          </div>
+          <div class="flex-[33%]">
+            <div class="text-sm leading-[18px] font-medium text-gray-400">TOTAL TOKENS</div>
+            <div class="flex items-center gap-1 h-[18px] text-gray-700 text-sm leading-3 font-semibold">
+              <span>386 Tokens</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
+      <div class="mr-3">Output</div>
+      <div class="grow w-0 h-px bg-[#f3f4f6]"></div>
+    </div>
+
+    <div class="mt-4 p-2 text-sm max-h-80 overflow-auto rounded-xl bg-neutral-100 ">
         <markdown class="ngm-copilot-markdown"
             lineNumbers
             [start]="5"
             [data]="output()"
         />
     </div>
+
+  <div class="w-full flex flex-col mt-4">
+    <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
+      <div class="mr-3">Log</div>
+      <div class="grow w-0 h-px bg-[#f3f4f6]"></div>
+    </div>
+
+    <div class="flex flex-col gap-2 p-2">
+      @for (message of storedMessages(); track $index) {
+        <copilot-stored-message [message]="message" />
+      }
+    </div>
+  </div>
 </div>

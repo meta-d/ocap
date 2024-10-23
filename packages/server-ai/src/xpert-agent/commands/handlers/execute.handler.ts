@@ -7,7 +7,6 @@ import { AgentRecursionLimit, isNil } from '@metad/copilot'
 import { RequestContext } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
-import { uniqueId } from 'lodash'
 import { filter, from, map, Observable, tap } from 'rxjs'
 import { AIModelGetOneQuery } from '../../../ai-model'
 import { AgentState, CopilotGetOneQuery, createCopilotAgentState, createReactAgent } from '../../../copilot'
@@ -51,7 +50,7 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		}
 
 		const chatModel = await this.queryBus.execute<AIModelGetOneQuery, BaseChatModel>(
-			new AIModelGetOneQuery(copilot)
+			new AIModelGetOneQuery(copilot, copilotModel)
 		)
 
 		const toolsets = await this.commandBus.execute<ToolsetGetToolsCommand, BaseToolset[]>(
@@ -66,7 +65,9 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 
 		if (agent.followers?.length) {
 			agent.followers.forEach((follower) => {
-				tools.push(createXpertAgentTool(this.commandBus, { xpert, agent: follower }))
+				tools.push(createXpertAgentTool(
+					this.commandBus,
+					{ xpert, agent: follower, options: {executionId: command.options.executionId + agentKey } }))
 			})
 		}
 
@@ -89,7 +90,7 @@ ${agent.prompt}
 			}
 		})
 
-		const threadId = uniqueId()
+		const threadId = command.options.executionId
 		const abortController = new AbortController()
 
 		this.#logger.debug(`Start chat with xpert '${xpert.name}' & agent '${agent.title}'`)
@@ -152,6 +153,10 @@ ${agent.prompt}
 				complete: () => {
 					this.#logger.debug(`End chat.`)
 				},
+				error: (err) => {
+					console.log(err)
+					this.#logger.debug(err)
+				}
 			})
 		)
 	}

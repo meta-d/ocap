@@ -1,4 +1,4 @@
-import { FetchFrom, ICopilot, ModelType } from '@metad/contracts'
+import { FetchFrom, ICopilot, ICopilotModel, ModelType } from '@metad/contracts'
 import { Injectable, Logger } from '@nestjs/common'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
@@ -29,7 +29,7 @@ export abstract class AIModel {
 
 	abstract validateCredentials(model: string, credentials: Record<string, any>): Promise<void>
 
-	getChatModel(copilot: ICopilot): BaseChatModel {
+	getChatModel(copilot: ICopilot, copilotModel?: ICopilotModel): BaseChatModel {
 		throw new Error(`Unsupport chat model!`)
 	}
 

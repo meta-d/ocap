@@ -1,4 +1,4 @@
-import { ICopilot, IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
+import { ICopilot, ICopilotModel, IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
 import { ConfigService } from '@metad/server-config'
 import { loadYamlFile } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -106,7 +106,7 @@ export abstract class ModelProvider {
 		return models
 	}
 
-	getChatModel(copilot: ICopilot) {
-		return this.getModelInstance(ModelType.LLM)?.getChatModel(copilot)
+	getChatModel(copilot: ICopilot, copilotModel?: ICopilotModel) {
+		return this.getModelInstance(ModelType.LLM)?.getChatModel(copilot, copilotModel)
 	}
 }

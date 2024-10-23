@@ -1,11 +1,8 @@
-import { MessageContent } from '@langchain/core/messages'
 import { IXpert, IXpertAgent } from '@metad/contracts'
 import { CrudController, TransformInterceptor } from '@metad/server-core'
 import { Body, Controller, Header, Logger, Post, Sse, UseInterceptors } from '@nestjs/common'
-import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { catchError, EMPTY, map, Observable } from 'rxjs'
-import { XpertAgentExecuteCommand } from './commands'
+import { Observable } from 'rxjs'
 import { XpertAgent } from './xpert-agent.entity'
 import { XpertAgentService } from './xpert-agent.service'
 
@@ -14,12 +11,10 @@ import { XpertAgentService } from './xpert-agent.service'
 @UseInterceptors(TransformInterceptor)
 @Controller()
 export class XpertAgentController extends CrudController<XpertAgent> {
-	
 	readonly #logger = new Logger(XpertAgentController.name)
 
 	constructor(
 		private readonly service: XpertAgentService,
-		private readonly commandBus: CommandBus
 	) {
 		super(service)
 	}
@@ -28,18 +23,8 @@ export class XpertAgentController extends CrudController<XpertAgent> {
 	@Post('chat')
 	@Sse()
 	async chatAgent(
-		@Body() { input, agent, xpert }: { input: string; agent: IXpertAgent; xpert: IXpert }
+		@Body() body: { input: string; agent: IXpertAgent; xpert: IXpert }
 	): Promise<Observable<MessageEvent>> {
-		const output = await this.commandBus.execute<XpertAgentExecuteCommand, Observable<MessageContent>>(
-			new XpertAgentExecuteCommand(input, agent.key, xpert)
-		)
-
-		return output.pipe(
-			map((messageContent: MessageContent) => ({ data: messageContent }) as MessageEvent),
-			catchError((err) => {
-				this.#logger.error(err)
-				return EMPTY
-			})
-		)
+		return await this.service.executeAgent(body)
 	}
 }

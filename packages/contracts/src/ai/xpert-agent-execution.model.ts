@@ -1,5 +1,4 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { IXpertAgent } from './xpert-agent.model'
 import { IXpert } from './xpert.model'
 
 /**
@@ -14,11 +13,9 @@ export interface IXpertAgentExecution extends IBasePerTenantAndOrganizationEntit
   error?: string
   elapsedTime?: number
   executionMetadata?: any
-  executionId?: string
 
   // Many to one
-  agent?: IXpertAgent
-  agentId?: string
+  agentKey?: string
   xpert?: IXpert
   xpertId?: string
 }
