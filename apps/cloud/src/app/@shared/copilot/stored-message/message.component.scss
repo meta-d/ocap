@@ -1,3 +1,4 @@
 :host {
-  @apply text-sm rounded-lg overflow-hidden p-2 border border-solid border-components-panel-border;
+  @apply text-sm rounded-lg overflow-hidden border border-solid border-components-panel-border
+    hover:border-primary-200 hover:shadow-sm;
 }

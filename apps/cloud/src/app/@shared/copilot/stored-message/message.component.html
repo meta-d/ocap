@@ -1,15 +1,28 @@
+<div class="p-2 uppercase font-semibold">{{message().type}}</div>
+<div class="p-2 flex flex-col">
 @switch (message().type) {
   @case ('human') {
     <copilot-message-content [content]="content()" />
   }
   @case ('ai') {
-    <copilot-message-content [content]="content()" />
+    @if (content()) {
+      <copilot-message-content [content]="content()" />
+    }
+    @if (toolCalls()) {
+      @for (toolCall of toolCalls(); track $index) {
+        <copilot-message-tool-call [toolCall]="toolCall" />
+      }
+    }
   }
   @case ('tool') {
-    <div class="">
-      <div class="flex items-center mb-1">Tool: {{toolMessage().name}}</div>
-      <div class="mb-2">{{toolMessage().tool_call_id}}</div>
-      <div class="mb-2">{{toolMessage().content}}</div>
-    </div>
+    <div class="flex items-center mb-1">Tool: {{toolMessage().name}}</div>
+    <div class="mb-2">{{toolMessage().tool_call_id}}</div>
+
+    <markdown class="ngm-copilot-markdown mb-2 max-h-[400px] block overflow-auto"
+      lineNumbers
+      [start]="5"
+      [data]="toolMessage().content"
+    />
   }
 }
+</div>
