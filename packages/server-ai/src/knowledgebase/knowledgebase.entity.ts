@@ -1,6 +1,5 @@
 import { AiProvider, ICopilot, IKnowledgebase, KnowledgebaseParserConfig, KnowledgebasePermission, TAvatar } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
-import { Optional } from '@nestjs/common'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNumber, IsOptional, IsString, IsEnum } from 'class-validator'
 import { Column, Entity, Index, JoinColumn, ManyToOne, RelationId } from 'typeorm'
@@ -16,25 +15,25 @@ export class Knowledgebase extends TenantOrganizationBaseEntity implements IKnow
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true, length: 20 })
 	language?: 'Chinese' | 'English'
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()
-	@Optional()
+	@IsOptional()
 	@Column({ type: 'json', nullable: true })
 	avatar?: TAvatar
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	description?: string
 
 	@ApiProperty({ type: () => String, enum: KnowledgebasePermission })
 	@IsEnum(KnowledgebasePermission)
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true, default: KnowledgebasePermission.Private })
 	permission?: KnowledgebasePermission
 
@@ -46,43 +45,43 @@ export class Knowledgebase extends TenantOrganizationBaseEntity implements IKnow
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	embeddingModelId?: string
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	documentNum?: number
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	tokenNum?: number
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	chunkNum?: number
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true, type: 'decimal' })
 	similarityThreshold: number
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	vectorSimilarityWeight: number
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	parserId: string
 
@@ -94,7 +93,7 @@ export class Knowledgebase extends TenantOrganizationBaseEntity implements IKnow
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Optional()
+	@IsOptional()
 	@Column({ nullable: true })
 	status: string
 

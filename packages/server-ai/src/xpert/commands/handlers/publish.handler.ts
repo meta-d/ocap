@@ -7,7 +7,7 @@ import { Xpert } from '../../xpert.entity'
 import { XpertService } from '../../xpert.service'
 import { XpertPublishCommand } from '../publish.command'
 import { XpertAgentService } from '../../../xpert-agent'
-import { uniq } from 'lodash'
+import { groupBy, uniq } from 'lodash'
 
 @CommandHandler(XpertPublishCommand)
 export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand> {
@@ -231,16 +231,23 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 
 	check(draft: TXpertTeamDraft) {
 		// Check all nodes have been connected
-		draft.nodes.forEach((node) => {
-			if (!draft.connections.some((connection) => connection.from === node.key || connection.to === node.key)) {
-				throw new HttpException(`There are free Xpert agents!`, 500)
+		if (draft.nodes.length > 1) {
+			draft.nodes.forEach((node) => {
+				if (!draft.connections.some((connection) => connection.from === node.key || connection.to === node.key)) {
+					throw new HttpException(`There are free Xpert agents!`, 500)
+				}
+			})
+			const nameGroups = groupBy(draft.nodes.filter((_) => _.entity.name), 'name')
+			const names = Object.entries(nameGroups).map(([name, nodes]) => [name, nodes.length]).filter(([, length]: [string, number]) => length > 1)
+			if (names.length) {
+				throw new HttpException(`There are the following duplicate names: ${names}`, 500)
 			}
-		})
+		}
 	}
 }
 
 export function pickXpertAgent(agent: IXpertAgent) {
-return pick(
+  return pick(
 	agent,
 	'name',
 	'title',

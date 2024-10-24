@@ -1,14 +1,14 @@
-import { mapChatMessagesToStoredMessages, MessageContent } from '@langchain/core/messages'
-import { IXpert, IXpertAgent } from '@metad/contracts'
+import { MessageContent } from '@langchain/core/messages'
+import { IXpert, IXpertAgent, XpertAgentExecutionEnum } from '@metad/contracts'
 import { TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { getErrorMessage } from '@metad/server-common'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { assign } from 'lodash'
-import { catchError, EMPTY, map, Observable } from 'rxjs'
+import { map, Observable, tap } from 'rxjs'
 import { Repository } from 'typeorm'
-import { CopilotCheckpointGetTupleQuery } from '../copilot-checkpoint/queries'
-import { XpertAgentExecutionCreateCommand } from '../xpert-agent-execution/commands'
+import { XpertAgentExecutionOneCommand, XpertAgentExecutionUpsertCommand } from '../xpert-agent-execution/commands'
 import { XpertAgentExecuteCommand } from './commands'
 import { XpertAgent } from './xpert-agent.entity'
 
@@ -41,7 +41,7 @@ export class XpertAgentService extends TenantOrganizationAwareCrudService<XpertA
 		xpert: IXpert
 	}): Promise<Observable<MessageEvent>> {
 		const execution = await this.commandBus.execute(
-			new XpertAgentExecutionCreateCommand({
+			new XpertAgentExecutionUpsertCommand({
 				xpert: { id: xpert.id } as IXpert,
 				agentKey: agent.key,
 				inputs: {
@@ -49,10 +49,15 @@ export class XpertAgentService extends TenantOrganizationAwareCrudService<XpertA
 				}
 			})
 		)
+
+		const timeStart = Date.now()
+		const thread_id = execution.id
 		const output = await this.commandBus.execute<XpertAgentExecuteCommand, Observable<MessageContent>>(
-			new XpertAgentExecuteCommand(input, agent.key, xpert, { executionId: execution.id })
+			new XpertAgentExecuteCommand(input, agent.key, xpert, { isDraft: true, rootExecutionId: execution.id, thread_id })
 		)
 
+		let status = XpertAgentExecutionEnum.SUCCEEDED
+		let error = null
 		return new Observable((subscriber) => {
 			output
 				.pipe(
@@ -65,38 +70,44 @@ export class XpertAgentService extends TenantOrganizationAwareCrudService<XpertA
 								}
 							}) as MessageEvent
 					),
-					catchError((err) => {
-						this.#logger.error(err)
-						return EMPTY
+					tap({
+						error: (err) => {
+							status = XpertAgentExecutionEnum.FAILED
+							error = getErrorMessage(err)
+						},
+						finalize: async () => {
+							// Record End time
+							const timeEnd = Date.now()
+							await this.commandBus.execute(
+								new XpertAgentExecutionUpsertCommand({
+									id: execution.id,
+									thread_id,
+									elapsedTime: timeEnd - timeStart,
+									status,
+									error
+								})
+							)
+
+							this.commandBus.execute(new XpertAgentExecutionOneCommand(execution.id))
+								.then((execution) => {
+									this.#logger.verbose(execution)
+									subscriber.next({
+										data: {
+											type: 'log',
+											data: execution
+										}
+									} as MessageEvent)
+
+									subscriber.complete()
+								})
+								.catch((err) => subscriber.error(err))
+						}
 					})
 				)
 				.subscribe({
 					next: (event) => {
 						subscriber.next(event)
 					},
-					error: (err) => {
-						subscriber.error(err)
-					},
-					complete: () => {
-						this.queryBus
-							.execute(new CopilotCheckpointGetTupleQuery({ thread_id: execution.id, checkpoint_ns: '' }))
-							.then((data) => {
-								const messages = data?.checkpoint.channel_values.messages
-								this.#logger.verbose(data)
-								this.#logger.verbose(messages)
-								subscriber.next({
-									data: {
-										type: 'log',
-										data: {
-											messages: mapChatMessagesToStoredMessages(messages)
-										}
-									}
-								} as MessageEvent)
-
-								subscriber.complete()
-							})
-							.catch((err) => subscriber.error(err))
-					}
 				})
 		})
 	}

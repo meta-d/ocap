@@ -26,13 +26,13 @@ export class XpertStudioPanelComponent {
   readonly visible = model(false)
 
   readonly selectedNode = toSignal(this.selectionService.singleNode$)
-  readonly entity = computed(() => {
-    const selectedNode = this.selectedNode()
-    if (selectedNode?.type === 'agent') {
-      return selectedNode.entity
-    }
-    return null
-  })
+  // readonly entity = computed(() => {
+  //   const selectedNode = this.selectedNode()
+  //   if (selectedNode?.type === 'agent') {
+  //     return selectedNode.entity
+  //   }
+  //   return null
+  // })
   
   private singleNodeSub = this.selectionService.singleNode$.pipe(takeUntilDestroyed()).subscribe((node) => {
     if (!node) {

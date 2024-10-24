@@ -48,38 +48,44 @@
         </button>
     </div>
 
-    <div class="p-4">
-      <div class="px-3 py-[10px] rounded-lg border-[0.5px] border-[rbga(0,0,0,0.05)] shadow-xs !bg-[#ecfdf3]">
-        <div class="flex">
-          <div class="flex-[33%] max-w-[120px]">
-            <div class="text-sm leading-[18px] font-medium text-gray-400">STATUS</div>
-            <div class="flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold !text-[#039855]">
-              <div class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)]"></div>
-              <span>SUCCESS</span>
+    @if (execution(); as execution) {
+      <div class="xpert-execution-status py-4"
+        [ngClass]="{
+          succeeded: execution.status === eXpertAgentExecutionEnum.SUCCEEDED,
+          failed: execution.status === eXpertAgentExecutionEnum.FAILED
+        }">
+        <div class="container px-3 py-[10px] rounded-lg border-[0.5px] border-black/5 shadow-xs dark:border-white/10">
+          <div class="flex">
+            <div class="flex-[33%] max-w-[120px]">
+              <div class="text-sm leading-[18px] font-medium text-gray-400">STATUS</div>
+              <div class="indicator-container flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
+                <div class="indicator w-2 h-2 border border-solid rounded-[3px] "></div>
+                <span class="uppercase">{{execution.status}}</span>
+              </div>
             </div>
-          </div>
-          <div class="flex-[33%] max-w-[152px]">
-            <div class="text-sm leading-[18px] font-medium text-gray-400">ELAPSED TIME</div>
-            <div class="flex items-center gap-1 h-[18px] text-gray-700 text-sm leading-3 font-semibold">
-              <span>3.281s</span>
+            <div class="flex-[33%] max-w-[152px]">
+              <div class="text-sm leading-[18px] font-medium text-gray-400">ELAPSED TIME</div>
+              <div class="flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
+                <span>{{execution.elapsedTime / 1000 | number: '0.0-3'}}s</span>
+              </div>
             </div>
-          </div>
-          <div class="flex-[33%]">
-            <div class="text-sm leading-[18px] font-medium text-gray-400">TOTAL TOKENS</div>
-            <div class="flex items-center gap-1 h-[18px] text-gray-700 text-sm leading-3 font-semibold">
-              <span>386 Tokens</span>
+            <div class="flex-[33%]">
+              <div class="text-sm leading-[18px] font-medium text-gray-400">TOTAL TOKENS</div>
+              <div class="flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
+                <span>{{execution.tokens || 'NaN'}} Tokens</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    }
 
-    <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
+    <div class="flex items-center my-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
       <div class="mr-3">Output</div>
-      <div class="grow w-0 h-px bg-[#f3f4f6]"></div>
+      <div class="grow w-0 h-px bg-slate-50 dark:bg-neutral-700"></div>
     </div>
 
-    <div class="mt-4 p-2 text-sm max-h-80 overflow-auto rounded-xl bg-neutral-100 ">
+    <div class="mt-4 p-2 text-sm max-h-80 overflow-auto rounded-xl bg-neutral-100 dark:bg-neutral-700">
         <markdown class="ngm-copilot-markdown"
             lineNumbers
             [start]="5"
@@ -90,7 +96,7 @@
   <div class="w-full flex flex-col mt-4">
     <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
       <div class="mr-3">Log</div>
-      <div class="grow w-0 h-px bg-[#f3f4f6]"></div>
+      <div class="grow w-0 h-px bg-[#f3f4f6] dark:bg-neutral-700"></div>
     </div>
 
     <div class="flex flex-col gap-2 p-2">

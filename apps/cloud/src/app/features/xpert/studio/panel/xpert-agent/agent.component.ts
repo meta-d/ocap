@@ -17,8 +17,6 @@ import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { ICopilotModel, IfAnimation, IXpertAgent, ModelType, XpertService } from 'apps/cloud/src/app/@core'
 import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
-import { derivedAsync } from 'ngxtension/derived-async'
-import { map } from 'rxjs'
 import { XpertStudioApiService } from '../../domain'
 import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
 import { XpertStudioPanelAgentExecutionComponent } from '../agent-execution/execution.component'
@@ -59,12 +57,15 @@ export class XpertStudioPanelAgentComponent {
   readonly xpertService = inject(XpertService)
 
   readonly key = input<string>()
-  readonly xpertAgent = input<IXpertAgent>()
+  readonly nodes = computed(() => this.apiService.viewModel()?.nodes)
+  readonly node = computed(() => this.nodes()?.find((_) => _.key === this.key()))
+  readonly xpertAgent = computed(() => this.node()?.entity as IXpertAgent)
   readonly promptInputElement = viewChild('editablePrompt', { read: ElementRef<HTMLDivElement> })
 
   readonly xpert = computed(() => this.apiService.viewModel()?.team)
   readonly xpertCopilotModel = computed(() => this.xpert()?.copilotModel)
   readonly toolsets = computed(() => this.xpertAgent()?.toolsets)
+  readonly name = computed(() => this.xpertAgent()?.name)
   readonly title = computed(() => this.xpertAgent()?.title)
   readonly prompt = model<string>()
   readonly promptLength = computed(() => this.prompt()?.length)
@@ -73,10 +74,9 @@ export class XpertStudioPanelAgentComponent {
     return this.elementRef.nativeElement
   }
 
-  readonly titleError = derivedAsync(() => {
-    return this.xpertService
-      .validateTitle(this.title())
-      .pipe(map((items) => !!items.filter((item) => item.id !== this.xpertAgent().id).length))
+  readonly nameError = computed(() => {
+    const name = this.name()
+    return this.nodes().filter((_) => _.key !== this.key()).some((n) => n.entity.name === name)
   })
 
   readonly copilotModel = model<ICopilotModel>()
@@ -92,15 +92,9 @@ export class XpertStudioPanelAgentComponent {
     }, { allowSignalWrites: true })
 
     effect(() => {
-      console.log(`copilotModel:`, this.copilotModel())
+      console.log(`copilotModel:`, this.name(), this.nameError())
     })
     
-  }
-
-  protected emitSelectionChangeEvent(event: MouseEvent): void {
-    this.hostElement.focus()
-    event.preventDefault()
-    // this.selectionService.setColumn(this.tableId, this.column.id);
   }
 
   onNameChange(event: string) {

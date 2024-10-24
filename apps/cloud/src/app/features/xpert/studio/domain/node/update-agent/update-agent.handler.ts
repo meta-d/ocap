@@ -14,7 +14,11 @@ export class UpdateAgentHandler implements IHandler<UpdateAgentRequest> {
       if (!node) {
         throw new Error(`Xpert with key ${request.key} not found`)
       }
-      assign(node.entity, request.entity)
+
+      node.entity = {
+        ...node.entity,
+        ...request.entity
+      }
       return {
         draft
       }

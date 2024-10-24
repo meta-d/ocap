@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, MessageContent, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
@@ -40,7 +41,10 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		const organizationId = RequestContext.getOrganizationId()
 		const user = RequestContext.currentUser()
 
-		const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(xpert.id, agentKey,))
+		const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(xpert.id, agentKey, command.options?.isDraft))
+		if (!agent) {
+			throw new NotFoundException(`Xpert agent not found for '${xpert.name}' and key ${agentKey} draft is ${command.options?.isDraft}`)
+		}
 
 		let copilot: ICopilot = null
 		const copilotId = agent.copilotModel?.copilotId ?? xpert.copilotModel?.copilotId
@@ -61,14 +65,28 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 			tools.push(...toolset.getTools())
 		})
 
-		this.#logger.debug(`Use tools:`, tools.map((_) => _.name + ': ' + _.description))
+		this.#logger.debug(`Use tools:\n ${tools.map((_) => _.name + ': ' + _.description)}`)
 
 		if (agent.followers?.length) {
+			this.#logger.debug(`Use sub agents:\n ${agent.followers.map((_) => _.name)}`)
 			agent.followers.forEach((follower) => {
 				tools.push(createXpertAgentTool(
 					this.commandBus,
-					{ xpert, agent: follower, options: {executionId: command.options.executionId + agentKey } }))
+					{ xpert, agent: follower, options: {
+						rootExecutionId: command.options.rootExecutionId,
+						isDraft: command.options.isDraft
+					} }))
 			})
+		}
+
+		if (agent.collaborators?.length) {
+			this.#logger.debug(`Use xpert collaborators:\n ${agent.collaborators.map((_) => _.name)}`)
+			for await (const collaborator of agent.collaborators) {
+				const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(collaborator.id,))
+				tools.push(createXpertAgentTool(
+					this.commandBus,
+					{ xpert: collaborator, agent, options: {rootExecutionId: command.options.rootExecutionId, isDraft: false } }))
+			}
 		}
 
 		const graph = createReactAgent({
@@ -90,7 +108,7 @@ ${agent.prompt}
 			}
 		})
 
-		const threadId = command.options.executionId
+		const thread_id = command.options.thread_id
 		const abortController = new AbortController()
 
 		this.#logger.debug(`Start chat with xpert '${xpert.name}' & agent '${agent.title}'`)
@@ -104,7 +122,7 @@ ${agent.prompt}
 				{
 					version: 'v2',
 					configurable: {
-						thread_id: threadId,
+						thread_id,
 						checkpoint_ns: '',
 						tenantId: tenantId,
 						organizationId: organizationId,
@@ -154,9 +172,8 @@ ${agent.prompt}
 					this.#logger.debug(`End chat.`)
 				},
 				error: (err) => {
-					console.log(err)
 					this.#logger.debug(err)
-				}
+				},
 			})
 		)
 	}

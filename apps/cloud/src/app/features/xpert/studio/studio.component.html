@@ -28,7 +28,7 @@
         }
 
         @for (node of nodes(); track node.key + node.hash) {
-          <div class="w-[240px] group relative pb-1 shadow-xs border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
+          <div class="w-[240px] group relative pb-1 shadow-sm border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
             fNode [fNodeId]="node.key"
             [fNodeParentId]="node.parentId"
             fDragHandle

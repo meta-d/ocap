@@ -1,11 +1,19 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject, input, model, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { StoredMessage } from '@langchain/core/messages'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { getErrorMessage, IXpert, IXpertAgent, ToastrService, XpertAgentService } from 'apps/cloud/src/app/@core'
+import {
+  getErrorMessage,
+  IXpert,
+  IXpertAgent,
+  IXpertAgentExecution,
+  ToastrService,
+  XpertAgentExecutionEnum,
+  XpertAgentService
+} from 'apps/cloud/src/app/@core'
 import {
   CopilotModelSelectComponent,
   CopilotStoredMessageComponent,
@@ -39,6 +47,8 @@ import { XpertStudioApiService } from '../../domain'
   }
 })
 export class XpertStudioPanelAgentExecutionComponent {
+  eXpertAgentExecutionEnum = XpertAgentExecutionEnum
+
   readonly xpertAgentService = inject(XpertAgentService)
   readonly apiService = inject(XpertStudioApiService)
   readonly #toastr = inject(ToastrService)
@@ -49,13 +59,34 @@ export class XpertStudioPanelAgentExecutionComponent {
   readonly input = model<string>(null)
 
   readonly output = signal('')
-  readonly storedMessages = signal<StoredMessage[]>([])
+  readonly execution = signal<IXpertAgentExecution>(null)
+  readonly storedMessages = computed(() => {
+    if (this.execution()) {
+      const messages: StoredMessage[] = [...(this.execution().messages ?? [])]
+      this.execution().subExecutions.forEach((execution) => {
+        if (execution.messages) {
+          messages.push(...execution.messages)
+        }
+      })
+      return messages
+    }
+    return null
+  })
 
   readonly loading = signal(false)
 
+  constructor() {
+    effect(() => {
+      console.log(this.execution())
+    })
+  }
+
   startRunAgent() {
     this.loading.set(true)
+    // Clear
     this.output.set('')
+    this.execution.set(null)
+    // Call chat server
     this.xpertAgentService
       .chatAgent({
         input: this.input(),
@@ -72,8 +103,7 @@ export class XpertStudioPanelAgentExecutionComponent {
               if (event.type === 'message') {
                 this.output.update((state) => state + event.data)
               } else if (event.type === 'log') {
-                // console.log(event)
-                this.storedMessages.set(event.data.messages)
+                this.execution.set(event.data)
               }
             }
           }

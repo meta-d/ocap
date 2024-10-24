@@ -5,13 +5,11 @@
       <div class="flex flex-col items-start">
         <input
           matInput
-          class="min-w-[100px] mr-2 px-1 py-0.5 text-base field font-semibold rounded-lg border border-transparent appearance-none outline-none text-gray-900 hover:bg-gray-50 focus:border-gray-300 focus:shadow-xs focus:bg-white caret-[#295EFF]"
-          [ngClass]="{ 'ngm-error': titleError() }"
-          [ngModel]="xpertAgent().title"
+          class="ngm-input-inline ngm-input-sm min-w-[100px] mr-2 px-1 py-0.5 text-base field font-semibold rounded-lg border border-transparent appearance-none outline-none text-gray-900 hover:bg-gray-50 focus:border-gray-300 focus:shadow-xs focus:bg-white caret-[#295EFF]"
+          [placeholder]="'输入名称'"
+          [ngModel]="title()"
           (ngModelChange)="onTitleChange($event)"
           (blur)="onBlur()"
-          [matTooltip]="'PAC.Xpert.NameExisted' | translate: { Default: 'Name existed!' }"
-          [matTooltipDisabled]="!titleError()"
         />
       </div>
 
@@ -49,9 +47,19 @@
       </div>
     </div>
 
-    <div class="p-2">
-      <div class="group flex px-2 py-[5px] max-h-[60px] rounded-lg overflow-y-auto border border-transparent hover:bg-gray-50 focus:border-gray-300 focus:shadow-xs"
-      >
+    <div class="p-2 flex flex-col">
+      <input
+        matInput
+          class="ngm-input-inline ngm-input-sm self-stretch mx-2 mb-1 px-1 py-0.5 text-sm field font-semibold rounded-lg border border-transparent appearance-none outline-none hover:bg-gray-50 focus:border-gray-300 focus:shadow-xs focus:bg-white caret-[#295EFF]"
+          [ngClass]="{ 'ngm-error': nameError() }"
+          [ngModel]="name()"
+          (ngModelChange)="onNameChange($event)"
+          (blur)="onBlur()"
+          [matTooltip]="'PAC.Xpert.NameExisted' | translate: { Default: 'Name existed or empty!' }"
+          [matTooltipDisabled]="!nameError()"
+          [placeholder]="'标识, 默认使用 '+key()"
+        />
+      <div class="group flex px-2 py-[5px] max-h-[60px] rounded-lg overflow-y-auto border border-transparent hover:bg-gray-50 focus:border-gray-300 focus:shadow-xs">
         <textarea
           matInput
           class="rc-textarea w-full text-sm text-gray-900 leading-[18px] bg-transparent appearance-none outline-none resize-none placeholder:text-gray-400 caret-[#295EFF]"
@@ -165,7 +173,7 @@
 </div>
 
 @if (openedExecution()) {
-  <div class="absolute top-0 left-0 w-full h-full z-20 bg-black/20" @ifAnimationTrigger (click)="closeExecution()">
+  <div class="absolute top-0 left-0 w-full h-full z-50 bg-black/20 dark:bg-neutral-500/50" @ifAnimationTrigger (click)="closeExecution()">
     <xpert-studio-panel-agent-execution [xpertAgent]="xpertAgent()" [xpert]="xpert()" (click)="$event.stopPropagation()" />
   </div>
 }
