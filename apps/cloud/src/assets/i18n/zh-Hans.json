@@ -1705,6 +1705,7 @@
       "AuthorizationMethod": "授权方法",
       "AuthorizationType": "认证方式",
       "HttpHeaderKey": "Http Header Key，如果您不清楚它的用途,可以将其保持为 Authorization，或者将其设置为自定义值。",
+      "HelpDocumentation": "帮助文档",
       "Toolset": {
         
       }

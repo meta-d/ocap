@@ -1,5 +1,5 @@
 :host {
-  @apply absolute top-16 left-0 bottom-0 w-full flex flex-col justify-start items-stretch rounded-t-xl bg-components-panel-bg;
+  @apply flex flex-col justify-start items-stretch;
 }
 
 .xpert-execution-status {

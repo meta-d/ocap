@@ -85,7 +85,7 @@ export function createXpertAgentTool(
 			))
 		},
 		{
-			name: agent.key,
+			name: agent.name || agent.key,
 			description: agent.description,
 			schema: z.object({
 				input: z.string().describe('Ask me some question or give me task to complete')

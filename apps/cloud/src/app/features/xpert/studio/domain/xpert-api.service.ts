@@ -27,7 +27,7 @@ import {
   IXpert,
   IXpertAgent,
   IXpertToolset,
-  ModelType,
+  TXpertOptions,
   TXpertTeamDraft,
   TXpertTeamNode
 } from '../../../../@core/types'
@@ -297,6 +297,23 @@ export class XpertStudioApiService {
   }
   public updateXpert(xpert: Partial<IXpert>) {
     new UpdateXpertHandler(this.store).handle(new UpdateXpertRequest(xpert))
+    this.#reload.next(EReloadReason.XPERT_UPDATED)
+  }
+  public updateXpertOptions(options: Partial<TXpertOptions>) {
+    this.store.update((state) => {
+      const draft = structuredClone(state.draft)
+      draft.team = {
+        ...draft.team,
+        options: {
+          ...(draft.team.options ?? {}),
+          ...options
+        }
+      }
+
+      return {
+        draft
+      }
+    })
     this.#reload.next(EReloadReason.XPERT_UPDATED)
   }
 

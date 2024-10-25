@@ -10,6 +10,7 @@ import {
   effect,
   inject,
   model,
+  signal,
   viewChild
 } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
@@ -19,6 +20,7 @@ import { IPoint, IRect, PointExtensions } from '@foblex/2d'
 import {
   EFConnectionType,
   EFResizeHandleType,
+  FCanvasChangeEvent,
   FCanvasComponent,
   FCreateConnectionEvent,
   FFlowComponent,
@@ -113,6 +115,9 @@ export class XpertStudioComponent {
 
   private subscriptions$ = new Subscription()
 
+  /**
+   * @deprecated use xpert
+   */
   readonly team = computed(() => this.apiService.team())
   readonly id = computed(() => this.team()?.id)
   readonly rootAgent = computed(() => this.team()?.agent)
@@ -146,6 +151,8 @@ export class XpertStudioComponent {
   readonly viewModel = toSignal(this.apiService.store.pipe(map((state) => state.draft)))
   readonly panelVisible = model<boolean>(false)
   readonly xpert = computed(() => this.viewModel()?.team)
+  readonly position = signal<IPoint>(null)
+  readonly scale = signal<number>(null)
 
   readonly copilotModel = model<ICopilotModel>()
 
@@ -165,19 +172,21 @@ export class XpertStudioComponent {
   }
 
   private subscribeOnReloadData(): Subscription {
-    return this.apiService.reload$.pipe(startWith(null), delay(1000)).subscribe((reason: EReloadReason | null) => {
-      // this.getData()
+    return this.apiService.reload$.pipe(
+      // startWith(null), delay(1000)
+    ).subscribe((reason: EReloadReason | null) => {
+      if (reason === EReloadReason.INIT) {
+        if (this.xpert().options?.position) {
+          this.position.set(this.xpert().options.position)
+        }
+        if (this.xpert().options?.scale) {
+          this.scale.set(this.xpert().options.scale)
+        }
+      }
       if (reason === EReloadReason.CONNECTION_CHANGED) {
         this.fFlowComponent().clearSelection()
       }
-      // this.#cdr.detectChanges()
     })
-  }
-
-  private getData(): void {
-    // this.viewModel.set(this.apiService.get())
-    // this.form = new BuildFormHandler().handle(new BuildFormRequest(this.viewModel));
-    console.log(this.viewModel())
   }
 
   public onLoaded(): void {
@@ -191,7 +200,7 @@ export class XpertStudioComponent {
   }
 
   public addConnection(event: FCreateConnectionEvent): void {
-    console.log(`Add connecton:`, event)
+    // console.log(`Add connecton:`, event)
     if (!event.fInputId) {
       return
     }
@@ -252,5 +261,9 @@ export class XpertStudioComponent {
 
   public updateCopilotModel(value: ICopilotModel) {
     this.apiService.updateXpert({ copilotModel: value })
+  }
+
+  onCanvasChange(event: FCanvasChangeEvent) {
+    this.apiService.updateXpertOptions({position: event.position, scale: event.scale})
   }
 }

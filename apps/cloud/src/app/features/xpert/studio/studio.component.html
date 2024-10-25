@@ -16,7 +16,8 @@
       <f-line-alignment></f-line-alignment>
       <f-selection-area></f-selection-area>
 
-      <f-canvas fZoom [fZoomStep]="0.02" [fZoomDblClickStep]="0.1">
+      <f-canvas fZoom [fZoomStep]="0.02" [fZoomDblClickStep]="0.1" [scale]="scale()" [position]="position()"
+        (fCanvasChange)="onCanvasChange($event)">
         <f-connection-for-create></f-connection-for-create>
         <f-snap-connection fType="bezier" [fSnapThreshold]="100"></f-snap-connection>
         @for (connection of connections(); track connection.key) {

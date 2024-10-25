@@ -78,6 +78,10 @@
   }
 }
 
+.ngm-cdk-menu-item.danger:hover {
+  @apply text-red-600 bg-red-100 dark:text-red-600 dark:bg-red-200/20;
+}
+
 .ping-badge {
   span {
     background-color: var(--ngm-color-secondary);

@@ -15,11 +15,13 @@ import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilotModel, IfAnimation, IXpertAgent, ModelType, XpertService } from 'apps/cloud/src/app/@core'
+import { ICopilotModel, IfAnimation, IXpertAgent, LanguagesEnum, ModelType, XpertService } from 'apps/cloud/src/app/@core'
 import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
 import { XpertStudioApiService } from '../../domain'
 import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
 import { XpertStudioPanelAgentExecutionComponent } from '../agent-execution/execution.component'
+import { XpertStudioPanelComponent } from '../panel.component'
+import { AppService } from 'apps/cloud/src/app/app.service'
 
 
 @Component({
@@ -53,8 +55,10 @@ export class XpertStudioPanelAgentComponent {
   eModelType = ModelType
   readonly regex = `{{(.*?)}}`
   readonly elementRef = inject(ElementRef)
+  readonly appService = inject(AppService)
   readonly apiService = inject(XpertStudioApiService)
   readonly xpertService = inject(XpertService)
+  readonly panelComponent = inject(XpertStudioPanelComponent)
 
   readonly key = input<string>()
   readonly nodes = computed(() => this.apiService.viewModel()?.nodes)
@@ -82,6 +86,11 @@ export class XpertStudioPanelAgentComponent {
   readonly copilotModel = model<ICopilotModel>()
 
   readonly openedExecution = signal(false)
+
+  // App states
+  readonly isEnglish = computed(() => {
+    return ![LanguagesEnum.Chinese, LanguagesEnum.SimplifiedChinese, LanguagesEnum.TraditionalChinese].includes(this.appService.lang())
+  })
 
   constructor() {
     effect(() => {
@@ -126,5 +135,9 @@ export class XpertStudioPanelAgentComponent {
   }
   closeExecution() {
     this.openedExecution.set(false)
+  }
+
+  closePanel() {
+    this.panelComponent.close()
   }
 }

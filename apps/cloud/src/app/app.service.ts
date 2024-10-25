@@ -4,7 +4,7 @@ import { ComponentStore } from '@metad/store'
 import { includes, some } from 'lodash-es'
 import { combineLatest } from 'rxjs'
 import { map, shareReplay, startWith } from 'rxjs/operators'
-import { MenuCatalog, Store } from './@core'
+import { LanguagesEnum, MenuCatalog, Store } from './@core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { TranslateService } from '@ngx-translate/core'
 import { prefersColorScheme, ThemesEnum } from '@metad/ocap-angular/core'
@@ -28,7 +28,7 @@ export class AppService extends ComponentStore<PACAppState> {
   readonly translate = inject(TranslateService)
 
   readonly tenantSettings = toSignal(this.store.tenantSettings$)
-  readonly lang = toSignal(this.translate.onLangChange.pipe(map((event) => event.lang), startWith(this.translate.currentLang)))
+  readonly lang = toSignal<LanguagesEnum>(this.translate.onLangChange.pipe(map((event) => event.lang as LanguagesEnum), startWith(this.translate.currentLang as LanguagesEnum)))
   readonly title = computed(() => {
     const lang = this.lang()
     return this.tenantSettings() && (this.tenantSettings()['tenant_title_' + lang] || this.tenantSettings()['tenant_title'])

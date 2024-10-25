@@ -103,6 +103,8 @@ export type TXpertOptions = {
       size?: ISize
     }
   >
+  position?: IPoint
+  scale?: number
 }
 
 export enum XpertTypeEnum {
