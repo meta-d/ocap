@@ -3,6 +3,7 @@ import { nonNullable } from '@metad/copilot'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { XpertService } from '../../xpert.service'
 import { GetXpertAgentQuery } from '../get-xpert-agent.query'
+import { pick } from '@metad/server-common'
 
 @QueryHandler(GetXpertAgentQuery)
 export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
@@ -32,6 +33,10 @@ export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
 				toolsetIds: toolNodes.filter(nonNullable).map((node) => node.key),
 				followers: subAgents.filter(nonNullable).map((node) => node.entity),
 				collaborators: collaborators.filter(nonNullable).map((node) => node.entity),
+				team: {
+					...draft.team,
+					...pick(xpert, 'id', 'tenantId', 'organizationId')
+				}
 			} as IXpertAgent
 		} else {
 			const agents = [xpert.agent, ...xpert.agents]
@@ -40,7 +45,8 @@ export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
 				return {
 					...agent,
 					followers: [xpert.agent, ...xpert.agents].filter((_) => _.leaderKey === agent.key),
-					collaborators: agent.collaboratorNames.map((name) => xpert.executors.find((_) => _.name === name)).filter(nonNullable)
+					collaborators: agent.collaboratorNames.map((name) => xpert.executors.find((_) => _.name === name)).filter(nonNullable),
+					team: xpert
 				}
 			}
 		}

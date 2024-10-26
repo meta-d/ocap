@@ -50,17 +50,14 @@
 
     @if (execution(); as execution) {
       <div class="xpert-execution-status py-4"
-        [ngClass]="{
-          succeeded: execution.status === eXpertAgentExecutionEnum.SUCCEEDED,
-          failed: execution.status === eXpertAgentExecutionEnum.FAILED
-        }">
+        [ngClass]="execution.status">
         <div class="container px-3 py-[10px] rounded-lg border-[0.5px] border-black/5 shadow-xs dark:border-white/10">
           <div class="flex">
             <div class="flex-[33%] max-w-[120px]">
               <div class="text-sm leading-[18px] font-medium text-gray-400">STATUS</div>
               <div class="indicator-container flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
                 <div class="indicator w-2 h-2 border border-solid rounded-[3px] "></div>
-                <span class="uppercase">{{execution.status}}</span>
+                <span class="uppercase">{{execution.status | isNil: 'unknow'}}</span>
               </div>
             </div>
             <div class="flex-[33%] max-w-[152px]">
@@ -72,7 +69,7 @@
             <div class="flex-[33%]">
               <div class="text-sm leading-[18px] font-medium text-gray-400">TOTAL TOKENS</div>
               <div class="flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
-                <span>{{execution.tokens || 'NaN'}} Tokens</span>
+                <span>{{execution.tokens | isNil: 'NaN'}} Tokens</span>
               </div>
             </div>
           </div>
@@ -82,7 +79,7 @@
 
     <div class="flex items-center my-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
       <div class="mr-3">Output</div>
-      <div class="grow w-0 h-px bg-slate-50 dark:bg-neutral-700"></div>
+      <div class="grow w-0 h-px bg-divider-regular"></div>
     </div>
 
     <div class="mt-4 p-2 text-sm max-h-80 overflow-auto rounded-xl bg-neutral-100 dark:bg-neutral-700">
@@ -96,12 +93,18 @@
   <div class="w-full flex flex-col mt-4">
     <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
       <div class="mr-3">Log</div>
-      <div class="grow w-0 h-px bg-[#f3f4f6] dark:bg-neutral-700"></div>
+      <div class="grow w-0 h-px bg-divider-regular"></div>
     </div>
 
     <div class="flex flex-col gap-2 p-2">
-      @for (message of storedMessages(); track $index) {
-        <copilot-stored-message [message]="message" />
+      @for (execution of executions(); track execution.id) {
+        <div class="flex items-center my-4 leading-[18px] text-sm font-semibold text-gray-500 uppercase">
+          <div class="mr-3">{{execution.agent?.title || execution.agent?.name || execution.agentKey}}</div>
+          <div class="grow w-0 h-px bg-divider-regular"></div>
+        </div>
+        @for (message of execution.messages; track $index) {
+          <copilot-stored-message [message]="message" />
+        }
       }
     </div>
   </div>

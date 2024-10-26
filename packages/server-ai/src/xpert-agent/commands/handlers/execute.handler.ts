@@ -16,6 +16,7 @@ import { BaseToolset, ToolsetGetToolsCommand } from '../../../xpert-toolset'
 import { XpertAgentService } from '../../xpert-agent.service'
 import { createXpertAgentTool, XpertAgentExecuteCommand } from '../execute.command'
 import { GetXpertAgentQuery } from '../../../xpert/queries'
+import { XpertCopilotNotFoundException } from '../../../core/errors'
 
 
 
@@ -36,25 +37,33 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 	) {}
 
 	public async execute(command: XpertAgentExecuteCommand): Promise<Observable<MessageContent>> {
-		const { input, agentKey, xpert } = command
+		const { input, agentKey, xpert, options } = command
+		const { execution, subscriber } = options
 		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
 		const user = RequestContext.currentUser()
+		const abortController = new AbortController()
+		let tokenUsage = 0
 
 		const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(xpert.id, agentKey, command.options?.isDraft))
 		if (!agent) {
 			throw new NotFoundException(`Xpert agent not found for '${xpert.name}' and key ${agentKey} draft is ${command.options?.isDraft}`)
 		}
 
+		const team = agent.team
 		let copilot: ICopilot = null
-		const copilotId = agent.copilotModel?.copilotId ?? xpert.copilotModel?.copilotId
-		const copilotModel = agent.copilotModel ?? xpert.copilotModel
+		const copilotId = agent.copilotModel?.copilotId ?? team.copilotModel?.copilotId
+		const copilotModel = agent.copilotModel ?? team.copilotModel
 		if (copilotId) {
 			copilot = await this.queryBus.execute(new CopilotGetOneQuery(copilotId))
+		} else {
+			throw new XpertCopilotNotFoundException(`Xpert copilot not found for '${xpert.name}'`)
 		}
 
 		const chatModel = await this.queryBus.execute<AIModelGetOneQuery, BaseChatModel>(
-			new AIModelGetOneQuery(copilot, copilotModel)
+			new AIModelGetOneQuery(copilot, copilotModel, {abortController, tokenCallback: (token) => {
+				tokenUsage += (token ?? 0)
+			}})
 		)
 
 		const toolsets = await this.commandBus.execute<ToolsetGetToolsCommand, BaseToolset[]>(
@@ -74,7 +83,8 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 					this.commandBus,
 					{ xpert, agent: follower, options: {
 						rootExecutionId: command.options.rootExecutionId,
-						isDraft: command.options.isDraft
+						isDraft: command.options.isDraft,
+						subscriber
 					} }))
 			})
 		}
@@ -85,7 +95,14 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 				const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(collaborator.id,))
 				tools.push(createXpertAgentTool(
 					this.commandBus,
-					{ xpert: collaborator, agent, options: {rootExecutionId: command.options.rootExecutionId, isDraft: false } }))
+					{
+						xpert: collaborator,
+						agent,
+						options: {
+							rootExecutionId: command.options.rootExecutionId,
+							isDraft: false,
+							subscriber
+						} }))
 			}
 		}
 
@@ -109,9 +126,9 @@ ${agent.prompt}
 		})
 
 		const thread_id = command.options.thread_id
-		const abortController = new AbortController()
 
 		this.#logger.debug(`Start chat with xpert '${xpert.name}' & agent '${agent.title}'`)
+
 		let prevEvent = ''
 		return from(
 			graph.streamEvents(
@@ -174,8 +191,10 @@ ${agent.prompt}
 				error: (err) => {
 					this.#logger.debug(err)
 				},
+				finalize: () => {
+					execution.tokens = tokenUsage
+				}
 			})
 		)
 	}
-
 }

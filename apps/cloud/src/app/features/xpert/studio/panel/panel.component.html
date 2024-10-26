@@ -1,3 +1,4 @@
+
 @if (selectedNode() && visible()) {
   <div class="relative mr-2 h-full flex" @ifAnimationTrigger>
     @if (selectedNode().entity) {
@@ -17,4 +18,8 @@
       </button> -->
     </div>
   </div>
+}
+
+@if (preview()) {
+  <xpert-studio-panel-preview />
 }

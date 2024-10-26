@@ -76,6 +76,17 @@ f-flow {
 .f-node {
   cursor: default;
 }
+.f-node.f-component {
+  &.running {
+    @apply animate-twinkling-slow;
+  }
+  &.succeeded {
+    @apply border-green-500 dark:border-green-800;
+  }
+  &.failed {
+    @apply border-red-500 dark:border-red-800;
+  }
+}
 
 .f-selection-area {
   background-color: var(--selection-area-color);

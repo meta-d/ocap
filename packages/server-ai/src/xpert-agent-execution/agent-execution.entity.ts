@@ -96,4 +96,11 @@ export class XpertAgentExecution extends TenantOrganizationBaseEntity implements
 	@IsString()
 	@Column({ nullable: true })
 	readonly xpertId: string
+
+	// Temporary properties
+	get totalTokens() {
+		return (this.tokens ?? 0) + this.subExecutions?.reduce((acc, curr) => {
+			return acc + (curr.totalTokens ?? 0)
+		}, 0)
+	}
 }

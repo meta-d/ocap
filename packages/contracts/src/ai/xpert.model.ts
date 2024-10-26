@@ -183,3 +183,9 @@ export interface TXpertTeamConnection {
   to: string
   type: TXpertTeamNodeType
 }
+
+export enum ChatEventTypeEnum {
+  LOG = 'log',
+  MESSAGE = 'message',
+  EVENT = 'event'
+}

@@ -1,13 +1,14 @@
 import { ChatOpenAI } from '@langchain/openai'
-import { ICopilot, ModelType } from '@metad/contracts'
+import { ICopilotModel, ModelType } from '@metad/contracts'
+import { sumTokenUsage } from '@metad/copilot'
 import { Injectable } from '@nestjs/common'
 import { AIModel } from '../../../ai-model'
 import { ModelProvider } from '../../../ai-provider'
 import { AIModelEntity } from '../../../entities'
+import { TChatModelOptions } from '../../../types/types'
 
 @Injectable()
 export class DeepseekLargeLanguageModel extends AIModel {
-
 	constructor(readonly modelProvider: ModelProvider) {
 		super(modelProvider, ModelType.LLM)
 	}
@@ -22,21 +23,25 @@ export class DeepseekLargeLanguageModel extends AIModel {
 		throw new Error('Method not implemented.')
 	}
 
-	getChatModel(copilot: ICopilot) {
+	getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions) {
+		const { copilot } = copilotModel
+		const { handleLLMTokens } = options ?? {}
 		return new ChatOpenAI({
 			apiKey: copilot.apiKey,
 			configuration: {
-				baseURL: copilot.apiHost || 'https://api.deepseek.com/v1',
+				baseURL: copilot.apiHost || 'https://api.deepseek.com/v1'
 			},
-			model: copilot.defaultModel,
+			model: copilotModel.model || copilot.defaultModel,
 			temperature: 0,
 			callbacks: [
 				{
 					handleLLMEnd(output) {
-						// tokenRecord({
-						// 	copilot,
-						// 	tokenUsed: output.llmOutput?.totalTokens ?? sumTokenUsage(output)
-						// })
+						if (handleLLMTokens) {
+							handleLLMTokens({
+								copilot,
+								tokenUsed: output.llmOutput?.totalTokens ?? sumTokenUsage(output)
+							})
+						}
 					}
 				}
 			]

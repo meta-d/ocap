@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, model, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
-import { StoredMessage } from '@langchain/core/messages'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import {
@@ -21,7 +20,9 @@ import {
   XpertAvatarComponent
 } from 'apps/cloud/src/app/@shared'
 import { MarkdownModule } from 'ngx-markdown'
+import { NgmIsNilPipe } from '@metad/ocap-angular/core'
 import { XpertStudioApiService } from '../../domain'
+import { XpertStudioComponent } from '../../studio.component'
 
 @Component({
   selector: 'xpert-studio-panel-agent-execution',
@@ -36,6 +37,7 @@ import { XpertStudioApiService } from '../../domain'
     FormsModule,
     TranslateModule,
     MarkdownModule,
+    NgmIsNilPipe,
     XpertAvatarComponent,
     NgmHighlightVarDirective,
     CopilotModelSelectComponent,
@@ -51,7 +53,10 @@ export class XpertStudioPanelAgentExecutionComponent {
 
   readonly xpertAgentService = inject(XpertAgentService)
   readonly apiService = inject(XpertStudioApiService)
+  readonly studioComponent = inject(XpertStudioComponent)
   readonly #toastr = inject(ToastrService)
+  readonly #destroyRef = inject(DestroyRef)
+  
 
   readonly xpert = input<IXpert>()
   readonly xpertAgent = input<IXpertAgent>()
@@ -60,32 +65,43 @@ export class XpertStudioPanelAgentExecutionComponent {
 
   readonly output = signal('')
   readonly execution = signal<IXpertAgentExecution>(null)
-  readonly storedMessages = computed(() => {
+  readonly executions = computed(() => {
+    const executions: IXpertAgentExecution[] = []
     if (this.execution()) {
-      const messages: StoredMessage[] = [...(this.execution().messages ?? [])]
-      this.execution().subExecutions.forEach((execution) => {
-        if (execution.messages) {
-          messages.push(...execution.messages)
-        }
+      executions.push({
+        ...this.execution(),
+        agent: this.getAgent(this.execution().agentKey)
       })
-      return messages
+      this.execution().subExecutions?.forEach((execution) => {
+        executions.push({
+          ...execution,
+          agent: this.getAgent(execution.agentKey)
+        })
+      })
     }
-    return null
+    return executions
   })
 
   readonly loading = signal(false)
 
   constructor() {
-    effect(() => {
-      console.log(this.execution())
+    // register a destroy callback
+    this.#destroyRef.onDestroy(() => {
+      this.clearStatus()
     })
+  }
+
+  clearStatus() {
+    this.output.set('')
+    this.execution.set(null)
+    this.studioComponent.agentExecutions.set({})
   }
 
   startRunAgent() {
     this.loading.set(true)
     // Clear
-    this.output.set('')
-    this.execution.set(null)
+    this.clearStatus()
+
     // Call chat server
     this.xpertAgentService
       .chatAgent({
@@ -104,6 +120,15 @@ export class XpertStudioPanelAgentExecutionComponent {
                 this.output.update((state) => state + event.data)
               } else if (event.type === 'log') {
                 this.execution.set(event.data)
+                this.studioComponent.agentExecutions.update((state) => ({
+                  ...state,
+                  [event.data.agentKey]: event.data
+                }))
+              } else if (event.type === 'event') {
+                this.studioComponent.agentExecutions.update((state) => ({
+                  ...state,
+                  [event.data.agentKey]: event.data
+                }))
               }
             }
           }
@@ -117,4 +142,9 @@ export class XpertStudioPanelAgentExecutionComponent {
         }
       })
   }
+
+  getAgent(key: string): IXpertAgent {
+    return this.apiService.getNode(key)?.entity as IXpertAgent
+  }
+
 }

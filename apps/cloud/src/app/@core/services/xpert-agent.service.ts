@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core'
-import { fetchEventSource } from '@microsoft/fetch-event-source'
+import { EventSourceMessage, fetchEventSource } from '@microsoft/fetch-event-source'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { API_XPERT_AGENT } from '../constants/app.constants'
@@ -19,7 +19,7 @@ export class XpertAgentService extends XpertWorkspaceBaseCrudService<IXpertAgent
     super(API_XPERT_AGENT)
   }
 
-  chatAgent(data: {input: string; agent: IXpertAgent; xpert: IXpert}): Observable<any> {
+  chatAgent(data: {input: string; agent: IXpertAgent; xpert: IXpert}): Observable<EventSourceMessage> {
     const token = this.#store.token
     const organization = this.store.selectedOrganization ?? {id: null}
     return new Observable((subscriber) => {

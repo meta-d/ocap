@@ -6,6 +6,7 @@ import * as path from 'path'
 import { AIModel } from './ai-model'
 import { AIModelEntity } from './entities'
 import { AIProviderRegistry } from './registry'
+import { TChatModelOptions } from './types/types'
 
 @Injectable()
 export abstract class ModelProvider {
@@ -106,7 +107,7 @@ export abstract class ModelProvider {
 		return models
 	}
 
-	getChatModel(copilot: ICopilot, copilotModel?: ICopilotModel) {
-		return this.getModelInstance(ModelType.LLM)?.getChatModel(copilot, copilotModel)
+	getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions) {
+		return this.getModelInstance(ModelType.LLM)?.getChatModel(copilotModel, options)
 	}
 }

@@ -35,11 +35,12 @@ import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
+import {NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers} from 'ngx-float-ui'
 import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
 import { delay, map, startWith } from 'rxjs/operators'
-import { ICopilotModel, IXpert, ModelType, ToastrService, TXpertTeamNode, XpertService, XpertWorkspaceService } from '../../../@core'
-import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent } from '../../../@shared'
+import { ICopilotModel, IXpert, IXpertAgentExecution, ModelType, ToastrService, TXpertTeamNode, XpertAgentExecutionEnum, XpertService, XpertWorkspaceService } from '../../../@core'
+import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent, XpertAgentExecutionComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import {
   XpertStudioContextMenuComponent,
@@ -51,6 +52,7 @@ import { EReloadReason, SelectionService, XpertStudioApiService } from './domain
 import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
+import { XpertExecutionService } from './services/execution.service'
 
 
 @Component({
@@ -68,6 +70,7 @@ import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
     IntersectionObserverModule,
     MaterialModule,
     FFlowModule,
+    NgxFloatUiModule,
 
     NgmCommonModule,
     CopilotModelSelectComponent,
@@ -78,15 +81,19 @@ import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
     XpertStudioNodeKnowledgeComponent,
     XpertStudioNodeToolsetComponent,
     XpertStudioHeaderComponent,
-    XpertStudioPanelComponent
+    XpertStudioPanelComponent,
+    XpertAgentExecutionComponent
   ],
   selector: 'pac-xpert-studio',
   templateUrl: './studio.component.html',
   styleUrl: 'studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [XpertStudioApiService, SelectionService]
+  providers: [XpertStudioApiService, SelectionService, XpertExecutionService]
 })
 export class XpertStudioComponent {
+  eXpertAgentExecutionEnum = XpertAgentExecutionEnum
+  eNgxFloatUiTriggers = NgxFloatUiTriggers
+  eNgxFloatUiPlacements = NgxFloatUiPlacements
   DisplayBehaviour = DisplayBehaviour
   EFConnectionType = EFConnectionType
   eModelType = ModelType
@@ -155,6 +162,10 @@ export class XpertStudioComponent {
   readonly scale = signal<number>(null)
 
   readonly copilotModel = model<ICopilotModel>()
+
+  // Agent Execution Running status
+  readonly agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
+  readonly preview = model(false)
 
   constructor() {
     effect(

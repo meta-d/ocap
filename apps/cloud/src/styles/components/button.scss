@@ -49,14 +49,34 @@
   font-size: 13px;
 }
 
-markdown.ngm-copilot-markdown .thinking-placeholder {
-  @apply inline-block w-5 h-5 -mb-1 rounded-full bg-black dark:bg-white;
-  animation: twinkling 2000ms infinite linear;
-}
+@layer components {
+  .action-btn {
+    @apply inline-flex cursor-pointer items-center justify-center origin-bottom transition-transform 
+      text-text-tertiary disabled:opacity-50 disabled:cursor-not-allowed;
+    
+    &:not(:disabled) {
+      @apply hover:bg-hover-bg hover:text-base-content active:scale-95;
 
-@keyframes twinkling {
-  50% {
-    opacity: 0;
-    transform: scale(.9);
+      &.primary {
+        @apply hover:bg-primary-50 hover:text-primary-400 active:bg-primary-100 active:text-primary-500;
+      }
+
+      &.danger {
+        @apply hover:bg-red-50 hover:text-red-500;
+      }
+    }
+
+  }
+
+  .action-btn-sm {
+    @apply rounded-md p-1;
+  }
+
+  .action-btn-md {
+    @apply rounded-md p-1.5;
+  }
+
+  .action-btn-active {
+    @apply bg-primary-100 text-primary-500;
   }
 }

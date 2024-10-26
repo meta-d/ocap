@@ -2,7 +2,7 @@ import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
-import { IPoint, IXpert } from './xpert.model'
+import { IXpert } from './xpert.model'
 import { ICopilotModel } from './copilot-model.model'
 
 /**
@@ -24,24 +24,49 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
    */
   options?: TXpertAgentOptions
 
-  // Many to one
+  // One to one
+  /**
+   * This is the xpert's primary agent
+   */
   xpert?: IXpert
   xpertId?: string
+  /**
+   * Copilot model of this agent
+   */
   copilotModel?: ICopilotModel
   copilotModelId?: string
 
-  teamId?: string
+  // Many to one
+  /**
+   * This is one of the xpert team's agent
+   */
   team?: IXpert
+  teamId?: string
 
+  /**
+   * My leader in xpert team
+   */
   leader?: IXpertAgent
   leaderKey?: string
+  /**
+   * I am the leader of followers in xpert's team
+   */
   followers?: IXpertAgent[]
 
   // Many to many
+  /**
+   * External xpert teams
+   */
   collaborators?: IXpert[]
   collaboratorNames?: string[]
+  /**
+   * I used toolsets
+   */
   toolsets?: IXpertToolset[]
   toolsetIds?: string[]
+  /**
+   * I used knowledgebases
+   */
   knowledgebases?: IKnowledgebase[]
   knowledgebaseIds?: string[]
 }

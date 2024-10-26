@@ -3859,6 +3859,26 @@
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.1.tgz#b9da6a878a371829a0502c9b6c1c143ef6663f4d"
   integrity sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==
 
+"@floating-ui/core@^1.6.0":
+  version "1.6.8"
+  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.6.8.tgz#aa43561be075815879305965020f492cdb43da12"
+  integrity sha512-7XJ9cPU+yI2QeLS+FCSlqNFZJq8arvswefkZrYI1yQBbftw6FyrZOxYSh+9S7z7TpeWlRt9zJ5IhM1WIL334jA==
+  dependencies:
+    "@floating-ui/utils" "^0.2.8"
+
+"@floating-ui/dom@^1.5.3", "@floating-ui/dom@^1.6.11", "@floating-ui/dom@^1.6.6":
+  version "1.6.11"
+  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.6.11.tgz#8631857838d34ee5712339eb7cbdfb8ad34da723"
+  integrity sha512-qkMCxSR24v2vGkhYDo/UzxfJN3D4syqSjyuTFz6C7XcpU1pASPRieNI0Kj5VP3/503mOfYiGY891ugBX1GlABQ==
+  dependencies:
+    "@floating-ui/core" "^1.6.0"
+    "@floating-ui/utils" "^0.2.8"
+
+"@floating-ui/utils@^0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.8.tgz#21a907684723bbbaa5f0974cf7730bd797eb8e62"
+  integrity sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==
+
 "@foblex/2d@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@foblex/2d/-/2d-1.1.0.tgz#fa69bccc7412943caaf4f90f330ad3de446f2092"
@@ -6446,7 +6466,7 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.25.tgz#f077fdc0b5d0078d30893396ff4827a13f99e817"
   integrity sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==
 
-"@popperjs/core@^2.11.6":
+"@popperjs/core@^2.11.8":
   version "2.11.8"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
@@ -19866,6 +19886,14 @@ ngx-cookie-service@^14.0.1:
   dependencies:
     tslib "^2.0.0"
 
+ngx-float-ui@^18.0.1:
+  version "18.0.1"
+  resolved "https://registry.yarnpkg.com/ngx-float-ui/-/ngx-float-ui-18.0.1.tgz#e0da5261885a674ba624013d1679b7d9a220da13"
+  integrity sha512-yBkmxkO0ixeDcJ4Mj3JdaBGO7cpXbjl6LrMwPp8L+ZOHdAYJl4rnCE6PaiWcLQJKD1qOsZcakJAfac+G5CPiVg==
+  dependencies:
+    "@floating-ui/dom" "^1.6.6"
+    tslib "^2.3.0"
+
 ngx-logger@^5.0.12:
   version "5.0.12"
   resolved "https://registry.yarnpkg.com/ngx-logger/-/ngx-logger-5.0.12.tgz#387feec5e4e951b3c44789eab6e0c30df255371c"
@@ -19901,12 +19929,12 @@ ngx-permissions@^13.0.1:
   dependencies:
     tslib "^2.1.0"
 
-ngx-popperjs@^15.0.4:
-  version "15.2.4"
-  resolved "https://registry.yarnpkg.com/ngx-popperjs/-/ngx-popperjs-15.2.4.tgz#d038c136d532fca1a91c3613815b7823a90c9fd7"
-  integrity sha512-5WuCLuFIFbLZd52naXvNerM55q1Rn9c3Z3mAqXCK6B/L3gxohNFtiWsaRZsDbST+XQ9Tqw0cC/iXzT86Gufx0A==
+ngx-popperjs@^17.0.0:
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/ngx-popperjs/-/ngx-popperjs-17.0.0.tgz#f8ab1bcdbcd2e0242404841dacd868241947549b"
+  integrity sha512-LNrOBfsRz3JN3IkWaW+T3FTMh6XxCMbqTi3tmeNmaYOZq+UhW3baUtn9WSue+hFC7h3t4bzZU0NJcO/pfryWEQ==
   dependencies:
-    "@popperjs/core" "^2.11.6"
+    "@floating-ui/dom" "^1.5.3"
     tslib "^2.3.0"
 
 ngx-quill@^16.1.2:

@@ -1,9 +1,10 @@
 import { ChatAnthropic } from '@langchain/anthropic'
-import { ICopilot, ICopilotModel, ModelType } from '@metad/contracts'
+import { ICopilotModel, ModelType } from '@metad/contracts'
 import { Injectable } from '@nestjs/common'
 import { AIModel } from '../../../ai-model'
 import { ModelProvider } from '../../../ai-provider'
 import { AIModelEntity } from '../../../entities'
+import { TChatModelOptions } from '../../../types/types'
 
 @Injectable()
 export class AnthropicLargeLanguageModel extends AIModel {
@@ -21,7 +22,9 @@ export class AnthropicLargeLanguageModel extends AIModel {
 		throw new Error('Method not implemented.')
 	}
 
-	getChatModel(copilot: ICopilot, copilotModel?: ICopilotModel) {
+	getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions) {
+		const { copilot } = copilotModel
+
 		const model = copilotModel?.model || copilotModel?.referencedModel?.model || copilot.defaultModel
 		return new ChatAnthropic({
 			anthropicApiUrl: copilot.apiHost || null,

@@ -7,5 +7,9 @@ export class AIModelGetOneQuery implements IQuery {
 	constructor(
 		public readonly copilot: ICopilot,
 		public readonly copilotModel: ICopilotModel,
+		public readonly options: {
+			abortController?: AbortController;
+			tokenCallback?: (tokens: number) => void
+		}
 	) {}
 }

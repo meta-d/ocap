@@ -1,7 +1,7 @@
 import { IQuery } from '@nestjs/cqrs'
 
 /**
- * Get agent of xpert.
+ * Get agent of xpert with team (xpert).
  * - Get the root agent if agentKey is not provided.
  * - Get draft version if draft is provided.
  */

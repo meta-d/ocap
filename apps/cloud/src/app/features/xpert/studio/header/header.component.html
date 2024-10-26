@@ -39,8 +39,9 @@
           ></path>
         </g>
       </g>
-    </svg></button
-  ><button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium p-2">
+    </svg>
+  </button>
+  <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium p-2">
     <svg
       width="16"
       height="16"
@@ -48,8 +49,6 @@
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       class="w-4 h-4 text-components-button-secondary-text"
-      data-icon="Env"
-      aria-hidden="true"
     >
       <g id="env">
         <g id="Vector">
@@ -87,12 +86,17 @@
       </g>
     </svg>
   </button>
+  
   <div class="w-[1px] h-3.5 bg-gray-200"></div>
+  
   <div
-    class="flex items-center px-0.5 h-8 rounded-lg border-[0.5px] border-components-button-secondary-border bg-components-button-secondary-bg shadow-xs"
+    class="flex items-center p-0.5 rounded-lg border-[0.5px] shadow-sm bg-components-card-bg"
   >
     <div
-      class="flex items-center px-2.5 h-7 rounded-md text-[13px] font-medium text-components-button-secondary-accent-text hover:bg-state-accent-hover cursor-pointer"
+      class="flex items-center px-2 py-1 rounded-md text-sm font-medium cursor-pointer
+        text-text-tertiary hover:bg-primary-50 hover:text-primary-500"
+      [ngClass]="preview() ? 'bg-primary-50 text-primary-500' : ''"
+      (click)="togglePreview()"
     >
       <svg
         viewBox="0 0 24 24"
@@ -100,17 +104,19 @@
         width="24"
         height="24"
         fill="currentColor"
-        class=" mr-1 w-4 h-4"
+        class="mr-1 w-5 h-5"
       >
         <path
           d="M8 18.3915V5.60846L18.2264 12L8 18.3915ZM6 3.80421V20.1957C6 20.9812 6.86395 21.46 7.53 21.0437L20.6432 12.848C21.2699 12.4563 21.2699 11.5436 20.6432 11.152L7.53 2.95621C6.86395 2.53993 6 3.01878 6 3.80421Z"
-        ></path></svg
-      >预览
+        ></path>
+      </svg>预览
     </div>
     <div class="mx-0.5 w-[1px] h-3.5 bg-divider-regular"></div>
     <div class="inline-block">
       <div
-        class="group flex items-center justify-center w-7 h-7 rounded-md hover:bg-state-accent-hover cursor-pointer"
+        class="group flex items-center justify-center px-2 py-1 rounded-md cursor-pointer
+          text-text-tertiary hover:bg-primary-50 hover:text-primary-500"
+        [cdkMenuTriggerFor]="executionsMenu"
       >
         <svg
           width="16"
@@ -118,9 +124,7 @@
           viewBox="0 0 16 16"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4 group-hover:text-components-button-secondary-accent-text text-components-button-ghost-text"
-          data-icon="ClockPlay"
-          aria-hidden="true"
+          class="w-5 h-5"
         >
           <g id="Icon" clip-path="url(#clip0_635_10941)">
             <path
@@ -141,7 +145,8 @@
     <div class="inline-block" >
       <div class="relative ml-0.5 flex items-center justify-center w-7 h-7 rounded-md">
         <div
-          class="group flex items-center justify-center w-full h-full rounded-md cursor-pointer hover:bg-state-accent-hover"
+          class="group flex items-center justify-center w-full h-full rounded-md cursor-pointer
+              text-text-tertiary hover:bg-primary-50 hover:text-primary-500"
         >
           <svg
             viewBox="0 0 24 24"
@@ -149,7 +154,7 @@
             width="24"
             height="24"
             fill="currentColor"
-            class="remixicon w-4 h-4 group-hover:text-components-button-secondary-accent-text text-components-button-ghost-text"
+            class="w-5 h-5"
           >
             <path
               d="M8.00008 6V9H5.00008V6H8.00008ZM3.00008 4V11H10.0001V4H3.00008ZM13.0001 4H21.0001V6H13.0001V4ZM13.0001 11H21.0001V13H13.0001V11ZM13.0001 18H21.0001V20H13.0001V18ZM10.7072 16.2071L9.29297 14.7929L6.00008 18.0858L4.20718 16.2929L2.79297 17.7071L6.00008 20.9142L10.7072 16.2071Z"
@@ -159,9 +164,10 @@
       </div>
     </div>
   </div>
+
   <button
     type="button"
-    class="btn disabled:btn-disabled btn-secondary btn-medium text-components-button-secondary-text"
+    class="btn disabled:btn-disabled btn-medium"
   >
     <svg
       viewBox="0 0 24 24"
@@ -244,6 +250,15 @@
             </div>
         }
       </button>
+    }
+  </div>
+</ng-template>
+
+<ng-template #executionsMenu>
+  <div class="ngm-cdk-menu p-2" cdkMenu>
+    @for (item of executions$ | async; track item.id) {
+      <button class="ngm-cdk-menu-item p-2" cdkMenuItem
+        (click)="openExecution(item)">{{item.createdAt | date}}</button>
     }
   </div>
 </ng-template>

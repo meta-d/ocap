@@ -132,4 +132,5 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 			return await this.softDelete(xpert.id)
 		}
 	}
+
 }

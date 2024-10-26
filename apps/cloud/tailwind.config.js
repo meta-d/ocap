@@ -64,6 +64,15 @@ module.exports = {
       },
       scale: {
         98: '0.98'
+      },
+      animation: {
+        'twinkling-slow': 'twinkling 3s linear infinite',
+      },
+      keyframes: {
+        twinkling: {
+          '0%, 100%': { 'border-color': '#3b82f6' },
+          '50%': { 'border-color': 'transparent' },
+        }
       }
     },
     fontFamily: {

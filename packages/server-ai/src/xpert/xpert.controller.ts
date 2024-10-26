@@ -1,4 +1,4 @@
-import { TXpertTeamDraft } from '@metad/contracts'
+import { IXpertAgentExecution, TXpertTeamDraft } from '@metad/contracts'
 import { CrudController, OptionParams, PaginationParams, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
 import {
 	Body,
@@ -11,14 +11,19 @@ import {
 	Param,
 	Post,
 	Query,
-	UseInterceptors
+	UseInterceptors,
+	Header,
+	Sse
 } from '@nestjs/common'
-import { CommandBus } from '@nestjs/cqrs'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Xpert } from './xpert.entity'
 import { XpertService } from './xpert.service'
 import { XpertPublicDTO } from './dto'
 import { DeleteResult } from 'typeorm'
+import { XpertChatCommand } from './commands'
+import { FindExecutionsByXpertQuery } from '../xpert-agent-execution/queries'
+import { XpertAgentExecution } from '../core/entities/internal'
 
 @ApiTags('Xpert')
 @ApiBearerAuth()
@@ -28,7 +33,8 @@ export class XpertController extends CrudController<Xpert> {
 	readonly #logger = new Logger(XpertController.name)
 	constructor(
 		private readonly service: XpertService,
-		private readonly commandBus: CommandBus
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
 	) {
 		super(service)
 	}
@@ -72,6 +78,18 @@ export class XpertController extends CrudController<Xpert> {
 	@Post(':id/publish')
 	async publish(@Param('id') id: string) {
 		return this.service.publish(id)
+	}
+
+	@Get(':id/executions')
+	async getExecutions(@Param('id') id: string, @Query('$order', ParseJsonPipe) order?: PaginationParams<XpertAgentExecution>['order'],) {
+		return this.queryBus.execute(new FindExecutionsByXpertQuery(id, {order}))
+	}
+
+	@Header('content-type', 'text/event-stream')
+	@Post(':id/chat')
+	@Sse()
+	async chat(@Param('id') id: string, @Body() body: {input: string; draft: boolean;}) {
+		return await this.commandBus.execute(new XpertChatCommand(body.input, id, {isDraft: body.draft}))
 	}
 
 	@ApiOperation({ summary: 'Delete record' })

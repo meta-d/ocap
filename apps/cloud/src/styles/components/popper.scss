@@ -1,4 +1,4 @@
-// popper
+// @deprecated use float-ui
 .ngxp__container.ngxp__animation {
   @apply p-0 shadow-none border-none z-10;
 
@@ -15,5 +15,11 @@
     .ngxp__arrow {
       right: 12px;
     }
+  }
+}
+
+float-ui-content {
+  .float-ui-container {
+    @apply bg-components-card-bg border-divider-regular shadow-lg rounded-xl;
   }
 }

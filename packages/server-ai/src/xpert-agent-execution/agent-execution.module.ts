@@ -7,6 +7,7 @@ import { XpertAgentExecutionController } from './agent-execution.controller'
 import { XpertAgentExecution } from './agent-execution.entity'
 import { XpertAgentExecutionService } from './agent-execution.service'
 import { CommandHandlers } from './commands/handlers'
+import { QueryHandlers } from './queries/handlers'
 
 @Module({
 	imports: [
@@ -16,7 +17,7 @@ import { CommandHandlers } from './commands/handlers'
 		CqrsModule
 	],
 	controllers: [XpertAgentExecutionController],
-	providers: [XpertAgentExecutionService, ...CommandHandlers],
+	providers: [XpertAgentExecutionService, ...CommandHandlers, ...QueryHandlers],
 	exports: [XpertAgentExecutionService]
 })
 export class XpertAgentExecutionModule {}

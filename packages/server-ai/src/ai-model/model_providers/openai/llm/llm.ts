@@ -1,9 +1,11 @@
 import { ChatOpenAI } from '@langchain/openai'
-import { ICopilot, ModelType } from '@metad/contracts'
+import { ICopilot, ICopilotModel, ModelType } from '@metad/contracts'
 import { Injectable } from '@nestjs/common'
 import { AIModel } from '../../../ai-model'
 import { ModelProvider } from '../../../ai-provider'
 import { AIModelEntity } from '../../../entities'
+import { sumTokenUsage } from '@metad/copilot'
+import { TChatModelOptions } from '../../../types/types'
 
 @Injectable()
 export class OpenAILargeLanguageModel extends AIModel {
@@ -21,7 +23,10 @@ export class OpenAILargeLanguageModel extends AIModel {
 		throw new Error('Method not implemented.')
 	}
 
-	getChatModel(copilot: ICopilot) {
+	override getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions) {
+		const { copilot } = copilotModel
+
+		const { handleLLMTokens } = options ?? {}
 		return new ChatOpenAI({
 			apiKey: copilot.apiKey,
 			configuration: {
@@ -32,10 +37,12 @@ export class OpenAILargeLanguageModel extends AIModel {
 			callbacks: [
 				{
 					handleLLMEnd(output) {
-						// tokenRecord({
-						// 	copilot,
-						// 	tokenUsed: output.llmOutput?.totalTokens ?? sumTokenUsage(output)
-						// })
+						if (handleLLMTokens) {
+							handleLLMTokens({
+								copilot,
+								tokenUsed: output.llmOutput?.totalTokens ?? sumTokenUsage(output)
+							})
+						}
 					}
 				}
 			]

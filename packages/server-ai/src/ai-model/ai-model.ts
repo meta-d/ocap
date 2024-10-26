@@ -14,6 +14,7 @@ import {
 	valueOf
 } from './entities'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { TChatModelOptions } from './types/types'
 
 @Injectable()
 export abstract class AIModel {
@@ -29,7 +30,7 @@ export abstract class AIModel {
 
 	abstract validateCredentials(model: string, credentials: Record<string, any>): Promise<void>
 
-	getChatModel(copilot: ICopilot, copilotModel?: ICopilotModel): BaseChatModel {
+	getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions): BaseChatModel {
 		throw new Error(`Unsupport chat model!`)
 	}
 

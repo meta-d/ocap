@@ -1,16 +1,19 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, inject, model, signal } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { nonBlank } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { getErrorMessage, ToastrService, XpertService } from 'apps/cloud/src/app/@core'
+import { getErrorMessage, IXpertAgentExecution, OrderTypeEnum, ToastrService, XpertService } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { formatRelative } from 'date-fns'
 import { sortBy } from 'lodash-es'
 import { getDateLocale } from '../../../../@core'
 import { XpertStudioApiService } from '../domain'
 import { XpertStudioComponent } from '../studio.component'
+import { toObservable } from '@angular/core/rxjs-interop'
+import { distinctUntilChanged, filter, map, shareReplay, switchMap } from 'rxjs'
+import { XpertExecutionService } from '../services/execution.service'
 
 @Component({
   selector: 'xpert-studio-header',
@@ -21,12 +24,15 @@ import { XpertStudioComponent } from '../studio.component'
 })
 export class XpertStudioHeaderComponent {
   readonly xpertStudioComponent = inject(XpertStudioComponent)
-  readonly xpertRoleService = inject(XpertService)
+  readonly xpertService = inject(XpertService)
   readonly apiService = inject(XpertStudioApiService)
+  readonly executionService = inject(XpertExecutionService)
   readonly #toastr = inject(ToastrService)
   readonly #translate = inject(TranslateService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
+
+  readonly preview = model(false)
 
   readonly team = computed(() => this.xpertStudioComponent.team())
   readonly version = computed(() => this.team()?.version)
@@ -55,9 +61,17 @@ export class XpertStudioHeaderComponent {
 
   readonly publishing = signal(false)
 
+  // Executions
+  readonly xpertId$ = toObservable(this.team).pipe(map((xpert) => xpert?.id), distinctUntilChanged(), filter(nonBlank))
+  readonly executions$ = this.xpertId$.pipe(
+    switchMap((id) => this.xpertService.getExecutions(id, { order: { updatedAt: OrderTypeEnum.DESC } })),
+    map(({items}) => items),
+    shareReplay(1)
+  )
+
   publish() {
     this.publishing.set(true)
-    this.xpertRoleService.publish(this.xpertStudioComponent.id()).subscribe({
+    this.xpertService.publish(this.xpertStudioComponent.id()).subscribe({
       next: (result) => {
         this.#toastr.success(
           `PAC.Xpert.PublishedSuccessfully`,
@@ -80,5 +94,14 @@ export class XpertStudioHeaderComponent {
 
   selectVersion(id: string) {
     this.router.navigate(['..', id], { relativeTo: this.route })
+  }
+
+  togglePreview() {
+    this.preview.update((state) => !state)
+  }
+
+  openExecution(item: IXpertAgentExecution) {
+    this.preview.set(true)
+    this.executionService.execution.set(item)
   }
 }
