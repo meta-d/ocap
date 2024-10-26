@@ -9,7 +9,6 @@ import { TranslateModule } from '@ngx-translate/core'
 import { IsNilPipe, NgMapPipeModule, NxCoreModule } from '@metad/core'
 import { NxStoryResponsiveModule } from '@metad/story/responsive'
 import { GridsterModule } from 'angular-gridster2'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { QuillModule } from 'ngx-quill'
 import { NxStorySharedModule } from './shared.module'
 import { StorySharesComponent } from './shares/shares.component'
@@ -33,7 +32,6 @@ import { SinglePageStoryComponent } from './single-page-story/sps.component'
     IsNilPipe,
     NgMapPipeModule,
     ContentLoaderModule,
-    NgxPopperjsModule,
     NxStoryResponsiveModule,
     NxCoreModule,
 

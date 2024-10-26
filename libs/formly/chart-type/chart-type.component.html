@@ -13,13 +13,13 @@
           <span *ngIf="name.value" class="">:{{name.value}}</span>
         </div>
 
-        <button *ngIf="type!==NxChartType.Custom" matSuffix mat-icon-button displayDensity="compact"
+        <button *ngIf="type!==ChartTypeEnum.Custom" matSuffix mat-icon-button displayDensity="compact"
           (click)="$event.stopPropagation();$event.preventDefault();showMore.set(!showMore())">
           <mat-icon *ngIf="!showMore()">expand_more</mat-icon>
           <mat-icon *ngIf="showMore()">expand_less</mat-icon>
         </button>
   
-        <button *ngIf="type===NxChartType.Custom" matSuffix mat-icon-button displayDensity="compact"
+        <button *ngIf="type===ChartTypeEnum.Custom" matSuffix mat-icon-button displayDensity="compact"
           (click)="$event.stopPropagation();$event.preventDefault();showCustomCode.set(!showCustomCode())">
           <mat-icon fontSet="material-icons-outlined"
             [color]="showCustomCode()?'accent':''"
@@ -86,7 +86,7 @@
       }
     </div>
 
-    <form *ngIf="type===NxChartType.GeoMap" class="surface-content flex flex-col justify-start items-start gap-2 rounded-lg p-2"
+    <form *ngIf="type===ChartTypeEnum.GeoMap" class="surface-content flex flex-col justify-start items-start gap-2 rounded-lg p-2"
       [formGroup]="mapFormGroup" >
       <div class="flex items-center text-sm">
         <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="text-slate-900">map</mat-icon>

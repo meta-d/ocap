@@ -17,7 +17,6 @@ import { DataSource, Type } from '@metad/ocap-core'
 import { NgmCopilotChatComponent } from '@metad/copilot-angular'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
 import { provideMarkdown } from 'ngx-markdown'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
 import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent, ServerSocketAgent, provideLogger } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
@@ -32,6 +31,7 @@ import { provideCheckpointSaver, provideCommandFewShotPrompt, provideDimensionMe
 import { NgmDrawerComponent, NgmDrawerContainerComponent } from '@metad/ocap-angular/common'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
+import { NgxFloatUiModule } from 'ngx-float-ui'
 
 registerEChartsThemes()
 
@@ -44,7 +44,7 @@ registerEChartsThemes()
     SharedModule,
     PacAuthModule,
     PACThemeModule,
-    NgxPopperjsModule,
+    NgxFloatUiModule,
     HeaderSettingsComponent,
     AssetsComponent,
     ProjectSelectorComponent,

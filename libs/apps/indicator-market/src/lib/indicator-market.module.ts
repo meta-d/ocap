@@ -25,7 +25,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { LoggerModule } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
-import { NgxPopperjsModule } from 'ngx-popperjs'
+import { NgxFloatUiModule } from 'ngx-float-ui'
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { IndicatorItemComponent } from './indicator-item/indicator-item.component'
 import { IndicatorMarketRoutingModule } from './indicator-market-routing.module'
@@ -63,7 +63,7 @@ import { AppSparkLineDirective } from './shared/sparkline.directive'
     MatSliderModule,
     MatChipsModule,
     MatInputModule,
-    NgxPopperjsModule,
+    NgxFloatUiModule,
     MarkdownModule,
     AppearanceDirective,
     ReversePipe,

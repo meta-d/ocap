@@ -94,23 +94,6 @@
                     </button> -->
 
                     <span class="flex-1 flex"></span>
-                    <!-- <button mat-icon-button displayDensity="compact" class="font-notoColorEmoji"
-                        [popper]="ask"
-                        [popperTrigger]="NgxPopperjsTriggers.click"
-                        [popperHideOnClickOutside]="true"
-                        [popperHideOnScroll]="true"
-                        [popperHideOnMouseLeave]="false"
-                        [popperPlacement]="NgxPopperjsPlacements.TOPEND"
-                        (click)="$event.stopPropagation();$event.preventDefault();">
-                        <span *ngIf="answering()" class="emoji-loader text-base"
-                            [matTooltip]=" 'PAC.Copilot.ThinkingHard' | translate: {Default: 'Thinking hard...'} "
-                        ></span>
-                        <span *ngIf="!answering()" class="text-sm"
-                            [matTooltip]="!textSelection?.text ?
-                            ('PAC.Copilot.SelectSomeCode' | translate: {Default: 'Select some code and let your AI pair programmer to edits!'}) :
-                            ('PAC.Copilot.LetYourAIPairProgrammerEdits' | translate: {Default: 'Let your AI pair programmer edits!'})"
-                        >🧑‍💻</span>
-                    </button> -->
 
                     <button mat-icon-button displayDensity="compact" 
                         (click)="triggerUndo()">

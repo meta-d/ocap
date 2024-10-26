@@ -53,7 +53,6 @@ import {
   GridsterModule
 } from 'angular-gridster2'
 import { cloneDeep, isObject, merge, pick } from 'lodash-es'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { BehaviorSubject, EMPTY, Observable, combineLatest, firstValueFrom } from 'rxjs'
 import {
   distinctUntilChanged,
@@ -88,7 +87,6 @@ import { WIDGET_DEFAULT_SIZE, WIDGET_DEFAULT_SIZES } from '../types'
     CdkMenuModule,
     TranslateModule,
     ContentLoaderModule,
-    NgxPopperjsModule,
     NxCoreModule,
     NgmCommonModule,
     NxStoryWidgetComponent,

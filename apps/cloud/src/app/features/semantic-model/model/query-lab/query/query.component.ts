@@ -27,7 +27,6 @@ import { ModelQuery, Store } from 'apps/cloud/src/app/@core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { cloneDeep, isEqual, isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { BehaviorSubject, Subscription, combineLatest, firstValueFrom, of } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { FeaturesComponent } from '../../../../features.component'
@@ -49,8 +48,6 @@ import { injectQueryCommand } from '../../copilot'
 })
 export class QueryComponent extends TranslationBaseComponent {
   MODEL_TYPE = MODEL_TYPE
-  NgxPopperjsTriggers = NgxPopperjsTriggers
-  NgxPopperjsPlacements = NgxPopperjsPlacements
   EntityCapacity = EntityCapacity
 
   readonly #queryService = inject(QueryService)

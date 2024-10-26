@@ -14,12 +14,13 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { CommandDialogComponent, NgmCopilotService } from '@metad/copilot-angular'
-import { injectChartCommand, NxChartType } from '@metad/core'
+import { injectChartCommand } from '@metad/core'
 import { NgmFormlyArrayComponent } from '@metad/formly/array'
 import { NgmThemeService } from '@metad/ocap-angular/core'
 import { EditorThemeMap } from '@metad/ocap-angular/formula'
 import {
   BarVariant,
+  ChartTypeEnum,
   HeatmapVariant,
   isEqual,
   isNil,
@@ -35,7 +36,6 @@ import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
 import { FieldType } from '@ngx-formly/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { BehaviorSubject, distinctUntilChanged, map, startWith } from 'rxjs'
 import { CHART_TYPES, GeoProjections } from './types'
 
@@ -54,9 +54,7 @@ import { CHART_TYPES, GeoProjections } from './types'
 export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   @HostBinding('class.pac-formly-chart-type') readonly _hostClass = true
 
-  NgxPopperjsTriggers = NgxPopperjsTriggers
-  NgxPopperjsPlacements = NgxPopperjsPlacements
-  NxChartType = NxChartType
+  ChartTypeEnum = ChartTypeEnum
   GeoProjections = [
     {
       key: null,
@@ -84,12 +82,12 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   ]
 
   HAS_ORIENTS = {
-    [NxChartType.Bar]: true,
-    [NxChartType.Waterfall]: true,
-    [NxChartType.Line]: true,
-    [NxChartType.Heatmap]: true,
-    [NxChartType.Tree]: true,
-    [NxChartType.Sankey]: true
+    [ChartTypeEnum.Bar]: true,
+    [ChartTypeEnum.Waterfall]: true,
+    [ChartTypeEnum.Line]: true,
+    [ChartTypeEnum.Heatmap]: true,
+    [ChartTypeEnum.Tree]: true,
+    [ChartTypeEnum.Sankey]: true
   }
   VARIANTS = {
     Bar: [
@@ -121,7 +119,7 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
       { value: TreeVariant.Reverse, label: 'Reverse' },
       { value: TreeVariant.Radial, label: 'Radial' }
     ],
-    [NxChartType.Heatmap]: [
+    [ChartTypeEnum.Heatmap]: [
       { value: HeatmapVariant.None, label: 'None' },
       { value: HeatmapVariant.Calendar, label: 'Calendar' }
     ]
@@ -298,6 +296,8 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
         }
       })
       .afterClosed()
-      .subscribe((result) => {})
+      .subscribe(() => {
+        //
+      })
   }
 }

@@ -19,7 +19,6 @@ import { ContentLoaderModule } from '@ngneat/content-loader'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { CreatedByPipe, DirtyBadgeComponent, MaterialModule, UserPipe } from '../../../@shared'
 import { ModelUploadComponent } from '../upload/upload.component'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
@@ -77,7 +76,6 @@ import { ModelDesignerType } from './types'
     MonacoEditorModule.forRoot(),
     ContentLoaderModule,
     FormlyModule,
-    NgxPopperjsModule
   ],
   providers: [
     provideOcapCore(),

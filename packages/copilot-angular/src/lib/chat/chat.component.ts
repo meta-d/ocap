@@ -49,16 +49,10 @@ import {
   CopilotCommand,
   CopilotContextItem,
   SuggestionOutput,
-  nanoid,
   nonBlank,
 } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
-import {
-  NgxPopperjsContentComponent,
-  NgxPopperjsModule,
-  NgxPopperjsPlacements,
-  NgxPopperjsTriggers
-} from 'ngx-popperjs'
+import { NgxFloatUiContentComponent, NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { derivedAsync } from 'ngxtension/derived-async'
 import {
   BehaviorSubject,
@@ -114,7 +108,7 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     MatChipsModule,
     MatProgressSpinnerModule,
     TranslateModule,
-    NgxPopperjsModule,
+    NgxFloatUiModule,
     ScrollingModule,
 
     NgmSearchComponent,
@@ -132,8 +126,8 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
   animations: [provideFadeAnimation('100ms')]
 })
 export class NgmCopilotChatComponent {
-  NgxPopperjsPlacements = NgxPopperjsPlacements
-  NgxPopperjsTriggers = NgxPopperjsTriggers
+  eNgxFloatUiPlacements = NgxFloatUiPlacements
+  eNgxFloatUiTriggers = NgxFloatUiTriggers
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
   AgentRecursionLimit = AgentRecursionLimit
 
@@ -165,7 +159,7 @@ export class NgmCopilotChatComponent {
   @Output() enableCopilot = new EventEmitter()
 
   @ViewChild('chatsContent') chatsContent: ElementRef<HTMLDivElement>
-  @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
+  @ViewChild('copilotOptions') copilotOptions: NgxFloatUiContentComponent
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
   readonly routeTemplate = viewChild('routeTemplate', { read: TemplateRef })
 

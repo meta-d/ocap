@@ -68,21 +68,6 @@
     </button> -->
 </div>
 
-<popper-content #gFilters class="z-[101]">
-    <div class="flex flex-col bg-white p-2" displayDensity="compact">
-        <h2>
-            {{ 'Story.Story.GlobalFilters' | translate: {Default: "Global Filters"} }}
-        </h2>
-        <!-- <pac-widget-filter-bar class="ngm-story__widget flex-1 overflow-hidden"
-            [class.active]="true"
-            [dataSettings]="filterBar()?.dataSettings"
-            [options]="filterBar()?.options"
-            [styling]="filterBar()?.styling"
-            [editable]="editable()"
-            (optionsChange)="onStoryFilterBarOptionsChange($event)">
-        </pac-widget-filter-bar> -->
-    </div>
-</popper-content>
   
 @if (enableWatermark$()) {
   <ngm-trial-watermark [options]="watermarkOptions$()"/>

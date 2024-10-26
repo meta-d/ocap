@@ -7,7 +7,6 @@ import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { NgmMDXEditorComponent } from '@metad/ocap-angular/mdx'
 import { NgmSQLEditorComponent } from '@metad/ocap-angular/sql'
 import { MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { QueryLabRoutingModule } from './query-lab-routing.module'
 import { QueryLabComponent } from './query-lab.component'
 import { QueryComponent } from './query/query.component'
@@ -23,7 +22,6 @@ import { QueryComponent } from './query/query.component'
     ResizerModule,
     SplitterModule,
     NgmEntitySchemaComponent,
-    NgxPopperjsModule,
     NgmCopilotChatComponent,
     NgmCommonModule,
     NgmMDXEditorComponent,

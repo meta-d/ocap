@@ -56,7 +56,6 @@ import {
 import { TranslateService } from '@ngx-translate/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { derivedAsync } from 'ngxtension/derived-async'
 import {
   BehaviorSubject,
@@ -87,8 +86,6 @@ export class IndicatorDetailComponent {
   public readonly isIndicatorDetailComponent = true
   TREND = Trend
   DisplayDensity = DisplayDensity
-  NgxPopperjsTriggers = NgxPopperjsTriggers
-  NgxPopperjsPlacements = NgxPopperjsPlacements
   PERIODS = PERIODS
 
   private store = inject(IndicatorsStore)

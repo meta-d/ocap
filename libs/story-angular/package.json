@@ -1,6 +1,6 @@
 {
   "name": "@metad/story",
-  "version": "2.1.0",
+  "version": "2.8.0",
   "peerDependencies": {
     "@angular/common": "^17.0.0",
     "@angular/core": "^17.0.0"

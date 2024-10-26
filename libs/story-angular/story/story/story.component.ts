@@ -30,15 +30,13 @@ import { ActivatedRoute, Params, Router } from '@angular/router'
 import { TrialWatermarkComponent } from '@metad/components/trial-watermark'
 import { NgmTransformScaleDirective, NxCoreModule, camelCaseObject } from '@metad/core'
 import { NgmCommonModule, NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
-import { NgmSmartFilterBarService, OcapCoreModule, effectAction, isNotEmpty } from '@metad/ocap-angular/core'
+import { NgmSmartFilterBarService, OcapCoreModule, isNotEmpty } from '@metad/ocap-angular/core'
 import { isNil, omitBlank } from '@metad/ocap-core'
 import {
-  ComponentSettingsType,
   MoveDirection,
   NxStoryService,
   PageHeaderLabelEnum,
   Story,
-  StoryFilterBar,
   StoryOptions,
   StoryPoint,
   WidgetComponentType,
@@ -49,9 +47,8 @@ import { ISmartFilterBarOptions } from '@metad/story/widgets/filter-bar'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isEqual, startsWith } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { NgxPopperjsModule, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { BehaviorSubject, EMPTY, Observable, firstValueFrom, interval, merge } from 'rxjs'
+import { BehaviorSubject, firstValueFrom, interval, merge } from 'rxjs'
 import {
   combineLatestWith,
   debounce,
@@ -59,7 +56,6 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  switchMap,
   tap,
   withLatestFrom
 } from 'rxjs/operators'
@@ -86,7 +82,6 @@ import { NxStoryPointComponent } from '../story-point/story-point.component'
     HammerModule,
     TranslateModule,
     TrialWatermarkComponent,
-    NgxPopperjsModule,
     NxCoreModule,
 
     // OCAP Modules
@@ -101,8 +96,6 @@ import { NxStoryPointComponent } from '../story-point/story-point.component'
 })
 export class NxStoryComponent implements AfterViewInit {
   ComponentType = WidgetComponentType
-  NgxPopperjsTriggers = NgxPopperjsTriggers
-  NgxPopperjsPlacements = NgxPopperjsPlacements
   PageHeaderLabelEnum = PageHeaderLabelEnum
 
   readonly #logger = inject(NGXLogger)

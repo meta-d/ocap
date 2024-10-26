@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { TranslateModule } from '@ngx-translate/core'
-import { NgxPopperjsModule, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
 import { CopilotGlobalService } from './global.service'
 
@@ -18,7 +18,7 @@ import { CopilotGlobalService } from './global.service'
     FormsModule,
     ReactiveFormsModule,
     TranslateModule,
-    NgxPopperjsModule,
+    NgxFloatUiModule,
     MatTooltipModule,
 
     NgmCopilotChatComponent
@@ -28,7 +28,8 @@ import { CopilotGlobalService } from './global.service'
   }
 })
 export class CopilotGlobalComponent {
-  NgxPopperjsPlacements = NgxPopperjsPlacements
-  NgxPopperjsTriggers = NgxPopperjsTriggers
+  eNgxFloatUiPlacements = NgxFloatUiPlacements
+  eNgxFloatUiTriggers = NgxFloatUiTriggers
+  
   public copilotGlobalService = inject(CopilotGlobalService)
 }

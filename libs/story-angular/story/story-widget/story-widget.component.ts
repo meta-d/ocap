@@ -73,7 +73,6 @@ import { select } from '@ngneat/elf'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { cloneDeep, isEmpty, isEqual, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { BehaviorSubject, combineLatest, EMPTY, firstValueFrom, from, Observable, of } from 'rxjs'
 import {
   catchError,
@@ -113,7 +112,6 @@ import { CommandDialogComponent } from '@metad/copilot-angular'
     CdkMenuModule,
     TranslateModule,
     ContentLoaderModule,
-    NgxPopperjsModule,
     NxCoreModule,
     NgmCommonModule,
 

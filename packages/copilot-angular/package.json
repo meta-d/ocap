@@ -3,7 +3,8 @@
   "version": "2.7.0",
   "peerDependencies": {
     "@angular/common": "^17.3.0",
-    "@angular/core": "^17.3.0"
+    "@angular/core": "^17.3.0",
+    "ngx-float-ui": "^18.0.1"
   },
   "dependencies": {
     "@langchain/anthropic": "0.3.1",

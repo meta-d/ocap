@@ -31,7 +31,7 @@ import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/copilot
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { combineLatestWith, firstValueFrom } from 'rxjs'
 import { filter, map, startWith, tap } from 'rxjs/operators'
 import {
@@ -69,8 +69,8 @@ import { injectChatCommand } from '../@shared/copilot'
 })
 export class FeaturesComponent implements OnInit {
   MENU_CATALOG = MenuCatalog
-  NgxPopperjsTriggers = NgxPopperjsTriggers
-  NgxPopperjsPlacements = NgxPopperjsPlacements
+  eNgxFloatUiPlacements = NgxFloatUiPlacements
+  eNgxFloatUiTriggers = NgxFloatUiTriggers
   AbilityActions = AbilityActions
 
   readonly #destroyRef = inject(DestroyRef)

@@ -4,7 +4,8 @@
       [matDatepicker]="picker"
       [matDatepickerFilter]="prevDatesFilter"
       [formControl]="dateControl"
-      (click)="picker.open()">
+      (click)="picker.open()"
+    >
     <mat-datepicker #picker
       startView="multi-year"
       (yearSelected)="chosenYearHandler($event, picker)"
@@ -18,12 +19,12 @@
       </div>
 
       <button mat-icon-button
-        [popper]="options"
-        [popperTrigger]="NgxPopperjsTriggers.click"
-        [popperHideOnClickOutside]="true"
-        [popperHideOnScroll]="true"
-        [popperHideOnMouseLeave]="false"
-        [popperPlacement]="NgxPopperjsPlacements.TOPEND"
+        [floatUi]="options"
+        [showTrigger]="eNgxFloatUiTriggers.click"
+        [hideOnClickOutside]="true"
+        [hideOnScroll]="true"
+        [hideOnMouseLeave]="false"
+        [placement]="eNgxFloatUiPlacements.TOPEND"
         (click)="$event.stopPropagation();$event.preventDefault();"
       >
         <mat-icon>more_horiz</mat-icon>
@@ -83,7 +84,7 @@
   }
 }
 
-<popper-content #options class="z-[101]">
+<float-ui-content #options class="z-[101]">
   <div class="pac-indicator-app__options flex flex-col gap-2 p-2">
 
     <label>{{ 'IndicatorApp.TimeGranularity' | translate: {Default: 'Time Granularity'} }}</label>
@@ -124,4 +125,4 @@
       </span>
     </button>
   </div>
-</popper-content>
+</float-ui-content>

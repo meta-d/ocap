@@ -133,11 +133,11 @@
       @if (isAuthenticated$ | async; as user) {
         <button mat-icon-button class="pac-auth-button"
           displayDensity="cosy"
-          [popper]="popperContent"
-          [popperTrigger]="NgxPopperjsTriggers.click"
-          [popperHideOnClickOutside]="true"
-          [popperHideOnScroll]="true"
-          [popperPlacement]="NgxPopperjsPlacements.BOTTOMEND"
+          [floatUi]="popperContent"
+          [showTrigger]="eNgxFloatUiTriggers.click"
+          [hideOnClickOutside]="true"
+          [hideOnScroll]="true"
+          [placement]="eNgxFloatUiPlacements.BOTTOMEND"
         >
           <img class="avatar w-full h-full rounded-full" [src]="user?.imageUrl || '/assets/images/avatar-default.svg'" />
         </button>
@@ -223,9 +223,9 @@
   </mat-progress-bar>
 }
 
-<popper-content #popperContent class="pac-features__auth-popper">
-  <pac-header-settings></pac-header-settings>
-</popper-content>
+<float-ui-content #popperContent class="pac-features__auth-popper">
+  <pac-header-settings />
+</float-ui-content>
 
 <mat-menu #creatMenu="matMenu" class="ngm-density__compact mat-color-accent"
   xPosition="before">

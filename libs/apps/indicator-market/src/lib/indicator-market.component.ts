@@ -25,7 +25,7 @@ import { TimeGranularity } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { includes, some } from 'lodash-es'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { combineLatest, Observable } from 'rxjs'
 import { distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
@@ -42,8 +42,8 @@ import { injectCopilotCommand } from '@metad/copilot-angular'
 })
 export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   TIME_GRANULARITY = TimeGranularity
-  NgxPopperjsTriggers = NgxPopperjsTriggers
-  NgxPopperjsPlacements = NgxPopperjsPlacements
+  eNgxFloatUiTriggers = NgxFloatUiTriggers
+  eNgxFloatUiPlacements = NgxFloatUiPlacements
   IndicatorTagEnum = IndicatorTagEnum
 
   readonly router = inject(Router)
