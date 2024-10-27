@@ -25,7 +25,7 @@ import {
   XpertAgentExecutionService,
   XpertService
 } from 'apps/cloud/src/app/@core'
-import { CopilotModelSelectComponent, MaterialModule, XpertAvatarComponent } from 'apps/cloud/src/app/@shared'
+import { CopilotModelSelectComponent, MaterialModule } from 'apps/cloud/src/app/@shared'
 import { AppService } from 'apps/cloud/src/app/app.service'
 import { XpertStudioApiService } from '../../domain'
 import { XpertStudioPanelAgentExecutionComponent } from '../agent-execution/execution.component'
@@ -34,6 +34,7 @@ import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.componen
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
 import { CdkMenuModule } from '@angular/cdk/menu'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   selector: 'xpert-studio-panel-agent',
@@ -49,7 +50,7 @@ import { CdkMenuModule } from '@angular/cdk/menu'
     FormsModule,
     TranslateModule,
 
-    XpertAvatarComponent,
+    EmojiAvatarComponent,
     NgmHighlightVarDirective,
     XpertStudioPanelRoleToolsetComponent,
     CopilotModelSelectComponent,

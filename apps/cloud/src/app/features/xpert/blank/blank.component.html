@@ -79,17 +79,10 @@
 <div class="pt-2 px-8">
   <div class="py-2 text-sm font-medium leading-[20px] text-gray-900">图标 &amp; 名称</div>
   <div class="flex items-center justify-between space-x-2">
-    <span class="w-8 h-8 cursor-pointer overflow-hidden" style="background: rgb(255, 234, 213)"
-      ><span class="emoji-mart-emoji" data-emoji-set="native"
-        ><span
-          style="
-            font-family: EmojiMart, 'Segoe UI Emoji', 'Segoe UI Symbol', 'Segoe UI', 'Apple Color Emoji',
-              'Twemoji Mozilla', 'Noto Color Emoji', 'Android Emoji';
-          "
-          >🤖</span
-        ></span
-      ></span
-    >
+    <emoji-avatar class="rounded-lg overflow-hidden"
+      editable
+      [(avatar)]="avatar" />
+    
     <input
       matInput
       placeholder="给你的应用起个名字"

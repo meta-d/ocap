@@ -7,13 +7,14 @@ import { RouterModule } from '@angular/router'
 import { routeAnimations } from '@metad/core'
 import { omit, pick } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ApiProviderAuthType, ApiToolBundle, IXpertToolset, XpertToolsetCategoryEnum, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import { ApiProviderAuthType, ApiToolBundle, IXpertToolset, TAvatar, XpertToolsetCategoryEnum, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
 import { XpertStudioToolAuthorizationComponent } from '../authorization/authorization.component'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule,],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule, EmojiAvatarComponent],
   selector: 'pac-xpert-tool-configure',
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',
@@ -30,6 +31,7 @@ export class XpertStudioConfigureToolComponent {
 
   readonly formGroup = new FormGroup({
     name: new FormControl(null, [Validators.required]),
+    avatar: new FormControl(null),
     description: new FormControl(null),
     schema: new FormControl<string>(null, [Validators.required]),
     type: this.#formBuilder.control('openapi'),
@@ -47,6 +49,12 @@ export class XpertStudioConfigureToolComponent {
   }
   get name() {
     return this.formGroup.get('name')
+  }
+  get avatar() {
+    return this.formGroup.get('avatar').value
+  }
+  set avatar(avatar) {
+    this.formGroup.patchValue({avatar})
   }
   get schema() {
     return this.formGroup.get('schema')
@@ -86,7 +94,7 @@ export class XpertStudioConfigureToolComponent {
     effect(() => {
       if (this.toolset()) {
         this.formGroup.patchValue({
-          ...pick(this.toolset(), 'name', 'description', 'schema', 'type', 'category',),
+          ...pick(this.toolset(), 'name', 'avatar', 'description', 'schema', 'type', 'category',),
           credentials: this.toolset().credentials ?? {},
           tools: []
         } as any)

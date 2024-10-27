@@ -3,11 +3,8 @@
     <div class="py-2 leading-5 font-medium text-gray-900">Name <span class="ml-1 text-red-500">*</span>
     </div>
     <div class="flex items-center justify-between gap-3">
-      <span class="style_appIcon__qLtEt style_large__CrEss cursor-pointer overflow-hidden" style="background: rgb(254, 247, 195);">
-        <span class="emoji-mart-emoji" data-emoji-set="native">
-          <span style="font-family: EmojiMart, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Segoe UI&quot;, &quot;Apple Color Emoji&quot;, &quot;Twemoji Mozilla&quot;, &quot;Noto Color Emoji&quot;, &quot;Android Emoji&quot;;">🕵️</span>
-        </span>
-      </span>
+      <emoji-avatar class="rounded-lg overflow-hidden"
+        [(avatar)]="avatar" editable />
       <input class="ngm-input h-10 px-3 text-sm font-normal grow"
         placeholder="Enter the tool name"
         formControlName="name"

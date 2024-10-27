@@ -32,6 +32,7 @@ import { AppService } from '../../../app.service'
 import { XpertNewBlankComponent } from '../blank/blank.component'
 import { XpertHomeComponent } from '../home.component'
 import { XpertStudioCreateToolComponent } from '../tools/create/create.component'
+import { EmojiAvatarComponent } from '../../../@shared/avatar'
 
 @Component({
   standalone: true,
@@ -49,7 +50,7 @@ import { XpertStudioCreateToolComponent } from '../tools/create/create.component
     MaterialModule,
 
     NgmCommonModule,
-    AvatarComponent,
+    EmojiAvatarComponent,
     UserPipe,
     AppearanceDirective
   ],

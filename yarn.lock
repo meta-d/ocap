@@ -3267,6 +3267,13 @@
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.2.0.tgz#2cbcf822bf3764c9658c4d2e568bd0c0cb748016"
   integrity sha512-+OJ9konv95ClSTOJCmMZqpd5+YGsB2S+x6w3E1oaM8UuR5j8nTNHYSz8c9BEPGDOCMQYIEEGlVPj/VY64iTbGw==
 
+"@ctrl/ngx-emoji-mart@^9.2.0":
+  version "9.2.0"
+  resolved "https://registry.yarnpkg.com/@ctrl/ngx-emoji-mart/-/ngx-emoji-mart-9.2.0.tgz#fca330a5bc3e42ae7177f8430bb2109ddea2a438"
+  integrity sha512-q8B7DiXPfyTe+VOGO6Ix7eh5gKCuADxAsud2xXRTlECTfchoKGTmirSczyjaxIKE/xmB+/ZsnkpthZqUM7SAJQ==
+  dependencies:
+    tslib "^2.3.0"
+
 "@ctrl/tinycolor@^3.4.0":
   version "3.6.1"
   resolved "https://registry.yarnpkg.com/@ctrl/tinycolor/-/tinycolor-3.6.1.tgz#b6c75a56a1947cc916ea058772d666a2c8932f31"

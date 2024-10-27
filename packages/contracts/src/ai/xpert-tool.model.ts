@@ -1,5 +1,6 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { AiProviderRole } from './copilot.model'
+import { TAvatar } from './types'
 import { IXpertToolset } from './xpert-toolset.model'
 
 /**
@@ -10,6 +11,7 @@ export interface IXpertTool extends IBasePerTenantAndOrganizationEntityModel, Xp
 export type XpertToolType = {
   name: string
   description?: string
+  avatar?: TAvatar
   /**
    * Is enabled in toolset
    */

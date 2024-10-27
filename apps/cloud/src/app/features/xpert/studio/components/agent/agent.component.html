@@ -15,7 +15,7 @@
 
 @if (xpertAgent()) {
   <div class="max-w-full flex justify-start items-center px-3 pt-3 pb-2 overflow-hidden">
-    <xpert-avatar [avatar]="xpertAgent().avatar" small class="shrink-0 mr-2 rounded-lg overflow-hidden shadow-sm" />
+    <emoji-avatar [avatar]="xpertAgent().avatar" small class="shrink-0 mr-2 rounded-lg overflow-hidden shadow-sm" />
     <div class="flex flex-col overflow-hidden text-base-content">
       <span class="text-base font-semibold uppercase truncate">{{xpertAgent().title}}</span>
     </div>
@@ -30,7 +30,7 @@
       @for (toolset of toolsets(); track toolset.id) {
         <xpert-studio-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
           hover:bg-black/5 dark:hover:bg-white/10">
-          <xpert-avatar [avatar]="toolset.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+          <emoji-avatar [avatar]="toolset.avatar" small class="shrink-0 mr-2 overflow-hidden rounded-full" />
           <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
         </xpert-studio-role-toolset>
       }

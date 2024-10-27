@@ -117,11 +117,14 @@
     >
       <div class="flex pt-[14px] px-[14px] pb-3 h-[66px] items-center gap-3 grow-0 shrink-0">
         <div class="relative shrink-0">
-          <div class="w-10 h-10 bg-center bg-cover bg-no-repeat rounded-md"></div>
+          <emoji-avatar [avatar]="xpert.avatar" large class="rounded-xl overflow-hidden shadow-sm" />
         </div>
         <div class="grow w-0 py-[1px]">
           <div class="flex items-center text-sm leading-5 font-semibold text-gray-800">
-            <div class="truncate" title="Google">{{ xpert.title }}</div>
+            <div class="truncate" [title]="xpert.title">{{ xpert.title }}</div>
+          </div>
+          <div class="flex items-center text-sm leading-5 font-semibold text-gray-800">
+            <div class="truncate" [title]="xpert.name">{{ xpert.name }}</div>
           </div>
           <div class="flex items-center text-[10px] leading-[18px] text-gray-500 font-medium">
             <div class="truncate">作者&nbsp;{{ xpert.createdBy | user }}</div>
@@ -260,11 +263,7 @@
       [routerLink]="['./tool', toolset.id]">
       <div class="flex pt-[14px] px-[14px] pb-3 h-[66px] items-center gap-3 grow-0 shrink-0">
         <div class="relative shrink-0">
-          <span class="style_appIcon__qLtEt style_large__CrEss overflow-hidden" style="background: rgb(254, 247, 195);">
-            <span class="emoji-mart-emoji" data-emoji-set="native">
-              <span style="font-family: EmojiMart, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Segoe UI&quot;, &quot;Apple Color Emoji&quot;, &quot;Twemoji Mozilla&quot;, &quot;Noto Color Emoji&quot;, &quot;Android Emoji&quot;;">🕵️</span>
-            </span>
-          </span>
+          <emoji-avatar [avatar]="toolset.avatar" large class="rounded-xl overflow-hidden shadow-sm" />
         </div>
         <div class="grow w-0 py-[1px]">
           <div class="flex items-center text-sm leading-5 font-semibold text-gray-800">

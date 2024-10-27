@@ -80,6 +80,7 @@
     "@antv/g2plot": "^2.3.40",
     "@casl/ability": "^5.4.3",
     "@casl/angular": "^6.0.0",
+    "@ctrl/ngx-emoji-mart": "^9.2.0",
     "@dagrejs/dagre": "^1.1.4",
     "@datorama/akita": "^6.2.3",
     "@duckdb/duckdb-wasm": "1.25.0",

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, effect, inject, model, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, model, signal } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
@@ -13,6 +13,7 @@ import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { EMPTY, of } from 'rxjs'
 import { toObservable } from '@angular/core/rxjs-interop'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   standalone: true,
@@ -26,6 +27,7 @@ import { toObservable } from '@angular/core/rxjs-interop'
     ButtonGroupDirective,
     DensityDirective,
     NgmI18nPipe,
+    EmojiAvatarComponent,
     XpertStudioConfigureToolComponent,
   ],
   selector: 'pac-xpert-api-tool',
@@ -46,6 +48,8 @@ export class XpertStudioAPIToolComponent {
   readonly tool = model<IXpertTool>(null)
   readonly parameters = model<Record<string, any>>(null)
   readonly testResult = signal(null)
+
+  readonly toolAvatar = computed(() => this.tool()?.avatar ?? this.toolset()?.avatar)
 
   readonly loading = signal(false)
 

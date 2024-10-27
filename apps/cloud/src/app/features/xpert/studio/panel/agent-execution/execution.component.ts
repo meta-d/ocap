@@ -18,7 +18,6 @@ import {
   CopilotModelSelectComponent,
   CopilotStoredMessageComponent,
   MaterialModule,
-  XpertAvatarComponent
 } from 'apps/cloud/src/app/@shared'
 import { MarkdownModule } from 'ngx-markdown'
 import { NgmIsNilPipe } from '@metad/ocap-angular/core'
@@ -26,6 +25,7 @@ import { XpertStudioApiService } from '../../domain'
 import { XpertStudioComponent } from '../../studio.component'
 import { XpertExecutionService } from '../../services/execution.service'
 import { XpertAgentExecutionComponent } from "../../../../../@shared/";
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   selector: 'xpert-studio-panel-agent-execution',
@@ -41,7 +41,7 @@ import { XpertAgentExecutionComponent } from "../../../../../@shared/";
     TranslateModule,
     MarkdownModule,
     NgmIsNilPipe,
-    XpertAvatarComponent,
+    EmojiAvatarComponent,
     NgmHighlightVarDirective,
     CopilotModelSelectComponent,
     CopilotStoredMessageComponent,

@@ -11,17 +11,19 @@ import {
   getErrorMessage,
   IXpertRole,
   IXpertWorkspace,
+  TAvatar,
   ToastrService,
   uuid,
   XpertService,
   XpertTypeEnum
 } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
+import { EmojiAvatarComponent } from '../../../@shared/avatar'
 
 @Component({
   selector: 'xpert-new-blank',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ButtonGroupDirective, MaterialModule, FormsModule, CdkListboxModule],
+  imports: [CommonModule, TranslateModule, ButtonGroupDirective, MaterialModule, FormsModule, CdkListboxModule, EmojiAvatarComponent],
   templateUrl: './blank.component.html',
   styleUrl: './blank.component.scss'
 })
@@ -35,6 +37,7 @@ export class XpertNewBlankComponent {
   readonly type = model<XpertTypeEnum>(XpertTypeEnum.Agent)
   readonly name = model<string>()
   readonly description = model<string>()
+  readonly avatar = model<TAvatar>()
 
   public checking = false
   readonly validatedTitle = toSignal(
@@ -57,8 +60,10 @@ export class XpertNewBlankComponent {
         description: this.description(),
         latest: true,
         workspaceId: this.#dialogData?.workspace?.id,
+        avatar: this.avatar(),
         agent: {
-          key: uuid()
+          key: uuid(),
+          avatar: this.avatar(),
         }
       })
       .subscribe({

@@ -71,12 +71,11 @@
   @if (tool(); as tool) {
     <div class="flex-1 flex flex-col overflow-auto">
       <div class="sticky top-0 z-20 !border-b-black/5 shrink-0 border-b border-b-gray-100 p-4 bg-components-panel-bg">
-        <div class="flex justify-between items-center pl-6 pr-5 h-6">
+        <div class="flex justify-between items-center pr-5 h-6">
           <div class="text-base font-semibold text-gray-900">
             <div class="flex items-center">
-              <span class="style_appIcon__qLtEt style_tiny__wg0Is rounded-md overflow-hidden" style="background: rgb(254, 247, 195);">
-                <span style="font-family: EmojiMart, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Segoe UI&quot;, &quot;Apple Color Emoji&quot;, &quot;Twemoji Mozilla&quot;, &quot;Noto Color Emoji&quot;, &quot;Android Emoji&quot;;">🕵️</span>
-              </span>
+              <emoji-avatar class="rounded-lg overflow-hidden"
+                [avatar]="toolAvatar()" small />
               <div class="ml-2 leading-6 text-base font-semibold text-gray-900">{{tool.name}}</div>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
 import { XpertStudioRoleToolsetComponent } from './toolset/toolset.component'
 import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
-import { XpertAvatarComponent } from 'apps/cloud/src/app/@shared'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   selector: 'xpert-studio-node-agent',
@@ -11,7 +11,7 @@ import { XpertAvatarComponent } from 'apps/cloud/src/app/@shared'
   styleUrls: ['./agent.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, XpertAvatarComponent, XpertStudioRoleToolsetComponent],
+  imports: [FFlowModule, MatIcon, EmojiAvatarComponent, XpertStudioRoleToolsetComponent],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',
