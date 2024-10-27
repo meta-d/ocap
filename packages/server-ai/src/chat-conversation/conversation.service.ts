@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { PaginationParams, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { ChatConversation } from './conversation.entity'
 
 @Injectable()
@@ -15,5 +15,14 @@ export class ChatConversationService extends TenantOrganizationAwareCrudService<
 		readonly commandBus: CommandBus
 	) {
 		super(chatRepository)
+	}
+
+	async findAllByXpert(xpertId: string, options: PaginationParams<ChatConversation>) {
+		return this.findAll({
+			...options,
+			where: {
+				xpertId,
+			}
+		})
 	}
 }

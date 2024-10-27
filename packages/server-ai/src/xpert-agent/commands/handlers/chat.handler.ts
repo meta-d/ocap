@@ -22,17 +22,19 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 
 	public async execute(command: XpertAgentChatCommand): Promise<Observable<MessageEvent>> {
 		const { input, xpert, agentKey, options } = command
-		const execution = await this.commandBus.execute(
-			new XpertAgentExecutionUpsertCommand({
-				xpert: { id: xpert.id } as IXpert,
-				agentKey,
-				inputs: {
-					input
-				},
-				status: XpertAgentExecutionEnum.RUNNING,
-				parentId: options.rootExecutionId
-			})
-		)
+		let { execution } = options
+		if (!execution) {
+			execution = await this.commandBus.execute(
+				new XpertAgentExecutionUpsertCommand({
+					xpert: { id: xpert.id } as IXpert,
+					agentKey,
+					inputs: {
+						input
+					},
+					status: XpertAgentExecutionEnum.RUNNING,
+				})
+			)
+		}
 
 		const timeStart = Date.now()
 		const thread_id = execution.id
@@ -83,7 +85,7 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 								await this.commandBus.execute(
 									new XpertAgentExecutionUpsertCommand({
 										id: execution.id,
-										elapsedTime: timeEnd - timeStart,
+										elapsedTime: (execution.elapsedTime ?? 0) + timeEnd - timeStart,
 										status,
 										error,
 										tokens: execution.tokens,

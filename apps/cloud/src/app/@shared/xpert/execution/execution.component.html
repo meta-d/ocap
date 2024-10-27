@@ -26,9 +26,8 @@
     </div>
   </div>
 
-  <p class="">在拟定合作协议时，建议寻求法律意见以确保合同的合法性和有效性。执行与销售伙伴的合作协议计划是一个重要的商业策略。以下是一些建议步骤</p>
-
   @if (execution.error) {
-    <p class="">{{ execution.error }}</p>
+    <label class="p-1">Error: </label>
+    <p class="text-xs text-text-tertiary rounded-lg p-2 bg-danger-bg text-danger-content">{{ execution.error }}</p>
   }
 }

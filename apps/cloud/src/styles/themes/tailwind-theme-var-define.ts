@@ -33,7 +33,8 @@ const vars = {
   'divider-solid': 'var(--color-divider-solid)',
   'divider-solid-alt': 'var(--color-divider-solid-alt)',
 
-  'hover-bg': 'var(--color-hover-bg)'
+  'hover-bg': 'var(--color-hover-bg)',
+  'danger-bg': 'var(--color-danger-bg)'
 }
 
 export default vars

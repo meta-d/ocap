@@ -13,6 +13,9 @@
     }
   </div>
 </div>
+
+<div class="flex-1"></div>
+
 <div class="flex items-center gap-2">
   <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium p-2">
     <svg
@@ -116,7 +119,8 @@
       <div
         class="group flex items-center justify-center px-2 py-1 rounded-md cursor-pointer
           text-text-tertiary hover:bg-primary-50 hover:text-primary-500"
-        [cdkMenuTriggerFor]="executionsMenu"
+        [floatUi]="conversations"
+        [placement]="eNgxFloatUiPlacements.BOTTOMSTART"
       >
         <svg
           width="16"
@@ -254,11 +258,16 @@
   </div>
 </ng-template>
 
-<ng-template #executionsMenu>
-  <div class="ngm-cdk-menu p-2" cdkMenu>
-    @for (item of executions$ | async; track item.id) {
-      <button class="ngm-cdk-menu-item p-2" cdkMenuItem
-        (click)="openExecution(item)">{{item.createdAt | date}}</button>
+<float-ui-content #conversations>
+  <div class="ngm-cdk-menu p-2 w-90">
+    @for (item of conversations$ | async; track item.id) {
+      <button class="ngm-cdk-menu-item px-2 py-1 max-w-full flex flex-col justify-start items-start"
+        (click)="conversations.hide();openConversation(item)">
+        <div class="text-start text-sm max-w-full truncate">{{item.title}}</div>
+        <div class="text-start text-xs max-w-full text-text-tertiary">{{item.createdAt | date: 'medium'}}</div>
+      </button>
+    } @empty {
+      <div class="w-32 h-8 flex justify-center items-center">暂无聊天记录</div>
     }
   </div>
-</ng-template>
+</float-ui-content>

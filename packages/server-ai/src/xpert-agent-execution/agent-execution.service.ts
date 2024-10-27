@@ -1,9 +1,9 @@
-import { TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { PaginationParams, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { assign } from 'lodash'
-import { Repository } from 'typeorm'
+import { IsNull, Repository } from 'typeorm'
 import { XpertAgentExecution } from './agent-execution.entity'
 
 @Injectable()
@@ -22,5 +22,9 @@ export class XpertAgentExecutionService extends TenantOrganizationAwareCrudServi
 		const _entity = await super.findOne(id)
 		assign(_entity, entity)
 		return await this.repository.save(_entity)
+	}
+
+	async findAllByXpertAgent(xpertId: string, agentKey: string, options: PaginationParams<XpertAgentExecution>) {
+		return await this.findAll({ ...options, where: { xpertId, agentKey, parentId: IsNull() } })
 	}
 }

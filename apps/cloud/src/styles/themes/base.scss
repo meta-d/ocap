@@ -42,6 +42,7 @@
   --color-text-tertiary: theme('colors.neutral.400');
 
   --color-hover-bg: oklch(0 0 0 / 0.05);
+  --color-danger-bg: theme('colors.red.50');
 }
 
 :root .dark {
@@ -79,4 +80,6 @@
   --color-text-tertiary: theme('colors.neutral.600');
 
   --color-hover-bg: oklch(1 0 0 / 0.1);
+  --color-danger-bg: #991b1b52;
+  --color-danger-content: #ffd4d4;
 }

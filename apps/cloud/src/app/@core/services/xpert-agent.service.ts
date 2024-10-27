@@ -45,6 +45,7 @@ export class XpertAgentService extends XpertWorkspaceBaseCrudService<IXpertAgent
         },
         onerror(err) {
           subscriber.error(err)
+          throw err;
         }
       })
 

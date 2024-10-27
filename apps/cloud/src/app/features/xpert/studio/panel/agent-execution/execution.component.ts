@@ -11,7 +11,8 @@ import {
   IXpertAgentExecution,
   ToastrService,
   XpertAgentExecutionEnum,
-  XpertAgentService
+  XpertAgentService,
+  ChatEventTypeEnum
 } from 'apps/cloud/src/app/@core'
 import {
   CopilotModelSelectComponent,
@@ -23,6 +24,8 @@ import { MarkdownModule } from 'ngx-markdown'
 import { NgmIsNilPipe } from '@metad/ocap-angular/core'
 import { XpertStudioApiService } from '../../domain'
 import { XpertStudioComponent } from '../../studio.component'
+import { XpertExecutionService } from '../../services/execution.service'
+import { XpertAgentExecutionComponent } from "../../../../../@shared/";
 
 @Component({
   selector: 'xpert-studio-panel-agent-execution',
@@ -41,8 +44,9 @@ import { XpertStudioComponent } from '../../studio.component'
     XpertAvatarComponent,
     NgmHighlightVarDirective,
     CopilotModelSelectComponent,
-    CopilotStoredMessageComponent
-  ],
+    CopilotStoredMessageComponent,
+    XpertAgentExecutionComponent
+],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected'
@@ -53,6 +57,7 @@ export class XpertStudioPanelAgentExecutionComponent {
 
   readonly xpertAgentService = inject(XpertAgentService)
   readonly apiService = inject(XpertStudioApiService)
+  readonly executionService = inject(XpertExecutionService)
   readonly studioComponent = inject(XpertStudioComponent)
   readonly #toastr = inject(ToastrService)
   readonly #destroyRef = inject(DestroyRef)
@@ -60,11 +65,12 @@ export class XpertStudioPanelAgentExecutionComponent {
 
   readonly xpert = input<IXpert>()
   readonly xpertAgent = input<IXpertAgent>()
+  readonly execution = model<IXpertAgentExecution>()
 
   readonly input = model<string>(null)
 
   readonly output = signal('')
-  readonly execution = signal<IXpertAgentExecution>(null)
+  // readonly execution = signal<IXpertAgentExecution>(null)
   readonly executions = computed(() => {
     const executions: IXpertAgentExecution[] = []
     if (this.execution()) {
@@ -94,7 +100,7 @@ export class XpertStudioPanelAgentExecutionComponent {
   clearStatus() {
     this.output.set('')
     this.execution.set(null)
-    this.studioComponent.agentExecutions.set({})
+    this.executionService.setConversation(null)
   }
 
   startRunAgent() {
@@ -116,19 +122,13 @@ export class XpertStudioPanelAgentExecutionComponent {
           } else {
             if (msg.data) {
               const event = JSON.parse(msg.data)
-              if (event.type === 'message') {
+              if (event.type === ChatEventTypeEnum.MESSAGE) {
                 this.output.update((state) => state + event.data)
-              } else if (event.type === 'log') {
+              } else if (event.type === ChatEventTypeEnum.LOG) {
                 this.execution.set(event.data)
-                this.studioComponent.agentExecutions.update((state) => ({
-                  ...state,
-                  [event.data.agentKey]: event.data
-                }))
-              } else if (event.type === 'event') {
-                this.studioComponent.agentExecutions.update((state) => ({
-                  ...state,
-                  [event.data.agentKey]: event.data
-                }))
+                this.executionService.setAgentExecution(event.data.agentKey, event.data)
+              } else if (event.type === ChatEventTypeEnum.EVENT) {
+                this.executionService.setAgentExecution(event.data.agentKey, event.data)
               }
             }
           }

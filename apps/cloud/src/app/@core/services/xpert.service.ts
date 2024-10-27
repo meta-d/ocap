@@ -61,7 +61,7 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpert> {
     return this.httpClient.get<{items: IXpertAgentExecution[]}>(this.apiBaseUrl + `/${id}/executions`, { params: toHttpParams(options) })
   }
 
-  chat(id: string, options: { input: string; draft: boolean }): Observable<EventSourceMessage> {
+  chat(id: string, options: { input: string; draft: boolean; conversationId?: string }): Observable<EventSourceMessage> {
     const token = this.#store.token
     const organization = this.store.selectedOrganization ?? { id: null }
     return new Observable((subscriber) => {
@@ -83,6 +83,7 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpert> {
         },
         onerror(err) {
           subscriber.error(err)
+          throw err; // rethrow to stop the operation, otherwise do nothing to automatically retry.
         }
       })
 

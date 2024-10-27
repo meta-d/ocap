@@ -1,17 +1,29 @@
 import { IPagination } from '@metad/contracts'
-import { CrudController, PaginationParams, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
+import {
+	CrudController,
+	PaginationParams,
+	ParseJsonPipe,
+	RequestContext,
+	TransformInterceptor,
+	UUIDValidationPipe
+} from '@metad/server-core'
 import { Controller, Get, HttpStatus, Param, Query, UseInterceptors } from '@nestjs/common'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ChatConversation } from './conversation.entity'
 import { ChatConversationService } from './conversation.service'
-import { ChatConversationPublicDTO } from './dto'
+import { ChatConversationPublicDTO, ChatConversationSimpleDTO } from './dto'
 
 @ApiTags('ChatConversation')
 @ApiBearerAuth()
 @UseInterceptors(TransformInterceptor)
 @Controller()
 export class ChatConversationController extends CrudController<ChatConversation> {
-	constructor(private readonly service: ChatConversationService) {
+	constructor(
+		private readonly service: ChatConversationService,
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
+	) {
 		super(service)
 	}
 
@@ -46,5 +58,17 @@ export class ChatConversationController extends CrudController<ChatConversation>
 	): Promise<ChatConversation> {
 		const entity = await this.service.findOne(id, { select, relations })
 		return new ChatConversationPublicDTO(entity)
+	}
+
+	@Get('xpert/:id')
+	async findByXpert(
+		@Param('id', UUIDValidationPipe) xpertId: string,
+		@Query('data', ParseJsonPipe) filter?: PaginationParams<ChatConversation>
+	) {
+		const result = await this.service.findAllByXpert(xpertId, filter)
+		return {
+			...result,
+			items: result.items.map((_) => new ChatConversationSimpleDTO(_))
+		}
 	}
 }

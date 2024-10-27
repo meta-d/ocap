@@ -46,7 +46,7 @@ export class XpertAgentExecution extends TenantOrganizationBaseEntity implements
 	@ApiProperty({ type: () => Number })
 	@IsNumber()
 	@IsOptional()
-	@Column({ type: 'integer', nullable: true })
+	@Column({ type: 'integer', nullable: true, default: 0 })
 	tokens?: number
 
 	@ApiPropertyOptional({ type: () => String })

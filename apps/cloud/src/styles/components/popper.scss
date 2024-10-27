@@ -1,5 +1,4 @@
-// @deprecated use float-ui
-.ngxp__container.ngxp__animation {
+.float-ui-container.float-ui-animation {
   @apply p-0 shadow-none border-none z-10;
 
   .ngxp__inner {
@@ -21,5 +20,11 @@
 float-ui-content {
   .float-ui-container {
     @apply bg-components-card-bg border-divider-regular shadow-lg rounded-xl;
+  }
+}
+
+.float-menu-trigger {
+  &.active {
+    @apply bg-hover-bg;
   }
 }

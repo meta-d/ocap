@@ -1,13 +1,11 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { JSONValue } from '../core.model'
+import { IXpertAgentExecution } from './xpert-agent-execution.model'
 import { IXpert } from './xpert.model'
 
 export interface IChatConversation extends IBasePerTenantAndOrganizationEntityModel {
   key: string
   title?: string
-
-  xpertId?: string | null
-  xpert?: IXpert
   
   options?: {
     knowledgebases: string[]
@@ -15,6 +13,21 @@ export interface IChatConversation extends IBasePerTenantAndOrganizationEntityMo
   }
 
   messages?: CopilotBaseMessage[] | null
+
+  // One ton one
+  /**
+   * Agent Execution of this conversation
+   */
+  execution?: IXpertAgentExecution
+  readonly executionId?: string
+
+  // Many to one
+  /**
+   * Chat with Xpert
+   */
+  xpert?: IXpert
+  xpertId?: string | null
+  
 }
 
 // Types

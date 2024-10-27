@@ -15,14 +15,25 @@ import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilotModel, IfAnimation, IXpertAgent, LanguagesEnum, ModelType, XpertService } from 'apps/cloud/src/app/@core'
-import { XpertAvatarComponent, MaterialModule, CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
+import {
+  ICopilotModel,
+  IfAnimation,
+  IXpertAgent,
+  IXpertAgentExecution,
+  LanguagesEnum,
+  ModelType,
+  XpertAgentExecutionService,
+  XpertService
+} from 'apps/cloud/src/app/@core'
+import { CopilotModelSelectComponent, MaterialModule, XpertAvatarComponent } from 'apps/cloud/src/app/@shared'
+import { AppService } from 'apps/cloud/src/app/app.service'
 import { XpertStudioApiService } from '../../domain'
-import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
 import { XpertStudioPanelAgentExecutionComponent } from '../agent-execution/execution.component'
 import { XpertStudioPanelComponent } from '../panel.component'
-import { AppService } from 'apps/cloud/src/app/app.service'
-
+import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { map } from 'rxjs'
+import { CdkMenuModule } from '@angular/cdk/menu'
 
 @Component({
   selector: 'xpert-studio-panel-agent',
@@ -32,10 +43,12 @@ import { AppService } from 'apps/cloud/src/app/app.service'
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    CdkMenuModule,
     FFlowModule,
     MaterialModule,
     FormsModule,
     TranslateModule,
+
     XpertAvatarComponent,
     NgmHighlightVarDirective,
     XpertStudioPanelRoleToolsetComponent,
@@ -47,17 +60,17 @@ import { AppService } from 'apps/cloud/src/app/app.service'
     '[class.selected]': 'isSelected',
     '(contextmenu)': 'emitSelectionChangeEvent($event)'
   },
-  animations: [
-    IfAnimation
-  ]
+  animations: [IfAnimation]
 })
 export class XpertStudioPanelAgentComponent {
   eModelType = ModelType
+
   readonly regex = `{{(.*?)}}`
   readonly elementRef = inject(ElementRef)
   readonly appService = inject(AppService)
   readonly apiService = inject(XpertStudioApiService)
   readonly xpertService = inject(XpertService)
+  readonly executionService = inject(XpertAgentExecutionService)
   readonly panelComponent = inject(XpertStudioPanelComponent)
 
   readonly key = input<string>()
@@ -67,6 +80,7 @@ export class XpertStudioPanelAgentComponent {
   readonly promptInputElement = viewChild('editablePrompt', { read: ElementRef<HTMLDivElement> })
 
   readonly xpert = computed(() => this.apiService.viewModel()?.team)
+  readonly xpertId = computed(() => this.xpert()?.id)
   readonly xpertCopilotModel = computed(() => this.xpert()?.copilotModel)
   readonly toolsets = computed(() => this.xpertAgent()?.toolsets)
   readonly name = computed(() => this.xpertAgent()?.name)
@@ -80,42 +94,61 @@ export class XpertStudioPanelAgentComponent {
 
   readonly nameError = computed(() => {
     const name = this.name()
-    return this.nodes().filter((_) => _.key !== this.key()).some((n) => n.entity.name === name)
+    return this.nodes()
+      .filter((_) => _.key !== this.key())
+      .some((n) => n.entity.name === name)
   })
 
   readonly copilotModel = model<ICopilotModel>()
 
   readonly openedExecution = signal(false)
+  readonly execution = model<IXpertAgentExecution>(null)
 
   // App states
   readonly isEnglish = computed(() => {
-    return ![LanguagesEnum.Chinese, LanguagesEnum.SimplifiedChinese, LanguagesEnum.TraditionalChinese].includes(this.appService.lang())
+    return ![LanguagesEnum.Chinese, LanguagesEnum.SimplifiedChinese, LanguagesEnum.TraditionalChinese].includes(
+      this.appService.lang()
+    )
+  })
+
+  readonly executions = derivedAsync(() => {
+    const xpertId = this.xpertId()
+    const agentKey = this.key()
+    return this.executionService.findAllByXpertAgent(xpertId, agentKey, {}).pipe(
+      map(({items}) => items)
+    )
   })
 
   constructor() {
-    effect(() => {
-      if (this.xpertAgent()) {
-        this.prompt.set(this.xpertAgent().prompt)
-        this.copilotModel.set(this.xpertAgent().copilotModel)
-      }
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        if (this.xpertAgent()) {
+          this.prompt.set(this.xpertAgent().prompt)
+          this.copilotModel.set(this.xpertAgent().copilotModel)
+        }
+      },
+      { allowSignalWrites: true }
+    )
 
     effect(() => {
       console.log(`copilotModel:`, this.name(), this.nameError())
     })
-    
   }
 
   onNameChange(event: string) {
-    this.apiService.updateXpertAgent(this.key(), { name: event }, {emitEvent: false})
+    this.apiService.updateXpertAgent(this.key(), { name: event }, { emitEvent: false })
   }
   onTitleChange(event: string) {
-    this.apiService.updateXpertAgent(this.key(), {
-      title: event
-    }, {emitEvent: false})
+    this.apiService.updateXpertAgent(
+      this.key(),
+      {
+        title: event
+      },
+      { emitEvent: false }
+    )
   }
   onDescChange(event: string) {
-    this.apiService.updateXpertAgent(this.key(), { description: event }, {emitEvent: false})
+    this.apiService.updateXpertAgent(this.key(), { description: event }, { emitEvent: false })
   }
   onBlur() {
     this.apiService.reload()
@@ -130,7 +163,8 @@ export class XpertStudioPanelAgentComponent {
     this.apiService.updateXpertAgent(this.key(), { copilotModel: model })
   }
 
-  openExecution() {
+  openExecution(execution?: IXpertAgentExecution) {
+    this.execution.set(execution)
     this.openedExecution.set(true)
   }
   closeExecution() {

@@ -4,5 +4,8 @@ import { IQuery } from '@nestjs/cqrs'
 export class FindChatConversationQuery implements IQuery {
 	static readonly type = '[Chat Conversation] Find One'
 
-	constructor(public readonly input: Partial<IChatConversation>) {}
+	constructor(
+		public readonly input: Partial<IChatConversation>,
+		public readonly relations?: string[]
+	) {}
 }

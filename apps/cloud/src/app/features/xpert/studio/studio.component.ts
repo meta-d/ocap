@@ -110,6 +110,7 @@ export class XpertStudioComponent {
   readonly paramId = injectParams('id')
   readonly apiService = inject(XpertStudioApiService)
   readonly selectionService = inject(SelectionService)
+  readonly executionService = inject(XpertExecutionService)
   readonly #cdr = inject(ChangeDetectorRef)
 
   readonly fFlowComponent = viewChild(FFlowComponent)
@@ -164,7 +165,8 @@ export class XpertStudioComponent {
   readonly copilotModel = model<ICopilotModel>()
 
   // Agent Execution Running status
-  readonly agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
+  // readonly agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
+  readonly agentExecutions = this.executionService.agentExecutions
   readonly preview = model(false)
 
   constructor() {

@@ -9,6 +9,11 @@ export class XpertChatCommand implements ICommand {
 		public readonly options?: {
 			// Use xpert's draft
 			isDraft?: boolean
+			// Conversation
+			conversationId?: string;
+
+			knowledgebases?: string[]
+			toolsets?: string[]
 		}
 	) {}
 }

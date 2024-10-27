@@ -43,7 +43,7 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		const organizationId = RequestContext.getOrganizationId()
 		const user = RequestContext.currentUser()
 		const abortController = new AbortController()
-		let tokenUsage = 0
+		// let tokenUsage = 0
 
 		const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(xpert.id, agentKey, command.options?.isDraft))
 		if (!agent) {
@@ -62,7 +62,8 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 
 		const chatModel = await this.queryBus.execute<AIModelGetOneQuery, BaseChatModel>(
 			new AIModelGetOneQuery(copilot, copilotModel, {abortController, tokenCallback: (token) => {
-				tokenUsage += (token ?? 0)
+				// tokenUsage += (token ?? 0)
+				execution.tokens += (token ?? 0)
 			}})
 		)
 
@@ -192,7 +193,7 @@ ${agent.prompt}
 					this.#logger.debug(err)
 				},
 				finalize: () => {
-					execution.tokens = tokenUsage
+					// execution.tokens += tokenUsage
 				}
 			})
 		)

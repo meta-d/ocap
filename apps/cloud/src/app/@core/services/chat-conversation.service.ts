@@ -18,4 +18,8 @@ export class ChatConversationService extends OrganizationBaseCrudService<IChatCo
       )
     )
   }
+
+  findAllByXpert(xpertId: string, options: PaginationParams<IChatConversation>) {
+    return this.httpClient.get<{items: IChatConversation[]}>(this.apiBaseUrl + `/xpert/${xpertId}`, { params: toHttpParams(options) })
+  }
 }

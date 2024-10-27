@@ -1,9 +1,8 @@
-import { IXpert } from '@metad/contracts'
+import { IXpert, IXpertAgentExecution } from '@metad/contracts'
 import { ICommand } from '@nestjs/cqrs'
 
 /**
  * @constructor
- * @param xpert Xpert should have copilotModel and base attribues
  * 
  */
 export class XpertAgentChatCommand implements ICommand {
@@ -18,7 +17,7 @@ export class XpertAgentChatCommand implements ICommand {
 			// Use xpert's draft
 			isDraft?: boolean
 			// The id of root agent execution
-			rootExecutionId?: string
+			execution?: IXpertAgentExecution
 		}
 	) {}
 }
