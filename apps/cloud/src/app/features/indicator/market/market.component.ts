@@ -85,7 +85,7 @@ export class MarketComponent {
   private selectedTagNames$ = new BehaviorSubject<string[]>([])
   public certificationsControl = new FormControl()
 
-  public readonly tags$ = this.tagService.getAll('indicator')
+  public readonly tags$ = this.tagService.getAllByCategory('indicator')
   public readonly index$ = new BehaviorSubject<number>(1)
   private refreshApproval$ = new BehaviorSubject<void>(null)
 

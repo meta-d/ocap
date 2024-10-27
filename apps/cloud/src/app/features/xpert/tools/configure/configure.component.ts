@@ -11,10 +11,11 @@ import { ApiProviderAuthType, ApiToolBundle, IXpertToolset, TAvatar, XpertToolse
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
 import { XpertStudioToolAuthorizationComponent } from '../authorization/authorization.component'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
+import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule, EmojiAvatarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule, EmojiAvatarComponent, TagSelectComponent],
   selector: 'pac-xpert-tool-configure',
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',

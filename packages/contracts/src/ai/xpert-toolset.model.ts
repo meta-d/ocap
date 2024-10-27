@@ -5,6 +5,7 @@ import { TAvatar } from './types'
 import { IXpertTool } from './xpert-tool.model'
 import { IXpert } from './xpert.model'
 import { IBasePerWorkspaceEntityModel } from './xpert-workspace.model'
+import { ITag } from '../tag-entity.model'
 
 
 export enum XpertToolsetCategoryEnum {
@@ -44,6 +45,8 @@ export type TXpertToolset = {
   schemaType?: 'openapi_json' | 'openapi_yaml'
 
   tools?: IXpertTool[]
+
+  tags?: ITag[]
 }
 
 /**

@@ -123,7 +123,7 @@ export class ProjectService {
   /**
    * Tags
    */
-  readonly tags = toSignal(this.tagService.getAll('indicator'), { initialValue: [] })
+  readonly tags = toSignal(this.tagService.getAllByCategory('indicator'), { initialValue: [] })
 
   // constructor() {
   //   effect(() => {

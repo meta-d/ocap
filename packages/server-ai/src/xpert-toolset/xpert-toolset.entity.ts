@@ -1,9 +1,10 @@
-import { IXpertTool, IXpertToolset, TAvatar, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { ITag, IXpertTool, IXpertToolset, TAvatar, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, JoinColumn, OneToMany } from 'typeorm'
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany } from 'typeorm'
 import { XpertTool } from '../core/entities/internal'
 import { WorkspaceBaseEntity } from '../core/entities/base.entity'
+import { Tag } from '@metad/server-core'
 
 @Entity('xpert_toolset')
 export class XpertToolset extends WorkspaceBaseEntity implements IXpertToolset {
@@ -71,4 +72,16 @@ export class XpertToolset extends WorkspaceBaseEntity implements IXpertToolset {
 	})
 	@JoinColumn()
 	tools?: IXpertTool[]
+
+	/*
+    |--------------------------------------------------------------------------
+    | @ManyToMany 
+    |--------------------------------------------------------------------------
+    */
+	// Toolset Tags
+	@ManyToMany(() => Tag, {cascade: true, eager: true})
+	@JoinTable({
+	  name: 'tag_xpert_toolset',
+	})
+	tags?: ITag[]
 }

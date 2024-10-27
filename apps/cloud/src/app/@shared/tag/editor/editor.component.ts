@@ -66,7 +66,7 @@ export class TagEditorComponent implements ControlValueAccessor {
     return this.tagCtrl.value
   }
 
-  readonly _tags = derivedAsync(() => this.tagService.getAll(this.category()), { initialValue: []})
+  readonly _tags = derivedAsync(() => this.tagService.getAllByCategory(this.category()), { initialValue: []})
 
   readonly search = toSignal(this.tagCtrl.valueChanges.pipe(startWith(null)))
 
