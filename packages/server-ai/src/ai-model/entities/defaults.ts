@@ -1,4 +1,5 @@
-import { DefaultParameterName, ParameterRule, ParameterType } from "./model_entities";
+import { ParameterRule, ParameterType } from "@metad/contracts";
+import { DefaultParameterName } from "./model_entities";
 
 export const PARAMETER_RULE_TEMPLATE: Record<DefaultParameterName, ParameterRule> = {
     [DefaultParameterName.TEMPERATURE]: {

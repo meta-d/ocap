@@ -1,5 +1,3 @@
-import { I18nObject, ProviderModel } from "@metad/contracts";
-
 export function valueOf<T>(enumObj: T, value: string): T[keyof T] {
     const enumValues = Object.values(enumObj);
     if (enumValues.includes(value as T[keyof T])) {
@@ -17,40 +15,6 @@ export enum DefaultParameterName {
     MAX_TOKENS = "max_tokens",
     RESPONSE_FORMAT = "response_format",
     JSON_SCHEMA = "json_schema"
-}
-
-export enum ParameterType {
-    FLOAT = "float",
-    INT = "int",
-    STRING = "string",
-    BOOLEAN = "boolean",
-    TEXT = "text"
-}
-
-export interface ParameterRule {
-    name?: string;
-    useTemplate?: string;
-    label: I18nObject;
-    type: ParameterType;
-    help?: I18nObject;
-    required?: boolean;
-    default?: any;
-    min?: number;
-    max?: number;
-    precision?: number;
-    options?: string[];
-}
-
-export interface PriceConfig {
-    input: number;
-    output?: number;
-    unit: number;
-    currency: string;
-}
-
-export interface AIModelEntity extends ProviderModel {
-    parameterRules?: ParameterRule[];
-    pricing?: PriceConfig;
 }
 
 export interface ModelUsage {

@@ -1,14 +1,12 @@
-import { FetchFrom, ICopilot, ICopilotModel, ModelType } from '@metad/contracts'
+import { AIModelEntity, FetchFrom, ICopilotModel, ModelType, ParameterRule } from '@metad/contracts'
 import { Injectable, Logger } from '@nestjs/common'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import * as path from 'path'
 import { ModelProvider } from './ai-provider'
 import {
-	AIModelEntity,
 	DefaultParameterName,
 	PARAMETER_RULE_TEMPLATE,
-	ParameterRule,
 	PriceInfo,
 	PriceType,
 	valueOf
@@ -112,12 +110,12 @@ export abstract class AIModel {
 		return modelSchemas
 	}
 
-	async getModelSchema(model: string, credentials?: Record<string, any>): Promise<AIModelEntity | null> {
-		const models = await this.predefinedModels()
-		const modelMap = new Map(models.map((m) => [m.model, m]))
+	getModelSchema(model: string, credentials?: Record<string, any>): AIModelEntity | null {
+		const models = this.predefinedModels()
+		const schema = models.find((_) => _.model === model)
 
-		if (modelMap.has(model)) {
-			return modelMap.get(model)
+		if (schema) {
+			return schema
 		}
 
 		if (credentials) {
@@ -130,7 +128,7 @@ export abstract class AIModel {
 	protected abstract getCustomizableModelSchemaFromCredentials(
 		model: string,
 		credentials: Record<string, any>
-	): Promise<AIModelEntity | null>
+	): AIModelEntity | null
 
 	private processParameterRules(yamlData: Record<string, any>): void {
 		const newParameterRules: any[] = []
@@ -167,6 +165,11 @@ export abstract class AIModel {
 
 	private sortModelSchemas(modelSchemas: AIModelEntity[], providerModelTypePath: string): void {
 		// 实现模型架构排序逻辑
+	}
+
+	public getParameterRules(model: string, credentials: Record<string, string>) {
+		const modelSchema = this.getModelSchema(model, credentials)
+		return modelSchema?.parameter_rules ?? []
 	}
 
 }

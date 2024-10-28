@@ -1,5 +1,6 @@
 import { inject, Pipe, PipeTransform } from '@angular/core'
 import { TranslateService } from '@ngx-translate/core'
+import { NgmLanguageEnum } from '../models'
 
 @Pipe({
   standalone: true,
@@ -12,14 +13,16 @@ export class NgmI18nPipe implements PipeTransform {
     return typeof value === 'string'
       ? value
       : typeof value === 'object'
-        ? value[mapLanguage(this.translate.currentLang)]
+        ? (value[mapLanguage(this.translate.currentLang as NgmLanguageEnum)] ?? value['en_US'])
         : value
   }
 }
 
-function mapLanguage(l: string) {
+function mapLanguage(l: NgmLanguageEnum) {
   switch (l) {
-    case 'zhHans':
+    case NgmLanguageEnum.Chinese:
+    case NgmLanguageEnum.SimplifiedChinese:
+    case NgmLanguageEnum.TraditionalChinese:
       return 'zh_Hans'
     default:
       return 'en_US'

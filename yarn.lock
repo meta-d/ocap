@@ -18943,7 +18943,7 @@ mime-db@1.52.0:
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.53.0.tgz#3cb63cd820fc29896d9d4e8c32ab4fcd74ccb447"
   integrity sha512-oHlN/w+3MQ3rba9rqFr6V/ypF10LSkdwUysQL7GkXoTgIWeV+tcXGA852TBxH+gsh8UWoyhR1hKcoMJTuWflpg==
 
-mime-types@^2.1.12, mime-types@^2.1.27, mime-types@^2.1.31, mime-types@~2.1.17, mime-types@~2.1.19, mime-types@~2.1.24, mime-types@~2.1.34:
+mime-types@2.1.35, mime-types@^2.1.12, mime-types@^2.1.27, mime-types@^2.1.31, mime-types@~2.1.17, mime-types@~2.1.19, mime-types@~2.1.24, mime-types@~2.1.34:
   version "2.1.35"
   resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.35.tgz#381a871b62a734450660ae3deee44813f70d959a"
   integrity sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==
@@ -19938,10 +19938,10 @@ ngx-quill@^16.1.2:
   dependencies:
     tslib "^2.3.0"
 
-ngxtension@^3.1.2:
-  version "3.5.5"
-  resolved "https://registry.yarnpkg.com/ngxtension/-/ngxtension-3.5.5.tgz#e38376512ebb369bd454b0ffc31697d4a2e2baef"
-  integrity sha512-LU0YtjLllTZ+GLs81HB+afBerLF7dJ/sgz5R4sh32lP9NHAuTJzRsJbkfwZUd/UErJlUPNPZn8WXxTnWTqefQw==
+ngxtension@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/ngxtension/-/ngxtension-4.0.0.tgz#bd0346b57a8326e0225b901ff247439af28456d5"
+  integrity sha512-67hzWhQHqUWui9bOwmXast08zDGMlWR38TUhP7FAooFPETGHUCm/134dIo8BdKFTgHpy9Eux8EOkZH31NX6qnw==
   dependencies:
     "@angular-eslint/bundled-angular-compiler" "^18.0.1"
     "@nx/devkit" "^19.0.0"

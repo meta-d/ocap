@@ -25,5 +25,5 @@ export interface ICopilotModel extends IBasePerTenantAndOrganizationEntityModel 
 }
 
 export type TCopilotModelOptions = {
-  //
+  [key: string]: unknown
 }

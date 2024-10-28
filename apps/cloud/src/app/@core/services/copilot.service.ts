@@ -22,7 +22,7 @@ import {
   switchMap
 } from 'rxjs'
 import { API_COPILOT } from '../constants/app.constants'
-import { ICopilotWithProvider, ICopilot as IServerCopilot, ModelType } from '../types'
+import { ICopilotWithProvider, ICopilot as IServerCopilot, ModelType, ParameterRule } from '../types'
 import { AgentService } from './agent.service'
 import { Store } from './store.service'
 import { XpertService } from './xpert.service'
@@ -202,8 +202,12 @@ export class PACCopilotService extends NgmCopilotService {
     return this.modelsByType.get(type)
   }
 
-  getCopilotModelParameters(provider: string) {
-    return this.httpClient.get(API_COPILOT + `/provider/${provider}/model-parameters`)
+  getModelParameterRules(provider: string, model: string) {
+    return this.httpClient.get<ParameterRule[]>(API_COPILOT + `/provider/${provider}/model-parameter-rules`, {
+      params: {
+        model
+      }
+    })
   }
 }
 

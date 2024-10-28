@@ -1,13 +1,34 @@
 import { AIPermissionsEnum, IPagination, ModelType } from '@metad/contracts'
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common'
-import { QueryBus, CommandBus } from '@nestjs/cqrs';
+import {
+	CrudController,
+	PaginationParams,
+	PermissionGuard,
+	Permissions,
+	Public,
+	TransformInterceptor
+} from '@metad/server-core'
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	HttpException,
+	HttpStatus,
+	Param,
+	Post,
+	Query,
+	Res,
+	UseGuards,
+	UseInterceptors
+} from '@nestjs/common'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { ServerResponse } from 'http'
 import { DeepPartial } from 'typeorm'
-import { CrudController, PaginationParams, TransformInterceptor, PermissionGuard, Permissions } from '@metad/server-core'
+import { AIModelGetIconQuery } from '../ai-model'
 import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
-import { FindCopilotModelsQuery } from './queries';
-
+import { FindCopilotModelsQuery, ModelParameterRulesQuery } from './queries'
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
@@ -15,10 +36,10 @@ import { FindCopilotModelsQuery } from './queries';
 @Controller()
 export class CopilotController extends CrudController<Copilot> {
 	constructor(
-        private readonly service: CopilotService,
-        private readonly commandBus: CommandBus,
-        private readonly queryBus: QueryBus,
-    ) {
+		private readonly service: CopilotService,
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
+	) {
 		super(service)
 	}
 
@@ -28,10 +49,7 @@ export class CopilotController extends CrudController<Copilot> {
 		description: 'Found records' /* type: IPagination<T> */
 	})
 	@Get()
-	async findAll(
-		filter?: PaginationParams<Copilot>,
-		...options: any[]
-	): Promise<IPagination<Copilot>> {
+	async findAll(filter?: PaginationParams<Copilot>, ...options: any[]): Promise<IPagination<Copilot>> {
 		return this.service.findAvalibles(filter)
 	}
 
@@ -52,18 +70,39 @@ export class CopilotController extends CrudController<Copilot> {
 		return this.service.upsert(entity)
 	}
 
-    /**
-     * get models by model type
-     * @param type ModelType
-     * @returns 
-     */
+	/**
+	 * get models by model type
+	 * @param type ModelType
+	 * @returns
+	 */
 	@Get('models')
 	async getModels(@Query('type') type: ModelType) {
-        return this.queryBus.execute(new FindCopilotModelsQuery(type))
+		return this.queryBus.execute(new FindCopilotModelsQuery(type))
 	}
 
-	@Get('provider/:name/model-parameters')
-	async getModelParameters(@Query('model') model: string) {
-		return []
+	@Get('provider/:name/model-parameter-rules')
+	async getModelParameters(
+		@Param('name') provider: string,
+		@Query('model') model: string
+	) {
+		return this.queryBus.execute(new ModelParameterRulesQuery(provider, ModelType.LLM, model))
+	}
+
+	@Public()
+	@Get('provider/:name/:iconType/:lang')
+	async getModelIcon(
+		@Param('name') provider: string,
+		@Param('iconType') iconType: string,
+		@Param('lang') lang: string,
+		@Res() res: ServerResponse
+	) {
+		const [icon, mimetype] = await this.queryBus.execute(new AIModelGetIconQuery(provider, iconType, lang))
+
+		if (!icon) {
+			throw new HttpException('Icon not found', HttpStatus.NOT_FOUND)
+		}
+
+		res.setHeader('Content-Type', mimetype)
+		res.end(icon)
 	}
 }

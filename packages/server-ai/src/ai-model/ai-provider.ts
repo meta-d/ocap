@@ -1,10 +1,9 @@
-import { ICopilot, ICopilotModel, IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
+import { AIModelEntity, ICopilotModel, IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
 import { ConfigService } from '@metad/server-config'
 import { loadYamlFile } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import * as path from 'path'
 import { AIModel } from './ai-model'
-import { AIModelEntity } from './entities'
 import { AIProviderRegistry } from './registry'
 import { TChatModelOptions } from './types/types'
 

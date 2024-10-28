@@ -150,3 +150,37 @@ export enum ConfigurateMethod {
   PREDEFINED_MODEL = 'predefined-model',
   CUSTOMIZABLE_MODEL = 'customizable-model'
 }
+
+export enum ParameterType {
+  FLOAT = "float",
+  INT = "int",
+  STRING = "string",
+  BOOLEAN = "boolean",
+  TEXT = "text"
+}
+
+export interface ParameterRule {
+  name?: string;
+  useTemplate?: string;
+  label: I18nObject;
+  type: ParameterType;
+  help?: I18nObject;
+  required?: boolean;
+  default?: any;
+  min?: number;
+  max?: number;
+  precision?: number;
+  options?: string[];
+}
+
+export interface PriceConfig {
+  input: number;
+  output?: number;
+  unit: number;
+  currency: string;
+}
+
+export interface AIModelEntity extends ProviderModel {
+  parameter_rules?: ParameterRule[]
+  pricing?: PriceConfig
+}
