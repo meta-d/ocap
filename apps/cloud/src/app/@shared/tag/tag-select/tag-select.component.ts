@@ -75,6 +75,6 @@ export class TagSelectComponent implements ControlValueAccessor {
   }
 
   checkedWith(value: ITag) {
-    return this.selectedTags().some((_) => this.listboxCompareWith(_, value))
+    return this.selectedTags()?.some((_) => this.listboxCompareWith(_, value))
   }
 }

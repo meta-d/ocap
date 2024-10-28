@@ -5,6 +5,10 @@
   width: 2.5rem;
   height: 2.5rem;
 }
+:host.xs {
+  width: 1.8rem;
+  height: 1.8rem;
+}
 :host.small {
   width: 2rem;
   height: 2rem;

@@ -8,11 +8,11 @@
     >
       <ul cdkListbox>
         @for (role of roles(); track role.id) {
-          <li [cdkOption]="role" class="flex items-center cursor-pointer px-4 py-2 rounded-md
+          <li [cdkOption]="role" class="flex items-center cursor-pointer px-4 py-2 rounded-lg
             active:scale-95 transition-transform
            hover:bg-black/5 dark:hover:bg-white/10"
             (click)="selectRole(role)"
-          ><pac-avatar [avatar]="role.avatar" class="mr-2 w-6 h-6 overflow-hidden rounded-full" />{{role.title}}</li>
+          ><emoji-avatar [avatar]="role.avatar" xs class="rounded-lg overflow-hidden mr-1" />{{role.title || role.name}}</li>
         }
       </ul>
 
@@ -71,10 +71,10 @@
     <div #contentContainer class="flex-1 overflow-auto">
       @if (!conversationId() && !messages()?.length && role()) {
         <div class="w-full h-full flex flex-col justify-center items-center gap-4">
-          <pac-avatar class="mb-3 h-16 w-16 rounded-full overflow-hidden" [avatar]="role().avatar" />
+          <emoji-avatar [avatar]="role().avatar" large class="rounded-lg overflow-hidden" />
 
           <div class="w-full flex flex-col items-center gap-2">
-            <p class="text-xl">{{role().title}}</p>
+            <p class="text-xl">{{role().title || role().name}}</p>
             <p class="text-token-text-secondary">{{role().description}}</p>
           </div>
 

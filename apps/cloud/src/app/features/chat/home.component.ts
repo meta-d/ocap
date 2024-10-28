@@ -28,6 +28,7 @@ import { ChatToolbarComponent } from './toolbar/toolbar.component'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { convertNewSemanticModelResult, NgmSemanticModel } from '@metad/cloud/state'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+import { EmojiAvatarComponent } from '../../@shared/avatar'
 
 @Component({
   standalone: true,
@@ -44,6 +45,7 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
     MaterialModule,
     NgmCommonModule,
     AvatarComponent,
+    EmojiAvatarComponent,
 
     ChatAiMessageComponent,
     ChatToolbarComponent,

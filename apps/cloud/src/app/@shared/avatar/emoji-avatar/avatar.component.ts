@@ -18,6 +18,7 @@ import { EmojiComponent } from '@ctrl/ngx-emoji-mart/ngx-emoji'
     }`,
   styleUrl: 'avatar.component.scss',
   host: {
+    '[class.xs]': 'xs()',
     '[class.small]': 'small()',
     '[class.large]': 'large()',
     '[class.cursor-pointer]': 'editable()',
@@ -32,10 +33,13 @@ export class EmojiAvatarComponent {
   readonly editable = input<boolean, string | boolean>(false, {
     transform: booleanAttribute
   })
+
+  readonly xs = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
   readonly small = input<boolean, string | boolean>(false, {
     transform: booleanAttribute
   })
-
   readonly large = input<boolean, string | boolean>(false, {
     transform: booleanAttribute
   })
@@ -50,7 +54,7 @@ export class EmojiAvatarComponent {
       }
   )
 
-  readonly size = computed(() => this.large() ? 24 : this.small() ? 16 : 18)
+  readonly size = computed(() => this.large() ? 24 : this.small() ? 16 : this.xs() ? 14 : 18)
 
   @HostListener('click')
   onClick() {

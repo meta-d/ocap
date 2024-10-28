@@ -28,6 +28,7 @@ import {
   IXpertToolset,
   IKnowledgebase,
   LanguagesEnum,
+  XpertTypeEnum,
 } from '../../@core'
 import { ChatConversationService, ChatService as ChatServerService, XpertService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
@@ -40,7 +41,7 @@ import { NGXLogger } from 'ngx-logger'
 export class ChatService {
   readonly chatService = inject(ChatServerService)
   readonly conversationService = inject(ChatConversationService)
-  readonly copilotRoleService = inject(XpertService)
+  readonly xpertService = inject(XpertService)
   readonly appService = inject(AppService)
   readonly #translate = inject(TranslateService)
   readonly #logger = inject(NGXLogger)
@@ -66,7 +67,7 @@ export class ChatService {
 
   readonly lang = this.appService.lang
   readonly roles = derivedFrom(
-    [this.copilotRoleService.getAllInOrg({ relations: ['knowledgebases', 'toolsets'] }).pipe(map(({ items }) => items)), this.lang],
+    [this.xpertService.getAllInOrg({ where: { type: XpertTypeEnum.Agent, latest: true }, relations: ['knowledgebases', 'toolsets'] }).pipe(map(({ items }) => items)), this.lang],
     pipe(
       map(([roles, lang]) => {
         if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
@@ -104,10 +105,10 @@ export class ChatService {
       takeUntilDestroyed()
     )
     .subscribe(([role, paramRole]) => {
-      if (role?.name === 'common') {
+      if (role?.slug === 'common') {
         this.#location.replaceState('/chat')
-      } else if (role?.name && role.name !== paramRole) {
-        this.#location.replaceState('/chat/r/' + role.name)
+      } else if (role?.name && role.slug !== paramRole) {
+        this.#location.replaceState('/chat/r/' + role.slug)
       }
 
       if (!this.conversationId()) {
@@ -120,8 +121,8 @@ export class ChatService {
   private paramRoleSub = toObservable(this.paramRole)
     .pipe(combineLatestWith(toObservable(this.roles)), withLatestFrom(this.role$), takeUntilDestroyed())
     .subscribe(([[paramRole, roles], role]) => {
-      if (roles && role?.name !== paramRole) {
-        this.role$.next(roles.find((item) => item.name === paramRole))
+      if (roles && role?.slug !== paramRole) {
+        this.role$.next(roles.find((item) => item.slug === paramRole))
       }
     })
   private idSub = toObservable(this.conversationId)
@@ -173,11 +174,11 @@ export class ChatService {
       const roleName = this.paramRole()
       const paramId = this.paramId()
       // if (paramId !== id) {
-      if (this.role$.value?.name) {
+      if (this.role$.value?.slug) {
         if (id) {
-          this.#location.replaceState('/chat/r/' + this.role$.value.name + '/c/' + id)
+          this.#location.replaceState('/chat/r/' + this.role$.value.slug + '/c/' + id)
         } else {
-          this.#location.replaceState('/chat/r/' + this.role$.value.name)
+          this.#location.replaceState('/chat/r/' + this.role$.value.slug)
         }
       } else if (id) {
         this.#location.replaceState('/chat/c/' + id)

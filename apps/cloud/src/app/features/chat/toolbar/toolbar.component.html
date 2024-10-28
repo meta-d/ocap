@@ -32,7 +32,7 @@
 <div class="flex-1"></div>
 
 <ng-template #menu>
-  <div class="ngm-cdk-menu" cdkMenu displayDensity="cosy">
+  <div class="ngm-cdk-menu p-2" cdkMenu displayDensity="cosy">
     <label class="px-2 pb-2">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
     <div class="max-h-64 w-56 overflow-y-auto" (click)="$event.stopPropagation()">
       @if (knowledgebaseList()?.length) {
@@ -59,7 +59,7 @@
     </button> -->
 
     @if (role()?.id) {
-      <button class="ngm-cdk-menu-item" cdkMenuItem (click)="openAbout()">
+      <button class="ngm-cdk-menu-item p-1" cdkMenuItem (click)="openAbout()">
         <mat-icon class="text-token-text-secondary mr-2">info</mat-icon>
         {{'PAC.KEY_WORDS.About'  | translate: {Default: 'About'} }}
       </button>
