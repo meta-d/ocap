@@ -1,0 +1,11 @@
+:host {
+  @apply flex flex-col p-4;
+}
+
+label {
+  @apply block mb-2 text-sm font-medium text-gray-900 dark:text-white;
+}
+
+select, input, textarea {
+  @apply bg-gray-50;
+}

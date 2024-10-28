@@ -1,0 +1,23 @@
+.content {
+  @apply px-2 py-1 rounded-lg;
+}
+
+:host {
+  @apply inline-block w-fit;
+
+  &.xs {
+    .content {
+      @apply px-1 py-0.5 rounded-md text-xs;
+    }
+  }
+  &.sm {
+    .content {
+      @apply px-2 py-1 rounded-md text-sm;
+    }
+  }
+  &.lg {
+    .content {
+      @apply px-4 py-2 rounded-xl text-lg;
+    }
+  }
+}

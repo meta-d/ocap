@@ -8,7 +8,7 @@ import {
 	Query
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CrudController } from './../core/crud';
+import { CrudController, PaginationParams } from './../core/crud';
 import { Tag } from './tag.entity';
 import { TagService } from './tag.service';
 import { PermissionGuard, TenantPermissionGuard } from './../shared/guards';
@@ -22,6 +22,11 @@ import { ParseJsonPipe } from './../shared/pipes';
 export class TagController extends CrudController<Tag> {
 	constructor(private readonly tagService: TagService) {
 		super(tagService);
+	}
+
+	@Get('categories')
+	async getAllCategories() {
+		return this.tagService.findAllCategories()
 	}
 
 	@Get('getByName/:name')
@@ -54,13 +59,13 @@ export class TagController extends CrudController<Tag> {
 
 	@Get()
 	async findAll(
-		@Query('data', ParseJsonPipe) data: any
+		@Query('data', ParseJsonPipe) data: PaginationParams<Tag>
 	): Promise<IPagination<Tag>> {
-		const { relations, findInput } = data;
+		const { relations, where } = data;
 		return this.tagService.findAll({
-			where: findInput,
+			where,
 			relations
-		});
+		})
 	}
 
 	@UseGuards(PermissionGuard)

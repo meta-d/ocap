@@ -13,6 +13,15 @@
       {{ 'PAC.MENU.TENANT.SETTINGS' | translate: {Default: "Settings"} }}
     </span>
 
+    <span mat-tab-link [routerLink]="['./tags']"
+      routerLinkActive #rla2="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla2.isActive"
+    >
+      <mat-icon fontSet="material-icons-outlined">sell</mat-icon>
+      {{ 'PAC.MENU.TENANT.Tags' | translate: {Default: "Tags"} }}
+    </span>
+
     <!-- <span mat-tab-link [routerLink]="['./demo']"
       routerLinkActive #rla2="routerLinkActive"
       [routerLinkActiveOptions]="{exact: true}"

@@ -155,7 +155,7 @@
     "ngx-monaco-editor": "^12.0.0",
     "ngx-permissions": "^13.0.1",
     "ngx-quill": "^16.1.2",
-    "ngxtension": "^3.1.2",
+    "ngxtension": "^4.0.0",
     "noto-serif-sc": "^8.0.0",
     "ollama": "^0.5.6",
     "passport-dingtalk2": "^2.1.1",

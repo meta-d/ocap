@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, computed, effect, inject, model, signal } from '@angular/core'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { Router, RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
@@ -14,6 +14,7 @@ import { distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { EMPTY, of } from 'rxjs'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
+import { omit } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -42,8 +43,10 @@ export class XpertStudioAPIToolComponent {
   readonly #toastr = inject(ToastrService)
   readonly #dialog = inject(MatDialog)
   readonly #router = inject(Router)
+  readonly #fb = inject(FormBuilder)
 
   readonly toolset = signal<IXpertToolset>(null)
+  readonly avatar = computed(() => this.toolset()?.avatar)
 
   readonly tool = model<IXpertTool>(null)
   readonly parameters = model<Record<string, any>>(null)
@@ -51,13 +54,24 @@ export class XpertStudioAPIToolComponent {
 
   readonly toolAvatar = computed(() => this.tool()?.avatar ?? this.toolset()?.avatar)
 
+  readonly formGroup = this.#fb.group({
+    // avatar: this.#fb.control(null),
+    description: this.#fb.control(null),
+  })
+  get description() {
+    return this.formGroup.get('description') as FormControl
+  }
+
   readonly loading = signal(false)
 
   private toolsetSub = toObservable(this.paramId).pipe(
     distinctUntilChanged(),
     switchMap((id) => id ? this.toolsetService.getById(this.paramId(), { relations: ['tools', 'createdBy'] }) : of(null))
   ).subscribe({
-    next: (value) => this.toolset.set(value),
+    next: (value) => {
+      this.toolset.set(value)
+      this.formGroup.patchValue(value)
+    },
     error: (error) => {
       this.#toastr.error(getErrorMessage(error))
     }
@@ -69,10 +83,11 @@ export class XpertStudioAPIToolComponent {
     })
   }
 
-  saveTool() {
+  saveToolset() {
     this.loading.set(true)
     this.toolsetService.update(this.toolset().id, {
       ...this.toolset(),
+      ...this.formGroup.value
     }).subscribe({
       next: () => {
         this.#toastr.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated Successfully!' })
@@ -92,7 +107,7 @@ export class XpertStudioAPIToolComponent {
   updateToolset(value: Partial<IXpertToolset>) {
     this.toolset.update((state) => ({
       ...state,
-      ...value
+      ...omit(value, 'tools')
     }))
   }
 

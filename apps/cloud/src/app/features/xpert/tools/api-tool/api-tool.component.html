@@ -4,11 +4,7 @@
   <div class="px-6 py-3 min-h-full flex flex-col">
     <div class="flex items-center py-1 gap-2">
       <div class="relative shrink-0">
-        <span class="style_appIcon__qLtEt style_small__SH1g5 overflow-hidden" style="background: rgb(254, 247, 195);">
-          <span class="emoji-mart-emoji" data-emoji-set="native">
-            <span style="font-family: EmojiMart, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Segoe UI&quot;, &quot;Apple Color Emoji&quot;, &quot;Twemoji Mozilla&quot;, &quot;Noto Color Emoji&quot;, &quot;Android Emoji&quot;;">🕵️</span>
-          </span>
-        </span>
+        <emoji-avatar [avatar]="avatar()" class="rounded-lg overflow-hidden" />
       </div>
       <div class="grow w-0 py-[1px]">
         <div class="flex items-center text-md leading-6 font-semibold text-gray-900">
@@ -16,8 +12,8 @@
         </div>
       </div>
     </div>
-    <div class="mt-2 min-h-[36px] text-gray-500 text-sm leading-[18px]">
-        {{toolset.description}}
+    <div class="mt-2 min-h-[36px] text-sm text-text-tertiary">
+      <textarea [formControl]="description" class="w-full p-1 outline-none rounded-md border border-solid border-transparent active:border-divider-regular focus-within:border-divider-regular"></textarea>
     </div>
     <div class="flex gap-1 border-b-[0.5px] border-black/5">
       <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium shrink-0 my-3 w-full"
@@ -61,7 +57,7 @@
         (click)="deleteToolset()">{{ 'PAC.ACTIONS.Delete' | translate: { Default: 'Delete' } }}</button>
 
       <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
-        (click)="saveTool()">{{ 'PAC.ACTIONS.Save' | translate: { Default: 'Save' } }}</button>
+        (click)="saveToolset()">{{ 'PAC.ACTIONS.Save' | translate: { Default: 'Save' } }}</button>
     </div>
   </div>
 }
@@ -189,7 +185,7 @@
           >{{ 'PAC.ACTIONS.Cancel' | translate: { Default: 'Cancel' } }}</button>
           <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
             [disabled]="configure.invalid"
-            (click)="updateToolset(configure.value)">{{ 'PAC.ACTIONS.Enter' | translate: { Default: 'Enter' } }}</button>
+            (click)="updateToolset(configure.value);configure.formGroup.markAsPristine()">{{ 'PAC.ACTIONS.Enter' | translate: { Default: 'Enter' } }}</button>
         </div>
       </div>
     </div>

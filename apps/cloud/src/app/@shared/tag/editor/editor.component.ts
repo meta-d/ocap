@@ -22,7 +22,7 @@ import { isString } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { startWith } from 'rxjs'
-import { ITag, Store, TagService } from '../../../@core'
+import { ITag, Store, TagCategoryEnum, TagService } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 
 @Component({
@@ -49,7 +49,7 @@ export class TagEditorComponent implements ControlValueAccessor {
 
   @Input() color: ThemePalette
   // @Input() category: string
-  readonly category = input<string>(null)
+  readonly category = input<TagCategoryEnum>(null)
 
   @ViewChild('tagInput') tagInput: ElementRef<HTMLInputElement>
 

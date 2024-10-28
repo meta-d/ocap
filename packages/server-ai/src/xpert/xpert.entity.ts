@@ -2,34 +2,23 @@ import {
 	AiBusinessRole,
 	ICopilotModel,
 	IKnowledgebase,
+	ITag,
 	IUser,
 	IXpert,
 	IXpertAgent,
 	IXpertToolset,
-	IXpertWorkspace,
 	TAvatar,
 	TXpertOptions,
 	TXpertTeamDraft,
 	XpertTypeEnum
 } from '@metad/contracts'
-import { TenantOrganizationBaseEntity, User } from '@metad/server-core'
+import { Tag, User } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsBoolean, IsDateString, IsJSON, IsOptional, IsString } from 'class-validator'
-import {
-	Column,
-	DeleteDateColumn,
-	Entity,
-	Index,
-	JoinColumn,
-	JoinTable,
-	ManyToMany,
-	ManyToOne,
-	OneToMany,
-	OneToOne,
-	RelationId
-} from 'typeorm'
-import { CopilotModel, Knowledgebase, XpertAgent, XpertToolset, XpertWorkspace } from '../core/entities/internal'
+import { IsBoolean, IsJSON, IsOptional, IsString } from 'class-validator'
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, RelationId } from 'typeorm'
 import { WorkspaceBaseEntity } from '../core/entities/base.entity'
+import { CopilotModel, Knowledgebase, XpertAgent, XpertToolset } from '../core/entities/internal'
+
 
 @Entity('xpert')
 @Index(['tenantId', 'organizationId', 'type', 'slug', 'version', 'latest', 'deletedAt'], { unique: true })
@@ -116,15 +105,15 @@ export class Xpert extends WorkspaceBaseEntity implements IXpert {
     */
 	@ApiProperty({ type: () => XpertAgent })
 	@OneToOne(() => XpertAgent, (agent: XpertAgent) => agent.xpert, {
-		cascade: ["insert", "update", "remove", "soft-remove", "recover"]
+		cascade: ['insert', 'update', 'remove', 'soft-remove', 'recover']
 	})
-    agent?: IXpertAgent
+	agent?: IXpertAgent
 
 	// Copilot Model
 	@ApiProperty({ type: () => CopilotModel })
 	@OneToOne(() => CopilotModel, {
 		nullable: true,
-		cascade: ["insert", "update", "remove", "soft-remove", "recover"]
+		cascade: ['insert', 'update', 'remove', 'soft-remove', 'recover']
 	})
 	@JoinColumn()
 	copilotModel?: ICopilotModel
@@ -158,13 +147,13 @@ export class Xpert extends WorkspaceBaseEntity implements IXpert {
 	@JoinTable({
 		name: 'xpert_to_executor',
 		joinColumn: {
-            name: 'leaderId',
-            referencedColumnName: 'id',
-        },
-        inverseJoinColumn: {
-            name: 'executorId',
-            referencedColumnName: 'id',
-        },
+			name: 'leaderId',
+			referencedColumnName: 'id'
+		},
+		inverseJoinColumn: {
+			name: 'executorId',
+			referencedColumnName: 'id'
+		}
 	})
 	executors?: IXpert[]
 
@@ -199,4 +188,11 @@ export class Xpert extends WorkspaceBaseEntity implements IXpert {
 		name: 'xpert_to_manager'
 	})
 	managers?: IUser[]
+
+	// Xpert Tags
+	@ManyToMany(() => Tag, { cascade: true, eager: true })
+	@JoinTable({
+		name: 'tag_xpert'
+	})
+	tags?: ITag[]
 }

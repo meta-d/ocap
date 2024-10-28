@@ -63,7 +63,7 @@
         <textarea matInput formControlName="business" placeholder="{{ 'PAC.INDICATOR.REGISTER.BUSINESS_PLACEHOLDER' | translate: {Default: 'Business Description'} }}"></textarea>
       </mat-form-field>
 
-      <pac-tag-editor class="col-span-1 sm:col-span-2" formControlName="tags" category="indicator"></pac-tag-editor>
+      <pac-tag-editor class="col-span-1 sm:col-span-2" formControlName="tags" [category]="eTagCategoryEnum.INDICATOR"></pac-tag-editor>
     </div>
   
     <div class="section text-lg p-2 mb-4 mt-8">

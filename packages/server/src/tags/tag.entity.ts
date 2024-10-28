@@ -7,6 +7,7 @@ import {
 	ITag,
 	IUser,
 	IOrganizationProject,
+	TagCategoryEnum,
 } from '@metad/contracts';
 import {
 	Employee,
@@ -16,6 +17,7 @@ import {
 	OrganizationDepartment,
 	OrganizationProject
 } from '../core/entities/internal';
+import { IsEnum } from 'class-validator';
 
 @Entity('tag')
 @Index('category_name', ['tenantId', 'organizationId', 'name', 'category'], {unique: true})
@@ -24,16 +26,17 @@ export class Tag extends TenantOrganizationBaseEntity implements ITag {
 	@Column()
 	name?: string;
 
-	@ApiProperty({ type: () => String })
+	@ApiProperty({ type: () => String, enum: TagCategoryEnum })
+	@IsEnum(TagCategoryEnum)
 	@Column({ nullable: true })
-	category?: string;
+	category?: TagCategoryEnum;
 
 	@ApiProperty({ type: () => String })
 	@Column({ nullable: true })
 	description?: string;
 
 	@ApiProperty({ type: () => String })
-	@Column()
+	@Column({ nullable: true })
 	color?: string;
 
 	@ManyToMany(() => Employee, (employee) => employee.tags)

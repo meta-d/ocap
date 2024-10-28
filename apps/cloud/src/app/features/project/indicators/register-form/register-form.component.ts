@@ -31,7 +31,7 @@ import {
   isSemanticCalendar
 } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { ISemanticModel, ITag, registerModel } from 'apps/cloud/src/app/@core'
+import { ISemanticModel, ITag, registerModel, TagCategoryEnum } from 'apps/cloud/src/app/@core'
 import { MaterialModule, TagEditorComponent } from 'apps/cloud/src/app/@shared'
 import { isEqual } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
@@ -85,6 +85,7 @@ export class IndicatorRegisterFormComponent implements ControlValueAccessor {
   IndicatorType = IndicatorType
   Syntax = Syntax
   SlicersCapacity = SlicersCapacity
+  eTagCategoryEnum = TagCategoryEnum
   AGGREGATORS = INDICATOR_AGGREGATORS
   appearance: MatFormFieldAppearance = 'fill'
 

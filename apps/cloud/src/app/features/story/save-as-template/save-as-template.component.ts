@@ -13,6 +13,7 @@ import {
   ScreenshotService,
   StoryTemplateService,
   StoryTemplateType,
+  TagCategoryEnum,
   ToastrService,
   getErrorMessage,
   uuid
@@ -37,6 +38,7 @@ import { MaterialModule, TagEditorComponent } from '../../../@shared'
 })
 export class SaveAsTemplateComponent {
   StoryTemplateType = StoryTemplateType
+  eTagCategoryEnum = TagCategoryEnum
 
   private _dialogRef = inject(MatDialogRef<SaveAsTemplateComponent>)
   private readonly data: { story: Story; storyTemplate: IStoryTemplate; points: StoryPoint[] } =

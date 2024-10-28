@@ -39,7 +39,7 @@ import {NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers} from 'ngx-fl
 import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
 import { delay, map, startWith } from 'rxjs/operators'
-import { ICopilotModel, IXpert, IXpertAgentExecution, ModelType, ToastrService, TXpertTeamNode, XpertAgentExecutionEnum, XpertService, XpertWorkspaceService } from '../../../@core'
+import { ICopilotModel, IXpert, IXpertAgentExecution, ModelType, ToastrService, TXpertTeamNode, XpertAgentExecutionEnum, XpertService, XpertTypeEnum, XpertWorkspaceService } from '../../../@core'
 import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent, XpertAgentExecutionComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import {
@@ -53,6 +53,7 @@ import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { XpertExecutionService } from './services/execution.service'
+import { EmojiAvatarComponent } from '../../../@shared/avatar'
 
 
 @Component({
@@ -73,7 +74,8 @@ import { XpertExecutionService } from './services/execution.service'
     NgxFloatUiModule,
 
     NgmCommonModule,
-    CopilotModelSelectComponent,
+    EmojiAvatarComponent,
+    
     ToolsetCardComponent,
     XpertStudioToolbarComponent,
     XpertStudioContextMenuComponent,
@@ -82,13 +84,13 @@ import { XpertExecutionService } from './services/execution.service'
     XpertStudioNodeToolsetComponent,
     XpertStudioHeaderComponent,
     XpertStudioPanelComponent,
-    XpertAgentExecutionComponent
+    XpertAgentExecutionComponent,
   ],
   selector: 'pac-xpert-studio',
   templateUrl: './studio.component.html',
   styleUrl: 'studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [XpertStudioApiService, SelectionService, XpertExecutionService]
+  providers: [SelectionService, XpertExecutionService]
 })
 export class XpertStudioComponent {
   eXpertAgentExecutionEnum = XpertAgentExecutionEnum
@@ -97,9 +99,9 @@ export class XpertStudioComponent {
   DisplayBehaviour = DisplayBehaviour
   EFConnectionType = EFConnectionType
   eModelType = ModelType
+  eXpertTypeEnum = XpertTypeEnum
   public eResizeHandleType = EFResizeHandleType
-
-  readonly appService = inject(AppService)
+ 
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly logger = inject(NGXLogger)
@@ -116,8 +118,6 @@ export class XpertStudioComponent {
   readonly fFlowComponent = viewChild(FFlowComponent)
   readonly fCanvasComponent = viewChild(FCanvasComponent)
   readonly fZoom = viewChild(FZoomDirective)
-
-  readonly isMobile = this.appService.isMobile
 
   public contextMenuPosition: IPoint = PointExtensions.initialize(0, 0)
 
@@ -162,23 +162,9 @@ export class XpertStudioComponent {
   readonly position = signal<IPoint>(null)
   readonly scale = signal<number>(null)
 
-  readonly copilotModel = model<ICopilotModel>()
-
   // Agent Execution Running status
-  // readonly agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
   readonly agentExecutions = this.executionService.agentExecutions
   readonly preview = model(false)
-
-  constructor() {
-    effect(
-      () => {
-        if (this.xpert()) {
-          this.copilotModel.set(this.xpert()?.copilotModel)
-        }
-      },
-      { allowSignalWrites: true }
-    )
-  }
 
   public ngOnInit(): void {
     this.subscriptions$.add(this.subscribeOnReloadData())
@@ -270,10 +256,6 @@ export class XpertStudioComponent {
       console.log(`Select node:`, node)
       this.panelVisible.set(true)
     }
-  }
-
-  public updateCopilotModel(value: ICopilotModel) {
-    this.apiService.updateXpert({ copilotModel: value })
   }
 
   onCanvasChange(event: FCanvasChangeEvent) {

@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router'
 import { IOrganization } from '@metad/contracts'
 import { nonBlank } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
-import { MaterialModule, OrgAvatarComponent, OrgAvatarEditorComponent, SharedModule } from 'apps/cloud/src/app/@shared'
+import { MaterialModule, OrgAvatarComponent, OrgAvatarEditorComponent, SharedModule, TagMaintainComponent } from 'apps/cloud/src/app/@shared'
 import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators'
 import { OrganizationsService, Store } from '../../../../@core'
 import { OrganizationsComponent } from '../organizations.component'
@@ -25,7 +25,8 @@ import { OrganizationDemoComponent } from '../organization-demo/organization-dem
     OrgAvatarEditorComponent,
     OrgAvatarComponent,
     EditOrganizationSettingsModule,
-    OrganizationDemoComponent
+    OrganizationDemoComponent,
+    TagMaintainComponent
   ]
 })
 export class EditOrganizationComponent {

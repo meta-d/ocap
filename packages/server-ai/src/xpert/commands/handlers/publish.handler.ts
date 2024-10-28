@@ -208,6 +208,11 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		}
 
 		// Update xpert
+		xpert.title = draft.team.title
+		xpert.titleCN = draft.team.titleCN
+		xpert.description = draft.team.description
+		xpert.avatar = draft.team.avatar
+		xpert.tags = draft.team.tags
 		xpert.version = version
 		xpert.draft = null
 		xpert.publishAt = new Date()

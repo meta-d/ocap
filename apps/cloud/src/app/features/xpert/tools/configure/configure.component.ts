@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router'
 import { routeAnimations } from '@metad/core'
 import { omit, pick } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ApiProviderAuthType, ApiToolBundle, IXpertToolset, TAvatar, XpertToolsetCategoryEnum, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import { ApiProviderAuthType, ApiToolBundle, IXpertToolset, TagCategoryEnum, TAvatar, XpertToolsetCategoryEnum, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
 import { XpertStudioToolAuthorizationComponent } from '../authorization/authorization.component'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
@@ -23,6 +23,7 @@ import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class XpertStudioConfigureToolComponent {
+  eTagCategoryEnum = TagCategoryEnum
   private readonly xpertToolsetService = inject(XpertToolsetService)
   readonly #formBuilder = inject(FormBuilder)
   readonly #dialog = inject(MatDialog)
@@ -43,7 +44,8 @@ export class XpertStudioConfigureToolComponent {
       api_key_header: this.#formBuilder.control(null),
       api_key_value: this.#formBuilder.control(null),
       api_key_header_prefix: this.#formBuilder.control(null),
-    })
+    }),
+    tags: this.#formBuilder.control(null)
   })
   get invalid() {
     return this.formGroup.invalid
@@ -68,6 +70,9 @@ export class XpertStudioConfigureToolComponent {
   }
   get value() {
     return {...this.formGroup.value}
+  }
+  get tags() {
+    return this.formGroup.get('tags') as FormControl
   }
 
   readonly schemas = toSignal(
@@ -95,12 +100,12 @@ export class XpertStudioConfigureToolComponent {
     effect(() => {
       if (this.toolset()) {
         this.formGroup.patchValue({
-          ...pick(this.toolset(), 'name', 'avatar', 'description', 'schema', 'type', 'category',),
+          ...pick(this.toolset(), 'name', 'avatar', 'description', 'schema', 'type', 'category', 'tags'),
           credentials: this.toolset().credentials ?? {},
           tools: []
         } as any)
       }
-    })
+    }, { allowSignalWrites: true })
   }
 
   addTool(apiBundle: ApiToolBundle) {

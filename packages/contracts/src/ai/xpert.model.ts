@@ -1,3 +1,4 @@
+import { ITag } from '../tag-entity.model'
 import { IUser } from '../user.model'
 import { ICopilotModel } from './copilot-model.model'
 import { IKnowledgebase } from './knowledgebase.model'
@@ -72,6 +73,8 @@ export interface IXpert extends IBasePerWorkspaceEntityModel {
    * The corresponding person in charge, whose has the authority to execute this digital expert
    */
   managers?: IUser[]
+
+  tags?: ITag[]
 }
 
 export type TXpertOptions = {

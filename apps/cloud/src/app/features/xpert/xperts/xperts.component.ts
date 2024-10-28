@@ -33,6 +33,7 @@ import { XpertNewBlankComponent } from '../blank/blank.component'
 import { XpertHomeComponent } from '../home.component'
 import { XpertStudioCreateToolComponent } from '../tools/create/create.component'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
+import { TagComponent } from '../../../@shared/'
 
 @Component({
   standalone: true,
@@ -52,7 +53,8 @@ import { EmojiAvatarComponent } from '../../../@shared/avatar'
     NgmCommonModule,
     EmojiAvatarComponent,
     UserPipe,
-    AppearanceDirective
+    AppearanceDirective,
+    TagComponent,
   ],
   selector: 'pac-xpert-xperts',
   templateUrl: './xperts.component.html',
@@ -94,7 +96,7 @@ export class XpertStudioXpertsComponent {
       switchMap(() =>
         this.xpertService.getAllByWorkspace(workspace, {
           where: omitBy(where, isNil),
-          relations: ['createdBy']
+          relations: ['createdBy', 'tags']
         })
       ),
       map(({ items }) => items.filter((item) => item.latest))
@@ -111,7 +113,7 @@ export class XpertStudioXpertsComponent {
       switchMap(() =>
         this.toolsetService.getAllByWorkspace(workspace, {
           where: omitBy(where, isNil),
-          relations: ['createdBy']
+          relations: ['createdBy', 'tags']
         })
       ),
       map(({ items }) => items)

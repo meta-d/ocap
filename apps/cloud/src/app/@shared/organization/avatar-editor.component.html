@@ -13,12 +13,12 @@
     (click)="fileUpload.value=null;">
 
 <ng-template #editorMenu>
-    <div cdkMenu displayDensity="cosy">
-        <button cdkMenuItem (click)="fileUpload.click()">
-            {{ 'PAC.ACTIONS.Upload' | translate: { Default: 'Upload' } }}
-        </button>
-        <button cdkMenuItem *ngIf="org()?.imageUrl" ngmAppearance="danger" (click)="remove()">
-            {{ 'PAC.ACTIONS.Remove' | translate: { Default: 'Remove' } }}
-        </button>
-    </div>
+  <div cdkMenu displayDensity="cosy">
+    <button cdkMenuItem (click)="fileUpload.click()">
+      {{ 'PAC.ACTIONS.Upload' | translate: { Default: 'Upload' } }}
+    </button>
+    <button cdkMenuItem *ngIf="org()?.imageUrl" ngmAppearance="danger" (click)="remove()">
+      {{ 'PAC.ACTIONS.Remove' | translate: { Default: 'Remove' } }}
+    </button>
+  </div>
 </ng-template>

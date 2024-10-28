@@ -5,6 +5,7 @@ import { RolesEnum } from '../../../@core'
 import { DemoComponent } from './demo/demo.component'
 import { SettingsComponent } from './settings/settings.component'
 import { PACTenantComponent } from './tenant.component'
+import { TenantTagMaintainComponent } from './maintain/maintain.component'
 
 export function redirectTo() {
   return '/dashboard'
@@ -32,8 +33,8 @@ const routes: Routes = [
         component: SettingsComponent
       },
       {
-        path: 'demo',
-        component: DemoComponent
+        path: 'tags',
+        component: TenantTagMaintainComponent
       }
     ]
   }

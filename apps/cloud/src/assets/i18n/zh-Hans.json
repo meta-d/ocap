@@ -228,7 +228,8 @@
       "Options": "选项",
       "Permission": "权限",
       "Test": "测试",
-      "Version": "版本"
+      "Version": "版本",
+      "Tenant": "租户"
     },
     "MENU": {
       "Certification": "认证",
@@ -419,6 +420,7 @@
     "ACTIONS": {
       "Add": "添加",
       "Cancel": "取消",
+      "Create": "创建",
       "Enter": "确认",
       "New": "新建",
       "Release": "发布",

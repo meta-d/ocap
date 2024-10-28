@@ -1,0 +1,6 @@
+:host {
+  @apply block w-full h-full;
+}
+.mat-drawer.mat-sidenav {
+  border-top-left-radius: var(--ngm-primary-container-rounded);
+}

@@ -4,7 +4,7 @@
     ngmResizer [resizerWidth]="230">
     <div class="z-10 flex flex-col max-w-xs h-full p-2 md:p-4 md:pr-0">
       <ul class="pac-nav__tab-bar flex-1 py-2 rounded-lg mr-4">
-        @for (e of menus$ | async; track $index) {
+        @for (e of menus(); track $index) {
           <li
             class="pac-nav__tab flex justify-start items-center px-4 py-2 cursor-pointer"
             [routerLink]="e.link"
