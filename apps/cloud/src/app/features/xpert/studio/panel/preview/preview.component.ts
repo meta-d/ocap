@@ -1,6 +1,6 @@
 import { TextFieldModule } from '@angular/cdk/text-field'
 import { CommonModule } from '@angular/common'
-import { Component, computed, DestroyRef, inject, model, signal } from '@angular/core'
+import { Component, computed, DestroyRef, effect, inject, model, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import {
   ChatConversationService,
@@ -10,15 +10,16 @@ import {
   uuid,
   XpertService
 } from 'apps/cloud/src/app/@core'
-import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { MaterialModule, XpertParametersFormComponent } from 'apps/cloud/src/app/@shared'
 import { MarkdownModule } from 'ngx-markdown'
 import { XpertStudioApiService } from '../../domain'
 import { XpertExecutionService } from '../../services/execution.service'
 import { XpertStudioComponent } from '../../studio.component'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, TextFieldModule, MarkdownModule],
+  imports: [CommonModule, FormsModule, MaterialModule, TextFieldModule, MarkdownModule, EmojiAvatarComponent, XpertParametersFormComponent],
   selector: 'xpert-studio-panel-preview',
   templateUrl: 'preview.component.html',
   styleUrls: ['preview.component.scss']
@@ -34,18 +35,15 @@ export class XpertStudioPreviewComponent {
 
   readonly envriments = signal(false)
 
-  readonly xpert = this.apiService.team
+  readonly xpert = this.studioComponent.xpert
+  readonly parameters = computed(() => this.apiService.primaryAgent()?.parameters)
+  readonly avatar = computed(() => this.xpert()?.avatar)
   readonly input = model<string>()
   readonly loading = signal(false)
 
   readonly output = signal('')
 
   readonly conversation = this.executionService.conversation
-
-  // readonly #messages = computed(() => {
-  //   const conversation = this.executionService.conversation()
-  //   return conversation?.messages ?? []
-  // }) // signal<CopilotChatMessage[]>([])
 
   readonly lastMessage = signal<CopilotChatMessage>(null)
   readonly messages = computed(() => {
@@ -55,15 +53,18 @@ export class XpertStudioPreviewComponent {
     return this.executionService.messages()
   })
 
+  readonly paramsExpanded = signal(false)
+
+  constructor() {
+    effect(() => {
+      console.log(this.parameters(), this.apiService.primaryAgent())
+    })
+  }
+
   chat(input: string) {
     this.loading.set(true)
 
     // Add to user message
-    // this.#messages.update((messages) => [...messages, {
-    //   role: 'user',
-    //   content: input,
-    //   id: uuid()
-    // }])
     this.executionService.appendMessage({
       role: 'user',
       content: input,
@@ -126,5 +127,9 @@ export class XpertStudioPreviewComponent {
 
   close() {
     this.studioComponent.preview.set(false)
+  }
+
+  toggleParams() {
+    this.paramsExpanded.update((state) => !state)
   }
 }

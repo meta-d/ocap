@@ -9,6 +9,7 @@ import {
 	IXpertToolset,
 	TAvatar,
 	TXpertOptions,
+	TXpertParameter,
 	TXpertTeamDraft,
 	XpertTypeEnum
 } from '@metad/contracts'

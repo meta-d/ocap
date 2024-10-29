@@ -115,6 +115,24 @@ export enum XpertTypeEnum {
   Copilot = 'copilot'
 }
 
+export enum XpertParameterTypeEnum {
+  TEXT = 'text',
+  PARAGRAPH = 'paragraph',
+  SELECT = 'select',
+  NUMBER = 'number',
+}
+
+export type TXpertParameter = {
+  type: XpertParameterTypeEnum
+  name: string
+  title?: string
+  description?: string
+  optional?: boolean
+  maximum?: number
+  options?: string[]
+}
+
+
 // Xpert team draft types
 
 export type TXpertTeamDraft = {

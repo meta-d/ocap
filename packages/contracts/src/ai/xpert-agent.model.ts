@@ -2,7 +2,7 @@ import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { IXpertToolset } from './xpert-toolset.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
-import { IXpert } from './xpert.model'
+import { IXpert, TXpertParameter } from './xpert.model'
 import { ICopilotModel } from './copilot-model.model'
 
 /**
@@ -18,6 +18,10 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
    * 系统提示语
    */
   prompt?: string
+  /**
+   * Input parameters for agent
+   */
+  parameters?: TXpertParameter[]
   
   /**
    * More configuration

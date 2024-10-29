@@ -2,7 +2,6 @@ import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, effect, inject, model } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { DensityDirective } from '@metad/ocap-angular/core'
 import { IfAnimation } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from '../../../../@shared/index'
 import { SelectionService } from '../domain'
@@ -17,7 +16,6 @@ import { XpertStudioPanelAgentComponent } from './xpert-agent/agent.component'
     CommonModule,
     CdkMenuModule,
     MaterialModule,
-    DensityDirective,
     XpertStudioPanelAgentComponent,
     XpertStudioPreviewComponent
   ],
@@ -29,7 +27,7 @@ export class XpertStudioPanelComponent {
   readonly xpertStudioComponent = inject(XpertStudioComponent)
   readonly selectionService = inject(SelectionService)
 
-  readonly visible = model(false)
+  // readonly visible = model(true)
   readonly preview = model(false)
 
   readonly selectedNode = toSignal(this.selectionService.singleNode$)
@@ -42,11 +40,11 @@ export class XpertStudioPanelComponent {
 
   constructor() {
     effect(() => {
-      console.log(`Panel visible:`, this.visible())
+      console.log(`Panel selectedNode:`, this.selectedNode())
     })
   }
 
   close() {
-    this.visible.set(false)
+    // this.visible.set(false)
   }
 }

@@ -18,14 +18,16 @@ import { TranslateModule } from '@ngx-translate/core'
 import {
   ICopilotModel,
   IfAnimation,
+  injectHelpWebsite,
   IXpertAgent,
   IXpertAgentExecution,
-  LanguagesEnum,
   ModelType,
+  TAvatar,
+  TXpertParameter,
   XpertAgentExecutionService,
   XpertService
 } from 'apps/cloud/src/app/@core'
-import { CopilotModelSelectComponent, MaterialModule } from 'apps/cloud/src/app/@shared'
+import { CopilotModelSelectComponent, MaterialModule, XpertParametersEditComponent } from 'apps/cloud/src/app/@shared'
 import { AppService } from 'apps/cloud/src/app/app.service'
 import { XpertStudioApiService } from '../../domain'
 import { XpertStudioPanelAgentExecutionComponent } from '../agent-execution/execution.component'
@@ -54,12 +56,11 @@ import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
     NgmHighlightVarDirective,
     XpertStudioPanelRoleToolsetComponent,
     CopilotModelSelectComponent,
-    XpertStudioPanelAgentExecutionComponent
+    XpertStudioPanelAgentExecutionComponent,
+    XpertParametersEditComponent
   ],
   host: {
     tabindex: '-1',
-    '[class.selected]': 'isSelected',
-    '(contextmenu)': 'emitSelectionChangeEvent($event)'
   },
   animations: [IfAnimation]
 })
@@ -73,6 +74,7 @@ export class XpertStudioPanelAgentComponent {
   readonly xpertService = inject(XpertService)
   readonly executionService = inject(XpertAgentExecutionService)
   readonly panelComponent = inject(XpertStudioPanelComponent)
+  readonly helpWebsite = injectHelpWebsite()
 
   readonly key = input<string>()
   readonly nodes = computed(() => this.apiService.viewModel()?.nodes)
@@ -89,9 +91,8 @@ export class XpertStudioPanelAgentComponent {
   readonly prompt = model<string>()
   readonly promptLength = computed(() => this.prompt()?.length)
 
-  private get hostElement(): HTMLElement {
-    return this.elementRef.nativeElement
-  }
+  readonly parameters = computed(() => this.xpertAgent()?.parameters)
+
 
   readonly nameError = computed(() => {
     const name = this.name()
@@ -104,13 +105,6 @@ export class XpertStudioPanelAgentComponent {
 
   readonly openedExecution = signal(false)
   readonly execution = model<IXpertAgentExecution>(null)
-
-  // App states
-  readonly isEnglish = computed(() => {
-    return ![LanguagesEnum.Chinese, LanguagesEnum.SimplifiedChinese, LanguagesEnum.TraditionalChinese].includes(
-      this.appService.lang()
-    )
-  })
 
   readonly executions = derivedAsync(() => {
     const xpertId = this.xpertId()
@@ -132,7 +126,7 @@ export class XpertStudioPanelAgentComponent {
     )
 
     effect(() => {
-      console.log(`copilotModel:`, this.name(), this.nameError())
+      console.log(`copilotModel:`, this.copilotModel())
     })
   }
 
@@ -164,6 +158,10 @@ export class XpertStudioPanelAgentComponent {
     this.apiService.updateXpertAgent(this.key(), { copilotModel: model })
   }
 
+  updateAvatar(avatar: TAvatar) {
+    this.apiService.updateXpertAgent(this.key(), { avatar })
+  }
+
   openExecution(execution?: IXpertAgentExecution) {
     this.execution.set(execution)
     this.openedExecution.set(true)
@@ -174,5 +172,10 @@ export class XpertStudioPanelAgentComponent {
 
   closePanel() {
     this.panelComponent.close()
+  }
+
+  onParameters(event: TXpertParameter[]) {
+    console.log(event)
+    this.apiService.updateXpertAgent(this.key(), { parameters: event })
   }
 }

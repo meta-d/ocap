@@ -52,7 +52,6 @@ import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { XpertExecutionService } from './services/execution.service'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
-import { XpertComponent } from '../xpert'
 
 
 @Component({
@@ -108,7 +107,6 @@ export class XpertStudioComponent {
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertRoleService = inject(XpertService)
-  // readonly paramId = injectParams('id')
   readonly apiService = inject(XpertStudioApiService)
   readonly selectionService = inject(SelectionService)
   readonly executionService = inject(XpertExecutionService)
@@ -190,6 +188,7 @@ export class XpertStudioComponent {
       if (reason === EReloadReason.CONNECTION_CHANGED) {
         this.fFlowComponent().clearSelection()
       }
+      this.#cdr.detectChanges()
     })
   }
 

@@ -1,0 +1,36 @@
+@for (parameter of params(); track parameter.name) {
+  <div class="xl:flex justify-between">
+    <div class="mr-1 py-2 shrink-0 w-[120px] text-sm text-gray-900">{{parameter.title || parameter.name}}</div>
+
+    @switch (parameter.type) {
+      @case (eXpertParameterTypeEnum.TEXT) {
+        <input
+            class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200"
+            [placeholder]="parameter.name + (parameter.optional ? '(' + ('PAC.KEY_WORDS.Optional' | translate: {Default: 'Optional'}) + ')' : '')"
+            type="text"
+        />
+      }
+      @case (eXpertParameterTypeEnum.NUMBER) {
+        <input
+            class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200"
+            [placeholder]="parameter.name + (parameter.optional ? '(' + ('PAC.KEY_WORDS.Optional' | translate: {Default: 'Optional'}) + ')' : '')"
+            type="number"
+        />
+      }
+      @case (eXpertParameterTypeEnum.PARAGRAPH) {
+        <textarea
+          class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-[120px] bg-gray-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200"
+          [placeholder]="parameter.name + (parameter.optional ? '(' + ('PAC.KEY_WORDS.Optional' | translate: {Default: 'Optional'}) + ')' : '')"
+        ></textarea>
+      }
+
+      @case (eXpertParameterTypeEnum.SELECT) {
+        <ngm-select valueKey="key" [placeholder]="parameter.name + (parameter.optional ? '(' + ('PAC.KEY_WORDS.Optional' | translate: {Default: 'Optional'}) + ')' : '')"
+          [selectOptions]="parameter.options" displayDensity="cosy"
+          [displayBehaviour]="eDisplayBehaviour.descriptionOnly" class="flex-1"></ngm-select>
+      }
+    }
+    
+  </div>
+
+}

@@ -1,4 +1,4 @@
-import { booleanAttribute, Directive, HostBinding, input, Input } from '@angular/core'
+import { booleanAttribute, computed, Directive, HostBinding, input, Input } from '@angular/core'
 
 /**
  * Defines the posible values of the components' display density.
@@ -41,16 +41,21 @@ export class DensityDirective {
 
 @Directive({
   standalone: true,
-  selector: '[ngmDensity]',
+  selector: '[ngmDensity],[ngm-density]',
   host: {
-    '[class.ngm-density__cosy]': 'true',
+    '[class.ngm-density__cosy]': 'cosy()',
     '[class.ngm-density__compact]': 'small()',
     '[class.small]': 'small()',
     '[class.ngm-density__comfortable]': 'large()',
     '[class.large]': 'large()',
+    '[class]': 'ngmDensity()'
   }
 })
 export class NgmDensityDirective {
+
+  readonly ngmDensity = input<string>(null, {
+    alias: 'ngm-density'
+  })
 
   readonly small = input<boolean, boolean | string>(false, {
     transform: booleanAttribute
@@ -58,5 +63,6 @@ export class NgmDensityDirective {
   readonly large = input<boolean, boolean | string>(false, {
     transform: booleanAttribute
   })
-  
+
+  readonly cosy = computed(() => !this.ngmDensity() && !this.small() && !this.large())
 }

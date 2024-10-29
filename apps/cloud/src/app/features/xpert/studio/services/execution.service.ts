@@ -33,6 +33,9 @@ export class XpertExecutionService {
   readonly #agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
   readonly agentExecutions = computed(() => {
     const execution = this.execution()
+    if (!execution) {
+      return this.#agentExecutions()
+    }
     const agentExecutions = {}
     if (execution) {
       execution.subExecutions.forEach((item) => {
@@ -61,9 +64,7 @@ export class XpertExecutionService {
   }
 
   setConversation(value: IChatConversation) {
-    if (value) {
-      this.conversationId.set(value.id)
-    }
+    this.conversationId.set(value?.id)
     this.#agentExecutions.set({})
     this.#messages.set([])
   }

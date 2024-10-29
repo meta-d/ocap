@@ -101,8 +101,11 @@ export class CopilotModelSelectComponent {
   constructor() {
     effect(
       () => {
+        // todo 不应该以 null undefined 作为判断标准
         const copilotModel = this.cva.value$()
-        this.copilotModel.set(copilotModel)
+        if (copilotModel) {
+          this.copilotModel.set(copilotModel)
+        }
       },
       { allowSignalWrites: true }
     )

@@ -53,7 +53,7 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 			let result = ''
 			from(
 				this.commandBus.execute<XpertAgentExecuteCommand, Observable<MessageContent>>(
-					new XpertAgentExecuteCommand(input, agentKey, xpert, {
+					new XpertAgentExecuteCommand({input}, agentKey, xpert, {
 						isDraft: true,
 						rootExecutionId: execution.id,
 						thread_id,

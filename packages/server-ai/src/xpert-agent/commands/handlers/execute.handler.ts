@@ -43,7 +43,6 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		const organizationId = RequestContext.getOrganizationId()
 		const user = RequestContext.currentUser()
 		const abortController = new AbortController()
-		// let tokenUsage = 0
 
 		const agent = await this.queryBus.execute<GetXpertAgentQuery, IXpertAgent>(new GetXpertAgentQuery(xpert.id, agentKey, command.options?.isDraft))
 		if (!agent) {
@@ -62,7 +61,6 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 
 		const chatModel = await this.queryBus.execute<AIModelGetOneQuery, BaseChatModel>(
 			new AIModelGetOneQuery(copilot, copilotModel, {abortController, tokenCallback: (token) => {
-				// tokenUsage += (token ?? 0)
 				execution.tokens += (token ?? 0)
 			}})
 		)
@@ -107,6 +105,14 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 			}
 		}
 
+		// Custom parameters
+		agent.parameters?.forEach((parameter) => {
+			chatAgentState[parameter.name] = {
+				value: (x: any, y: any) => y ?? x,
+				default: () => ''
+			}
+		})
+
 		const graph = createReactAgent({
 			state: chatAgentState,
 			llm: chatModel,
@@ -134,8 +140,8 @@ ${agent.prompt}
 		return from(
 			graph.streamEvents(
 				{
-					input,
-					messages: [new HumanMessage(input)]
+					...input,
+					messages: [new HumanMessage(input.input)]
 				},
 				{
 					version: 'v2',
@@ -193,7 +199,7 @@ ${agent.prompt}
 					this.#logger.debug(err)
 				},
 				finalize: () => {
-					// execution.tokens += tokenUsage
+					//
 				}
 			})
 		)

@@ -1,6 +1,6 @@
 import { tool } from '@langchain/core/tools'
 import { LangGraphRunnableConfig } from '@langchain/langgraph'
-import { ChatEventTypeEnum, IXpert, IXpertAgent, IXpertAgentExecution, XpertAgentExecutionEnum } from '@metad/contracts'
+import { ChatEventTypeEnum, IXpert, IXpertAgent, IXpertAgentExecution, TXpertParameter, XpertAgentExecutionEnum, XpertParameterTypeEnum } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { CommandBus, ICommand } from '@nestjs/cqrs'
 import { lastValueFrom, Observable, reduce, Subscriber, tap } from 'rxjs'
@@ -11,7 +11,10 @@ export class XpertAgentExecuteCommand implements ICommand {
 	static readonly type = '[Xpert Agent] Execute'
 
 	constructor(
-		public readonly input: string,
+		public readonly input: {
+			input?: string
+			[key: string]: unknown
+		},
 		public readonly agentKey: string,
 		public readonly xpert: IXpert,
 		public readonly options: {
@@ -61,9 +64,7 @@ export function createXpertAgentTool(
 				new XpertAgentExecutionUpsertCommand({
 					xpert: { id: xpert.id } as IXpert,
 					agentKey: agent.key,
-					inputs: {
-						input: args.input
-					},
+					inputs: args,
 					parentId: options.rootExecutionId,
 					parent_thread_id: config.configurable.thread_id,
 					thread_id,
@@ -82,7 +83,7 @@ export function createXpertAgentTool(
 			)
 
 			const obs = await commandBus.execute<XpertAgentExecuteCommand, Observable<string>>(
-				new XpertAgentExecuteCommand(args.input, agent.key, xpert, { ...options, thread_id, execution })
+				new XpertAgentExecuteCommand(args, agent.key, xpert, { ...options, thread_id, execution })
 			)
 
 			let status = XpertAgentExecutionEnum.SUCCEEDED
@@ -138,8 +139,45 @@ export function createXpertAgentTool(
 			name: agent.name || agent.key,
 			description: agent.description,
 			schema: z.object({
+				...(createParameters(agent.parameters) ?? {}),
 				input: z.string().describe('Ask me some question or give me task to complete')
 			})
 		}
 	)
+}
+
+/**
+ * Create zod schema for custom parameters of agent
+ * 
+ * @param parameters 
+ * @returns 
+ */
+function createParameters(parameters: TXpertParameter[]) {
+	return parameters?.reduce((schema, parameter) => {
+		let value = null
+		switch(parameter.type) {
+			case XpertParameterTypeEnum.TEXT:
+			case XpertParameterTypeEnum.PARAGRAPH: {
+				value = z.string()
+				break
+			}
+			case XpertParameterTypeEnum.NUMBER: {
+				value = z.number()
+				break
+			}
+			case XpertParameterTypeEnum.SELECT: {
+				value = z.enum(parameter.options as any)
+			}
+		}
+
+		if (value) {
+			if (parameter.optional) {
+				schema[parameter.name] = value.optional().describe(parameter.description)
+			} else {
+				schema[parameter.name] = value.describe(parameter.description)
+			}
+		}
+		
+		return schema
+	}, {})
 }

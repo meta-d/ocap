@@ -157,7 +157,7 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 				
 				if (oldAgent) {
 					if (oldAgent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
-						throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
+						throw new BadRequestException(`Agent record has been updated, please resynchronize`)
 					} else {
 						// Update xpert agent
 						const entity = {
@@ -174,7 +174,7 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 					newAgents.push(oldAgent)
 				} else if (node.key === xpert.agent.key) {
 					if (xpert.agent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
-						throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
+						throw new BadRequestException(`Agent record has been updated, please resynchronize`)
 					}
 					// Update primary agent when update xpert through OneToOne relationship
 					xpert.agent = {
@@ -260,6 +260,12 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 	}
 }
 
+/**
+ * Select the properties of agent to update or create from the draft
+ * 
+ * @param agent Draft
+ * @returns 
+ */
 export function pickXpertAgent(agent: IXpertAgent) {
   return pick(
 	agent,
@@ -268,6 +274,7 @@ export function pickXpertAgent(agent: IXpertAgent) {
 	'description',
 	'avatar',
 	'prompt',
+	'parameters',
 	'options',
 	'leaderKey', // todo
 	'collaboratorNames',

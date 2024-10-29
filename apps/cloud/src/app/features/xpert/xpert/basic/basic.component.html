@@ -1,4 +1,4 @@
-<form class="mx-auto flex flex-col justify-start w-full lg:w-[600px]" [formGroup]="form">
+<form class="mx-4 lg:mx-auto my-8 flex flex-col justify-start lg:w-[600px]" [formGroup]="form">
   <div class="pt-2">
     <div class="py-2 font-medium leading-[20px] text-gray-900">图标 &amp; 名称</div>
     <div class="flex items-center justify-between space-x-2">
@@ -36,7 +36,8 @@
     formControlName="copilotModel"
   />
 
-  <div class="flex flex-col" formArrayName="starters">
+  <div class="flex flex-col mt-4 rounded-xl pt-2 pb-3 px-3 bg-gray-50 dark:bg-neutral-800"
+    formArrayName="starters">
     <label class="ngm-input-label shrink-0">{{'PAC.Copilot.Roles.Starters' | translate: {Default: 'Starters'} }}</label>
     <ngm-input class="w-full" large
       formControlName="0"

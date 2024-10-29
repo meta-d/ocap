@@ -229,7 +229,8 @@
       "Permission": "权限",
       "Test": "测试",
       "Version": "版本",
-      "Tenant": "租户"
+      "Tenant": "租户",
+      "Parameters": "参数"
     },
     "MENU": {
       "Certification": "认证",
@@ -1709,8 +1710,16 @@
       "AuthorizationType": "认证方式",
       "HttpHeaderKey": "Http Header Key，如果您不清楚它的用途,可以将其保持为 Authorization，或者将其设置为自定义值。",
       "HelpDocumentation": "帮助文档",
+      "ParametersInfo": "参数将以表单的形式让用户在对话前填写，用户填写的表单内容将替换提示词中的变量。",
+      "ParameterType_Text": "文本",
+      "ParameterType_Paragraph": "段落",
+      "ParameterType_Select": "下拉选项",
+      "ParameterType_Number": "数字",
+      "EditParameter": "编辑参数",
+      "ParameterType": "参数类型",
+      "ParameterKey": "技术名称",
+      "ParameterName": "显示名称",
       "Toolset": {
-        
       }
     },
     "title": {

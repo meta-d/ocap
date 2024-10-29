@@ -55,7 +55,6 @@ import { XpertComponent } from '../../xpert'
 
 @Injectable()
 export class XpertStudioApiService {
-  // readonly paramId = injectParams('id')
   readonly xpertRoleService = inject(XpertService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly toolsetService = inject(XpertToolsetService)
@@ -65,7 +64,6 @@ export class XpertStudioApiService {
   readonly getXpertTeam = injectGetXpertTeam()
   readonly getXpertsByWorkspace = injectGetXpertsByWorkspace()
 
-  // private storage: IStudioStorage = null
   readonly store = createStore({ name: 'xpertStudio' }, withProps<IStudioStore>({ draft: null }))
   readonly #stateHistory = stateHistory<Store, IStudioStore>(this.store, {
     comparatorFn: negate(isEqual)
@@ -94,11 +92,21 @@ export class XpertStudioApiService {
     )
   )
 
+  /**
+   * pristine draft
+   */
   readonly draft = signal<TXpertTeamDraft>(null)
   readonly unsaved = signal(false)
   readonly stateHistories = signal<TStateHistory[]>([])
   readonly viewModel = toSignal(this.store.pipe(map((state) => state.draft)))
   readonly collaboratorDetails = signal<Record<string, IXpert>>({})
+  readonly primaryAgent = computed<IXpertAgent>(() => {
+    const primaryAgentKey = this.team()?.agent.key
+    if (primaryAgentKey && this.viewModel()?.nodes) {
+      return this.viewModel().nodes.find((_) => _.type === 'agent' && _.key === primaryAgentKey)?.entity as IXpertAgent
+    }
+    return null
+  })
 
   // knowledgebases
   readonly knowledgebases$ = this.knowledgebaseService.getAllInOrg().pipe(

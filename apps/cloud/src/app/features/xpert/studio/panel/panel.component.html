@@ -1,5 +1,4 @@
-
-@if (selectedNode() && visible()) {
+@if (selectedNode()) {
   <div class="relative mr-2 h-full flex" @ifAnimationTrigger>
     @if (selectedNode().entity) {
       @switch (selectedNode().type) {

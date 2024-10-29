@@ -31,7 +31,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
-import { DisplayDensity, ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
+import { DisplayDensity, ISelectOption, NgmDensityDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, isNil, nonNullable } from '@metad/ocap-core'
 import { distinctUntilChanged, filter } from 'rxjs/operators'
 import { NgmDisplayBehaviourComponent } from '../../display-behaviour'
@@ -47,6 +47,12 @@ import { NgmOptionContent } from '../../input/option-content'
     class: 'ngm-select',
     '[attr.disabled]': 'isDisabled || null'
   },
+  hostDirectives: [
+    {
+      directive: NgmDensityDirective,
+      inputs: ['small', 'large'],
+    }
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
