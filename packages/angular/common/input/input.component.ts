@@ -16,7 +16,7 @@ import { toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatInputModule } from '@angular/material/input'
-import { DisplayDensity, ISelectOption } from '@metad/ocap-angular/core'
+import { DisplayDensity, ISelectOption, NgmDensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { map, startWith, switchMap } from 'rxjs'
 import { NgmOptionContent } from './option-content'
@@ -29,6 +29,12 @@ import { NgmHighlightDirective } from '../directives'
   selector: 'ngm-input',
   templateUrl: './input.component.html',
   styleUrls: ['./input.component.scss'],
+  hostDirectives: [
+    {
+      directive: NgmDensityDirective,
+      inputs: ['small', 'large'],
+    }
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

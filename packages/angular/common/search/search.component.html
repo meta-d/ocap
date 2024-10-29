@@ -5,6 +5,8 @@
 </span>
 <input matInput class="ngm-search__input outline-none bg-transparent"
        placeholder="{{ 'Ngm.Common.Search' | translate: {Default: 'Search'} }}" type="text"
-       [(ngModel)]="_value" [disabled]="disabled"
+       [(ngModel)]="_value"
+       [ngModelOptions]="{standalone: true}"
+       [disabled]="disabled"
        (ngModelChange)="onValueChange($event)"
        />

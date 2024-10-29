@@ -2,12 +2,12 @@ import { IKnowledgebase, IXpert, IXpertAgent, IXpertToolset, TXpertTeamDraft, TX
 import { omit, pick } from '@metad/server-common'
 import { BadRequestException, HttpException, Logger, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { groupBy, uniq } from 'lodash'
 import { IsNull } from 'typeorm'
 import { Xpert } from '../../xpert.entity'
 import { XpertService } from '../../xpert.service'
 import { XpertPublishCommand } from '../publish.command'
 import { XpertAgentService } from '../../../xpert-agent'
-import { groupBy, uniq } from 'lodash'
 
 @CommandHandler(XpertPublishCommand)
 export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand> {
@@ -134,109 +134,118 @@ export class XpertPublishHandler implements ICommandHandler<XpertPublishCommand>
 		const oldAgents = xpert.agents
 
 		// CURD Agents
-		const newAgents = []
-		const agentNodes = draft.nodes.filter((node) => node.type === 'agent') as (TXpertTeamNode & {type: 'agent'})[]
-		const xpertNodes = draft.nodes.filter((node) => node.type === 'xpert') as (TXpertTeamNode & {type: 'xpert'})[]
-		const totalToolsetIds = []
-		const totalKnowledgebaseIds = []
-		const totalXpertIds = []
-		for await (const node of agentNodes) {
-			// Collect toolsetIds
-			const toolsetIds = draft.connections.filter((_) => _.type === 'toolset' && _.from === node.key).map((_) => _.to)
-			const knowledgebaseIds = draft.connections.filter((_) => _.type === 'knowledge' && _.from === node.key).map((_) => _.to)
-			const xpertIds = draft.connections.filter((_) => _.type === 'xpert' && _.from === node.key).map((_) => _.to)
-			totalToolsetIds.push(...toolsetIds)
-			totalKnowledgebaseIds.push(...knowledgebaseIds)
-			totalXpertIds.push(...xpertIds)
-			const collaboratorNames = xpertIds.map((id) => xpertNodes.find((_) => _.key === id)?.entity.name).filter(Boolean)
+		if (draft.nodes) {
+			const newAgents = []
+			const agentNodes = draft.nodes.filter((node) => node.type === 'agent') as (TXpertTeamNode & {type: 'agent'})[]
+			const xpertNodes = draft.nodes.filter((node) => node.type === 'xpert') as (TXpertTeamNode & {type: 'xpert'})[]
+			const totalToolsetIds = []
+			const totalKnowledgebaseIds = []
+			const totalXpertIds = []
+			for await (const node of agentNodes) {
+				// Collect toolsetIds
+				const toolsetIds = draft.connections.filter((_) => _.type === 'toolset' && _.from === node.key).map((_) => _.to)
+				const knowledgebaseIds = draft.connections.filter((_) => _.type === 'knowledge' && _.from === node.key).map((_) => _.to)
+				const xpertIds = draft.connections.filter((_) => _.type === 'xpert' && _.from === node.key).map((_) => _.to)
+				totalToolsetIds.push(...toolsetIds)
+				totalKnowledgebaseIds.push(...knowledgebaseIds)
+				totalXpertIds.push(...xpertIds)
+				const collaboratorNames = xpertIds.map((id) => xpertNodes.find((_) => _.key === id)?.entity.name).filter(Boolean)
 
-			const oldAgent = oldAgents.find((item) => item.key === node.key)
-			// Calc the leader of agent
-			const conn = draft.connections.find((_) => _.type === 'agent' && _.to === node.key)
-			
-			if (oldAgent) {
-				if (oldAgent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
-					throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
-				} else {
-					// Update xpert agent
-					const entity = {
+				const oldAgent = oldAgents.find((item) => item.key === node.key)
+				// Calc the leader of agent
+				const conn = draft.connections.find((_) => _.type === 'agent' && _.to === node.key)
+				
+				if (oldAgent) {
+					if (oldAgent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
+						throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
+					} else {
+						// Update xpert agent
+						const entity = {
+							...pickXpertAgent(node.entity),
+							leaderKey: conn?.from,
+							toolsetIds,
+							knowledgebaseIds,
+							collaboratorNames,
+
+						}
+						this.#logger.verbose(`Update xpert team agent (name/key='${oldAgent.name || oldAgent.key}', id='${oldAgent.id}') with value:\n${JSON.stringify(entity, null, 2)}`)
+						await this.xpertAgentService.update(oldAgent.id, entity)
+					}
+					newAgents.push(oldAgent)
+				} else if (node.key === xpert.agent.key) {
+					if (xpert.agent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
+						throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
+					}
+					// Update primary agent when update xpert through OneToOne relationship
+					xpert.agent = {
+						...xpert.agent,
 						...pickXpertAgent(node.entity),
+						toolsetIds,
+						knowledgebaseIds,
+						collaboratorNames
+					}
+				} else {
+					// Create new xpert agent
+					const newAgent = await this.xpertAgentService.create({
+						key: node.key,
+						...pickXpertAgent(node.entity),
+						tenantId: xpert.tenantId,
+						organizationId: xpert.organizationId,
+						teamId: xpert.id,
 						leaderKey: conn?.from,
 						toolsetIds,
 						knowledgebaseIds,
-						collaboratorNames,
-
-					}
-					this.#logger.verbose(`Update xpert team agent (name/key='${oldAgent.name || oldAgent.key}', id='${oldAgent.id}') with value:\n${JSON.stringify(entity, null, 2)}`)
-					await this.xpertAgentService.update(oldAgent.id, entity)
+						collaboratorNames
+					})
+					newAgents.push(newAgent)
 				}
-				newAgents.push(oldAgent)
-			} else if (node.key === xpert.agent.key) {
-				if (xpert.agent.updatedAt.toISOString() > `${node.entity.updatedAt}`) {
-					throw new BadRequestException(`Agent 记录已有另外的更新，请重新同步`)
-				}
-				// Update primary agent when update xpert through OneToOne relationship
-				xpert.agent = {
-					...xpert.agent,
-					...pickXpertAgent(node.entity),
-					toolsetIds,
-					knowledgebaseIds,
-					collaboratorNames
-				}
-			} else {
-				// Create new xpert agent
-				const newAgent = await this.xpertAgentService.create({
-					key: node.key,
-					...pickXpertAgent(node.entity),
-					tenantId: xpert.tenantId,
-					organizationId: xpert.organizationId,
-					teamId: xpert.id,
-					leaderKey: conn?.from,
-					toolsetIds,
-					knowledgebaseIds,
-					collaboratorNames
-				})
-				newAgents.push(newAgent)
 			}
+
+			// Delete unused agents
+			for await (const agent of oldAgents) {
+				if (!newAgents.some((_) => _.id === agent.id)) {
+					await this.xpertAgentService.delete(agent.id)
+				}
+			}
+
+			// Update agents relative info
+			xpert.agents = newAgents
+			xpert.toolsets = uniq(totalToolsetIds).map((id) => ({id} as IXpertToolset))
+			xpert.knowledgebases = uniq(totalKnowledgebaseIds).map((id) => ({id} as IKnowledgebase))
+			xpert.executors = uniq(totalXpertIds).map((id) => ({id} as IXpert))
+			// Recording graph node positions
+			xpert.options ??= {}
+			draft.nodes.forEach((node) => {
+				xpert.options[node.type] ??= {}
+				xpert.options[node.type][node.key] ??= {}
+				xpert.options[node.type][node.key].position = node.position
+				xpert.options[node.type][node.key].size = node.size
+			})
 		}
 
-		// Delete unused agents
-		for await (const agent of oldAgents) {
-			if (!newAgents.some((_) => _.id === agent.id)) {
-				await this.xpertAgentService.delete(agent.id)
-			}
+		// Update basic info
+		if (draft.team) {
+			xpert.title = draft.team.title
+			xpert.titleCN = draft.team.titleCN
+			xpert.description = draft.team.description
+			xpert.avatar = draft.team.avatar
+			xpert.starters = draft.team.starters
+			xpert.tags = draft.team.tags?.map((t) => ({id: t.id}))
+			xpert.copilotModel = draft.team.copilotModel
 		}
 
-		// Update xpert
-		xpert.title = draft.team.title
-		xpert.titleCN = draft.team.titleCN
-		xpert.description = draft.team.description
-		xpert.avatar = draft.team.avatar
-		xpert.tags = draft.team.tags
+		// Update new version
 		xpert.version = version
 		xpert.draft = null
 		xpert.publishAt = new Date()
 		xpert.active = true
-		xpert.copilotModel = draft.team.copilotModel
-		xpert.agents = newAgents
-		xpert.toolsets = uniq(totalToolsetIds).map((id) => ({id} as IXpertToolset))
-		xpert.knowledgebases = uniq(totalKnowledgebaseIds).map((id) => ({id} as IKnowledgebase))
-		xpert.executors = uniq(totalXpertIds).map((id) => ({id} as IXpert))
-		// Recording graph node positions
-		xpert.options ??= {}
-		draft.nodes.forEach((node) => {
-			xpert.options[node.type] ??= {}
-			xpert.options[node.type][node.key] ??= {}
-			xpert.options[node.type][node.key].position = node.position
-			xpert.options[node.type][node.key].size = node.size
-		})
 
 		return await this.xpertService.save(xpert)
 	}
 
 	check(draft: TXpertTeamDraft) {
 		// Check all nodes have been connected
-		if (draft.nodes.length > 1) {
+		if (draft.nodes?.length > 1) {
 			draft.nodes.forEach((node) => {
 				if (!draft.connections.some((connection) => connection.from === node.key || connection.to === node.key)) {
 					throw new HttpException(`There are free Xpert agents!`, 500)

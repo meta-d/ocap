@@ -1,26 +1,16 @@
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  forwardRef,
-  inject,
-  input,
-  model,
-  output,
-  signal
-} from '@angular/core'
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
+import { ChangeDetectionStrategy, Component, effect, inject, model, signal } from '@angular/core'
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
+import { MatButtonModule } from '@angular/material/button'
 import { PickerComponent } from '@ctrl/ngx-emoji-mart'
 import { EmojiComponent } from '@ctrl/ngx-emoji-mart/ngx-emoji'
-import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { AppearanceDirective, ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { pick } from 'lodash-es'
 import { firstValueFrom } from 'rxjs'
 import { ScreenshotService, TAvatar } from '../../../@core'
-import { MaterialModule } from '../../material.module'
 
 @Component({
   standalone: true,
@@ -30,58 +20,52 @@ import { MaterialModule } from '../../material.module'
   styleUrl: './avatar-editor.component.scss',
   imports: [
     CommonModule,
-    MatIconModule,
     CdkListboxModule,
+    MatIconModule,
+    MatButtonModule,
+    MatDialogModule,
     TranslateModule,
-    MaterialModule,
     ButtonGroupDirective,
-    DensityDirective,
     AppearanceDirective,
     PickerComponent,
     EmojiComponent
-  ],
+  ]
 })
 export class EmojiAvatarEditorComponent {
   readonly screenshotService = inject(ScreenshotService)
   readonly #dialogRef = inject(MatDialogRef)
   readonly avatar = inject<TAvatar>(MAT_DIALOG_DATA)
 
-  // readonly value = signal<string | null>(null)
   readonly disabled = signal<boolean>(false)
   readonly type = model<'emoji' | 'image'>('emoji')
 
-  readonly background = model<string>('rgb(213, 245, 246)')
+  readonly background = model<string>('rgba(213, 245, 246, 0.8)')
   readonly emoji = model<TAvatar['emoji']>()
 
   readonly colors = [
-    "rgb(255, 234, 213)",
-    "rgb(228, 251, 204)",
-    "rgb(211, 248, 223)",
-    "rgb(224, 242, 254)",
-    "rgb(224, 234, 255)",
-    "rgb(239, 241, 245)",
-    "rgb(251, 232, 255)",
-    "rgb(252, 231, 246)",
-    "rgb(254, 247, 195)",
-    "rgb(230, 244, 215)",
-    "rgb(213, 245, 246)",
-    "rgb(209, 233, 255)",
-    "rgb(209, 224, 255)",
-    "rgb(213, 217, 235)",
-    "rgb(236, 233, 254)",
-    "rgb(255, 228, 232)"
+    'rgba(255, 234, 213, 0.8)',
+    'rgba(228, 251, 204, 0.8)',
+    'rgba(211, 248, 223, 0.8)',
+    'rgba(224, 242, 254, 0.8)',
+    'rgba(224, 234, 255, 0.8)',
+    'rgba(239, 241, 245, 0.8)',
+    'rgba(251, 232, 255, 0.8)',
+    'rgba(252, 231, 246, 0.8)',
+    'rgba(254, 247, 195, 0.8)',
+    'rgba(230, 244, 215, 0.8)',
+    'rgba(213, 245, 246, 0.8)',
+    'rgba(209, 233, 255, 0.8)',
+    'rgba(209, 224, 255, 0.8)',
+    'rgba(213, 217, 235, 0.8)',
+    'rgba(236, 233, 254, 0.8)',
+    'rgba(255, 228, 232, 0.8)'
   ]
 
-  readonly sets = [
-    null, 'apple', 'google', 'twitter', 'facebook'
-  ]
+  readonly sets = [null, 'apple', 'google', 'twitter', 'facebook']
 
   readonly set = model<TAvatar['emoji']['set']>(null)
 
   readonly imageUrl = signal<string>(null)
-
-  private onChange: (value: string | null) => void
-  private onTouched: (value: string | null) => void
 
   constructor() {
     effect(

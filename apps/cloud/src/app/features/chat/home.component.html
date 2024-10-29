@@ -12,7 +12,7 @@
             active:scale-95 transition-transform
            hover:bg-black/5 dark:hover:bg-white/10"
             (click)="selectRole(role)"
-          ><emoji-avatar [avatar]="role.avatar" xs class="rounded-lg overflow-hidden mr-1" />{{role.title || role.name}}</li>
+          ><emoji-avatar [avatar]="role.avatar" xs class="rounded-lg overflow-hidden shadow-sm mr-1" />{{role.title || role.name}}</li>
         }
       </ul>
 
@@ -71,7 +71,7 @@
     <div #contentContainer class="flex-1 overflow-auto">
       @if (!conversationId() && !messages()?.length && role()) {
         <div class="w-full h-full flex flex-col justify-center items-center gap-4">
-          <emoji-avatar [avatar]="role().avatar" large class="rounded-lg overflow-hidden" />
+          <emoji-avatar [avatar]="role().avatar" large class="rounded-xl overflow-hidden shadow-sm" />
 
           <div class="w-full flex flex-col items-center gap-2">
             <p class="text-xl">{{role().title || role().name}}</p>

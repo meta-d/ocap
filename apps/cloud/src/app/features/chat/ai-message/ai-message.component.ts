@@ -10,9 +10,9 @@ import { TranslateModule } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
 import { MaterialModule } from '../../../@shared'
 import { ChatLoadingComponent } from '../../../@shared/copilot'
-import { AvatarComponent } from '../../../@shared/files/avatar/avatar.component'
 import { ChatService } from '../chat.service'
 import { ChatComponentMessageComponent } from '../component-message/component-message.component'
+import { EmojiAvatarComponent } from '../../../@shared/avatar'
 
 interface ICopilotChatMessage extends CopilotChatMessage {
   expanded: boolean
@@ -34,7 +34,7 @@ interface ICopilotChatMessage extends CopilotChatMessage {
     MarkdownModule,
     MaterialModule,
     NgmCommonModule,
-    AvatarComponent,
+    EmojiAvatarComponent,
     ChatLoadingComponent,
     ChatComponentMessageComponent
   ],

@@ -31,10 +31,11 @@
         <emoji-mart [virtualize]="true" [set]="set()" [isNative]="!set()" (emojiClick)="addEmoji($event)"></emoji-mart>
 
         <div class="p-3 pb-0">
-          <p class="font-medium uppercase text-xs text-[#101828] mb-2">Choose Style</p>
+          <p class="font-medium uppercase text-xs mb-2">Choose Style</p>
           <div class="w-full h-full grid grid-cols-8 gap-1">
             @for (color of colors; track color) {
-              <div class="emoji-style-preview cursor-pointer hover:ring-1 ring-offset-1 inline-flex w-10 h-10 rounded-lg items-center justify-center ring-1 ring-transparent"
+              <div class="emoji-style-preview cursor-pointer hover:ring-1 ring-offset-1 inline-flex w-10 h-10 rounded-lg items-center justify-center ring-1 ring-transparent
+                  ring-offset-white dark:ring-offset-black"
                 [ngClass]="{active: background() === color}"
                 (click)="background.set(color)">
                 <div class="w-10 h-10 p-1 flex items-center justify-center rounded-lg" [ngStyle]="{background: color}">
@@ -76,13 +77,13 @@
 
 <div class="flex justify-end p-4">
   <div ngmButtonGroup>
-      <button mat-flat-button mat-dialog-close>
-        {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
-      </button>
-      <button mat-raised-button color="accent" cdkFocusInitial (click)="apply()">
-        <span>
-          {{ 'Story.Common.Save' | translate: { Default: 'Save' } }}
-        </span>
-      </button>
+    <button mat-flat-button mat-dialog-close>
+      {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
+    </button>
+    <button mat-raised-button color="accent" cdkFocusInitial (click)="apply()">
+      <span>
+        {{ 'Story.Common.Save' | translate: { Default: 'Save' } }}
+      </span>
+    </button>
   </div>
 </div>

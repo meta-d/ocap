@@ -69,7 +69,7 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 				let _xpert: IXpert = null
 				if (xpert?.id) {
 					_xpert = await this.queryBus.execute<FindXpertQuery, IXpert>(
-						new FindXpertQuery({ tenantId, organizationId, id: xpert.id })
+						new FindXpertQuery({ tenantId, organizationId, id: xpert.id }, ['agent'])
 					)
 				}
 

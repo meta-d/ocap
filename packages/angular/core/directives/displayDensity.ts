@@ -1,4 +1,4 @@
-import { Directive, HostBinding, Input } from '@angular/core'
+import { booleanAttribute, Directive, HostBinding, input, Input } from '@angular/core'
 
 /**
  * Defines the posible values of the components' display density.
@@ -10,6 +10,8 @@ export enum DisplayDensity {
 }
 
 /**
+ * @deprecated use hostDirectives {@link NgmDensityDirective }. 
+ * 
  * 组件的 display density 配置
  *
  * [Guidance on high-density spacing](https://material.io/design/layout/applying-density.html)
@@ -35,4 +37,26 @@ export class DensityDirective {
   get densityComfortable(): boolean {
     return this.displayDensity === DisplayDensity.cosy
   }
+}
+
+@Directive({
+  standalone: true,
+  selector: '[ngmDensity]',
+  host: {
+    '[class.ngm-density__cosy]': 'true',
+    '[class.ngm-density__compact]': 'small()',
+    '[class.small]': 'small()',
+    '[class.ngm-density__comfortable]': 'large()',
+    '[class.large]': 'large()',
+  }
+})
+export class NgmDensityDirective {
+
+  readonly small = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
+  readonly large = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
+  
 }

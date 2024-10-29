@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
+import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { DataSourceService } from '@metad/cloud/state'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { switchMap, tap } from 'rxjs/operators'
-import { IDataSource, ROUTE_ANIMATIONS_ELEMENTS } from '../../../@core/index'
+import { IDataSource, injectHelpWebsite, ROUTE_ANIMATIONS_ELEMENTS } from '../../../@core/index'
 import { PACDataSourceCreationComponent } from './creation/creation.component'
 import { PACDataSourceEditComponent } from './edit/edit.component'
-import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 
 @Component({
   selector: 'pac-data-sources',
@@ -19,6 +19,7 @@ export class PACDataSourcesComponent {
 
   private readonly dataSource = inject(DataSourceService)
   private readonly _dialog = inject(MatDialog)
+  readonly helpWebsite = injectHelpWebsite()
 
   loading = false
   private readonly refresh$ = new BehaviorSubject<void>(null)

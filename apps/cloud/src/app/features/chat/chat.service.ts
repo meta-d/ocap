@@ -130,7 +130,7 @@ export class ChatService {
       skip(1),
       filter((id) => !this.conversation() || this.conversation().id !== id),
       switchMap((id) =>
-        id ? this.conversationService.getById(id, { relations: ['role', 'role.knowledgebases', 'role.toolsets'] }).pipe(
+        id ? this.conversationService.getById(id, { relations: ['xpert', 'xpert.knowledgebases', 'xpert.toolsets'] }).pipe(
           catchError((error) => {
             this.#toastr.error(getErrorMessage(error))
             return of(null)

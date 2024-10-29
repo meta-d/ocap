@@ -1,7 +1,7 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, effect, inject, model, signal } from '@angular/core'
-import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormArray, FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import {
   getErrorMessage,
@@ -17,6 +17,8 @@ import {
 import { CopilotModelSelectComponent, MaterialModule, TagSelectComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { XpertComponent } from '../xpert.component'
+import { TranslateModule } from '@ngx-translate/core'
+import { NgmInputComponent } from '@metad/ocap-angular/common'
 
 @Component({
   selector: 'xpert-basic',
@@ -25,13 +27,15 @@ import { XpertComponent } from '../xpert.component'
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    TranslateModule,
     CdkMenuModule,
     MaterialModule,
     DensityDirective,
 
     EmojiAvatarComponent,
     CopilotModelSelectComponent,
-    TagSelectComponent
+    TagSelectComponent,
+    NgmInputComponent
   ],
   templateUrl: './basic.component.html',
   styleUrl: './basic.component.scss',
@@ -59,7 +63,13 @@ export class XpertBasicComponent {
     description: this.#fb.control(null),
     avatar: this.#fb.control(null),
     tags: this.#fb.control(null),
-    copilotModel: this.#fb.control(null)
+    copilotModel: this.#fb.control(null),
+    starters: this.#fb.array([
+      this.#fb.control(null),
+      this.#fb.control(null),
+      this.#fb.control(null),
+      this.#fb.control(null),
+    ])
   })
   get name() {
     return this.form.get('name').value
@@ -76,9 +86,11 @@ export class XpertBasicComponent {
   get tags() {
     return this.form.get('tags') as FormControl
   }
-
   get copilotModel() {
     return this.form.get('copilotModel') as FormControl
+  }
+  get starters() {
+    return this.form.get('starters') as FormArray
   }
 
   readonly loading = signal(false)
