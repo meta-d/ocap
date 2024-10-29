@@ -27,12 +27,10 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
 import {
   getErrorMessage,
-  IXpertRole,
   IXpertWorkspace,
   routeAnimations,
   ToastrService,
@@ -44,7 +42,6 @@ import {
 import { AvatarComponent, MaterialModule, UserPipe } from '../../@shared'
 import { AppService } from '../../app.service'
 import { WorkspaceSettingsComponent } from './workspace-settings/settings.component'
-import { isNil, omitBy } from 'lodash-es'
 
 export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
 

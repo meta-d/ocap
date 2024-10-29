@@ -118,7 +118,7 @@ export enum XpertTypeEnum {
 // Xpert team draft types
 
 export type TXpertTeamDraft = {
-  team: IXpert
+  team: Partial<IXpert>
 
   savedAt?: Date
   nodes: TXpertTeamNode[]
@@ -191,4 +191,11 @@ export enum ChatEventTypeEnum {
   LOG = 'log',
   MESSAGE = 'message',
   EVENT = 'event'
+}
+
+// Helpers
+export function omitXpertRelations(xpert: Partial<IXpert>) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { draft, agent, agents, copilotModel, executors, leaders, knowledgebases, toolsets, managers, ...rest } = xpert ?? {}
+  return rest
 }

@@ -502,7 +502,8 @@
       "UpdatedSuccessfully": "更新成功",
       "UploadSuccessfully": "上传成功",
       "NoRecordsFoundinFile": "文件中未找到记录",
-      "UnsavedChanges": "未保存的更改"
+      "UnsavedChanges": "未保存的更改",
+      "SavedDraft": "草稿已保存！"
     },
     "NOTES": {
       "ORGANIZATIONS": {

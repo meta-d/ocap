@@ -19,7 +19,7 @@ export class XpertAgentService extends XpertWorkspaceBaseCrudService<IXpertAgent
     super(API_XPERT_AGENT)
   }
 
-  chatAgent(data: {input: string; agent: IXpertAgent; xpert: IXpert}): Observable<EventSourceMessage> {
+  chatAgent(data: {input: string; agent: IXpertAgent; xpert: Partial<IXpert>}): Observable<EventSourceMessage> {
     const token = this.#store.token
     const organization = this.store.selectedOrganization ?? {id: null}
     return new Observable((subscriber) => {

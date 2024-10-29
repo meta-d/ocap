@@ -36,12 +36,10 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import {NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers} from 'ngx-float-ui'
-import { injectParams } from 'ngxtension/inject-params'
 import { Subscription } from 'rxjs'
 import { delay, map, startWith } from 'rxjs/operators'
 import { ICopilotModel, IXpert, IXpertAgentExecution, ModelType, ToastrService, TXpertTeamNode, XpertAgentExecutionEnum, XpertService, XpertTypeEnum, XpertWorkspaceService } from '../../../@core'
 import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent, XpertAgentExecutionComponent } from '../../../@shared'
-import { AppService } from '../../../app.service'
 import {
   XpertStudioContextMenuComponent,
   XpertStudioNodeKnowledgeComponent,
@@ -54,6 +52,7 @@ import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
 import { XpertExecutionService } from './services/execution.service'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
+import { XpertComponent } from '../xpert'
 
 
 @Component({
@@ -90,7 +89,7 @@ import { EmojiAvatarComponent } from '../../../@shared/avatar'
   templateUrl: './studio.component.html',
   styleUrl: 'studio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [SelectionService, XpertExecutionService]
+  providers: [XpertStudioApiService, SelectionService, XpertExecutionService]
 })
 export class XpertStudioComponent {
   eXpertAgentExecutionEnum = XpertAgentExecutionEnum
@@ -109,7 +108,7 @@ export class XpertStudioComponent {
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertRoleService = inject(XpertService)
-  readonly paramId = injectParams('id')
+  // readonly paramId = injectParams('id')
   readonly apiService = inject(XpertStudioApiService)
   readonly selectionService = inject(SelectionService)
   readonly executionService = inject(XpertExecutionService)
@@ -165,6 +164,12 @@ export class XpertStudioComponent {
   // Agent Execution Running status
   readonly agentExecutions = this.executionService.agentExecutions
   readonly preview = model(false)
+
+  constructor() {
+    effect(() => {
+      // console.log(this.paramId())
+    })
+  }
 
   public ngOnInit(): void {
     this.subscriptions$.add(this.subscribeOnReloadData())

@@ -4,7 +4,8 @@ import { XpertStudioComponent } from './studio/studio.component'
 import { XpertStudioXpertsComponent } from './xperts/xperts.component'
 import { XpertStudioToolsComponent } from './tools/tools.component'
 import { XpertStudioAPIToolComponent } from './tools'
-import { XpertDevelopComponent, XpertStudioXpertComponent } from './xpert'
+import { XpertDevelopComponent, XpertComponent } from './xpert'
+import { XpertBasicComponent } from './xpert/basic/basic.component'
 
 export const routes: Routes = [
   {
@@ -27,12 +28,16 @@ export const routes: Routes = [
   },
   {
     path: ':id',
-    component: XpertStudioXpertComponent,
+    component: XpertComponent,
     children: [
       {
         path: '',
         redirectTo: 'agents',
         pathMatch: 'full'
+      },
+      {
+        path: 'basic',
+        component: XpertBasicComponent
       },
       {
         path: 'agents',

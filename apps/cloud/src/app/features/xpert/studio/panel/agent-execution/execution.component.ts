@@ -63,7 +63,7 @@ export class XpertStudioPanelAgentExecutionComponent {
   readonly #destroyRef = inject(DestroyRef)
   
 
-  readonly xpert = input<IXpert>()
+  readonly xpert = input<Partial<IXpert>>()
   readonly xpertAgent = input<IXpertAgent>()
   readonly execution = model<IXpertAgentExecution>()
 

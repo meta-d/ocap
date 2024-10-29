@@ -1,3 +1,7 @@
-.active {
+.active[role='tabpanel'] {
   display: block !important;
+}
+
+.emoji-style-preview.active {
+  @apply ring-gray-300;
 }

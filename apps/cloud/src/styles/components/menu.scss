@@ -82,10 +82,9 @@
   .ngm-cdk-menu-item {
     @apply w-full rounded-lg overflow-hidden hover:bg-hover-bg;
   }
-}
-
-.ngm-cdk-menu-item.danger:hover {
-  @apply text-red-600 bg-red-100 dark:text-red-600 dark:bg-red-200/20;
+  .ngm-cdk-menu-item.danger:hover {
+    @apply text-red-600 bg-red-100/50 dark:text-red-600 dark:bg-red-200/20;
+  }
 }
 
 .ping-badge {

@@ -7,7 +7,6 @@ import { stateHistory } from '@ngneat/elf-state-history'
 import { KnowledgebaseService, PACCopilotService, ToastrService, XpertService, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import * as CryptoJS from 'crypto-js'
 import { isEqual, negate } from 'lodash-es'
-import { injectParams } from 'ngxtension/inject-params'
 import {
   BehaviorSubject,
   combineLatest,
@@ -50,16 +49,21 @@ import { CreateTeamHandler, CreateTeamRequest, UpdateXpertHandler, UpdateXpertRe
 import { EReloadReason, IStudioStore, TStateHistory } from './types'
 import { ExpandTeamHandler } from './xpert/expand/expand.handler'
 import { ExpandTeamRequest } from './xpert/expand/expand.request'
+import { injectGetXpertsByWorkspace, injectGetXpertTeam } from '../../utils'
+import { XpertComponent } from '../../xpert'
 
 
 @Injectable()
 export class XpertStudioApiService {
-  readonly paramId = injectParams('id')
+  // readonly paramId = injectParams('id')
   readonly xpertRoleService = inject(XpertService)
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly toolsetService = inject(XpertToolsetService)
   readonly copilotService = inject(PACCopilotService)
   readonly #toastr = inject(ToastrService)
+  readonly xpertComponent = inject(XpertComponent)
+  readonly getXpertTeam = injectGetXpertTeam()
+  readonly getXpertsByWorkspace = injectGetXpertsByWorkspace()
 
   // private storage: IStudioStorage = null
   readonly store = createStore({ name: 'xpertStudio' }, withProps<IStudioStore>({ draft: null }))
@@ -78,7 +82,7 @@ export class XpertStudioApiService {
   public get reload$(): Observable<EReloadReason> {
     return this.#reload.asObservable().pipe(filter((value) => value !== EReloadReason.MOVED))
   }
-  readonly paramId$ = toObservable(this.paramId)
+  readonly paramId$ = this.xpertComponent.paramId$
 
   readonly #refresh$ = new BehaviorSubject<void>(null)
 
@@ -111,7 +115,7 @@ export class XpertStudioApiService {
     filter(nonNullable),
     map((team) => team?.workspace),
     distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
-    switchMap((workspace) => this.xpertRoleService.getAllByWorkspace(workspace, { where: { latest: true } }, true)),
+    switchMap((workspace) => this.getXpertsByWorkspace(workspace)),
     map(({ items }) => items.filter((_) => _.id !== this.team().id)),
     shareReplay(1)
   )
@@ -157,32 +161,25 @@ export class XpertStudioApiService {
 
   
 
-  public initRole(role: IXpert) {
-    this.team.set(role)
-    this.store.update((state) => ({
-      draft: (role.draft
-        ? {
-            ...role.draft,
-            team: {
-              ...(role.draft.team ?? {}),
-              id: role.id
-            }
-          }
-        : {
-            team: role,
-            nodes: new ToNodeViewModelHandler(role).handle(),
-            connections: new ToConnectionViewModelHandler(role).handle()
-          }) as TXpertTeamDraft
+  public initRole(xpert: IXpert) {
+    this.team.set(xpert)
+
+    const team = xpert.draft?.team ?? xpert
+    const nodes = xpert.draft?.nodes ?? new ToNodeViewModelHandler(xpert).handle()
+    const connections = xpert.draft?.connections ?? new ToConnectionViewModelHandler(xpert).handle()
+
+    this.store.update(() => ({
+      draft: {
+        team: {
+          ...team,
+          id: xpert.id
+        },
+        nodes,
+        connections
+      } as TXpertTeamDraft
     }))
 
     this.#reload.next(EReloadReason.INIT)
-    // if (!role.draft) {
-    //     this.autoLayout()
-    // }
-  }
-
-  public getXpertTeam(id: string) {
-    return this.xpertRoleService.getTeam(id, { relations: ['agent', 'agents', 'agents.copilotModel', 'executors', 'executors.agent', 'executors.copilotModel', 'copilotModel'] })
   }
 
   public resume() {

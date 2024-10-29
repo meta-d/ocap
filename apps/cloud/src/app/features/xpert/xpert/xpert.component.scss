@@ -5,3 +5,7 @@
 .mat-drawer.mat-sidenav {
   border-top-left-radius: var(--ngm-primary-container-rounded);
 }
+
+.router-menu-item.active {
+  @apply bg-primary-100/50 text-primary-500;
+}

@@ -1,19 +1,27 @@
 import { CommonModule } from '@angular/common'
-import { booleanAttribute, Component, computed, HostBinding, HostListener, inject, input, model } from '@angular/core'
-import { TAvatar } from '../../../@core'
+import { booleanAttribute, Component, computed, HostListener, inject, input, model } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
-import { EmojiAvatarEditorComponent } from '../emoji-avatar-editor/avatar-editor.component'
 import { EmojiComponent } from '@ctrl/ngx-emoji-mart/ngx-emoji'
+import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
+import { TAvatar } from '../../../@core'
+import { EmojiAvatarEditorComponent } from '../emoji-avatar-editor/avatar-editor.component'
 
 @Component({
   standalone: true,
-  imports: [ CommonModule, EmojiComponent ],
+  imports: [CommonModule, EmojiComponent],
   selector: 'emoji-avatar',
+  hostDirectives: [NgxControlValueAccessor],
   template: `@if (avatar()?.url) {
       <img class="" [src]="avatar().url" [alt]="alt()" />
-    } @else {
+    } @else if (emoji()?.emoji) {
       <div class="flex justify-center items-center w-full h-full" [ngStyle]="{ background: emoji().background }">
-        <ngx-emoji class="flex" [emoji]="emoji().emoji.id" [set]="emoji().emoji.set" [isNative]="!emoji().emoji.set" [size]="size()"/>
+        <ngx-emoji
+          class="flex"
+          [emoji]="emoji().emoji.id"
+          [set]="emoji().emoji.set"
+          [isNative]="!emoji().emoji.set"
+          [size]="size()"
+        />
       </div>
     }`,
   styleUrl: 'avatar.component.scss',
@@ -21,11 +29,12 @@ import { EmojiComponent } from '@ctrl/ngx-emoji-mart/ngx-emoji'
     '[class.xs]': 'xs()',
     '[class.small]': 'small()',
     '[class.large]': 'large()',
-    '[class.cursor-pointer]': 'editable()',
-  },
+    '[class.cursor-pointer]': 'editable()'
+  }
 })
 export class EmojiAvatarComponent {
   readonly dialog = inject(MatDialog)
+  protected cva = inject<NgxControlValueAccessor<Partial<TAvatar> | null>>(NgxControlValueAccessor)
 
   readonly alt = input<string>()
   readonly avatar = model<TAvatar>()
@@ -46,7 +55,8 @@ export class EmojiAvatarComponent {
 
   readonly emoji = computed(
     () =>
-      this.avatar() ?? {
+      this.avatar() ??
+      this.cva.value$() ?? {
         emoji: {
           id: 'robot_face'
         },
@@ -54,20 +64,24 @@ export class EmojiAvatarComponent {
       }
   )
 
-  readonly size = computed(() => this.large() ? 24 : this.small() ? 16 : this.xs() ? 14 : 18)
+  readonly size = computed(() => (this.large() ? 24 : this.small() ? 16 : this.xs() ? 14 : 18))
 
   @HostListener('click')
   onClick() {
     if (this.editable()) {
-      this.dialog.open(EmojiAvatarEditorComponent, {
-        data: this.avatar()
-      }).afterClosed().subscribe({
-        next: (result) => {
-          if (result) {
-            this.avatar.set(result)
+      this.dialog
+        .open(EmojiAvatarEditorComponent, {
+          data: this.avatar()
+        })
+        .afterClosed()
+        .subscribe({
+          next: (result) => {
+            if (result) {
+              this.avatar.set(result)
+              this.cva.value$.set(result)
+            }
           }
-        }
-      })
+        })
     }
   }
 }

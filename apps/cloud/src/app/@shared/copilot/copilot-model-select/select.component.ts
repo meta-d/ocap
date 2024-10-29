@@ -1,19 +1,20 @@
+import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, computed, effect, inject, input, model } from '@angular/core'
-import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } from '../../../@core'
-import { NgmHighlightDirective, NgmSearchComponent } from '@metad/ocap-angular/common'
-import { derivedAsync } from 'ngxtension/derived-async'
-import { CdkListboxModule } from '@angular/cdk/listbox'
-import { NgmI18nPipe, nonBlank } from '@metad/ocap-angular/core'
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { debounceTime } from 'rxjs'
-import { MatTooltipModule } from '@angular/material/tooltip'
-import { MatSliderDragEvent, MatSliderModule } from '@angular/material/slider'
-import { MatSelectModule } from '@angular/material/select'
-import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatInputModule } from '@angular/material/input'
+import { MatSelectModule } from '@angular/material/select'
+import { MatSliderModule } from '@angular/material/slider'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { NgmHighlightDirective, NgmSearchComponent } from '@metad/ocap-angular/common'
+import { NgmI18nPipe, nonBlank } from '@metad/ocap-angular/core'
+import { NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
+import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { debounceTime } from 'rxjs'
+import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } from '../../../@core'
 
 @Component({
   standalone: true,
@@ -29,19 +30,21 @@ import { MatInputModule } from '@angular/material/input'
     MatInputModule,
     NgmSearchComponent,
     NgmI18nPipe,
-    NgmHighlightDirective,
+    NgmHighlightDirective
   ],
   selector: 'copilot-model-select',
   templateUrl: 'select.component.html',
-  styleUrls: ['select.component.scss']
+  styleUrls: ['select.component.scss'],
+  hostDirectives: [NgxControlValueAccessor]
 })
 export class CopilotModelSelectComponent {
   eNgxFloatUiTriggers = NgxFloatUiTriggers
   eNgxFloatUiPlacements = NgxFloatUiPlacements
   eModelFeature = ModelFeature
 
+  protected cva = inject<NgxControlValueAccessor<Partial<ICopilotModel> | null>>(NgxControlValueAccessor)
   readonly copilotService = inject(PACCopilotService)
-  
+
   readonly modelType = input<ModelType>()
   readonly inheritModel = input<ICopilotModel>()
   readonly copilotModel = model<ICopilotModel>()
@@ -58,19 +61,23 @@ export class CopilotModelSelectComponent {
   readonly searchedModels = computed(() => {
     const searchText = this.searchText()
     const copilots = this.copilotWithModels()
-    return searchText ? copilots?.map((_) => {
-      const models = _.providerWithModels.models.filter((m) => m.model.includes(searchText))
-      if (models.length) {
-        return {
-          ..._,
-          providerWithModels: {
-            ..._.providerWithModels,
-            models
-          }
-        }
-      }
-      return null
-    }).filter(nonBlank) : copilots
+    return searchText
+      ? copilots
+          ?.map((_) => {
+            const models = _.providerWithModels.models.filter((m) => m.model.includes(searchText))
+            if (models.length) {
+              return {
+                ..._,
+                providerWithModels: {
+                  ..._.providerWithModels,
+                  models
+                }
+              }
+            }
+            return null
+          })
+          .filter(nonBlank)
+      : copilots
   })
 
   readonly copilotId = computed(() => this._copilotModel()?.copilotId)
@@ -91,20 +98,27 @@ export class CopilotModelSelectComponent {
     return null
   })
 
-  // constructor() {
-  //   effect(() => {
-  //     console.log(this.modelParameterRules())
-  //   })
-  // }
+  constructor() {
+    effect(
+      () => {
+        const copilotModel = this.cva.value$()
+        this.copilotModel.set(copilotModel)
+      },
+      { allowSignalWrites: true }
+    )
+  }
 
   setModel(copilot: ICopilot, model: string) {
-    this.copilotModel.set({
+    const nValue = {
       ...(this._copilotModel() ?? {}),
       model,
       copilotId: copilot.id,
       copilot: copilot,
       modelType: this.modelType()
-    })
+    }
+    this.copilotModel.set(nValue)
+
+    this.cva.value$.set(nValue)
   }
 
   getParameter(name: string) {
@@ -112,13 +126,16 @@ export class CopilotModelSelectComponent {
   }
 
   updateParameter(name: string, value: any) {
-    this.copilotModel.update((state) => (state ? {
-      ...state,
-      options: {
-        ...(state.options ?? {}),
-        [name]: value
-      }
-    } : {options: {[name]: value}}))
+    this.copilotModel.update((state) =>
+      state
+        ? {
+            ...state,
+            options: {
+              ...(state.options ?? {}),
+              [name]: value
+            }
+          }
+        : { options: { [name]: value } }
+    )
   }
-
 }
