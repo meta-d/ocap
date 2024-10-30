@@ -31,11 +31,18 @@ export class ExpandTeamHandler implements IHandler<ExpandTeamRequest> {
           if (xpert) {
             node.entity = xpert
           }
-          node.nodes = new ToNodeViewModelHandler(node.entity).handle()
+
+          const { nodes, size } = new ToNodeViewModelHandler(node.entity, {position: node.position}).handle()
+          node.nodes = nodes
           node.connections = new ToConnectionViewModelHandler(node.entity).handle()
+          node.size = size
         } else {
           node.nodes = node.nodes.filter((_) => _.key === node.entity.agent.key)
           node.connections = null
+          node.size = {
+            width: (node.nodes[0].size?.width ?? 240) + 20,
+            height: (node.nodes[0].size?.height ?? 70) + 20,
+          }
         }
       }
 
@@ -45,7 +52,17 @@ export class ExpandTeamHandler implements IHandler<ExpandTeamRequest> {
 }
 
 function getXpertNode(draft: TXpertTeamDraft, key: string) {
-  return draft.nodes.find((node) => node.type === 'xpert' && node.key === key) as TXpertTeamNode & {
-    type: 'xpert'
+  let node = null
+  for (const item of draft.nodes) {
+    if (item.key === key) {
+      return item
+    }
+    if (item.type === 'xpert') {
+      node = getXpertNode(item as any, key)
+    }
+    if (node) {
+      return node
+    }
   }
+  return null
 }

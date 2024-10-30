@@ -33,7 +33,10 @@
 <ng-template #teamsMenu>
   <div cdkMenu class="ngm-cdk-menu flex flex-col">
     @for (xpert of collaborators$ | async; track xpert.id) {
-      <xpert-inline-profile cdkMenuItem class="ngm-cdk-menu-item p-1" [xpert]="xpert" (click)="addCollaborator(xpert)"/>
+      <xpert-inline-profile cdkMenuItem class="ngm-cdk-menu-item py-1 overflow-hidden"
+        [xpert]="xpert"
+        (click)="addCollaborator(xpert)"
+      />
     }
   </div>
 </ng-template>

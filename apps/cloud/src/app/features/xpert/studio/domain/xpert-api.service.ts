@@ -173,7 +173,7 @@ export class XpertStudioApiService {
     this.team.set(xpert)
 
     const team = xpert.draft?.team ?? xpert
-    const nodes = xpert.draft?.nodes ?? new ToNodeViewModelHandler(xpert).handle()
+    const nodes = xpert.draft?.nodes ?? new ToNodeViewModelHandler(xpert).handle().nodes
     const connections = xpert.draft?.connections ?? new ToConnectionViewModelHandler(xpert).handle()
 
     this.store.update(() => ({

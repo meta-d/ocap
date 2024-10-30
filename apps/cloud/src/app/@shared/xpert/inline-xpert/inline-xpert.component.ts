@@ -7,7 +7,7 @@ import { EmojiAvatarComponent } from '../../avatar'
   standalone: true,
   selector: 'xpert-inline-profile',
   template: `<emoji-avatar [avatar]="avatar()" small class="xpert-avatar shrink-0 overflow-hidden rounded-lg shadow-sm mr-1" />
-  <span class="xpert-title">{{xpert().title || xpert().name}}</span>`,
+  <span class="xpert-title truncate" [title]="xpert().title || xpert().name">{{xpert().title || xpert().name}}</span>`,
   styleUrl: 'inline-xpert.component.scss',
   imports: [EmojiAvatarComponent]
 })
