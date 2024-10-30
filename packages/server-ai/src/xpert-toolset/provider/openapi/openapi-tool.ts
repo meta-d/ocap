@@ -25,7 +25,7 @@ export class OpenAPITool extends BaseTool {
         this.description = xpertTool.description
 		this.api_bundle = xpertTool.options?.api_bundle
 		if (xpertTool.schema) {
-			this.schema = ApiBasedToolSchemaParser.parseParametersToZod(xpertTool.schema.parameters) as unknown as typeof this.schema
+			this.schema = ApiBasedToolSchemaParser.parseParametersToZod(xpertTool.schema.parameters ?? [] /* Default empty */) as unknown as typeof this.schema
 		}
 	}
 

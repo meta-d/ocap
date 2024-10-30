@@ -1719,6 +1719,7 @@
       "ParameterType": "参数类型",
       "ParameterKey": "技术名称",
       "ParameterName": "显示名称",
+      "ExecutionsHistories": "执行记录",
       "Toolset": {
       }
     },

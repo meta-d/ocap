@@ -37,15 +37,6 @@ export class XpertStudioContextMenuComponent {
 
   private subscriptions = new Subscription()
 
-  /**
-   * @deprecated
-   */
-  public column: string | null = null
-  /**
-   * @deprecated
-   */
-  public table: string | null = null
-
   public node: string | null = null
 
   readonly collaborators$ = this.apiService.collaborators$
@@ -56,13 +47,8 @@ export class XpertStudioContextMenuComponent {
 
   private subscribeToSelectionChanges(): Subscription {
     return this.selectionService.selection$.subscribe((selection) => {
-      this.column = selection.column
       if (this.root.fFlowComponent().getSelection().nodes.length === 1) {
-        this.table = this.root.fFlowComponent().getSelection().nodes[0]
         this.node = this.root.fFlowComponent().getSelection().nodes[0]
-      } else {
-        this.table = null
-        this.column = null
       }
 
       this.#cdr.detectChanges()
@@ -87,6 +73,6 @@ export class XpertStudioContextMenuComponent {
   }
 
   public dispose(): void {
-    this.selectionService.reset()
+    // this.selectionService.reset()
   }
 }

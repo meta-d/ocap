@@ -4,6 +4,7 @@ import { FFlowModule } from '@foblex/flow'
 import { XpertStudioRoleToolsetComponent } from './toolset/toolset.component'
 import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
+import { PlusSvgComponent } from '@metad/ocap-angular/common'
 
 @Component({
   selector: 'xpert-studio-node-agent',
@@ -11,7 +12,7 @@ import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
   styleUrls: ['./agent.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, EmojiAvatarComponent, XpertStudioRoleToolsetComponent],
+  imports: [FFlowModule, MatIcon, PlusSvgComponent, EmojiAvatarComponent, XpertStudioRoleToolsetComponent,],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',

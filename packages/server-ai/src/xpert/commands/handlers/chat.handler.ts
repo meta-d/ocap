@@ -33,7 +33,7 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 		const userMessage: CopilotChatMessage = {
 			id: shortuuid(),
 			role: 'user',
-			content: input,
+			content: input.input,
 		}
 		let conversation: IChatConversation
 		if (conversationId) {
@@ -49,16 +49,14 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 				new XpertAgentExecutionUpsertCommand({
 					xpert: { id: xpert.id } as IXpert,
 					agentKey: xpert.agent.key,
-					inputs: {
-						input
-					},
+					inputs: input,
 					status: XpertAgentExecutionEnum.RUNNING
 				})
 			)
 			conversation = await this.commandBus.execute(
 				new ChatConversationUpsertCommand({
 					xpert,
-					title: input, // 改成 AI 自动总结标题
+					title: input.input, // 改成 AI 自动总结标题
 					options: {
 						knowledgebases: options?.knowledgebases,
 						toolsets: options?.toolsets

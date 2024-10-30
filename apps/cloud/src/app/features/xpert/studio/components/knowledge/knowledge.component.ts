@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input
 import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
 import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
-import { AvatarComponent } from 'apps/cloud/src/app/@shared'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   selector: 'xpert-studio-node-knowledge',
@@ -10,7 +10,7 @@ import { AvatarComponent } from 'apps/cloud/src/app/@shared'
   styleUrls: ['./knowledge.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, AvatarComponent],
+  imports: [FFlowModule, MatIcon, EmojiAvatarComponent],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',
@@ -30,6 +30,5 @@ export class XpertStudioNodeKnowledgeComponent {
   protected emitSelectionChangeEvent(event: MouseEvent): void {
     this.hostElement.focus()
     event.preventDefault()
-    // this.selectionService.setColumn(this.tableId, this.column.id);
   }
 }

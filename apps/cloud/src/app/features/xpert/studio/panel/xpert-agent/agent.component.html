@@ -190,7 +190,7 @@
     <xpert-studio-panel-agent-execution class="absolute top-14 left-0 bottom-0 w-full rounded-t-xl bg-components-panel-bg"
       [xpertAgent]="xpertAgent()"
       [xpert]="xpert()"
-      [(execution)]="execution"
+      [executionId]="executionId()"
       (click)="$event.stopPropagation()" />
   </div>
 }
@@ -212,7 +212,7 @@
     @for (execution of executions(); track execution.id) {
       <button cdkMenuItem class="ngm-cdk-menu-item px-2 py-1 max-w-full flex flex-col justify-start items-start"
         (click)="openExecution(execution)">
-        {{execution.createdAt | date: 'medium'}}
+        {{execution.updatedAt | date: 'medium'}}
       </button>
     }
   </div>

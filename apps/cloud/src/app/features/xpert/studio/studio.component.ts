@@ -39,7 +39,7 @@ import {NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers} from 'ngx-fl
 import { Subscription } from 'rxjs'
 import { delay, map, startWith } from 'rxjs/operators'
 import { ICopilotModel, IXpert, IXpertAgentExecution, ModelType, ToastrService, TXpertTeamNode, XpertAgentExecutionEnum, XpertService, XpertTypeEnum, XpertWorkspaceService } from '../../../@core'
-import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent, XpertAgentExecutionComponent } from '../../../@shared'
+import { CopilotModelSelectComponent, MaterialModule, ToolsetCardComponent, XpertAgentExecutionComponent, XpertAgentExecutionLogComponent } from '../../../@shared'
 import {
   XpertStudioContextMenuComponent,
   XpertStudioNodeKnowledgeComponent,
@@ -83,6 +83,7 @@ import { EmojiAvatarComponent } from '../../../@shared/avatar'
     XpertStudioHeaderComponent,
     XpertStudioPanelComponent,
     XpertAgentExecutionComponent,
+    XpertAgentExecutionLogComponent
   ],
   selector: 'pac-xpert-studio',
   templateUrl: './studio.component.html',
@@ -159,6 +160,8 @@ export class XpertStudioComponent {
   readonly position = signal<IPoint>(null)
   readonly scale = signal<number>(null)
 
+  readonly selectedNodeKey = this.selectionService.selectedNodeKey
+
   // Agent Execution Running status
   readonly agentExecutions = this.executionService.agentExecutions
   readonly preview = model(false)
@@ -203,7 +206,6 @@ export class XpertStudioComponent {
   }
 
   public addConnection(event: FCreateConnectionEvent): void {
-    // console.log(`Add connecton:`, event)
     if (!event.fInputId) {
       return
     }
@@ -212,7 +214,6 @@ export class XpertStudioComponent {
   }
 
   public reassignConnection(event: FReassignConnectionEvent): void {
-    console.log(`Reassign connecton:`, event)
     this.apiService.createConnection(event.fOutputId, event.newFInputId, event.oldFInputId)
   }
 
@@ -234,6 +235,7 @@ export class XpertStudioComponent {
   }
 
   public selectionChanged(event: FSelectionChangeEvent): void {
+    console.log(event)
     this.isSingleSelection = event.connections.length + event.nodes.length === 1
     this.selectionService.setNodes(event.nodes)
     this.#cdr.markForCheck()
@@ -252,6 +254,8 @@ export class XpertStudioComponent {
     this.mousePosition.y = $event.screenY;
   }
   public onSelectNode($event: MouseEvent, node: TXpertTeamNode) {
+    this.selectionService.selectNode(node.key)
+
     if (
       this.mousePosition.x === $event.screenX &&
       this.mousePosition.y === $event.screenY

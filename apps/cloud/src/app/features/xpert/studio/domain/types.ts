@@ -11,6 +11,7 @@ export enum EReloadReason {
   MOVED = 'moved',
   XPERT_ADDED = 'xpert_added',
   XPERT_UPDATED = 'xpert_updated',
+  XPERT_REMOVED = 'xpert_removed',
   AGENT_CREATED = 'agent_created',
   AGENT_REMOVED = 'agent_removed',
   KNOWLEDGE_CREATED = 'knowledge_created',

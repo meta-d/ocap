@@ -1,31 +1,46 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, model, signal } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  model,
+  signal
+} from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
 import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
+import { NgmIsNilPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
+  ChatEventTypeEnum,
   getErrorMessage,
   IXpert,
   IXpertAgent,
   IXpertAgentExecution,
   ToastrService,
   XpertAgentExecutionEnum,
-  XpertAgentService,
-  ChatEventTypeEnum
+  XpertAgentExecutionService,
+  XpertAgentService
 } from 'apps/cloud/src/app/@core'
 import {
   CopilotModelSelectComponent,
   CopilotStoredMessageComponent,
   MaterialModule,
+  XpertParametersCardComponent
 } from 'apps/cloud/src/app/@shared'
-import { MarkdownModule } from 'ngx-markdown'
-import { NgmIsNilPipe } from '@metad/ocap-angular/core'
-import { XpertStudioApiService } from '../../domain'
-import { XpertStudioComponent } from '../../studio.component'
-import { XpertExecutionService } from '../../services/execution.service'
-import { XpertAgentExecutionComponent } from "../../../../../@shared/";
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
+import { MarkdownModule } from 'ngx-markdown'
+import { of } from 'rxjs'
+import { distinctUntilChanged, switchMap } from 'rxjs/operators'
+import { XpertAgentExecutionComponent } from '../../../../../@shared/'
+import { XpertStudioApiService } from '../../domain'
+import { XpertExecutionService } from '../../services/execution.service'
+import { XpertStudioComponent } from '../../studio.component'
 
 @Component({
   selector: 'xpert-studio-panel-agent-execution',
@@ -45,8 +60,9 @@ import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
     NgmHighlightVarDirective,
     CopilotModelSelectComponent,
     CopilotStoredMessageComponent,
-    XpertAgentExecutionComponent
-],
+    XpertAgentExecutionComponent,
+    XpertParametersCardComponent
+  ],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected'
@@ -56,17 +72,20 @@ export class XpertStudioPanelAgentExecutionComponent {
   eXpertAgentExecutionEnum = XpertAgentExecutionEnum
 
   readonly xpertAgentService = inject(XpertAgentService)
+  readonly agentExecutionService = inject(XpertAgentExecutionService)
   readonly apiService = inject(XpertStudioApiService)
   readonly executionService = inject(XpertExecutionService)
   readonly studioComponent = inject(XpertStudioComponent)
   readonly #toastr = inject(ToastrService)
   readonly #destroyRef = inject(DestroyRef)
-  
 
+  readonly executionId = input<string>()
   readonly xpert = input<Partial<IXpert>>()
   readonly xpertAgent = input<IXpertAgent>()
-  readonly execution = model<IXpertAgentExecution>()
+  readonly execution = this.executionService.execution
+  readonly parameters = computed(() => this.xpertAgent().parameters)
 
+  readonly parameterValue = model<Record<string, unknown>>()
   readonly input = model<string>(null)
 
   readonly output = signal('')
@@ -90,10 +109,23 @@ export class XpertStudioPanelAgentExecutionComponent {
 
   readonly loading = signal(false)
 
+  private executionSub = toObservable(this.executionId)
+    .pipe(
+      distinctUntilChanged(),
+      switchMap((id) => (id ? this.agentExecutionService.getOneLog(id) : of(null)))
+    )
+    .subscribe((value) => {
+      this.execution.set(value)
+    })
+
   constructor() {
     // register a destroy callback
     this.#destroyRef.onDestroy(() => {
       this.clearStatus()
+    })
+
+    effect(() => {
+      console.log(this.parameterValue(), this.input())
     })
   }
 
@@ -111,9 +143,13 @@ export class XpertStudioPanelAgentExecutionComponent {
     // Call chat server
     this.xpertAgentService
       .chatAgent({
-        input: this.input(),
+        input: {
+          ...(this.parameterValue() ?? {}),
+          input: this.input()
+        },
         agent: this.xpertAgent(),
-        xpert: this.xpert()
+        xpert: this.xpert(),
+        executionId: this.executionId()
       })
       .subscribe({
         next: (msg) => {
@@ -146,5 +182,4 @@ export class XpertStudioPanelAgentExecutionComponent {
   getAgent(key: string): IXpertAgent {
     return this.apiService.getNode(key)?.entity as IXpertAgent
   }
-
 }

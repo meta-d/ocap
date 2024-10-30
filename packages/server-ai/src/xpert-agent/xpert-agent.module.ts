@@ -8,6 +8,7 @@ import { XpertAgent } from './xpert-agent.entity'
 import { XpertAgentService } from './xpert-agent.service'
 import { CommandHandlers } from './commands/handlers'
 import { CopilotCheckpointModule } from '../copilot-checkpoint'
+import { XpertAgentExecutionModule } from '../xpert-agent-execution'
 
 @Module({
 	imports: [
@@ -16,7 +17,8 @@ import { CopilotCheckpointModule } from '../copilot-checkpoint'
 		TenantModule,
 		CqrsModule,
 		
-		CopilotCheckpointModule
+		CopilotCheckpointModule,
+		XpertAgentExecutionModule
 	],
 	controllers: [XpertAgentController],
 	providers: [XpertAgentService, ...CommandHandlers],

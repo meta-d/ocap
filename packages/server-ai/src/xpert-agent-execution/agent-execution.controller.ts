@@ -1,9 +1,10 @@
 import { CrudController, PaginationParams, ParseJsonPipe, TransformInterceptor } from '@metad/server-core'
 import { Controller, Get, Logger, Param, Query, UseInterceptors } from '@nestjs/common'
-import { CommandBus } from '@nestjs/cqrs'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { XpertAgentExecution } from './agent-execution.entity'
 import { XpertAgentExecutionService } from './agent-execution.service'
+import { XpertAgentExecutionOneQuery } from './queries'
 
 @ApiTags('XpertAgentExecution')
 @ApiBearerAuth()
@@ -13,9 +14,15 @@ export class XpertAgentExecutionController extends CrudController<XpertAgentExec
 	readonly #logger = new Logger(XpertAgentExecutionController.name)
 	constructor(
 		private readonly service: XpertAgentExecutionService,
-		private readonly commandBus: CommandBus
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus,
 	) {
 		super(service)
+	}
+
+	@Get(':id/log')
+	async getOne(@Param('id') id: string, @Query('data', ParseJsonPipe) params?: PaginationParams<XpertAgentExecution>) {
+		return this.queryBus.execute(new XpertAgentExecutionOneQuery(id, params))
 	}
 
 	@Get('xpert/:id/agent/:key')

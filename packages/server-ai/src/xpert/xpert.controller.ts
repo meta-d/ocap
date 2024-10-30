@@ -88,7 +88,10 @@ export class XpertController extends CrudController<Xpert> {
 	@Header('content-type', 'text/event-stream')
 	@Post(':id/chat')
 	@Sse()
-	async chat(@Param('id') id: string, @Body() body: {input: string; draft: boolean; conversationId?: string;}) {
+	async chat(@Param('id') id: string, @Body() body: {input: {
+		input?: string
+		[key: string]: unknown
+	}; draft: boolean; conversationId?: string;}) {
 		return await this.commandBus.execute(new XpertChatCommand(body.input, id, body))
 	}
 

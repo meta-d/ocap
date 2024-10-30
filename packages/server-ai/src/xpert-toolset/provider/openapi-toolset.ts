@@ -39,7 +39,7 @@ export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
 		}
 
 		const tools: OpenAPITool[] = []
-		this.toolset.tools?.forEach((item) => {
+		this.toolset.tools?.filter((_) => _.enabled).forEach((item) => {
 			tools.push(new OpenAPITool(item, {
 				runtime: {
 					credentials: this.toolset.credentials

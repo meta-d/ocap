@@ -22,6 +22,7 @@ import {
   IXpertAgent,
   IXpertAgentExecution,
   ModelType,
+  OrderTypeEnum,
   TAvatar,
   TXpertParameter,
   XpertAgentExecutionService,
@@ -104,12 +105,17 @@ export class XpertStudioPanelAgentComponent {
   readonly copilotModel = model<ICopilotModel>()
 
   readonly openedExecution = signal(false)
-  readonly execution = model<IXpertAgentExecution>(null)
+  readonly executionId = model<string>(null)
+  // readonly execution = model<IXpertAgentExecution>(null)
 
   readonly executions = derivedAsync(() => {
     const xpertId = this.xpertId()
     const agentKey = this.key()
-    return this.executionService.findAllByXpertAgent(xpertId, agentKey, {}).pipe(
+    return this.executionService.findAllByXpertAgent(xpertId, agentKey, {
+      order: {
+        updatedAt: OrderTypeEnum.DESC
+      }
+    }).pipe(
       map(({items}) => items)
     )
   })
@@ -163,7 +169,7 @@ export class XpertStudioPanelAgentComponent {
   }
 
   openExecution(execution?: IXpertAgentExecution) {
-    this.execution.set(execution)
+    this.executionId.set(execution?.id)
     this.openedExecution.set(true)
   }
   closeExecution() {
@@ -175,7 +181,6 @@ export class XpertStudioPanelAgentComponent {
   }
 
   onParameters(event: TXpertParameter[]) {
-    console.log(event)
     this.apiService.updateXpertAgent(this.key(), { parameters: event })
   }
 }

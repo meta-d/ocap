@@ -10,7 +10,7 @@ import {
   uuid,
   XpertService
 } from 'apps/cloud/src/app/@core'
-import { MaterialModule, XpertParametersFormComponent } from 'apps/cloud/src/app/@shared'
+import { MaterialModule, XpertParametersCardComponent } from 'apps/cloud/src/app/@shared'
 import { MarkdownModule } from 'ngx-markdown'
 import { XpertStudioApiService } from '../../domain'
 import { XpertExecutionService } from '../../services/execution.service'
@@ -19,7 +19,7 @@ import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, TextFieldModule, MarkdownModule, EmojiAvatarComponent, XpertParametersFormComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, TextFieldModule, MarkdownModule, EmojiAvatarComponent, XpertParametersCardComponent],
   selector: 'xpert-studio-panel-preview',
   templateUrl: 'preview.component.html',
   styleUrls: ['preview.component.scss']
@@ -52,8 +52,6 @@ export class XpertStudioPreviewComponent {
     }
     return this.executionService.messages()
   })
-
-  readonly paramsExpanded = signal(false)
 
   constructor() {
     effect(() => {
@@ -129,7 +127,4 @@ export class XpertStudioPreviewComponent {
     this.studioComponent.preview.set(false)
   }
 
-  toggleParams() {
-    this.paramsExpanded.update((state) => !state)
-  }
 }

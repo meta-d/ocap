@@ -18,12 +18,16 @@
       <f-connection [fType]="connection.type==='agent' || connection.type==='xpert' ? EFConnectionType.BEZIER : EFConnectionType.STRAIGHT"
         [fReassignDisabled]="false"
         [fOutputId]="connection.from + '/' + connection.type"
-        [fInputId]="connection.to">
+        [fInputId]="connection.to"
+        class="gradient-color"
+        fStartColor="var(--connection-gradient-1)" fEndColor="var(--connection-gradient-2)"
+      >
       </f-connection>
     }
 
     @for (node of nodes(); track node.key + node.hash) {
         <div class="w-[240px] group relative pb-1 shadow-sm border border-transparent rounded-[15px] bg-workflow-block-bg hover:shadow-lg"
+          [class.ngm-selected]="selectedNodeKey() === node.key"
           [ngClass]="agentExecutions()[node.key]?.status||''"
           fNode [fNodeId]="node.key"
           [fNodeParentId]="node.parentId"
@@ -37,8 +41,9 @@
 
           [floatUi]="executionPopper"
           [disabled]="!agentExecutions()[node.key]"
-          [showTrigger]="eNgxFloatUiTriggers.click"
-          hideOnClickOutside
+          [showTrigger]="eNgxFloatUiTriggers.hover"
+          [hideOnClickOutside]="false"
+          [hideOnMouseLeave]="false"
           [hideOnScroll]="true"
           [placement]="eNgxFloatUiPlacements.TOPSTART"
         >
@@ -60,7 +65,9 @@
               <div class="flex items-center justify-center w-6 h-6 p-0.5 rounded-md cursor-pointer
                 hover:bg-red-500/10 hover:text-red-500"
                 (click)="removeNode(node.key)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"></path>
+                </svg>
               </div>
             </div>
           }
@@ -72,8 +79,11 @@
             </svg>
           }
 
-          <float-ui-content #executionPopper>
-            <xpert-agent-execution class="p-2 w-96" [execution]="agentExecutions()[node.key]" />
+          <float-ui-content #executionPopper (click)="$event.stopPropagation()" (wheel)="$event.stopPropagation()">
+            @if (agentExecutions()[node.key]) {
+              <xpert-agent-execution class="p-2 w-96" [execution]="agentExecutions()[node.key]" />
+              <xpert-agent-execution-log class="p-2 max-h-[500px] overflow-y-auto" [execution]="agentExecutions()[node.key]" />
+            }
           </float-ui-content>
         </div>
     }
@@ -83,6 +93,7 @@
         [fGroupSize]="group.size" fDragHandle
         (fGroupPositionChange)="moveXpertGroup($event, group.key)"
         (fGroupSizeChange)="resizeXpertGroup($event, group.key)"
+        (click)="onSelectNode($event, group)"
       >
         <div class="group-title">{{ group.entity.title }}</div>
         <div fResizeHandle [fResizeHandleType]="eResizeHandleType.LEFT_TOP"></div>

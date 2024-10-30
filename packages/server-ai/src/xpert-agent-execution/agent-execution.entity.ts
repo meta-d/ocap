@@ -25,6 +25,12 @@ export class XpertAgentExecution extends TenantOrganizationBaseEntity implements
 	@Column({ type: 'json', nullable: true })
 	inputs?: any
 
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	outputs?: any
+
 	@ApiProperty({ type: () => String, enum: XpertAgentExecutionEnum })
 	@IsEnum(XpertAgentExecutionEnum)
 	@IsOptional()

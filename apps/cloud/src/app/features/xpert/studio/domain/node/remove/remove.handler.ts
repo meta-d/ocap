@@ -26,6 +26,8 @@ export class RemoveNodeHandler implements IHandler<RemoveNodeRequest> {
         return EReloadReason.KNOWLEDGE_REMOVED
       case 'agent':
         return EReloadReason.AGENT_REMOVED
+      case 'xpert':
+        return EReloadReason.XPERT_REMOVED
     }
   }
 }

@@ -41,6 +41,7 @@ export type CreateReactAgentParams = {
   interruptAfter?: N[] | All;
   state?: StateGraphArgs<AgentState>["channels"]
   shouldToolContinue?: (state: AgentState) => typeof END | "agent"
+  tags?: string[]
 };
 
 /**
@@ -69,7 +70,8 @@ export function createReactAgent(
     interruptBefore,
     interruptAfter,
     state,
-    shouldToolContinue
+    shouldToolContinue,
+    tags
   } = props;
   const schema: StateGraphArgs<AgentState>["channels"] = createCopilotAgentState()
 
@@ -111,7 +113,7 @@ export function createReactAgent(
   })
     .addNode(
       "agent",
-      new RunnableLambda({ func: callModel }).withConfig({ runName: "agent" })
+      new RunnableLambda({ func: callModel }).withConfig({ runName: "agent", tags })
     )
     .addNode("tools", new ToolNode<AgentState>(toolClasses))
     .addEdge(START, "agent")

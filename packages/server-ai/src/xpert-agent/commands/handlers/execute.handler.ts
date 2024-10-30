@@ -80,11 +80,16 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 			agent.followers.forEach((follower) => {
 				tools.push(createXpertAgentTool(
 					this.commandBus,
-					{ xpert, agent: follower, options: {
-						rootExecutionId: command.options.rootExecutionId,
-						isDraft: command.options.isDraft,
-						subscriber
-					} }))
+					{
+						xpert,
+						agent: follower,
+						options: {
+							rootExecutionId: command.options.rootExecutionId,
+							isDraft: command.options.isDraft,
+							subscriber
+						}
+					}
+				))
 			})
 		}
 
@@ -113,7 +118,9 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 			}
 		})
 
+		const thread_id = command.options.thread_id
 		const graph = createReactAgent({
+			tags: [thread_id],
 			state: chatAgentState,
 			llm: chatModel,
 			checkpointSaver: this.copilotCheckpointSaver,
@@ -131,8 +138,6 @@ ${agent.prompt}
 				return [new SystemMessage(system), ...state.messages]
 			}
 		})
-
-		const thread_id = command.options.thread_id
 
 		this.#logger.debug(`Start chat with xpert '${xpert.name}' & agent '${agent.title}'`)
 
@@ -155,40 +160,42 @@ ${agent.prompt}
 					recursionLimit: AgentRecursionLimit,
 					signal: abortController.signal
 					// debug: true
-				}
+				},
 			)
 		).pipe(
-			map(({ event, data, ...rest }: any) => {
-				// this.#logger.verbose(event, data, rest)
+			map(({ event, tags, data, ...rest }: any) => {
+				
 				if (Logger.isLevelEnabled('verbose')) {
 					if (event === 'on_chat_model_stream') {
 						if (prevEvent === 'on_chat_model_stream') {
 							process.stdout.write('.')
 						} else {
+							this.#logger.verbose('on_chat_model_stream', data, rest)
 							this.#logger.verbose('on_chat_model_stream')
 						}
 					} else {
 						if (prevEvent === 'on_chat_model_stream') {
 							process.stdout.write('\n')
 						}
-						this.#logger.verbose(event)
+						this.#logger.verbose(event, data, rest)
 					}
 				}
 				prevEvent = event
 				switch (event) {
 					case 'on_chat_model_stream': {
-						const msg = data.chunk as AIMessageChunk
-						if (!msg.tool_call_chunks?.length) {
-							if (msg.content) {
-								return msg.content
+						// Only returns the stream events content of the current react agent (filter by tag: thread_id), not events of agent in tool call.
+						if (tags.includes(thread_id)) {
+							const msg = data.chunk as AIMessageChunk
+							if (!msg.tool_call_chunks?.length) {
+								if (msg.content) {
+									return msg.content
+								}
 							}
 						}
 						break
 					}
-					default: {
-						return null
-					}
 				}
+				return null
 			}),
 			filter((content) => !isNil(content)),
 			tap({

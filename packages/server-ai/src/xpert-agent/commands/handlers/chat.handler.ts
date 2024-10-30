@@ -5,11 +5,11 @@ import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { from, map, Observable, switchMap, tap } from 'rxjs'
 import {
-	XpertAgentExecutionOneCommand,
 	XpertAgentExecutionUpsertCommand
 } from '../../../xpert-agent-execution/commands'
 import { XpertAgentChatCommand } from '../chat.command'
 import { XpertAgentExecuteCommand } from '../execute.command'
+import { XpertAgentExecutionOneQuery } from '../../../xpert-agent-execution/queries'
 
 @CommandHandler(XpertAgentChatCommand)
 export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatCommand> {
@@ -23,18 +23,16 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 	public async execute(command: XpertAgentChatCommand): Promise<Observable<MessageEvent>> {
 		const { input, xpert, agentKey, options } = command
 		let { execution } = options
-		if (!execution) {
-			execution = await this.commandBus.execute(
-				new XpertAgentExecutionUpsertCommand({
-					xpert: { id: xpert.id } as IXpert,
-					agentKey,
-					inputs: {
-						input
-					},
-					status: XpertAgentExecutionEnum.RUNNING,
-				})
-			)
-		}
+		execution = await this.commandBus.execute(
+			new XpertAgentExecutionUpsertCommand({
+				id: execution?.id,
+				xpert: { id: xpert.id } as IXpert,
+				agentKey,
+				inputs: input,
+				status: XpertAgentExecutionEnum.RUNNING,
+				title: input.input
+			})
+		)
 
 		const timeStart = Date.now()
 		const thread_id = execution.id
@@ -53,7 +51,7 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 			let result = ''
 			from(
 				this.commandBus.execute<XpertAgentExecuteCommand, Observable<MessageContent>>(
-					new XpertAgentExecuteCommand({input}, agentKey, xpert, {
+					new XpertAgentExecuteCommand(input, agentKey, xpert, {
 						isDraft: true,
 						rootExecutionId: execution.id,
 						thread_id,
@@ -85,7 +83,7 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 								await this.commandBus.execute(
 									new XpertAgentExecutionUpsertCommand({
 										id: execution.id,
-										elapsedTime: (execution.elapsedTime ?? 0) + timeEnd - timeStart,
+										elapsedTime: Number(execution.elapsedTime ?? 0) + (timeEnd - timeStart),
 										status,
 										error,
 										tokens: execution.tokens,
@@ -96,8 +94,8 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 									})
 								)
 
-								const fullExecution = await this.commandBus.execute(
-									new XpertAgentExecutionOneCommand(execution.id)
+								const fullExecution = await this.queryBus.execute(
+									new XpertAgentExecutionOneQuery(execution.id)
 								)
 
 								this.#logger.verbose(fullExecution)

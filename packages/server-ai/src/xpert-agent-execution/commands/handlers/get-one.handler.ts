@@ -5,11 +5,11 @@ import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/c
 import { sortBy } from 'lodash'
 import { CopilotCheckpointGetTupleQuery } from '../../../copilot-checkpoint/queries'
 import { XpertAgentExecutionService } from '../../agent-execution.service'
-import { XpertAgentExecutionOneCommand } from '../get-one.command'
+import { XpertAgentExecutionOne1Command } from '../get-one.command'
 
 
-@CommandHandler(XpertAgentExecutionOneCommand)
-export class XpertAgentExecutionOneHandler implements ICommandHandler<XpertAgentExecutionOneCommand> {
+@CommandHandler(XpertAgentExecutionOne1Command)
+export class XpertAgentExecutionOneHandler implements ICommandHandler<XpertAgentExecutionOne1Command> {
 	readonly #logger = new Logger(XpertAgentExecutionOneHandler.name)
 
 	constructor(
@@ -18,7 +18,7 @@ export class XpertAgentExecutionOneHandler implements ICommandHandler<XpertAgent
 		private readonly queryBus: QueryBus
 	) {}
 
-	public async execute(command: XpertAgentExecutionOneCommand): Promise<IXpertAgentExecution> {
+	public async execute(command: XpertAgentExecutionOne1Command): Promise<IXpertAgentExecution> {
 		const id = command.id
 		const execution = await this.executionService.findOne(id, { relations: ['subExecutions'] })
 

@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core'
+import { computed, effect, inject, Injectable, signal } from '@angular/core'
 import {
   ChatConversationService,
   CopilotChatMessage,
@@ -29,7 +29,7 @@ export class XpertExecutionService {
     return this.#messages()
   })
 
-  readonly execution = computed(() => this.#conversation()?.execution)
+  readonly execution = signal<IXpertAgentExecution>(null)
   readonly #agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
   readonly agentExecutions = computed(() => {
     const execution = this.execution()
@@ -38,7 +38,7 @@ export class XpertExecutionService {
     }
     const agentExecutions = {}
     if (execution) {
-      execution.subExecutions.forEach((item) => {
+      execution.subExecutions?.forEach((item) => {
         if (item.agentKey) {
           agentExecutions[item.agentKey] = item
         }
@@ -49,6 +49,12 @@ export class XpertExecutionService {
     }
     return agentExecutions
   })
+
+  constructor() {
+    effect(() => {
+      this.execution.set(this.#conversation()?.execution)
+    }, { allowSignalWrites: true })
+  }
 
   appendMessage(message: CopilotChatMessage) {
     this.#messages.update(

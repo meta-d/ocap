@@ -1,9 +1,9 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { IXpertToolset } from './xpert-toolset.model'
+import { ICopilotModel } from './copilot-model.model'
 import { IKnowledgebase } from './knowledgebase.model'
 import { TAvatar } from './types'
+import { IXpertToolset } from './xpert-toolset.model'
 import { IXpert, TXpertParameter } from './xpert.model'
-import { ICopilotModel } from './copilot-model.model'
 
 /**
  * Expert agent, ai agent for the xperts.
@@ -22,7 +22,7 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
    * Input parameters for agent
    */
   parameters?: TXpertParameter[]
-  
+
   /**
    * More configuration
    */
@@ -77,4 +77,14 @@ export interface IXpertAgent extends IBasePerTenantAndOrganizationEntityModel {
 
 export type TXpertAgentOptions = {
   //
+}
+
+export type TChatAgentParams = {
+  input: {
+    input?: string
+    [key: string]: unknown
+  }
+  agent: IXpertAgent
+  xpert: Partial<IXpert>
+  executionId: string
 }

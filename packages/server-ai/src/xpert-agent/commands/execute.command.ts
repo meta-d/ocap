@@ -1,7 +1,7 @@
 import { tool } from '@langchain/core/tools'
 import { LangGraphRunnableConfig } from '@langchain/langgraph'
 import { ChatEventTypeEnum, IXpert, IXpertAgent, IXpertAgentExecution, TXpertParameter, XpertAgentExecutionEnum, XpertParameterTypeEnum } from '@metad/contracts'
-import { getErrorMessage } from '@metad/server-common'
+import { convertToUrlPath, getErrorMessage } from '@metad/server-common'
 import { CommandBus, ICommand } from '@nestjs/cqrs'
 import { lastValueFrom, Observable, reduce, Subscriber, tap } from 'rxjs'
 import { z } from 'zod'
@@ -16,7 +16,7 @@ export class XpertAgentExecuteCommand implements ICommand {
 			[key: string]: unknown
 		},
 		public readonly agentKey: string,
-		public readonly xpert: IXpert,
+		public readonly xpert: Partial<IXpert>,
 		public readonly options: {
 			// The id of root agent execution
 			rootExecutionId: string
@@ -42,7 +42,7 @@ export class XpertAgentExecuteCommand implements ICommand {
 export function createXpertAgentTool(
 	commandBus: CommandBus,
 	config: {
-		xpert: IXpert
+		xpert: Partial<IXpert>
 		agent: IXpertAgent
 		options: {
 			rootExecutionId: string
@@ -136,7 +136,7 @@ export function createXpertAgentTool(
 			return result
 		},
 		{
-			name: agent.name || agent.key,
+			name: convertToUrlPath(agent.name) || agent.key,
 			description: agent.description,
 			schema: z.object({
 				...(createParameters(agent.parameters) ?? {}),

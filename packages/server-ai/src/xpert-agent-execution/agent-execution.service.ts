@@ -13,7 +13,7 @@ export class XpertAgentExecutionService extends TenantOrganizationAwareCrudServi
 	constructor(
 		@InjectRepository(XpertAgentExecution)
 		repository: Repository<XpertAgentExecution>,
-		private readonly commandBus: CommandBus
+		private readonly commandBus: CommandBus,
 	) {
 		super(repository)
 	}

@@ -3,7 +3,7 @@ import { EventSourceMessage, fetchEventSource } from '@microsoft/fetch-event-sou
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { API_XPERT_AGENT } from '../constants/app.constants'
-import { IXpert, IXpertAgent } from '../types'
+import { IXpertAgent, TChatAgentParams } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 import { Store } from './store.service'
 import { pick } from 'lodash-es'
@@ -19,7 +19,7 @@ export class XpertAgentService extends XpertWorkspaceBaseCrudService<IXpertAgent
     super(API_XPERT_AGENT)
   }
 
-  chatAgent(data: {input: string; agent: IXpertAgent; xpert: Partial<IXpert>}): Observable<EventSourceMessage> {
+  chatAgent(data: TChatAgentParams): Observable<EventSourceMessage> {
     const token = this.#store.token
     const organization = this.store.selectedOrganization ?? {id: null}
     return new Observable((subscriber) => {
@@ -32,8 +32,7 @@ export class XpertAgentService extends XpertWorkspaceBaseCrudService<IXpertAgent
           'Organization-Id': `${organization.id}`
         },
         body: JSON.stringify({
-          input: data.input,
-          agent: data.agent,
+          ...data,
           xpert: pick(data.xpert, 'id', 'name', 'copilotId', 'copilotModel')
         }),
         signal: ctrl.signal,

@@ -17,9 +17,18 @@ export class XpertAgentExecutionService extends OrganizationBaseCrudService<IXpe
     super(API_XPERT_AGENT_EXECUTION)
   }
 
-  findAllByXpertAgent(xpertId: string, agentKey: string, options: PaginationParams<IXpertAgentExecution>) {
-    return this.httpClient.get<{items: IXpertAgentExecution[]}>(this.apiBaseUrl + `/xpert/${xpertId}/agent/${agentKey}`, {
+  getOneLog(id: string, options?: PaginationParams<IXpertAgentExecution>) {
+    return this.httpClient.get<IXpertAgentExecution>(this.apiBaseUrl + `/${id}/log`, {
       params: toHttpParams(options)
     })
+  }
+
+  findAllByXpertAgent(xpertId: string, agentKey: string, options: PaginationParams<IXpertAgentExecution>) {
+    return this.httpClient.get<{ items: IXpertAgentExecution[] }>(
+      this.apiBaseUrl + `/xpert/${xpertId}/agent/${agentKey}`,
+      {
+        params: toHttpParams(options)
+      }
+    )
   }
 }
