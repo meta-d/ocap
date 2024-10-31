@@ -24,7 +24,8 @@ export class CreateTeamHandler implements IHandler<CreateTeamRequest> {
         size: size,
         entity: request.team,
         nodes,
-        connections: new ToConnectionViewModelHandler(xpert).handle()
+        connections: new ToConnectionViewModelHandler(xpert).handle(),
+        expanded: true
       })
 
       return {

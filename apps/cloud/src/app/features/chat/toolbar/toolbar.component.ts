@@ -10,8 +10,8 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { combineLatest, map } from 'rxjs'
 import { KnowledgebaseService } from '../../../@core'
-import { MaterialModule } from '../../../@shared'
-import { AboutRoleComponent, KnowledgebaseListComponent, ToolsetListComponent } from '../../../@shared/copilot'
+import { AboutXpertComponent, MaterialModule } from '../../../@shared'
+import { KnowledgebaseListComponent, ToolsetListComponent } from '../../../@shared/copilot'
 import { AppService } from '../../../app.service'
 import { ChatInputComponent } from '../chat-input/chat-input.component'
 import { ChatService } from '../chat.service'
@@ -72,7 +72,7 @@ export class ChatToolbarComponent {
 
   openAbout() {
     this.#dialog
-      .open(AboutRoleComponent, {
+      .open(AboutXpertComponent, {
         data: {
           role: this.role()
         }

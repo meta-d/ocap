@@ -2,7 +2,7 @@ import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
 import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { BaseToolkit, DynamicStructuredTool, StructuredToolInterface, Tool, tool, ToolParams } from '@langchain/core/tools'
-import { AiProviderRole, ICopilot, IUser, IXpertToolset, ToolParameter, ToolProviderCredentials, XpertToolContext } from '@metad/contracts'
+import { AiProviderRole, ICopilot, IUser, IXpertToolset, ToolParameter, ToolProviderCredentials, XpertToolContext, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { CommandBus } from '@nestjs/cqrs'
 import { jsonSchemaToZod } from 'json-schema-to-zod'
@@ -12,10 +12,11 @@ import { CopilotTokenRecordCommand } from '../copilot-user'
 import { XpertToolsetService } from './xpert-toolset.service'
 import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'
-import { IToolRuntime, TBaseToolsetOptions, ToolDescription, ToolIdentity, ToolProviderIdentity } from './types'
+import { IToolRuntime, ToolDescription, ToolIdentity, ToolProviderIdentity } from './types'
 
 
 export abstract class BaseToolset<T extends StructuredToolInterface = Tool> extends BaseToolkit {
+	abstract providerType: XpertToolsetCategoryEnum
 	// For langchain
 	tools: T[]
 
@@ -24,11 +25,8 @@ export abstract class BaseToolset<T extends StructuredToolInterface = Tool> exte
 
 	constructor(
 		protected toolset: IXpertToolset,
-		options?: TBaseToolsetOptions,
 	) {
 		super()
-		this.identity = options?.identity,
-		this.credentialsSchema = options?.credentialsSchema
 	}
 
 	getTools() {
@@ -49,10 +47,6 @@ export abstract class BaseToolset<T extends StructuredToolInterface = Tool> exte
     //         throw new ToolNotFoundError(`tool ${toolName} not found`);
     //     }
     //     return tool.parameters;
-    // }
-
-    // get providerType(): ToolProviderType {
-    //     return ToolProviderType.BUILT_IN;
     // }
 
     // validateParameters(toolId: number, toolName: string, toolParameters: { [key: string]: any }): void {
@@ -206,6 +200,9 @@ export abstract class BaseTool extends Tool {
 
 
 export class TavilySearchToolset extends BaseToolset {
+
+	providerType = XpertToolsetCategoryEnum.BUILTIN
+
 	constructor(toolset: IXpertToolset) {
 		super(toolset)
 
@@ -219,6 +216,9 @@ export class TavilySearchToolset extends BaseToolset {
 }
 
 export class DuckDuckGoToolset extends BaseToolset {
+
+	providerType = XpertToolsetCategoryEnum.BUILTIN
+
 	constructor(toolset: IXpertToolset) {
 		super(toolset)
 
@@ -232,6 +232,9 @@ export class DuckDuckGoToolset extends BaseToolset {
 }
 
 export class CommandToolset extends BaseToolset<DynamicStructuredTool<z.AnyZodObject>> {
+
+	providerType = XpertToolsetCategoryEnum.BUILTIN
+
 	constructor(
 		toolset: IXpertToolset,
 		private tenantId: string,

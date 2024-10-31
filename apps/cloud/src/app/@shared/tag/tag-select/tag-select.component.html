@@ -1,11 +1,11 @@
-<div id="tags-label" class="flex items-center gap-1 px-3 h-9 rounded-lg border-[0.5px] border-transparent bg-gray-100 cursor-pointer hover:bg-gray-200"
+<div id="tags-label" class="flex items-center gap-1 px-2 h-9 rounded-lg border-[0.5px] border-transparent bg-gray-100 cursor-pointer hover:bg-gray-200"
   [floatUi]="panel"
   [showTrigger]="eNgxFloatUiTriggers.click"
   [placement]="eNgxFloatUiPlacements.TOP"
 >
   <div title="" class="grow space-x-1 text-[13px] leading-[18px] text-gray-700 truncate">
     @for (tag of selectedTags(); track tag.id) {
-      <tag [tag]="tag" xs class="inline-block" />
+      <tag [tag]="tag" sm class="inline-block" />
     } @empty {
       Choose tags(optional)
     }
@@ -44,7 +44,6 @@
             checked
             [ngClass]="{'opacity-100': checkedWith(tag)}"
             >
-          <span class="w-2 h-2 rounded-full" [ngStyle]="{background: tag.color || 'white'}"></span>
           <div [title]="tag.name" class="grow text-sm text-gray-700 leading-5 truncate">
             <span [ngmHighlight]="searchControl.value" [content]="tag.name">{{tag.name}}</span>
           </div>

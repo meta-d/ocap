@@ -11,13 +11,14 @@ import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
-import { isNil, omitBy } from 'lodash-es'
+import { isNil, omitBy, result } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
 import {
   getErrorMessage,
+  IToolProvider,
   IXpertRole,
   routeAnimations,
   ToastrService,
@@ -27,13 +28,15 @@ import {
   XpertTypeEnum,
   XpertWorkspaceService
 } from '../../../@core'
-import { AvatarComponent, MaterialModule, UserPipe } from '../../../@shared'
+import { AvatarComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, UserPipe } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { XpertNewBlankComponent } from '../blank/blank.component'
 import { XpertHomeComponent } from '../home.component'
 import { XpertStudioCreateToolComponent } from '../tools/create/create.component'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
 import { TagComponent } from '../../../@shared/'
+import { MatBottomSheet } from '@angular/material/bottom-sheet'
+import { XpertToolConfigureBuiltinComponent } from '../tools'
 
 @Component({
   standalone: true,
@@ -55,6 +58,8 @@ import { TagComponent } from '../../../@shared/'
     UserPipe,
     AppearanceDirective,
     TagComponent,
+    ToolsetCardComponent,
+    ToolProviderCardComponent
   ],
   selector: 'pac-xpert-xperts',
   templateUrl: './xperts.component.html',
@@ -71,6 +76,7 @@ export class XpertStudioXpertsComponent {
   readonly route = inject(ActivatedRoute)
   readonly logger = inject(NGXLogger)
   readonly #dialog = inject(MatDialog)
+  readonly #bottomSheet = inject(MatBottomSheet)
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
@@ -84,6 +90,7 @@ export class XpertStudioXpertsComponent {
 
   readonly workspace = this.homeComponent.workspace
   readonly type = this.homeComponent.type
+  readonly tags = this.homeComponent.tags
 
   readonly refresh$ = new BehaviorSubject<void>(null)
   readonly xperts = derivedAsync(() => {
@@ -103,7 +110,7 @@ export class XpertStudioXpertsComponent {
     )
   })
 
-  readonly toolsets = derivedAsync(() => {
+  readonly #toolsets = derivedAsync(() => {
     const where = {
       category: this.type(),
       // type: 'openapi'
@@ -118,6 +125,15 @@ export class XpertStudioXpertsComponent {
       ),
       map(({ items }) => items)
     )
+  })
+
+  readonly builtinToolProviders = derivedAsync(() => {
+    return this.toolsetService.getProviders()
+  })
+
+  readonly toolsets = computed(() => {
+    const tags = this.tags()
+    return this.#toolsets()?.filter((toolset) => tags?.length ? tags.some((t) => toolset.tags.some((tt) => tt.name === t.name)) : true)
   })
 
   readonly isXperts = computed(() => !this.type() || Object.values(XpertTypeEnum).includes(this.type() as XpertTypeEnum))
@@ -177,6 +193,19 @@ export class XpertStudioXpertsComponent {
         if (toolset) {
           this.refresh()
         }
+      }
+    })
+  }
+
+  configureToolBuiltin(provider: IToolProvider) {
+    this.#dialog.open(XpertToolConfigureBuiltinComponent, {
+      disableClose: true,
+      data: {
+        provider
+      }
+    }).afterClosed().subscribe((result) => {
+      if (result) {
+        this.refresh()
       }
     })
   }

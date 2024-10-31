@@ -1,7 +1,8 @@
 <div class="w-full lg:w-[400px] lg:max-w-[400px] flex flex-col">
   <form [formGroup]="formGroup"  class="flex flex-col gap-4">
 
-    <pac-avatar-editor formControlName="avatar" class="w-48 h-48 self-center" />
+    <!-- <pac-avatar-editor formControlName="avatar" class="w-48 h-48 self-center" /> -->
+    <emoji-avatar formControlName="avatar" editable class="knowledgebase-avatar self-center shadow-md" />
 
     <ngm-input [label]=" 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'} " formControlName="name" />
 

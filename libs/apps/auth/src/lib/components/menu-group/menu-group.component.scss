@@ -16,6 +16,12 @@
 
 .pac-router-link {
   @apply transition-all duration-200 ease-in-out;
+
+  &.active {
+    .mat-mdc-button-base {
+      @apply rounded-xl shadow-lg bg-white;
+    }
+  }
 }
 
 .pac-sub-menu {

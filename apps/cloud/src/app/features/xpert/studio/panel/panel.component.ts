@@ -10,6 +10,7 @@ import { XpertStudioPanelToolsetComponent } from './toolset/toolset.component'
 import { XpertStudioPanelAgentComponent } from './xpert-agent/agent.component'
 import { XpertStudioPanelXpertComponent } from './xpert/xpert.component'
 import { animate, style, transition, trigger } from '@angular/animations'
+import { XpertStudioPanelKnowledgeComponent } from './knowledge/knowledge.component'
 
 @Component({
   selector: 'xpert-studio-panel',
@@ -21,6 +22,7 @@ import { animate, style, transition, trigger } from '@angular/animations'
     XpertStudioPanelAgentComponent,
     XpertStudioPanelXpertComponent,
     XpertStudioPanelToolsetComponent,
+    XpertStudioPanelKnowledgeComponent,
     XpertStudioPreviewComponent
   ],
   templateUrl: './panel.component.html',

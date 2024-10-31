@@ -20,7 +20,7 @@ import { EmojiAvatarEditorComponent } from '../emoji-avatar-editor/avatar-editor
           [emoji]="emoji().emoji.id"
           [set]="emoji().emoji.set"
           [isNative]="!emoji().emoji.set"
-          [size]="size()"
+          [size]="emojiSize()"
         />
       </div>
     }`,
@@ -29,7 +29,7 @@ import { EmojiAvatarEditorComponent } from '../emoji-avatar-editor/avatar-editor
     '[class.xs]': 'xs()',
     '[class.small]': 'small()',
     '[class.large]': 'large()',
-    '[class.cursor-pointer]': 'editable()'
+    '[class.cursor-pointer]': 'editable()',
   }
 })
 export class EmojiAvatarComponent {
@@ -64,7 +64,7 @@ export class EmojiAvatarComponent {
       }
   )
 
-  readonly size = computed(() => (this.large() ? 24 : this.small() ? 16 : this.xs() ? 14 : 18))
+  readonly emojiSize = computed(() => (this.large() ? 24 : this.small() ? 16 : this.xs() ? 14 : 18))
 
   @HostListener('click')
   onClick() {

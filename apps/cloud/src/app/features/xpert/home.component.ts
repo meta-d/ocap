@@ -31,15 +31,17 @@ import { BehaviorSubject, EMPTY } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
 import {
   getErrorMessage,
+  ITag,
   IXpertWorkspace,
   routeAnimations,
   ToastrService,
   XpertService,
   XpertToolsetCategoryEnum,
+  XpertToolsetService,
   XpertTypeEnum,
   XpertWorkspaceService
 } from '../../@core'
-import { AvatarComponent, MaterialModule, UserPipe } from '../../@shared'
+import { MaterialModule, TagFilterComponent, UserPipe } from '../../@shared'
 import { AppService } from '../../app.service'
 import { WorkspaceSettingsComponent } from './workspace-settings/settings.component'
 
@@ -62,10 +64,10 @@ export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
     MaterialModule,
 
     NgmCommonModule,
-    AvatarComponent,
     NgmTagsComponent,
     UserPipe,
-    AppearanceDirective
+    AppearanceDirective,
+    TagFilterComponent
   ],
   selector: 'pac-xpert-home',
   templateUrl: './home.component.html',
@@ -86,6 +88,7 @@ export class XpertHomeComponent {
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
+  readonly toolsetService = inject(XpertToolsetService)
 
   readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
 
@@ -96,25 +99,18 @@ export class XpertHomeComponent {
   readonly workspace = signal<IXpertWorkspace>(null)
 
   readonly refresh$ = new BehaviorSubject<void>(null)
-  // readonly xperts = derivedAsync(() => {
-  //   const where = {
-  //     type: this.type(),
-  //     latest: true
-  //   }
-  //   const workspace = this.workspace()
-  //   return this.refresh$.pipe(
-  //     switchMap(() =>
-  //       this.xpertService.getAllByWorkspace(workspace, {
-  //         where: omitBy(where, isNil),
-  //         relations: ['createdBy']
-  //       })
-  //     ),
-  //     map(({ items }) => items.filter((item) => item.latest))
-  //   )
-  // })
 
   readonly types = model<XpertTypeEnum>(null)
   readonly type = computed(() => this.types()?.[0])
+
+  readonly tags = model<ITag[]>([])
+
+  readonly toolTags = toSignal(this.toolsetService.getAllTags().pipe(
+    map((toolTags) => toolTags.map((_) => ({
+      id: _.name,
+      name: _.label
+    } as unknown as ITag)))
+  ))
 
   switchWorkspace(item: IXpertWorkspace) {
     this.workspace.set(item)

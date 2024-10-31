@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common'
 import { Component, computed, input } from '@angular/core'
 import { StoredMessage } from '@langchain/core/messages'
+import { MarkdownModule } from 'ngx-markdown'
 import { CopilotMessageContentComponent } from '../message-content/content.component'
 import { CopilotMessageToolCallComponent } from '../tool-call/tool-call.component'
-import { MarkdownModule } from 'ngx-markdown'
 
 @Component({
   standalone: true,

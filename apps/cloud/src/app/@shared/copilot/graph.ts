@@ -2,8 +2,8 @@ import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { RunnableConfig, RunnableLambda } from '@langchain/core/runnables'
 import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { AgentState, createCopilotAgentState, CreateGraphOptions } from '@metad/copilot'
-import { injectKnowledgeRetriever } from '../../@core/copilot/'
 import { formatDocumentsAsString } from 'langchain/util/document'
+import { injectKnowledgeRetriever } from '../../@core/copilot/'
 
 const state: StateGraphArgs<AgentState>['channels'] = createCopilotAgentState()
 

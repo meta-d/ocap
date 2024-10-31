@@ -8,6 +8,10 @@ import { firstValueFrom } from 'rxjs'
 import { ScreenshotService } from '../../../@core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 
+
+/**
+ * @deprecated use EmojiAvatar
+ */
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

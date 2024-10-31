@@ -117,6 +117,8 @@
   </div>
 
   <div class="flex items-center">
+    <tag-filter [allTags]="toolTags()" [(tags)]="tags"/>
+
     <ngm-search class="rounded-xl overflow-hidden" />
   </div>
 </div>

@@ -3,7 +3,8 @@
 @for (knowledge of knowledges(); track knowledge) {
   <div cdkMenuItem class="ngm-cdk-menu-item w-full flex justify-start items-center px-1 py-0.5"
     (click)="createKnowledge(knowledge)">
-    <pac-avatar [avatar]="knowledge.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+    <!-- <pac-avatar [avatar]="knowledge.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" /> -->
+    <emoji-avatar [avatar]="knowledge.avatar" small class="shrink-0 rounded-md overflow-hidden shadow-sm mr-2" />
     <div class="flex flex-col">
       <span>{{knowledge.name}}</span>
     </div>

@@ -3,6 +3,7 @@
   <div class="flex"></div>
 </div>
 
+
 <div class="flex items-center px-2 h-8 rounded-lg cursor-pointer bg-gray-100 border border-gray-100 hover:border-gray-200">
   <div class="flex-1 relative flex items-center overflow-hidden"
     [cdkMenuTriggerFor]="modelsMenu"
@@ -61,7 +62,7 @@
 </div>
 
 <ng-template #parametersMenu>
-  <div #menu="cdkMenu" cdkMenu class="ngm-cdk-menu copilot-model-parameters-menu">
+  <div #menu="cdkMenu" cdkMenu class="ngm-cdk-menu p-2 copilot-model-parameters-menu">
 
     <div class="max-h-[480px] overflow-y-auto p-8">
       <div class="flex items-center justify-between">
@@ -82,7 +83,7 @@
   
           @switch (parameter.type) {
             @case('float') {
-              <mat-slider class="w-[200px] ml-4" [min]="parameter.min" [max]="parameter.max" [step]="0.1" discrete>
+              <mat-slider class="w-[200px] ml-4" ngm-density="small" [min]="parameter.min" [max]="parameter.max" [step]="0.1" discrete>
                 <input matSliderThumb [value]="getParameter(parameter.name)"
                   (dragEnd)="updateParameter(parameter.name, $event.value)">
               </mat-slider>
@@ -94,7 +95,7 @@
             }
         
             @case ('int') {
-              <mat-slider class="w-[200px] ml-4" [min]="parameter.min" [max]="parameter.max" discrete>
+              <mat-slider class="w-[200px] ml-4" ngm-density="small" [min]="parameter.min" [max]="parameter.max" discrete>
                 <input matSliderThumb [value]="getParameter(parameter.name)"
                   (dragEnd)="updateParameter(parameter.name, $event.value)" >
               </mat-slider>
@@ -130,7 +131,7 @@
 </ng-template>
 
 <ng-template #modelsMenu>
-  <div #menu="cdkMenu" cdkMenu class="ngm-cdk-menu">
+  <div #menu="cdkMenu" cdkMenu class="ngm-cdk-menu pl-2">
     <div class="p-1">
       <ngm-search class="mt-1 sticky rounded-lg overflow-hidden" [formControl]="searchControl"></ngm-search>
       <div>

@@ -6,16 +6,17 @@ import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@me
 import { TranslateModule } from '@ngx-translate/core'
 import { AvatarComponent } from '../../files/avatar/avatar.component'
 import { MaterialModule } from '../../material.module'
-import { KnowledgebaseCardComponent } from '../knowledgebase-card/knowledgebase.component'
-import { ToolsetCardComponent } from '../toolset-card/toolset.component'
 import { IXpertRole } from '../../../@core'
+import { KnowledgebaseCardComponent } from '../../copilot'
+import { ToolsetCardComponent } from '../toolset-card/toolset.component'
+import { EmojiAvatarComponent } from "../../avatar/emoji-avatar/avatar.component";
 
 
 @Component({
   standalone: true,
-  selector: 'pac-about-role',
-  templateUrl: './about-role.component.html',
-  styleUrls: ['about-role.component.scss'],
+  selector: 'pac-about-xpert',
+  templateUrl: './about-xpert.component.html',
+  styleUrls: ['about-xpert.component.scss'],
   imports: [
     CommonModule,
     FormsModule,
@@ -25,12 +26,12 @@ import { IXpertRole } from '../../../@core'
     ButtonGroupDirective,
     AppearanceDirective,
     DensityDirective,
-    AvatarComponent,
     KnowledgebaseCardComponent,
-    ToolsetCardComponent
-  ]
+    ToolsetCardComponent,
+    EmojiAvatarComponent
+]
 })
-export class AboutRoleComponent {
+export class AboutXpertComponent {
   private readonly _dialog = inject(MatDialog)
   readonly #dialogRef = inject(MatDialogRef)
   private readonly _data = inject<{ role: IXpertRole }>(MAT_DIALOG_DATA)

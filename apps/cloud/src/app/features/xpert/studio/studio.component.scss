@@ -38,7 +38,7 @@
         visibility: hidden;
       }
     }
-    &:hover {
+    &:not(.ngm-executor-agent):hover {
       .f-component.f-node-output {
         @apply w-4 h-4 rounded-full border border-primary-400;
         svg {

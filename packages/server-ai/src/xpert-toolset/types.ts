@@ -1,4 +1,6 @@
-import { I18nObject, ToolLabelEnum, ToolProviderCredentials } from '@metad/contracts'
+import { I18nObject, ToolProviderCredentials, ToolTagEnum } from '@metad/contracts'
+
+export const ToolsetFolderPath = 'packages/server-ai/src/xpert-toolset'
 
 export interface IToolRuntime {
 	/**
@@ -64,10 +66,12 @@ export interface ToolProviderIdentity {
     description: I18nObject;
     icon: string;
     label: I18nObject;
-    tags: ToolLabelEnum[];
+    tags: ToolTagEnum[];
 }
 
-export type TBaseToolsetOptions = {
-    identity?: ToolProviderIdentity;
-    credentialsSchema?: { [key: string]: ToolProviderCredentials };
+export type TBaseToolsetOptions = TToolsetProviderSchema
+
+export type TToolsetProviderSchema = {
+	identity?: ToolProviderIdentity;
+    credentials_for_provider?: { [key: string]: ToolProviderCredentials };
 }

@@ -2,19 +2,13 @@ import { IUser } from '../user.model'
 import { I18nObject } from './ai-model.model'
 import { AiProviderRole, ICopilot } from './copilot.model'
 import { TAvatar } from './types'
-import { IXpertTool } from './xpert-tool.model'
+import { IXpertTool, XpertToolType } from './xpert-tool.model'
 import { IXpert } from './xpert.model'
 import { IBasePerWorkspaceEntityModel } from './xpert-workspace.model'
 import { ITag } from '../tag-entity.model'
 
 
 export enum XpertToolsetCategoryEnum {
-  BUILTIN = 'builtin',
-  API = 'api',
-  WORKFLOW = 'workflow'
-}
-
-export enum ToolProviderType {
   BUILTIN = 'builtin',
   API = 'api',
   WORKFLOW = 'workflow'
@@ -30,7 +24,7 @@ export type TXpertToolset = {
   category?: 'command' | XpertToolsetCategoryEnum
   description?: string
   /**
-   * avatar url
+   * avatar object
    */
   avatar?: TAvatar
   /**
@@ -38,6 +32,15 @@ export type TXpertToolset = {
    * @default `AiProviderRole.Secondary`
    */
   aiProviderRole?: AiProviderRole
+
+  /**
+   * Privacy policy of this toolset
+   */
+  privacyPolicy?: string
+  /**
+   * Custom disclaimer for the toolset
+   */
+  customDisclaimer?: string
 
   options?: Record<string, any>
   credentials?: Record<string, any>
@@ -108,79 +111,79 @@ export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()
 //   avatar: { url: '/assets/icons/wikipedia-icon.png' }
 // })
 
-// TOOLSET_TYPES.set('ChatDB', {
-//   name: 'ChatDB',
-//   description: 'ChatDB Tools.',
-//   category: 'command',
-//   avatar: { url: '/assets/images/chatbi.jpg' },
-//   aiProviderRole: AiProviderRole.Primary,
-//   schema: {
-//     type: 'object',
-//     properties: {
-//       dataSourceId: { type: 'string', title: 'DataSource Id' },
-//       schema: { type: 'string', title: 'Schema' }
-//     },
-//     required: [],
-//     secret: []
-//   },
-//   tools: [
-//     {
-//       name: 'ListTables',
-//       description: 'List tables',
-//       schema: zodToJsonSchema(
-//         z.object({
-//           // dataSourceId: z.string().describe('The id of dataSource'),
-//           // schema: z.string().describe('The schema in dataSource db'),
-//         })
-//       )
-//     },
-//     {
-//       name: 'QuerySchema',
-//       description: 'Query schema for tables',
-//       schema: zodToJsonSchema(
-//         z.object({
-//           // dataSourceId: z.string().describe('The id of dataSource'),
-//           // schema: z.string().describe('The schema in dataSource db'),
-//           tables: z.array(z.string()).describe('The tables to query')
-//         })
-//       )
-//     },
-//     {
-//       name: 'QuerySql',
-//       description: 'Execute SQL statement of query',
-//       schema: zodToJsonSchema(
-//         z.object({
-//           query: z.string().describe('The sql statement of query')
-//         })
-//       )
-//     }
-//   ]
-// })
+TOOLSET_TYPES.set('ChatDB', {
+  name: 'ChatDB',
+  description: 'ChatDB Tools.',
+  category: 'command',
+  avatar: { url: '/assets/images/chatbi.jpg' },
+  aiProviderRole: AiProviderRole.Primary,
+  // schema: {
+  //   type: 'object',
+  //   properties: {
+  //     dataSourceId: { type: 'string', title: 'DataSource Id' },
+  //     schema: { type: 'string', title: 'Schema' }
+  //   },
+  //   required: [],
+  //   secret: []
+  // },
+  tools: [
+    {
+      name: 'ListTables',
+      description: 'List tables',
+      // schema: zodToJsonSchema(
+      //   z.object({
+      //     // dataSourceId: z.string().describe('The id of dataSource'),
+      //     // schema: z.string().describe('The schema in dataSource db'),
+      //   })
+      // )
+    },
+    {
+      name: 'QuerySchema',
+      description: 'Query schema for tables',
+      // schema: zodToJsonSchema(
+      //   z.object({
+      //     // dataSourceId: z.string().describe('The id of dataSource'),
+      //     // schema: z.string().describe('The schema in dataSource db'),
+      //     tables: z.array(z.string()).describe('The tables to query')
+      //   })
+      // )
+    },
+    {
+      name: 'QuerySql',
+      description: 'Execute SQL statement of query',
+      // schema: zodToJsonSchema(
+      //   z.object({
+      //     query: z.string().describe('The sql statement of query')
+      //   })
+      // )
+    }
+  ]
+})
 
-// TOOLSET_TYPES.set('ChatBI', {
-//   name: 'ChatBI',
-//   description: 'Chat with BI.',
-//   category: 'command',
-//   avatar: { url: '/assets/images/chatbi.jpg' },
-//   aiProviderRole: AiProviderRole.Primary,
-//   schema: {
-//     type: 'object',
-//     properties: {},
-//     required: [],
-//     secret: []
-//   },
-//   tools: [
-//     {
-//       name: 'ChatBI',
-//       description: 'ChatBI Command Tool',
-//       schema: zodToJsonSchema(
-//         z.object({
-//           question: z.string().describe('The question to ask bi tool')
-//         })
-//       )
-//     }
-//   ]
-// })
+TOOLSET_TYPES.set('ChatBI', {
+  name: 'ChatBI',
+  description: 'Chat with BI.',
+  category: 'command',
+  avatar: { url: '/assets/images/chatbi.jpg' },
+  aiProviderRole: AiProviderRole.Primary,
+  // schema: {
+  //   type: 'object',
+  //   properties: {},
+  //   required: [],
+  //   secret: []
+  // },
+  tools: [
+    {
+      name: 'ChatBI',
+      description: 'ChatBI Command Tool',
+      // schema: zodToJsonSchema(
+      //   z.object({
+      //     question: z.string().describe('The question to ask bi tool')
+      //   })
+      // )
+    }
+  ]
+})
 
 // 临时
 export const TOOLSETS: IXpertToolset[] = [
@@ -421,25 +424,6 @@ export interface ApiToolBundle {
     openapi: Record<string, any>;
 }
 
-export enum ToolLabelEnum {
-  SEARCH = "search",
-  IMAGE = "image",
-  VIDEOS = "videos",
-  WEATHER = "weather",
-  FINANCE = "finance",
-  DESIGN = "design",
-  TRAVEL = "travel",
-  SOCIAL = "social",
-  NEWS = "news",
-  MEDICAL = "medical",
-  PRODUCTIVITY = "productivity",
-  EDUCATION = "education",
-  BUSINESS = "business",
-  ENTERTAINMENT = "entertainment",
-  UTILITIES = "utilities",
-  OTHER = "other"
-}
-
 export enum ApiProviderAuthType {
   /**
    * Enum class for api provider auth type.
@@ -456,4 +440,50 @@ export enum ApiProviderSchemaType {
   SWAGGER = "swagger",
   OPENAI_PLUGIN = "openai_plugin",
   OPENAI_ACTIONS = "openai_actions"
+}
+
+export enum ToolTagEnum {
+	SEARCH = 'search',
+	IMAGE = 'image',
+	VIDEOS = 'videos',
+	WEATHER = 'weather',
+	FINANCE = 'finance',
+	DESIGN = 'design',
+	TRAVEL = 'travel',
+	SOCIAL = 'social',
+	NEWS = 'news',
+	MEDICAL = 'medical',
+	PRODUCTIVITY = 'productivity',
+	EDUCATION = 'education',
+	BUSINESS = 'business',
+	ENTERTAINMENT = 'entertainment',
+	UTILITIES = 'utilities',
+	OTHER = 'other'
+}
+
+export interface IToolTag {
+	name: string
+	label: I18nObject
+	icon: string
+}
+
+export interface IToolProvider {
+  id: string;
+  author: string;
+  name: string; // identifier
+  description: I18nObject;
+  /**
+   * @deprecated use avatar
+   */
+  icon?: string;
+  avatar: TAvatar
+  label: I18nObject; // label
+  type: XpertToolsetCategoryEnum;
+  masked_credentials?: Record<string, any>
+  original_credentials?: Record<string, any>
+  is_team_authorization: boolean
+  allow_delete: boolean
+  tools?: XpertToolType[]
+  // labels?: ToolTagEnum[]
+  tags: ToolTagEnum[];
 }

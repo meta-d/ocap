@@ -9,7 +9,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmHighlightDirective, NgmSearchComponent } from '@metad/ocap-angular/common'
-import { NgmI18nPipe, nonBlank } from '@metad/ocap-angular/core'
+import { NgmDensityDirective, NgmI18nPipe, nonBlank } from '@metad/ocap-angular/core'
 import { NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 import { derivedAsync } from 'ngxtension/derived-async'
@@ -30,7 +30,8 @@ import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } f
     MatInputModule,
     NgmSearchComponent,
     NgmI18nPipe,
-    NgmHighlightDirective
+    NgmHighlightDirective,
+    NgmDensityDirective
   ],
   selector: 'copilot-model-select',
   templateUrl: 'select.component.html',

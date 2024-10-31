@@ -185,7 +185,7 @@ export class XpertStudioComponent {
 
   constructor() {
     effect(() => {
-      console.log(this.xperts(), this.nodes())
+      // console.log(this.xperts(), this.nodes())
     })
   }
 

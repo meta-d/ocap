@@ -3,11 +3,10 @@ import { BaseToolset } from '../toolset'
 import { OpenAPITool } from './openapi/openapi-tool'
 
 export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
-	provider_id: string
 
-	get providerType(): XpertToolsetCategoryEnum {
-		return XpertToolsetCategoryEnum.API
-	}
+	providerType = XpertToolsetCategoryEnum.API
+
+	provider_id: string
 
 	private _parse_tool_bundle(tool_bundle: ApiToolBundle): OpenAPITool {
 		// Todo

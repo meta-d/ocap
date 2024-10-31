@@ -8,6 +8,7 @@ import { CopilotService } from '../copilot'
 import { AiProviderRole, IUser } from '@metad/contracts'
 import { assign } from 'lodash'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
+import { defaultToolTags } from './utils/tags'
 
 @Injectable()
 export class XpertToolsetService extends TenantOrganizationAwareCrudService<XpertToolset> {
@@ -79,5 +80,9 @@ export class XpertToolsetService extends TenantOrganizationAwareCrudService<Xper
 			order,
 			take
 		})
+	}
+
+	async getAllTags() {
+		return defaultToolTags
 	}
 }

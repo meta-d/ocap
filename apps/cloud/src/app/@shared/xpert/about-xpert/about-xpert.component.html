@@ -1,9 +1,9 @@
 <div class="p-8 flex flex-col justify-start items-center gap-4 max-w-full lg:max-w-md xl:max-w-xl">
-  <pac-avatar class="w-28 h-28 rounded-full overflow-hidden" [avatar]="role.avatar" />
+  <emoji-avatar [avatar]="role.avatar" class="rounded-lg shadow-sm overflow-hidden" />
 
   <p class="text-xl">{{ role.title }}</p>
   <p class="text-center text-token-text-secondary">{{ role.description }}</p>
-  <p class="text-sm text-token-text-secondary p-4 rounded-lg bg-black/5 dark:bg-white/10">{{ role.agent.prompt }}</p>
+  <p class="text-sm text-token-text-secondary p-4 rounded-lg bg-black/5 dark:bg-white/10">{{ role.agent?.prompt }}</p>
   
   <div class="w-full flex flex-col items-start mb-8">
     <label class="text-lg font-bold">{{'PAC.KEY_WORDS.ConversationStarters' | translate: {Default: 'Conversation Starters'} }}</label>
@@ -65,7 +65,7 @@
       <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Toolsets' | translate: {Default: 'Toolsets'} }}</label>
       <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
         @for (toolset of role.toolsets; track toolset) {
-          <pac-toolset-card [toolset]="toolset" />
+          <xpert-toolset-card [toolset]="toolset" inline />
         }
       </div>
     </div>

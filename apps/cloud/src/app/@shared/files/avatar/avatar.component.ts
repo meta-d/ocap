@@ -2,6 +2,9 @@ import { CommonModule } from '@angular/common'
 import { Component, input } from '@angular/core'
 import { TAvatar } from '../../../@core'
 
+/**
+ * @deprecated use EmojiAvatar
+ */
 @Component({
     standalone: true,
     selector: 'pac-avatar',

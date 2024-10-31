@@ -1,21 +1,45 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, effect, inject, input, model } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, model } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
 import { routeAnimations } from '@metad/core'
-import { omit, pick } from '@metad/ocap-core'
+import { pick } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ApiProviderAuthType, ApiToolBundle, IXpertToolset, TagCategoryEnum, TAvatar, XpertToolsetCategoryEnum, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import {
+  ApiProviderAuthType,
+  ApiToolBundle,
+  IXpertToolset,
+  TagCategoryEnum,
+  XpertToolsetCategoryEnum,
+  XpertToolsetService
+} from 'apps/cloud/src/app/@core'
+import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
 import { XpertStudioToolAuthorizationComponent } from '../authorization/authorization.component'
-import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
-import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
+
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslateModule, EmojiAvatarComponent, TagSelectComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    TranslateModule,
+    EmojiAvatarComponent,
+    TagSelectComponent
+  ],
   selector: 'pac-xpert-tool-configure',
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',
@@ -27,6 +51,7 @@ export class XpertStudioConfigureToolComponent {
   private readonly xpertToolsetService = inject(XpertToolsetService)
   readonly #formBuilder = inject(FormBuilder)
   readonly #dialog = inject(MatDialog)
+  readonly #cdr = inject(ChangeDetectorRef)
 
   readonly loading = input<boolean>()
   readonly toolset = model<IXpertToolset>(null)
@@ -43,9 +68,11 @@ export class XpertStudioConfigureToolComponent {
       auth_type: this.#formBuilder.control(ApiProviderAuthType.NONE),
       api_key_header: this.#formBuilder.control(null),
       api_key_value: this.#formBuilder.control(null),
-      api_key_header_prefix: this.#formBuilder.control(null),
+      api_key_header_prefix: this.#formBuilder.control(null)
     }),
-    tags: this.#formBuilder.control(null)
+    tags: this.#formBuilder.control(null),
+    privacyPolicy: this.#formBuilder.control(null),
+    customDisclaimer: this.#formBuilder.control(null)
   })
   get invalid() {
     return this.formGroup.invalid
@@ -57,7 +84,7 @@ export class XpertStudioConfigureToolComponent {
     return this.formGroup.get('avatar').value
   }
   set avatar(avatar) {
-    this.formGroup.patchValue({avatar})
+    this.formGroup.patchValue({ avatar })
   }
   get schema() {
     return this.formGroup.get('schema')
@@ -69,7 +96,7 @@ export class XpertStudioConfigureToolComponent {
     return this.formGroup.get('tools') as FormArray
   }
   get value() {
-    return {...this.formGroup.value}
+    return { ...this.formGroup.value }
   }
   get tags() {
     return this.formGroup.get('tags') as FormControl
@@ -97,36 +124,54 @@ export class XpertStudioConfigureToolComponent {
       this.loading() ? this.formGroup.disable() : this.formGroup.enable()
     })
 
-    effect(() => {
-      if (this.toolset()) {
-        this.formGroup.patchValue({
-          ...pick(this.toolset(), 'name', 'avatar', 'description', 'schema', 'type', 'category', 'tags'),
-          credentials: this.toolset().credentials ?? {},
-          tools: []
-        } as any)
-      }
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        if (this.toolset()) {
+          this.formGroup.patchValue({
+            ...pick(
+              this.toolset(),
+              'name',
+              'avatar',
+              'description',
+              'schema',
+              'type',
+              'category',
+              'tags',
+              'privacyPolicy',
+              'customDisclaimer'
+            ),
+            credentials: this.toolset().credentials ?? {},
+            tools: []
+          } as any)
+          this.#cdr.detectChanges()
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   addTool(apiBundle: ApiToolBundle) {
-    this.tools.push(this.#formBuilder.group({
-      enabled: this.#formBuilder.control(false),
-      options: this.#formBuilder.control({api_bundle: apiBundle}),
-      name: this.#formBuilder.control(apiBundle.operation_id),
-      description: this.#formBuilder.control(apiBundle.summary),
-      schema: this.#formBuilder.control(apiBundle.openapi)
-    }))
+    this.tools.push(
+      this.#formBuilder.group({
+        enabled: this.#formBuilder.control(false),
+        options: this.#formBuilder.control({ api_bundle: apiBundle }),
+        name: this.#formBuilder.control(apiBundle.operation_id),
+        description: this.#formBuilder.control(apiBundle.summary),
+        schema: this.#formBuilder.control(apiBundle.openapi)
+      })
+    )
   }
 
   openAuth() {
     const credentials = this.credentials.value ?? {}
-    this.#dialog.open(XpertStudioToolAuthorizationComponent, {
-      data: {
-        ...credentials,
-        auth_type: credentials.auth_type ? [credentials.auth_type] : [],
-        api_key_header_prefix: credentials.api_key_header_prefix ? [credentials.api_key_header_prefix] : [],
-      }
-    })
+    this.#dialog
+      .open(XpertStudioToolAuthorizationComponent, {
+        data: {
+          ...credentials,
+          auth_type: credentials.auth_type ? [credentials.auth_type] : [],
+          api_key_header_prefix: credentials.api_key_header_prefix ? [credentials.api_key_header_prefix] : []
+        }
+      })
       .afterClosed()
       .subscribe((value) => {
         if (value) {
@@ -134,9 +179,11 @@ export class XpertStudioConfigureToolComponent {
             credentials: {
               ...value,
               api_key_header_prefix: value.api_key_header_prefix[0],
-              auth_type: value.auth_type[0],
+              auth_type: value.auth_type[0]
             }
           })
+          this.formGroup.markAsDirty()
+          this.#cdr.detectChanges()
         }
       })
   }

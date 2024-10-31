@@ -8,14 +8,20 @@
             [key]="node.key"
           />
         }
+        @case ('xpert') {
+          <xpert-studio-panel-xpert class="h-full bg-components-panel-bg shadow-lg border-[0.5px] border-components-panel-border rounded-2xl overflow-y-auto
+            w-[420px]"
+            [node]="node"
+          />
+        }
         @case ('toolset') {
           <xpert-studio-panel-toolset class="h-full bg-components-panel-bg shadow-lg border-[0.5px] border-components-panel-border rounded-2xl overflow-y-auto
             w-[420px]"
             [node]="node"
           />
         }
-        @case ('xpert') {
-          <xpert-studio-panel-xpert class="h-full bg-components-panel-bg shadow-lg border-[0.5px] border-components-panel-border rounded-2xl overflow-y-auto
+        @case ('knowledge') {
+          <xpert-studio-panel-knowledge class="h-full bg-components-panel-bg shadow-lg border-[0.5px] border-components-panel-border rounded-2xl overflow-y-auto
             w-[420px]"
             [node]="node"
           />

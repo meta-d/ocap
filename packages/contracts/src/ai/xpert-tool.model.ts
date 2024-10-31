@@ -1,4 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { I18nObject } from './ai-model.model'
 import { AiProviderRole } from './copilot.model'
 import { TAvatar } from './types'
 import { IXpertToolset } from './xpert-toolset.model'
@@ -31,4 +32,37 @@ export type XpertToolType = {
   aiProviderRole?: AiProviderRole
 
   toolset?: IXpertToolset
+}
+
+export type TToolProviderIdentity = {
+  name: string
+  author: string
+  label: I18nObject
+  provider: string
+}
+
+export type TToolParameter = {
+  name: string
+  type: string
+  required: boolean
+  label: I18nObject
+  human_description: I18nObject
+  llm_description: string
+  form: string
+
+  options: {
+    value: string
+    label: I18nObject
+  }
+
+  default: string
+}
+
+export interface IBuiltinTool {
+  identity: TToolProviderIdentity
+  description: {
+    human: I18nObject
+    llm: string
+  }
+  parameters: TToolParameter[]
 }

@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
 import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
-import { AvatarComponent } from 'apps/cloud/src/app/@shared'
 import { XpertStudioApiService } from '../../domain'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { CdkMenu, CdkMenuModule } from '@angular/cdk/menu'
 import { XpertStudioComponent } from '../../studio.component'
 import { IKnowledgebase } from 'apps/cloud/src/app/@core'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   selector: 'xpert-studio-knowledge-menu',
@@ -14,7 +14,7 @@ import { IKnowledgebase } from 'apps/cloud/src/app/@core'
   styleUrls: ['./knowledge.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, CdkMenuModule, AvatarComponent],
+  imports: [FFlowModule, MatIcon, CdkMenuModule, EmojiAvatarComponent],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',

@@ -6,7 +6,7 @@ export class ToNodeViewModelHandler implements IHandler<void, {nodes: TXpertTeam
   constructor(private team: IXpertRole, private options?: {position: IPoint}) {}
 
   public handle() {
-    return createXpertNodes(this.team, this.options?.position)
+    return createXpertNodes(this.team, this.options?.position ?? {x: 0, y: 0})
   }
 }
 

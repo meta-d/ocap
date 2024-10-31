@@ -1,1 +1,5 @@
 export * from './toolset-find.query'
+export * from './list-builtin-providers.query'
+export * from './get-provider-icon.query'
+export * from './list-builtin-tools.query'
+export * from './list-builtin-credentials-schema.query'

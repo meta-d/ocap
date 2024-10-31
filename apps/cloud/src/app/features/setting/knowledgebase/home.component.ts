@@ -10,6 +10,7 @@ import { BehaviorSubject, EMPTY, map, switchMap } from 'rxjs'
 import {
   getErrorMessage,
   IKnowledgebase,
+  injectHelpWebsite,
   KnowledgebasePermission,
   KnowledgebaseService,
   OrderTypeEnum,
@@ -17,7 +18,8 @@ import {
   Store,
   ToastrService
 } from '../../../@core'
-import { AvatarComponent, MaterialModule, TranslationBaseComponent, UserProfileInlineComponent } from '../../../@shared'
+import { AvatarComponent, CardCreateComponent, MaterialModule, TranslationBaseComponent, UserProfileInlineComponent } from '../../../@shared'
+import { EmojiAvatarComponent } from '../../../@shared/avatar'
 
 @Component({
   standalone: true,
@@ -31,8 +33,9 @@ import { AvatarComponent, MaterialModule, TranslationBaseComponent, UserProfileI
     MaterialModule,
     AppearanceDirective,
     DensityDirective,
-    AvatarComponent,
-    UserProfileInlineComponent
+    EmojiAvatarComponent,
+    UserProfileInlineComponent,
+    CardCreateComponent
   ],
   animations: [routeAnimations]
 })
@@ -45,6 +48,7 @@ export class KnowledgebaseHomeComponent extends TranslationBaseComponent {
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
   readonly #dialog = inject(MatDialog)
+  readonly helpWebsite = injectHelpWebsite()
 
   readonly organizationId$ = this.#store.selectOrganizationId()
 

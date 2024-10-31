@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, inject, model, signal } from '@angular/core'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
@@ -14,6 +14,7 @@ import { EmojiAvatarComponent } from '../../../@shared/avatar'
 import { AppService } from '../../../app.service'
 import { injectGetXpertTeam } from '../utils'
 import { XpertBasicComponent } from './basic/basic.component'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 
 
 @Component({
@@ -26,6 +27,7 @@ import { XpertBasicComponent } from './basic/basic.component'
     MaterialModule,
     RouterModule,
 
+    NgmCommonModule,
     XpertBasicComponent,
     EmojiAvatarComponent
   ],
@@ -47,6 +49,7 @@ export class XpertComponent {
   readonly #refresh$ = new BehaviorSubject<void>(null)
 
   readonly isMobile = this.appService.isMobile
+  readonly sideMenuOpened = model(!this.isMobile())
 
   readonly draft = signal<TXpertTeamDraft>(null)
   readonly xpert = signal<Partial<IXpert>>(null)

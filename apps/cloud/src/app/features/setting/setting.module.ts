@@ -1,10 +1,7 @@
 import { NgModule } from '@angular/core'
 import { provideFormlyMaterial } from '@metad/formly'
-import { PACFormlyEmptyModule } from '@metad/formly/empty'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
-import { FormlyModule } from '@ngx-formly/core'
-import { FormlyMaterialModule } from '@ngx-formly/material'
 import { MaterialModule, SharedModule } from '../../@shared'
 import { FeatureToggleModule } from '../../@shared/feature-toggle'
 import { InviteMutationComponent } from '../../@shared/invite'
@@ -19,11 +16,6 @@ import { UserModule } from './users/user.module'
     SharedModule,
     MaterialModule,
     SettingRoutingModule,
-
-    // // Formly
-    // FormlyModule.forChild(),
-    // PACFormlyEmptyModule,
-    // FormlyMaterialModule,
 
     FeatureToggleModule,
     UserModule,

@@ -57,6 +57,7 @@
         (click)="deleteToolset()">{{ 'PAC.ACTIONS.Delete' | translate: { Default: 'Delete' } }}</button>
 
       <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
+
         (click)="saveToolset()">{{ 'PAC.ACTIONS.Save' | translate: { Default: 'Save' } }}</button>
     </div>
   </div>
@@ -67,7 +68,7 @@
   @if (tool(); as tool) {
     <div class="flex-1 flex flex-col overflow-auto">
       <div class="sticky top-0 z-20 !border-b-black/5 shrink-0 border-b border-b-gray-100 p-4 bg-components-panel-bg">
-        <div class="flex justify-between items-center pr-5 h-6">
+        <div class="flex justify-between items-center h-6">
           <div class="text-base font-semibold text-gray-900">
             <div class="flex items-center">
               <emoji-avatar class="rounded-lg overflow-hidden"
@@ -184,7 +185,7 @@
             (click)="cancelConfigure()"
           >{{ 'PAC.ACTIONS.Cancel' | translate: { Default: 'Cancel' } }}</button>
           <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
-            [disabled]="configure.invalid"
+            [disabled]="configure.invalid || configure.formGroup.pristine"
             (click)="updateToolset(configure.value);configure.formGroup.markAsPristine()">{{ 'PAC.ACTIONS.Enter' | translate: { Default: 'Enter' } }}</button>
         </div>
       </div>

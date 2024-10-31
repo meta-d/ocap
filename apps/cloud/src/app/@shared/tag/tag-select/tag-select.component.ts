@@ -1,19 +1,28 @@
 import { CdkListboxModule, ListboxValueChangeEvent } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
+import { NgmHighlightDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { derivedAsync } from 'ngxtension/derived-async'
-import { ITag, TagService } from '../../../@core'
-import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { combineLatestWith, debounceTime, map, startWith, switchMap } from 'rxjs'
-import { NgmHighlightDirective } from '@metad/ocap-angular/common'
+import { ITag, TagService } from '../../../@core'
 import { TagComponent } from '../tag/tag.component'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, TranslateModule, CdkListboxModule, NgxFloatUiModule, FormsModule, ReactiveFormsModule, NgmHighlightDirective, TagComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    CdkListboxModule,
+    NgxFloatUiModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgmHighlightDirective,
+    TagComponent
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'tag-select',
   templateUrl: './tag-select.component.html',
@@ -41,13 +50,15 @@ export class TagSelectComponent implements ControlValueAccessor {
   readonly selectedTags = model<ITag[]>([])
 
   readonly searchControl = new FormControl('')
-  readonly tags$ = toSignal(toObservable(this.category).pipe(
-    switchMap((category) => this.tagService.getAllByCategory(category)),
-    combineLatestWith(this.searchControl.valueChanges.pipe(startWith(''), debounceTime(300))),
-    map(([tags, text]) => {
-      return text ? tags.filter((_) => _.name.toLowerCase().includes(text.toLowerCase())) : tags
-    })
-  ))
+  readonly tags$ = toSignal(
+    toObservable(this.category).pipe(
+      switchMap((category) => this.tagService.getAllByCategory(category)),
+      combineLatestWith(this.searchControl.valueChanges.pipe(startWith(''), debounceTime(300))),
+      map(([tags, text]) => {
+        return text ? tags.filter((_) => _.name.toLowerCase().includes(text.toLowerCase())) : tags
+      })
+    )
+  )
 
   private _onChange: (value: ITag[]) => void
   private _onTouched: (value: ITag[]) => void

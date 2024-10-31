@@ -1,10 +1,10 @@
 import { ITag, IXpertTool, IXpertToolset, TAvatar, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { Tag } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany } from 'typeorm'
 import { XpertTool } from '../core/entities/internal'
 import { WorkspaceBaseEntity } from '../core/entities/base.entity'
-import { Tag } from '@metad/server-core'
 
 @Entity('xpert_toolset')
 export class XpertToolset extends WorkspaceBaseEntity implements IXpertToolset {
@@ -58,6 +58,18 @@ export class XpertToolset extends WorkspaceBaseEntity implements IXpertToolset {
 	@IsOptional()
 	@Column({ nullable: true })
 	schemaType?: 'openapi_json' | 'openapi_yaml'
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	privacyPolicy?: string
+
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	customDisclaimer?: string
 
 	/*
     |--------------------------------------------------------------------------

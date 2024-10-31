@@ -26,7 +26,7 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
    */
   language?: 'Chinese' | 'English' | null
   /**
-   * avatar base64 string
+   * Avatar object
    */
   avatar?: TAvatar
   /**

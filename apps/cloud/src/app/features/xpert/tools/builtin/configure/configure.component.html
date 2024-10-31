@@ -1,0 +1,70 @@
+<div class="px-6 py-3 bg-gray-200">
+  <div class="flex items-center py-1 gap-2">
+    <div class="relative shrink-0">
+      <emoji-avatar [avatar]="provider().avatar" class="rounded-lg overflow-hidden shadow-sm" />
+    </div>
+    <div class="grow w-0 py-[1px]">
+      <div class="flex items-center text-md leading-6 font-semibold text-gray-900">
+        <div class="truncate" [title]="provider().name">{{provider().name}}</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mt-2 min-h-[36px] text-gray-500 text-sm leading-[18px]">{{provider().name}}</div>
+
+  @if (authorizing()) {
+    <xpert-tool-builtin-authorize [provider]="provider().name" [(credential)]="credential" (close)="closeAuthorize()" class="mb-4" />
+  } @else {
+    <div class="flex gap-1 border-b-[0.5px] border-black/5">
+      @if (authorized()) {
+        <button type="button" class="btn disabled:btn-disabled btn-medium shrink-0 my-3 w-full bg-white">
+          <div class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)] mr-2"></div>
+          <div class="text-[13px] font-medium text-gray-700">Authorized</div>
+        </button>
+      } @else {
+        <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium shrink-0 my-3 w-full text-center"
+          (click)="openAuthorize()">
+          <div class="text-white font-medium">To Authorize</div>
+        </button>
+      }
+    </div>
+  }
+
+  <div class="pt-3">
+    <div class="text-sm font-medium leading-6 text-gray-500">
+      <span class="">{{tools()?.length ?? 0}} TOOLS INCLUDED</span>
+      @if (!authorized()) {
+        <span class="px-1">·</span>
+        <span class="text-[#DC6803]">SET UP AUTHORIZATION TO USE</span>
+      }
+    </div>
+    
+    <div class="mt-1">
+      @for (tool of tools(); track tool.identity.name) {
+        <div class="flex flex-col rounded-xl p-1 mb-2 bg-gray-50" >
+          <button class="px-4 py-3 text-left rounded-xl border-[0.5px] border-gray-200 enabled:hover:bg-white enabled:shadow-sm enabled:cursor-pointer disabled:opacity-50"
+            [disabled]="!authorized()"
+            (click)="toggleTool(tool)"
+          >
+            <div class="text-gray-800 font-semibold leading-5">{{tool.identity.label | i18n}}</div>
+            <div class="mt-1 text-sm leading-[18px] text-gray-500 line-clamp-2" [title]="tool.description.human | i18n">
+              {{tool.description.human | i18n}}
+            </div>
+          </button>
+
+          @if (showTool() === tool.identity.name) {
+            <xpert-tool-builtin-parameters [tool]="tool" class="p-4" />
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+
+<mat-dialog-actions align="end">
+  <div class="flex space-x-2">
+    <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium" (click)="cancel($event)">Cancel</button>
+    <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium">Save</button>
+  </div>
+</mat-dialog-actions>

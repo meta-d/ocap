@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common'
-import { Component, computed, effect, inject, signal } from '@angular/core'
+import { ChangeDetectorRef, Component, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
@@ -21,6 +21,7 @@ import {
 } from '../../../../../@core'
 import { AvatarEditorComponent, MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { KnowledgebaseComponent } from '../knowledgebase.component'
+import { EmojiAvatarComponent } from "../../../../../@shared/avatar/emoji-avatar/avatar.component";
 
 @Component({
   standalone: true,
@@ -34,8 +35,8 @@ import { KnowledgebaseComponent } from '../knowledgebase.component'
     TranslateModule,
     MaterialModule,
     NgmCommonModule,
-    AvatarEditorComponent
-  ],
+    EmojiAvatarComponent
+],
   animations: [routeAnimations]
 })
 export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
@@ -49,6 +50,7 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   readonly #route = inject(ActivatedRoute)
   readonly knowledgebaseComponent = inject(KnowledgebaseComponent)
   readonly copilotService = inject(PACCopilotService)
+  readonly #cdr = inject(ChangeDetectorRef)
 
   readonly organizationId = toSignal(this.#store.selectOrganizationId())
   readonly knowledgebase = this.knowledgebaseComponent.knowledgebase
@@ -120,6 +122,10 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   })
 
   readonly loading = signal(false)
+
+  private avatarSub = this.formGroup.get('avatar').valueChanges.subscribe(() => {
+    this.#cdr.detectChanges()
+  })
 
   constructor() {
     super()

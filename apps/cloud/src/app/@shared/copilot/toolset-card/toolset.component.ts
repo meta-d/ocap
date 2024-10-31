@@ -23,6 +23,6 @@ import { MaterialModule } from '../../material.module'
   templateUrl: 'toolset.component.html',
   styleUrls: ['toolset.component.scss']
 })
-export class ToolsetCardComponent {
+export class ToolsetCard1Component {
   readonly toolset = model<IXpertToolset>()
 }

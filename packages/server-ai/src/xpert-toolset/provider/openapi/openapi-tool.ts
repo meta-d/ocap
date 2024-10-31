@@ -1,7 +1,7 @@
 import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { ToolParams } from '@langchain/core/tools'
-import { ApiProviderAuthType, ApiToolBundle, IXpertTool, ToolProviderType } from '@metad/contracts'
+import { ApiProviderAuthType, ApiToolBundle, IXpertTool, XpertToolsetCategoryEnum } from '@metad/contracts'
 import axios, { AxiosResponse } from 'axios'
 import { ToolParameterValidationError, ToolProviderCredentialValidationError } from '../../errors'
 import { BaseTool, IBaseTool } from '../../toolset'
@@ -13,6 +13,8 @@ const API_TOOL_DEFAULT_TIMEOUT = [
 ]
 
 export class OpenAPITool extends BaseTool {
+	providerType = XpertToolsetCategoryEnum.API
+
 	protected api_bundle: ApiToolBundle
 	constructor(
 		protected xpertTool: IXpertTool,
@@ -56,10 +58,6 @@ export class OpenAPITool extends BaseTool {
 			parameters
 		)
 		return this.validate_and_parse_response(response)
-	}
-
-	tool_provider_type(): ToolProviderType {
-		return ToolProviderType.API
 	}
 
 	assembling_request(parameters: Record<string, any>, _credentials?): Record<string, any> {
