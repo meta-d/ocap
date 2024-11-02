@@ -20,6 +20,7 @@ import {
   getErrorMessage,
   IToolProvider,
   IXpertRole,
+  IXpertToolset,
   routeAnimations,
   ToastrService,
   XpertService,
@@ -201,12 +202,31 @@ export class XpertStudioXpertsComponent {
     this.#dialog.open(XpertToolConfigureBuiltinComponent, {
       disableClose: true,
       data: {
-        provider
+        provider,
+        workspace: this.workspace(),
       }
     }).afterClosed().subscribe((result) => {
       if (result) {
         this.refresh()
       }
     })
+  }
+
+  navigateTo(toolset: IXpertToolset) {
+    if (toolset.category === XpertToolsetCategoryEnum.API) {
+      this.router.navigate(['./tool', toolset.id], { relativeTo: this.route })
+    } else {
+      this.#dialog.open(XpertToolConfigureBuiltinComponent, {
+        disableClose: true,
+        data: {
+          toolset,
+          workspace: this.workspace(),
+        }
+      }).afterClosed().subscribe((result) => {
+        if (result) {
+          this.refresh()
+        }
+      })
+    }
   }
 }

@@ -43,7 +43,7 @@ export type TXpertToolset = {
   customDisclaimer?: string
 
   options?: Record<string, any>
-  credentials?: Record<string, any>
+  credentials?: TToolCredentials
   schema?: string
   schemaType?: 'openapi_json' | 'openapi_yaml'
 
@@ -487,3 +487,5 @@ export interface IToolProvider {
   // labels?: ToolTagEnum[]
   tags: ToolTagEnum[];
 }
+
+export type TToolCredentials = Record<string, string | number | boolean>

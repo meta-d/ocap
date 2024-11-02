@@ -1,30 +1,43 @@
-import { ToolProviderCredentialValidationError } from "../../../errors";
-import { BuiltinToolset } from "../builtin-toolset";
+import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
+import { IXpertToolset, TToolCredentials } from '@metad/contracts'
+import { getErrorMessage } from '@metad/server-common'
+import { ToolProviderCredentialValidationError } from '../../../errors'
+import { BuiltinToolset } from '../builtin-toolset'
 
 export class TavilyToolset extends BuiltinToolset {
-    static provider = 'tavily'
+	static provider = 'tavily'
 
-    private _validateCredentials(credentials: Record<string, any>): void {
-        // try {
-        //     new TavilySearchTool().forkToolRuntime({
-        //         runtime: {
-        //             credentials: credentials,
-        //         }
-        //     }).invoke({
-        //         user_id: "",
-        //         tool_parameters: {
-        //             query: "Sachin Tendulkar",
-        //             search_depth: "basic",
-        //             include_answer: true,
-        //             include_images: false,
-        //             include_raw_content: false,
-        //             max_results: 5,
-        //             include_domains: "",
-        //             exclude_domains: "",
-        //         },
-        //     });
-        // } catch (e) {
-        //     throw new ToolProviderCredentialValidationError(String(e));
-        // }
-    }
+	constructor(protected toolset?: IXpertToolset) {
+		super(TavilyToolset.provider, toolset)
+
+		if (toolset) {
+            const tool = toolset.tools?.[0]
+            if (tool?.enabled) {
+                const tavilySearchTool = new TavilySearchResults({
+                    ...(tool.parameters ?? {}),
+                    apiKey: toolset.credentials.tavily_api_key as string,
+                })
+
+                tavilySearchTool.name = tool.name
+                this.tools = [
+                    tavilySearchTool
+                ]
+            }
+		}
+	}
+
+	async _validateCredentials(credentials: TToolCredentials) {
+		try {
+			const tavilySearch = new TavilySearchResults({
+				apiKey: credentials.tavily_api_key as string,
+                maxResults: 1
+			})
+
+			await tavilySearch.invoke({
+				input: 'Sachin Tendulkar',
+			})
+		} catch (e) {
+			throw new ToolProviderCredentialValidationError(getErrorMessage(e))
+		}
+	}
 }

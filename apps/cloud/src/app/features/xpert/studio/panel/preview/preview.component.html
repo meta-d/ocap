@@ -31,7 +31,7 @@
     </div>
     <div class="grow flex flex-col rounded-b-2xl overflow-y-auto">
       <div class="flex-1 relative overflow-x-hidden px-3">
-        @if (parameters()) {
+        @if (parameters()?.length) {
           <xpert-parameters-card class="w-full" [parameters]="parameters()" />
         }
 
@@ -74,7 +74,7 @@
 
               @case ('assistant') {
                 <div class="flex mb-2 last:mb-0">
-                  <emoji-avatar [avatar]="avatar()" small class="rounded-lg overflow-hidden shadow-sm" />
+                  <emoji-avatar [avatar]="avatar()" class="rounded-lg overflow-hidden shadow-sm" />
                   <div class="chat-answer-container group grow w-0 ml-4">
                     <div class="group relative pr-2">
                       <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg" class="absolute -left-2 top-0 w-2 h-3 text-gray-100" data-icon="AnswerTriangle" aria-hidden="true">

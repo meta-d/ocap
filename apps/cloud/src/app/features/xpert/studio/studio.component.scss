@@ -70,7 +70,7 @@ f-flow {
   @include flow-common.node;
   @apply border-[2px] rounded-2xl border-transparent hover:border-primary-100;
   &.ngm-selected {
-    @apply border-components-card-option-selected-border;
+    @apply border-components-card-option-selected-border shadow-md;
   }
 }
 .f-node {

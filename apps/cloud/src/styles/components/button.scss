@@ -48,6 +48,9 @@
   padding-right: .875rem;
   font-size: 13px;
 }
+.btn-secondary {
+  @apply border-[0.5px] border-[--color-components-button-secondary-border] bg-[--color-components-button-secondary-bg] shadow-sm;
+}
 
 @layer components {
   .action-btn {

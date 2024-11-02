@@ -1,4 +1,4 @@
-import { ITag, IXpertTool, IXpertToolset, TAvatar, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { ITag, IXpertTool, IXpertToolset, TAvatar, TToolCredentials, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { Tag } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
@@ -45,7 +45,7 @@ export class XpertToolset extends WorkspaceBaseEntity implements IXpertToolset {
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	credentials?: Record<string, any>
+	credentials?: TToolCredentials
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()

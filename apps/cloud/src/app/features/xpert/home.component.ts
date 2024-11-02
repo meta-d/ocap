@@ -25,14 +25,13 @@ import {
 import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
 import {
   getErrorMessage,
   ITag,
-  IXpertWorkspace,
   routeAnimations,
   ToastrService,
   XpertService,
@@ -86,6 +85,7 @@ export class XpertHomeComponent {
   readonly logger = inject(NGXLogger)
   readonly #dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
+  readonly #translate = inject(TranslateService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
   readonly toolsetService = inject(XpertToolsetService)
@@ -96,7 +96,8 @@ export class XpertHomeComponent {
   readonly lang = this.appService.lang
 
   readonly workspaces = toSignal(this.workspaceService.getAllInOrg().pipe(map(({ items }) => items)))
-  readonly workspace = signal<IXpertWorkspace>(null)
+  readonly selectedWorkspaces = model<string[]>([null])
+  readonly workspace = computed(() => this.workspaces()?.find((_) => _.id === this.selectedWorkspaces()[0])) // signal<IXpertWorkspace>(null)
 
   readonly refresh$ = new BehaviorSubject<void>(null)
 
@@ -111,10 +112,6 @@ export class XpertHomeComponent {
       name: _.label
     } as unknown as ITag)))
   ))
-
-  switchWorkspace(item: IXpertWorkspace) {
-    this.workspace.set(item)
-  }
 
   newWorkspace() {
     this.#dialog
@@ -143,11 +140,10 @@ export class XpertHomeComponent {
     this.#dialog
       .open(WorkspaceSettingsComponent, {
         data: {
-          title: `Create New Workspace`
+          title: this.#translate.instant('PAC.Xpert.CreateNewWorkspace', {Default: 'Create New Workspace'})
         }
       })
       .afterClosed()
       .subscribe()
   }
-
 }

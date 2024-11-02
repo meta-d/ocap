@@ -24,7 +24,7 @@ export abstract class BaseToolset<T extends StructuredToolInterface = Tool> exte
     credentialsSchema?: { [key: string]: ToolProviderCredentials };
 
 	constructor(
-		protected toolset: IXpertToolset,
+		protected toolset?: IXpertToolset,
 	) {
 		super()
 	}
@@ -186,11 +186,11 @@ export abstract class BaseTool extends Tool {
 	name: string
 	description: string
 
-	protected _call(arg: any, runManager?: CallbackManagerForToolRun, parentConfig?: RunnableConfig): Promise<any> {
-		throw new Error('Method not implemented.')
-	}
+	// protected _call(arg: any, runManager?: CallbackManagerForToolRun, parentConfig?: RunnableConfig): Promise<any> {
+	// 	throw new Error('Method not implemented.')
+	// }
 
-	runtime: IToolRuntime = null
+	runtime?: IToolRuntime = null
 
 	constructor(protected base?: IBaseTool, fields?: ToolParams) {
 		super(fields)

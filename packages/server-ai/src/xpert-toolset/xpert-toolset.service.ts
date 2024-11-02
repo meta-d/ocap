@@ -1,14 +1,19 @@
-import { PaginationParams, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { PaginationParams, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger, NotFoundException, Type } from '@nestjs/common'
 import { CommandBus, ICommand, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindConditions, IsNull, Not, Repository } from 'typeorm'
 import { XpertToolset } from './xpert-toolset.entity'
 import { CopilotService } from '../copilot'
-import { AiProviderRole, IUser } from '@metad/contracts'
+import { AiProviderRole, IUser, IXpertToolset, TToolCredentials, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { assign } from 'lodash'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { defaultToolTags } from './utils/tags'
+import { ListBuiltinToolProvidersQuery } from './queries'
+import { ToolProviderNotFoundError } from './errors'
+import { TToolsetProviderSchema } from './types'
+import { createBuiltinToolset } from './provider/builtin'
+import { ToolProviderDTO } from './dto'
 
 @Injectable()
 export class XpertToolsetService extends TenantOrganizationAwareCrudService<XpertToolset> {
@@ -48,7 +53,7 @@ export class XpertToolsetService extends TenantOrganizationAwareCrudService<Xper
 		return await this.repository.save(_entity)
 	}
 	
-	async getAllByWorkspace(workspaceId: string, data: PaginationParams<XpertToolset>, published: boolean, user: IUser) {
+	async getAllByWorkspace(workspaceId: string, data: Partial<PaginationParams<XpertToolset>>, published: boolean, user: IUser) {
 		const { relations, order, take } = data ?? {}
 		let { where } = data ?? {}
 		where = where ?? {}
@@ -85,4 +90,37 @@ export class XpertToolsetService extends TenantOrganizationAwareCrudService<Xper
 	async getAllTags() {
 		return defaultToolTags
 	}
+
+	async createBuiltinToolset(
+		provider: string,
+		entity: Partial<IXpertToolset>
+	) {
+		const providers = await this.queryBus.execute<ListBuiltinToolProvidersQuery, TToolsetProviderSchema[]>(new ListBuiltinToolProvidersQuery([provider]))
+		if (!providers[0]) {
+			throw new ToolProviderNotFoundError(`Builtin tool provider '${provider}' not found!`)
+		}
+
+		// const user = RequestContext.currentUser()
+		// // Get instances in workspace
+		// const {items: exists} = await this.getAllByWorkspace(entity.workspaceId, {where: {type: provider}}, null, user)
+
+		const toolproviderController = createBuiltinToolset(provider)
+
+		// validate credentials
+		await toolproviderController.validateCredentials(entity.credentials)
+		// encrypt credentials
+		// credentials = tool_configuration.encrypt_tool_credentials(credentials)
+
+		return await this.create({
+			// Provider properties as the default fields
+			name: providers[0].identity.name, 
+			avatar: new ToolProviderDTO(providers[0].identity).avatar,
+			// Custom fields
+			...entity, 
+			// Enforce constraints fields
+			category: XpertToolsetCategoryEnum.BUILTIN,
+			type: provider,
+		})
+	}
+
 }

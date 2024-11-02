@@ -172,7 +172,7 @@ export class XpertStudioComponent {
   public isSingleSelection: boolean = true
 
   readonly viewModel = toSignal(this.apiService.store.pipe(map((state) => state.draft)))
-  readonly panelVisible = model<boolean>(false)
+  // readonly panelVisible = model<boolean>(false)
   readonly xpert = computed(() => this.viewModel()?.team)
   readonly position = signal<IPoint>(null)
   readonly scale = signal<number>(null)
@@ -272,12 +272,9 @@ export class XpertStudioComponent {
     this.mousePosition.y = $event.screenY
   }
   public onSelectNode($event: MouseEvent, node: TXpertTeamNode) {
-    this.selectionService.selectNode(node.key)
-
     if (this.mousePosition.x === $event.screenX && this.mousePosition.y === $event.screenY) {
-      // Execute Click
-      console.log(`Select node:`, node)
-      this.panelVisible.set(true)
+      // Execute Click when 原地点击
+      this.selectionService.selectNode(node.key)
     }
   }
 

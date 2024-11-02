@@ -1,13 +1,15 @@
-export class ToolProviderNotFoundError extends Error {}
+import { HttpException, BadRequestException, NotFoundException } from '@nestjs/common'
 
-export class ToolNotFoundError extends Error {}
+export class ToolProviderNotFoundError extends NotFoundException {}
 
-export class ToolParameterValidationError extends Error {}
+export class ToolNotFoundError extends NotFoundException {}
 
-export class ToolProviderCredentialValidationError extends Error {}
+export class ToolParameterValidationError extends BadRequestException {}
 
-export class ToolNotSupportedError extends Error {}
+export class ToolProviderCredentialValidationError extends BadRequestException {}
 
-export class ToolInvokeError extends Error {}
+export class ToolNotSupportedError extends BadRequestException {}
 
-export class ToolApiSchemaError extends Error {}
+export class ToolInvokeError extends BadRequestException {}
+
+export class ToolApiSchemaError extends BadRequestException {}

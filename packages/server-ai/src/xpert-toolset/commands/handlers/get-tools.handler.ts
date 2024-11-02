@@ -1,7 +1,9 @@
 import { Tool } from '@langchain/core/tools'
+import { XpertToolsetCategoryEnum } from '@metad/contracts'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { In } from 'typeorm'
+import { createBuiltinToolset } from '../../provider/builtin'
 import { OpenAPIToolset } from '../../provider/openapi-toolset'
 import { BaseToolset, createToolset } from '../../toolset'
 import { XpertToolsetService } from '../../xpert-toolset.service'
@@ -26,8 +28,12 @@ export class ToolsetGetToolsHandler implements ICommandHandler<ToolsetGetToolsCo
 		})
 
 		return toolsets.map((toolset) => {
-			if (toolset.type === 'openapi') {
-				return new OpenAPIToolset(toolset)
+			if (toolset.category === XpertToolsetCategoryEnum.BUILTIN) {
+				return createBuiltinToolset(toolset.type, toolset)
+			} else {
+				if (toolset.type === 'openapi') {
+					return new OpenAPIToolset(toolset)
+				}
 			}
 			return createToolset(toolset) as BaseToolset<Tool>
 		})

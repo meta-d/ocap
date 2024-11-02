@@ -6,3 +6,14 @@
     <span class="text-lg">{{toolset().name}}</span>
   </div>
 </div>
+
+<div class="w-full flex flex-col justify-start items-stretch">
+  @for (tool of toolsetDetail()?.tools; track tool.id) {
+    <div class="p-2">
+      
+      <div class="relative flex items-center p-2 text-left rounded-xl bg-gray-100">
+        <ngm-spin class="mr-2" small />
+        {{tool.name}}</div>
+    </div>
+  }
+</div>

@@ -3,7 +3,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, MessageContent, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { StateGraphArgs } from '@langchain/langgraph'
-import { ICopilot, IXpertAgent } from '@metad/contracts'
+import { ChatEventTypeEnum, ICopilot, IXpertAgent } from '@metad/contracts'
 import { AgentRecursionLimit, isNil } from '@metad/copilot'
 import { RequestContext } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
@@ -69,9 +69,7 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 			new ToolsetGetToolsCommand(agent.toolsetIds)
 		)
 		const tools = []
-		toolsets.forEach((toolset) => {
-			tools.push(...toolset.getTools())
-		})
+		toolsets.forEach((toolset) => tools.push(...toolset.getTools()))
 
 		this.#logger.debug(`Use tools:\n ${tools.map((_) => _.name + ': ' + _.description)}`)
 
@@ -164,22 +162,23 @@ ${agent.prompt}
 			)
 		).pipe(
 			map(({ event, tags, data, ...rest }: any) => {
-				
-				if (Logger.isLevelEnabled('verbose')) {
+				if (Logger.isLevelEnabled('debug')) {
 					if (event === 'on_chat_model_stream') {
 						if (prevEvent === 'on_chat_model_stream') {
 							process.stdout.write('.')
 						} else {
-							this.#logger.verbose('on_chat_model_stream', data, rest)
-							this.#logger.verbose('on_chat_model_stream')
+							this.#logger.debug('on_chat_model_stream')
 						}
 					} else {
 						if (prevEvent === 'on_chat_model_stream') {
 							process.stdout.write('\n')
 						}
-						this.#logger.verbose(event, data, rest)
+						this.#logger.debug(event)
 					}
+				} else {
+					this.#logger.verbose(event)
 				}
+
 				prevEvent = event
 				switch (event) {
 					case 'on_chat_model_stream': {
@@ -192,6 +191,22 @@ ${agent.prompt}
 								}
 							}
 						}
+						break
+					}
+					case 'on_tool_start': {
+						this.#logger.verbose(data, rest)
+						subscriber.next({
+							data: {
+								type: ChatEventTypeEnum.EVENT,
+								data: {
+									agentKey,
+									tool: data
+								}
+							}
+						} as MessageEvent)
+						break
+					}
+					case 'on_tool_end': {
 						break
 					}
 				}

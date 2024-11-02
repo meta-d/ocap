@@ -2,7 +2,7 @@
   <div class="flex justify-between items-center pl-6 pr-5 h-6">
     <div class="text-base font-semibold text-gray-900">Set Up Authorization</div>
     <div class="flex items-center">
-      <div class="flex justify-center items-center w-6 h-6 cursor-pointer" (click)="close.emit()">
+      <div class="flex justify-center items-center w-6 h-6 cursor-pointer" (click)="cancel()">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="remixicon w-4 h-4 text-gray-500">
           <path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"></path>
         </svg>
@@ -14,6 +14,26 @@
 
 <div class="grow overflow-y-auto">
   <div class="px-4 py-3 h-full">
+
+    <div class="py-3 flex flex-wrap">
+      <div class="flex items-center py-2 text-sm text-gray-900">
+        Custom name
+      </div>
+
+      <div class="relative w-full">
+        <input tabindex="0" class="
+          block px-3 w-full h-9 bg-gray-100 text-sm rounded-lg border border-transparent
+          appearance-none outline-none caret-primary-600
+          hover:border-[rgba(0,0,0,0.08)] hover:bg-gray-50
+          focus:bg-white focus:border-gray-300 focus:shadow-xs
+          placeholder:text-sm placeholder:text-gray-400"
+          type="text" 
+          [value]="toolset()?.name"
+          [(ngModel)]="toolsetName"
+        >
+      </div>
+    </div>
+
     @for (credential of credentialsSchema(); track $index) {
       <div class="py-3 flex flex-wrap">
         <div class="flex items-center py-2 text-sm text-gray-900">
@@ -82,8 +102,20 @@
   </div>
 </div>
 
+@if (loading()) {
+  <ngm-spin class="absolute top-0 left-0 w-full h-full" />
+}
 
-<div class="flex justify-center items-center space-x-2">
-  <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium" (click)="cancel()">Cancel</button>
-  <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium" (click)="save()">Save</button>
+<div class="flex items-center justify-center">
+  @if (toolset()) {
+    <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium mr-auto"
+      (click)="remove()">Remove</button>
+  }
+
+  <div class="flex justify-center items-center space-x-2">
+    <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
+      [disabled]="loading()"
+      (click)="save()">Save</button>
+  </div>
 </div>

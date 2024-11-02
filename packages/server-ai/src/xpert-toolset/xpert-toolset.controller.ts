@@ -1,4 +1,4 @@
-import { IPagination, IXpertTool } from '@metad/contracts'
+import { IPagination, IXpertTool, IXpertToolset, TToolCredentials } from '@metad/contracts'
 import {
 	CrudController,
 	PaginationParams,
@@ -59,7 +59,7 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 		const result = await this.service.getAllByWorkspace(workspaceId, data, published, RequestContext.currentUser())
 		return {
 			...result,
-			items: result.items //.map((item) => new XpertPublicDTO(item))
+			items: result.items.map((item) => new ToolsetPublicDTO(item))
 		}
 	}
 
@@ -127,5 +127,10 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 	@Get('builtin-provider/:name/credentials-schema')
 	async getBuiltinCredentialsSchema(@Param('name') provider: string) {
 		return this.queryBus.execute(new ListBuiltinCredentialsSchemaQuery(provider))
+	}
+
+	@Post('builtin-provider/:name/instance')
+	async createBuiltinInstance(@Param('name') provider: string, @Body() body: Partial<IXpertToolset>) {
+		return await this.service.createBuiltinToolset(provider, body)
 	}
 }

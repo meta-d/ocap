@@ -10,7 +10,10 @@ import {
   IToolTag,
   IXpertTool,
   IXpertToolset,
-  ToolProviderCredentials
+  IXpertWorkspace,
+  OrderTypeEnum,
+  ToolProviderCredentials,
+  TToolCredentials
 } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 
@@ -57,4 +60,11 @@ export class XpertToolsetService extends XpertWorkspaceBaseCrudService<IXpertToo
     return this.httpClient.get<ToolProviderCredentials[]>(this.apiBaseUrl + `/builtin-provider/${provider}/credentials-schema`)
   }
 
+  createBuiltinToolsetInstance(provider: string, entity: Partial<IXpertToolset>) {
+    return this.httpClient.post<IXpertToolset>(this.apiBaseUrl + `/builtin-provider/${provider}/instance`, entity)
+  }
+
+  getBuiltinToolInstances(workspace: IXpertWorkspace, provider: string) {
+    return this.getAllByWorkspace(workspace, { where: { type: provider }, order: { updatedAt: OrderTypeEnum.DESC } })
+  }
 }

@@ -18,6 +18,7 @@ import { NgmPropertyComponent } from './property/property.component'
 import { NgmHierarchySelectComponent } from './hierarchy-select/hierarchy-select.component'
 import { NgmDrawerContainerComponent } from './drawer'
 import { NgmObjectNumberComponent } from './object-number/object-number.component'
+import { NgmSpinComponent } from './spin/spin.component'
 
 @NgModule({
   imports: [
@@ -46,7 +47,8 @@ import { NgmObjectNumberComponent } from './object-number/object-number.componen
     NgmPropertyComponent,
     NgmHierarchySelectComponent,
     NgmDrawerContainerComponent,
-    NgmObjectNumberComponent
+    NgmObjectNumberComponent,
+    NgmSpinComponent
   ],
   exports: [
     ResizerModule,
@@ -72,7 +74,8 @@ import { NgmObjectNumberComponent } from './object-number/object-number.componen
     NgmPropertyComponent,
     NgmHierarchySelectComponent,
     NgmDrawerContainerComponent,
-    NgmObjectNumberComponent
+    NgmObjectNumberComponent,
+    NgmSpinComponent
   ],
   declarations: [],
   providers: []

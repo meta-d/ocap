@@ -1,10 +1,15 @@
+import { IXpertToolset, TToolCredentials } from "@metad/contracts";
 import { ToolProviderCredentialValidationError } from "../../../errors";
 import { BuiltinToolset } from "../builtin-toolset";
 
 export class BingToolset extends BuiltinToolset {
     static provider = 'bing'
 
-    private _validateCredentials(credentials: Record<string, any>): void {
-       
+    constructor(protected toolset?: IXpertToolset) {
+        super(BingToolset.provider, toolset)
+    }
+
+    _validateCredentials(credentials: TToolCredentials): Promise<void> {
+        throw new Error("Method not implemented.");
     }
 }

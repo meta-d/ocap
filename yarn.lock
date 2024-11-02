@@ -4461,18 +4461,18 @@
     zod "^3.23.8"
     zod-to-json-schema "^3.23.1"
 
-"@langchain/community@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-0.3.0.tgz#03a14ca57ec43b3536ab093d9992224b48f4b542"
-  integrity sha512-JUmXn4wt/STMJVN0ZiQGjOF2MMrhv9sJ78KG+7hwSKlxTl1QfhPFO1jr5psls4Ok4TDKaLw/ULziNGEN5cCR/Q==
+"@langchain/community@0.3.11":
+  version "0.3.11"
+  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-0.3.11.tgz#cb0f188f4e72c00beb1efdbd1fc7d7f47b70e636"
+  integrity sha512-hgnqsgWAhfUj9Kp0y+FGxlKot/qJFxat9GfIPJSJU4ViN434PgeMAQK53tkGZ361E2Zoo1V4RoGlSw4AjJILiA==
   dependencies:
     "@langchain/openai" ">=0.2.0 <0.4.0"
     binary-extensions "^2.2.0"
     expr-eval "^2.0.2"
     flat "^5.0.2"
     js-yaml "^4.1.0"
-    langchain ">=0.2.3 <0.4.0"
-    langsmith "~0.1.30"
+    langchain ">=0.2.3 <0.3.0 || >=0.3.4 <0.4.0"
+    langsmith "^0.2.0"
     uuid "^10.0.0"
     zod "^3.22.3"
     zod-to-json-schema "^3.22.5"
@@ -17848,7 +17848,7 @@ ko-sleep@^1.0.3:
   dependencies:
     ms "*"
 
-langchain@0.3.2, "langchain@>=0.2.3 <0.4.0":
+langchain@0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/langchain/-/langchain-0.3.2.tgz#aec3e679d3d6c36f469448380affa475c92fbd86"
   integrity sha512-kd2kz1cS/PIVrLEDFlrZsAasQfPLbY1UqCZbRKa3/QcpB33/n6xPDvXSMfBuKhvNj0bjW6MXDR9HZTduXjJBgg==
@@ -17859,6 +17859,24 @@ langchain@0.3.2, "langchain@>=0.2.3 <0.4.0":
     js-yaml "^4.1.0"
     jsonpointer "^5.0.1"
     langsmith "^0.1.56-rc.1"
+    openapi-types "^12.1.3"
+    p-retry "4"
+    uuid "^10.0.0"
+    yaml "^2.2.1"
+    zod "^3.22.4"
+    zod-to-json-schema "^3.22.3"
+
+"langchain@>=0.2.3 <0.3.0 || >=0.3.4 <0.4.0":
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/langchain/-/langchain-0.3.5.tgz#87b282454bc215b12b920d4dd5e35ed58030bad1"
+  integrity sha512-Gq0xC45Sq6nszS8kQG9suCrmBsuXH0INMmiF7D2TwPb6mtG35Jiq4grCk9ykpwPsarTHdty3SzUbII/FqiYSSw==
+  dependencies:
+    "@langchain/openai" ">=0.1.0 <0.4.0"
+    "@langchain/textsplitters" ">=0.0.0 <0.2.0"
+    js-tiktoken "^1.0.12"
+    js-yaml "^4.1.0"
+    jsonpointer "^5.0.1"
+    langsmith "^0.2.0"
     openapi-types "^12.1.3"
     p-retry "4"
     uuid "^10.0.0"
@@ -17890,10 +17908,10 @@ langsmith@^0.1.65:
     semver "^7.6.3"
     uuid "^10.0.0"
 
-langsmith@~0.1.30:
-  version "0.1.47"
-  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.1.47.tgz#9c29acac104c63cf638302025d33eca942f7558d"
-  integrity sha512-A54kamjY1zn4CRTxxVxhfnn/rjO7VNZS13XuzyXgw7defV8sgclofex+hzMjSb2nhssraSAXGA0KEzEo3+WyWw==
+langsmith@^0.2.0:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.2.3.tgz#91c5b4e3d5b030d8a995e9acaac43dba4b9b225c"
+  integrity sha512-SPMYPVqR9kwXZVmJ2PXC61HeBnXIFHrjfjDxQ14H0+n5p4gqjLzgSHIQyxBlFeWQUQzArJxe65Ap+s+Xo1cZog==
   dependencies:
     "@types/uuid" "^10.0.0"
     commander "^10.0.1"

@@ -211,7 +211,8 @@
   @for (toolset of toolsets(); track toolset.name) {
     <div class="group col-span-1 border-2 border-solid border-transparent rounded-xl shadow-sm min-h-[160px] flex flex-col transition-all duration-200 ease-in-out cursor-pointer hover:shadow-lg
       bg-components-card-bg"
-      [routerLink]="['./tool', toolset.id]">
+      (click)="navigateTo(toolset)"
+    >
       <div class="flex pt-[14px] px-[14px] pb-3 h-[66px] items-center gap-3 grow-0 shrink-0">
         <div class="relative shrink-0">
           <emoji-avatar [avatar]="toolset.avatar" large class="rounded-xl overflow-hidden shadow-sm" />

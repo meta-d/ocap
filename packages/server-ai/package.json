@@ -11,6 +11,7 @@
     "@langchain/openai": "0.3.11",
     "@langchain/mistralai": "0.1.1",
     "@langchain/core": "0.3.13",
+    "@langchain/community": "0.3.11",
     "@langchain/langgraph": "0.2.17",
     "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0",
     "duck-duck-scrape": "^2.2.5",

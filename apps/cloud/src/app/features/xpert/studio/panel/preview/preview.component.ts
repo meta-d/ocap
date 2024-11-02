@@ -79,7 +79,7 @@ export class XpertStudioPreviewComponent {
     // Send to server chat
     this.xpertService
       .chat(this.xpert().id, {
-        input,
+        input: {input},
         draft: true,
         conversationId: this.conversation()?.id
       })
