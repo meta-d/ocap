@@ -1,4 +1,4 @@
-import { IPagination, IXpertTool, IXpertToolset, TToolCredentials } from '@metad/contracts'
+import { IPagination, IXpertTool, IXpertToolset } from '@metad/contracts'
 import {
 	CrudController,
 	PaginationParams,
@@ -34,6 +34,7 @@ import {
 } from './queries'
 import { XpertToolset } from './xpert-toolset.entity'
 import { XpertToolsetService } from './xpert-toolset.service'
+import { ToolNotFoundError, ToolProviderNotFoundError } from './errors'
 
 
 @ApiTags('XpertToolset')
@@ -104,6 +105,18 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 	@Post('provider/openapi/test')
 	async testOpenAPI(@Body() tool: IXpertTool) {
 		return this.commandBus.execute(new TestOpenAPICommand(tool))
+	}
+
+	@Get('provider/:name')
+	async getToolProvider(@Param('name') provider: string) {
+		const providers = await this.queryBus.execute(new ListBuiltinToolProvidersQuery([provider]))
+		if (!providers[0]) {
+			throw new ToolProviderNotFoundError(`Tool provider '${provider}' not found!`)
+		}
+
+		return new ToolProviderDTO({
+			...providers[0].identity
+		})
 	}
 
 	@Public()

@@ -1,6 +1,6 @@
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
-import { Component, inject, model } from '@angular/core'
+import { Component, inject, model, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
@@ -16,14 +16,22 @@ import {
   uuid,
   XpertService,
   XpertTypeEnum
-} from '../../../@core'
-import { MaterialModule } from '../../../@shared'
-import { EmojiAvatarComponent } from '../../../@shared/avatar'
+} from '../../../../@core'
+import { MaterialModule } from '../../../../@shared'
+import { EmojiAvatarComponent } from '../../../../@shared/avatar'
 
 @Component({
   selector: 'xpert-new-blank',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ButtonGroupDirective, MaterialModule, FormsModule, CdkListboxModule, EmojiAvatarComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ButtonGroupDirective,
+    MaterialModule,
+    FormsModule,
+    CdkListboxModule,
+    EmojiAvatarComponent
+  ],
   templateUrl: './blank.component.html',
   styleUrl: './blank.component.scss'
 })
@@ -34,28 +42,49 @@ export class XpertNewBlankComponent {
   readonly xpertService = inject(XpertService)
   readonly #toastr = inject(ToastrService)
 
-  readonly type = model<XpertTypeEnum>(XpertTypeEnum.Agent)
+  readonly types = model<XpertTypeEnum[]>([XpertTypeEnum.Agent])
   readonly name = model<string>()
   readonly description = model<string>()
   readonly avatar = model<TAvatar>()
 
-  public checking = false
-  readonly validatedTitle = toSignal(
+  readonly checking = signal(false)
+  readonly validateName = toSignal<{available: boolean; error?: string;}>(
     toObservable(this.name).pipe(
       debounceTime(500),
-      switchMap((title) => (title ? this.validateTitle(title).pipe(map((items) => !items.length)) : of(true)))
+      switchMap((title) => {
+        if (title) {
+          const isValidTitle = /^[a-zA-Z0-9 _-]+$/.test(title)
+          if (!isValidTitle) {
+            return of({
+              available: false,
+              error: 'Name can only contain [a-zA-Z0-9 _-]'
+            })
+          }
+
+          return this.validateTitle(title).pipe(
+            map((items) => ({
+              available: !items.length,
+              error: items.length ? 'Name existed!' : ''
+            }))
+          )
+        }
+
+        return of({
+          available: true
+        })
+      })
     )
   )
 
   validateTitle(title: string) {
-    this.checking = true
-    return this.xpertService.validateTitle(title).pipe(tap(() => (this.checking = false)))
+    this.checking.set(true)
+    return this.xpertService.validateTitle(title).pipe(tap(() => this.checking.set(false)))
   }
 
   create() {
     this.xpertService
       .create({
-        type: this.type(),
+        type: this.types()[0],
         name: this.name(),
         description: this.description(),
         latest: true,
@@ -63,7 +92,7 @@ export class XpertNewBlankComponent {
         avatar: this.avatar(),
         agent: {
           key: uuid(),
-          avatar: this.avatar(),
+          avatar: this.avatar()
         }
       })
       .subscribe({

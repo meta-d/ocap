@@ -1,19 +1,25 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, model, signal } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, model, signal } from '@angular/core'
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { routeAnimations } from '@metad/core'
 import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { derivedAsync } from 'ngxtension/derived-async'
-import { map, switchMap } from 'rxjs/operators'
-import { getErrorMessage, IBuiltinTool, IToolProvider, IXpertToolset, IXpertWorkspace, TagCategoryEnum, ToastrService, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import {
+  getErrorMessage,
+  IXpertToolset,
+  IXpertWorkspace,
+  TagCategoryEnum,
+  ToastrService,
+  XpertToolsetService
+} from 'apps/cloud/src/app/@core'
 import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { BehaviorSubject, of } from 'rxjs'
+import { map, switchMap } from 'rxjs/operators'
 import { XpertToolBuiltinAuthorizeComponent } from '../authorize/authorize.component'
-import { BehaviorSubject } from 'rxjs'
 import { XpertToolBuiltinToolComponent } from '../tool/tool.component'
-
 
 @Component({
   standalone: true,
@@ -45,29 +51,33 @@ export class XpertToolConfigureBuiltinComponent {
   readonly #toastr = inject(ToastrService)
   readonly #dialogRef = inject(MatDialogRef<XpertToolConfigureBuiltinComponent>)
   readonly #data = inject<{
-    workspace: IXpertWorkspace;
-    provider: IToolProvider;
+    workspace: IXpertWorkspace
+    providerName: string
     toolset: IXpertToolset
   }>(MAT_DIALOG_DATA)
 
-  
   readonly #refresh$ = new BehaviorSubject<void>(null)
 
   readonly toolset = model<IXpertToolset>(this.#data.toolset)
-  readonly provider = signal(this.#data.provider)
+  readonly providerName = signal(this.#data.providerName)
   readonly workspace = signal(this.#data.workspace)
+
+  readonly provider = derivedAsync(() =>
+    this.providerName() ? this.xpertToolsetService.getProvider(this.providerName()) : of(null)
+  )
+
   readonly tools = derivedAsync(() => {
-    if (this.provider()) {
-      return this.xpertToolsetService.getBuiltinTools(this.provider().name)
+    if (this.providerName()) {
+      return this.xpertToolsetService.getBuiltinTools(this.providerName())
     }
     return null
   })
 
   readonly toolsets = derivedAsync(() => {
-    if (this.provider()) {
+    if (this.providerName() && !this.toolset()) {
       return this.#refresh$.pipe(
-        switchMap(() => this.xpertToolsetService.getBuiltinToolInstances(this.workspace(), this.provider().name)),
-        map(({items}) => items)
+        switchMap(() => this.xpertToolsetService.getBuiltinToolInstances(this.workspace(), this.providerName())),
+        map(({ items }) => items)
       )
     }
     return null
@@ -75,13 +85,15 @@ export class XpertToolConfigureBuiltinComponent {
 
   readonly loading = signal(false)
   readonly authorizing = signal(false)
-  // readonly authorized = signal(false)
 
   readonly credentials = model<Record<string, unknown>>(null)
 
   readonly dirty = signal<boolean>(false)
 
   constructor() {
+    effect(() => {
+      console.log(this.toolset())
+    })
     // effect(() => {
     //   if (this.credentials()) {
     //     this.authorized.set(true)
@@ -137,7 +149,7 @@ export class XpertToolConfigureBuiltinComponent {
     this.loading.set(true)
     this.xpertToolsetService.update(this.toolset().id, this.toolset()).subscribe({
       next: (toolset) => {
-        this.#toastr.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated successfully' }, )
+        this.#toastr.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated successfully' })
         this.loading.set(false)
         this.#dialogRef.close(toolset)
       },

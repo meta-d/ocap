@@ -15,6 +15,7 @@ import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { debounceTime } from 'rxjs'
 import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } from '../../../@core'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   standalone: true,
@@ -22,6 +23,7 @@ import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } f
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    TranslateModule,
     CdkMenuModule,
     CdkListboxModule,
     MatTooltipModule,

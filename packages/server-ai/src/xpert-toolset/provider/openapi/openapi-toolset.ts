@@ -1,6 +1,6 @@
 import { ApiToolBundle, IXpertTool, XpertToolsetCategoryEnum } from '@metad/contracts'
-import { BaseToolset } from '../toolset'
-import { OpenAPITool } from './openapi/openapi-tool'
+import { BaseToolset } from '../../toolset'
+import { OpenAPITool } from './tools/openapi-tool'
 
 export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
 

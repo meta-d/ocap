@@ -14,4 +14,9 @@ export class XpertToolService extends OrganizationBaseCrudService<IXpertTool> {
   constructor() {
     super(API_XPERT_TOOL)
   }
+
+  test(tool: IXpertTool) {
+    return this.httpClient.post(this.apiBaseUrl + `/${tool.id}/test`, tool)
+  }
+  
 }

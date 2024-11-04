@@ -1,5 +1,7 @@
 <div class="flex justify-between items-center">
-  <div class="flex items-center h-6"><div class="system-sm-semibold-uppercase text-text-secondary">模型</div></div>
+  <div class="flex items-center h-6">
+    <div class="text-text-secondary">{{'PAC.Copilot.Models' | translate: {Default: 'Models'} }}</div>
+  </div>
   <div class="flex"></div>
 </div>
 
@@ -70,7 +72,7 @@
       </div>
       @for (parameter of modelParameterRules(); track parameter.name) {
         <div class="flex items-center justify-between">
-          <div class="flex-1">
+          <div class="flex-1 mr-4">
             <div class="w-full shrink-0 flex items-center">
               <div class="mr-0.5 text-[13px] font-medium text-gray-700 truncate" [title]="parameter.label | i18n">{{parameter.label | i18n}}</div>
               <div class="mr-1 w-4 h-4 shrink-0" [matTooltip]="parameter.help | i18n" matTooltipPosition="before">
@@ -83,7 +85,7 @@
   
           @switch (parameter.type) {
             @case('float') {
-              <mat-slider class="w-[200px] ml-4" ngm-density="small" [min]="parameter.min" [max]="parameter.max" [step]="0.1" discrete>
+              <mat-slider class="w-[200px]" ngm-density="small" [min]="parameter.min" [max]="parameter.max" [step]="0.1" discrete>
                 <input matSliderThumb [value]="getParameter(parameter.name)"
                   (dragEnd)="updateParameter(parameter.name, $event.value)">
               </mat-slider>
@@ -95,7 +97,7 @@
             }
         
             @case ('int') {
-              <mat-slider class="w-[200px] ml-4" ngm-density="small" [min]="parameter.min" [max]="parameter.max" discrete>
+              <mat-slider class="w-[200px]" ngm-density="small" [min]="parameter.min" [max]="parameter.max" discrete>
                 <input matSliderThumb [value]="getParameter(parameter.name)"
                   (dragEnd)="updateParameter(parameter.name, $event.value)" >
               </mat-slider>
@@ -132,25 +134,24 @@
 
 <ng-template #modelsMenu>
   <div #menu="cdkMenu" cdkMenu class="ngm-cdk-menu pl-2">
-    <div class="p-1">
-      <ngm-search class="mt-1 sticky rounded-lg overflow-hidden" [formControl]="searchControl"></ngm-search>
-      <div>
+    <div class="p-1 overflow-auto">
+      <ngm-search class="mt-1 sticky top-0 rounded-lg overflow-hidden" [formControl]="searchControl"></ngm-search>
+
         <ul cdkListbox >
           @for (copilot of searchedModels(); track copilot.id) {
-            <div class="h-0.5 mx-4 my-2 rounded-full bg-neutral-100"></div>
+            <div class="h-0.5 mx-2 my-2 rounded-full bg-neutral-100"></div>
             <div class="text-base px-2 my-2 font-semibold flex justify-start items-center">
               <span class="uppercase">{{copilot.role}}</span> - <img [src]="(copilot.providerWithModels.icon_small | i18n)" class="w-4 h-4 inline-block mx-1"> {{copilot.providerWithModels?.label | i18n }}</div>
             @for (item of copilot.providerWithModels?.models; track item.model) {
-              <li cdkMenuItem class="flex justify-start items-center p-2 rounded-lg cursor-pointer hover:bg-primary-100/50 hover:text-primary-500"
+              <li cdkMenuItem class="flex justify-start items-center gap-2 px-4 py-2 rounded-xl cursor-pointer hover:bg-primary-100/50 hover:text-primary-500"
                 [ngClass]="model() === item.model ? 'bg-primary-100 text-primary-600 font-semibold' : ''"
                 (click)="setModel(copilot, item.model);"
-                >
-                
+              >
                 <span [ngmHighlight]="searchText()"
                   [content]="item.model"
                   customClasses="text-primary-600">{{item.model}}</span>
                 @if (item.model_type === 'llm') {
-                  <div class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1">
+                  <div class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default">
                     CHAT
                   </div>
                 }
@@ -180,7 +181,6 @@
             }
           }
         </ul>
-      </div>
     </div>
   </div>
 </ng-template>

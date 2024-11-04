@@ -3,7 +3,7 @@ import { OpenAPITool } from './openapi/openapi-tool'
 import * as fs from 'fs'
 import * as path from 'path';
 import { ApiProviderAuthType, ApiToolBundle, XpertToolsetCategoryEnum } from '@metad/contracts'
-import { ApiBasedToolSchemaParser } from '../utils/parser';
+import { ApiBasedToolSchemaParser } from '../../utils/parser';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios'
 

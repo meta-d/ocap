@@ -4,7 +4,9 @@
   @if (isXperts()) {
     <a class="relative col-span-1 flex flex-col justify-between min-h-[160px] bg-gray-200 rounded-xl border-[0.5px] border-black/5">
       <div class="grow p-2 rounded-t-xl">
-      <div class="px-6 pt-2 pb-1 text-xs font-medium leading-[18px] text-gray-500">创建应用</div>
+      <div class="px-6 pt-2 pb-1 text-xs font-medium leading-[18px] text-gray-500">
+        {{ 'PAC.Xpert.CreateXpert' | translate: {Default: 'Create Xpert'} }}
+      </div>
       <div
         class="flex items-center mb-1 px-6 py-[7px] rounded-lg text-[13px] font-medium leading-[18px] text-gray-600 cursor-pointer hover:text-primary-600 hover:bg-white"
         (click)="newBlank()"
@@ -26,10 +28,10 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             ></path>
-          </g></svg
-        >创建空白应用
+          </g></svg>
+          {{ 'PAC.Xpert.CreateBlankXpert' | translate: {Default: 'Create blank Xpert'} }}
       </div>
-      <div
+      <!-- <div
         class="flex items-center px-6 py-[7px] rounded-lg text-[13px] font-medium leading-[18px] text-gray-600 cursor-pointer hover:text-primary-600 hover:bg-white"
       >
         <svg
@@ -48,10 +50,10 @@
             stroke-linejoin="round"
           ></path></svg
         >从应用模版创建
-      </div>
+      </div> -->
     </div>
     <div class="p-2 border-t-[0.5px] border-black/5 rounded-b-xl">
-      <div
+      <!-- <div
         class="flex items-center px-6 py-[7px] rounded-lg text-[13px] font-medium leading-[18px] text-gray-600 cursor-pointer hover:text-primary-600 hover:bg-white"
       >
         <svg
@@ -73,7 +75,7 @@
             ></path>
           </g></svg
         >导入 DSL 文件
-      </div>
+      </div> -->
     </div>
     </a>
   }
@@ -122,10 +124,10 @@
         </div>
         <div class="grow w-0 py-[1px]">
           <div class="flex items-center text-base leading-5 font-semibold text-gray-800">
-            <div class="truncate" [title]="xpert.title">{{ xpert.title }}</div>
+            <div class="truncate" [title]="xpert.title || xpert.name">{{ xpert.title || xpert.name }}</div>
           </div>
-          <div class="flex items-center text-sm leading-5">
-            <div class="truncate" [title]="xpert.name">{{ xpert.name }}</div>
+          <div class="flex items-center text-xs leading-[18px] text-gray-500 font-medium">
+            <div class="truncate">By&nbsp;{{xpert.createdBy | user}}</div>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, viewC
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { NgmCommonModule, NgmConfirmDeleteComponent, NgmTagsComponent } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
@@ -31,7 +31,7 @@ import {
 } from '../../../@core'
 import { AvatarComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, UserPipe } from '../../../@shared'
 import { AppService } from '../../../app.service'
-import { XpertNewBlankComponent } from '../blank/blank.component'
+import { XpertNewBlankComponent } from '../xpert/index'
 import { XpertHomeComponent } from '../home.component'
 import { XpertStudioCreateToolComponent } from '../tools/create/create.component'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
@@ -202,7 +202,7 @@ export class XpertStudioXpertsComponent {
     this.#dialog.open(XpertToolConfigureBuiltinComponent, {
       disableClose: true,
       data: {
-        provider,
+        providerName: provider.name,
         workspace: this.workspace(),
       }
     }).afterClosed().subscribe((result) => {
@@ -216,13 +216,17 @@ export class XpertStudioXpertsComponent {
     if (toolset.category === XpertToolsetCategoryEnum.API) {
       this.router.navigate(['./tool', toolset.id], { relativeTo: this.route })
     } else {
-      this.#dialog.open(XpertToolConfigureBuiltinComponent, {
-        disableClose: true,
-        data: {
-          toolset,
-          workspace: this.workspace(),
-        }
-      }).afterClosed().subscribe((result) => {
+      this.toolsetService.getOneById(toolset.id, { relations: ['tools'] }).pipe(
+        switchMap((toolset) => this.#dialog.open(XpertToolConfigureBuiltinComponent, {
+          disableClose: true,
+          data: {
+            toolset,
+            providerName: toolset.type,
+            workspace: this.workspace(),
+          }
+        }).afterClosed())
+      )
+      .subscribe((result) => {
         if (result) {
           this.refresh()
         }

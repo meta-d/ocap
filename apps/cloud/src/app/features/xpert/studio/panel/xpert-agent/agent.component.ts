@@ -28,16 +28,17 @@ import {
   XpertAgentExecutionService,
   XpertService
 } from 'apps/cloud/src/app/@core'
-import { CopilotModelSelectComponent, MaterialModule, XpertParametersEditComponent } from 'apps/cloud/src/app/@shared'
+import { CopilotModelSelectComponent, CopilotPromptEditorComponent, MaterialModule, XpertParametersEditComponent } from 'apps/cloud/src/app/@shared'
 import { AppService } from 'apps/cloud/src/app/app.service'
 import { XpertStudioApiService } from '../../domain'
 import { XpertStudioPanelAgentExecutionComponent } from '../agent-execution/execution.component'
 import { XpertStudioPanelComponent } from '../panel.component'
-import { XpertStudioPanelRoleToolsetComponent } from './toolset/toolset.component'
+import { XpertStudioPanelToolsetSectionComponent } from './toolset-section/toolset.component'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { map } from 'rxjs'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
+import { XpertStudioPanelKnowledgeSectionComponent } from './knowledge-section/knowledge.component'
 
 @Component({
   selector: 'xpert-studio-panel-agent',
@@ -55,10 +56,12 @@ import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
     EmojiAvatarComponent,
     NgmHighlightVarDirective,
-    XpertStudioPanelRoleToolsetComponent,
+    XpertStudioPanelToolsetSectionComponent,
     CopilotModelSelectComponent,
     XpertStudioPanelAgentExecutionComponent,
-    XpertParametersEditComponent
+    XpertParametersEditComponent,
+    CopilotPromptEditorComponent,
+    XpertStudioPanelKnowledgeSectionComponent
   ],
   host: {
     tabindex: '-1',
@@ -97,9 +100,9 @@ export class XpertStudioPanelAgentComponent {
 
   readonly nameError = computed(() => {
     const name = this.name()
-    return this.nodes()
+    return name ? this.nodes()
       .filter((_) => _.key !== this.key())
-      .some((n) => n.entity.name === name)
+      .some((n) => n.entity.name === name) : false
   })
 
   readonly copilotModel = model<ICopilotModel>()
@@ -154,10 +157,8 @@ export class XpertStudioPanelAgentComponent {
   onBlur() {
     this.apiService.reload()
   }
-  onPromptChange() {
-    const text = this.promptInputElement().nativeElement.textContent
-    this.prompt.set(text)
-    this.apiService.updateXpertAgent(this.key(), { prompt: text })
+  onPromptChange(event: string) {
+    this.apiService.updateXpertAgent(this.key(), { prompt: event })
   }
 
   updateCopilotModel(model: ICopilotModel) {

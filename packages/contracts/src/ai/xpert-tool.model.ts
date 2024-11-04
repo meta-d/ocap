@@ -18,7 +18,7 @@ export type XpertToolType = {
    */
   enabled?: boolean
   options?: Record<string, any>
-  type?: 'command' | 'agent' | 'browser' | null
+  // type?: 'command' | 'agent' | 'browser' | null
   schema?: Record<string, any>
   /**
    * Default input parameters of tool
@@ -32,6 +32,9 @@ export type XpertToolType = {
   aiProviderRole?: AiProviderRole
 
   toolset?: IXpertToolset
+
+  // Temporary properties
+  provider?: IBuiltinTool
 }
 
 export type TToolProviderIdentity = {

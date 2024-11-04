@@ -232,7 +232,8 @@
       "Tenant": "租户",
       "Parameters": "参数",
       "Settings": "设置",
-      "Workspaces": "工作空间"
+      "Workspaces": "工作空间",
+      "Optional": "可选"
     },
     "MENU": {
       "Certification": "认证",
@@ -1356,6 +1357,7 @@
       "Provider_Baidu Qianfan": "百度千帆",
       "DigitalXpert": "数字专家",
       "ExpertRole": "专家角色",
+      "Models": "模型",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",
@@ -1723,6 +1725,25 @@
       "ParameterName": "显示名称",
       "ExecutionsHistories": "执行记录",
       "CreateNewWorkspace": "创建新工作空间",
+      "SystemPromptTooltip": "提示通过指令和约束引导 AI 响应。插入参数如 {{input}}。此提示对用户不可见。",
+      "Context": "上下文",
+      "Tools": "工具",
+      "ToolsetTooltip": "使用工具可以扩展 LLM 的功能，例如搜索互联网或执行科学计算",
+      "InputParameters": "输入参数",
+      "AskQuestion": "提问问题",
+      "StartRun": "开始运行",
+      "CreateBlankXpert": "创建空白专家",
+      "ChooseXpertType": "想要哪种专家类型？",
+      "Agent": "聊天助手",
+      "Copilot": "智能助理",
+      "Avatar": "头像",
+      "Name": "名称",
+      "GiveXpertName": "给专家起个名字，a-zA-Z0-9-_",
+      "CheckingName": "正在检查名称...",
+      "IsAvailable": "可用",
+      "AlreadyExistsOrg": "已存在此组织内",
+      "InputXpertDescription": "输入专家描述",
+      "CreateXpert": "创建专家",
       "Toolset": {
       }
     },

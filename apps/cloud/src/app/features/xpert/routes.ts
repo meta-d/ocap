@@ -2,7 +2,6 @@ import { Routes } from '@angular/router'
 import { XpertHomeComponent } from './home.component'
 import { XpertStudioComponent } from './studio/studio.component'
 import { XpertStudioXpertsComponent } from './xperts/xperts.component'
-import { XpertStudioToolsComponent } from './tools/tools.component'
 import { XpertStudioAPIToolComponent } from './tools'
 import { XpertDevelopComponent, XpertComponent } from './xpert'
 import { XpertBasicComponent } from './xpert/basic/basic.component'
@@ -16,10 +15,10 @@ export const routes: Routes = [
         path: '',
         component: XpertStudioXpertsComponent
       },
-      {
-        path: 'tools',
-        component: XpertStudioToolsComponent
-      }
+      // {
+      //   path: 'tools',
+      //   component: XpertStudioToolsComponent
+      // }
     ]
   },
   {

@@ -1,17 +1,15 @@
-<div class="shrink-0 flex flex-col h-full bg-white rounded-t-xl">
-  <div
-    class="shrink-0 pl-8 pr-6 pt-6 pb-3 bg-white text-xl rounded-t-xl leading-[30px] font-semibold text-gray-900 z-10"
-  >
-    创建空白应用
+<div class="shrink-0 flex flex-col h-full rounded-t-xl bg-components-card-bg">
+  <div class="shrink-0 pl-8 pr-6 pt-6 pb-3 text-xl rounded-t-xl leading-[30px] font-semibold z-10">
+    {{ 'PAC.Xpert.CreateBlankXpert' | translate: {Default: 'Create blank Xpert'} }}
   </div>
 </div>
 <div class="py-2 px-8">
-  <div class="py-2 text-sm leading-[20px] font-medium text-gray-900">想要哪种应用类型？</div>
-  <ul class="flex" cdkListbox [(ngModel)]="type">
+  <div class="py-2 text-sm leading-[20px] font-medium">
+    {{ 'PAC.Xpert.ChooseXpertType' | translate: {Default: 'What type of Xpert do you want?'} }}
+  </div>
+  <ul class="xpert-type-list flex gap-4" cdkListbox [(ngModel)]="types">
     <li
       [cdkOption]="eXpertTypeEnum.Agent"
-      class="relative grow box-border w-[158px] mr-2 px-0.5 pt-3 pb-2 flex flex-col items-center justify-center gap-1 rounded-lg border-2 bg-white text-gray-700 cursor-pointer shadow-xs"
-      data-state="closed"
     >
       <svg
         width="13"
@@ -20,8 +18,6 @@
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         class="w-6 h-6 text-[#1570EF]"
-        data-icon="ChatBot"
-        aria-hidden="true"
       >
         <g id="chat-bot">
           <path
@@ -43,13 +39,13 @@
           ></path>
         </g>
       </svg>
-      <div class="h-5 text-[13px] font-medium leading-[18px]">聊天助手</div>
+      <div class="h-5 text-[13px] font-medium leading-[18px]">
+        {{ 'PAC.Xpert.Agent' | translate: {Default: 'Agent'} }}
+      </div>
     </li>
 
     <li
       [cdkOption]="eXpertTypeEnum.Copilot"
-      class="relative grow box-border w-[158px] mr-2 px-0.5 pt-3 pb-2 flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-gray-100 text-gray-700 cursor-pointer bg-white shadow-xs hover:border-gray-300"
-      data-state="closed"
     >
       <svg
         width="24"
@@ -58,8 +54,6 @@
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         class="w-6 h-6 text-indigo-600"
-        data-icon="CuteRobot"
-        aria-hidden="true"
       >
         <g id="cute-robot">
           <path
@@ -71,13 +65,15 @@
           ></path>
         </g>
       </svg>
-      <div class="h-5 text-[13px] font-medium leading-[18px]">Copilot</div>
+      <div class="h-5 text-[13px] font-medium leading-[18px]">
+        {{ 'PAC.Xpert.Copilot' | translate: {Default: 'Copilot'} }}
+      </div>
     </li>
   </ul>
 </div>
 
 <div class="pt-2 px-8">
-  <div class="py-2 text-sm font-medium leading-[20px] text-gray-900">图标 &amp; 名称</div>
+  <div class="py-2 text-sm font-medium leading-[20px] text-gray-900">{{ 'PAC.Xpert.Avatar' | translate: {Default: 'Avatar'} }} &amp; {{ 'PAC.Xpert.Name' | translate: {Default: 'Name'} }}</div>
   <div class="flex items-center justify-between space-x-2">
     <emoji-avatar class="rounded-lg overflow-hidden"
       editable
@@ -85,65 +81,68 @@
     
     <input
       matInput
-      placeholder="给你的应用起个名字"
+      [placeholder]="'PAC.Xpert.GiveXpertName' | translate: {Default: 'Give the expert a name, a-zA-Z0-9-_'}"
       class="grow h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg border border-transparent outline-none appearance-none caret-primary-600 placeholder:text-gray-400 hover:bg-gray-50 hover:border hover:border-gray-300 focus:bg-gray-50 focus:border focus:border-gray-300 focus:shadow-xs"
       [(ngModel)]="name"
     />
   </div>
 
   <span class="text-sm">
-    @if (checking) {
-      <span class="ml-8 ">Checking the name...</span>
+    @if (checking()) {
+      <span class="ml-8 ">{{ 'PAC.Xpert.CheckingName' | translate: {Default: 'Checking the name...'} }}</span>
     } @else if(name()) {
-      @if (validatedTitle()) {
+      @if (validateName()?.available) {
         <span class="ml-8 flex justify-start items-center gap-2 text-green-500">
-          <span aria-hidden="true" class="flex"
-            ><svg
-              aria-hidden="true"
-              focusable="false"
-              class="octicon octicon-check-circle-fill"
+          <span class="flex">
+            <svg
+              class="inline-block select-none"
               viewBox="0 0 12 12"
               width="12"
               height="12"
               fill="currentColor"
-              style="display: inline-block; user-select: none; vertical-align: text-bottom; overflow: visible"
             >
               <path
                 d="M6 0a6 6 0 1 1 0 12A6 6 0 0 1 6 0Zm-.705 8.737L9.63 4.403 8.392 3.166 5.295 6.263l-1.7-1.702L2.356 5.8l2.938 2.938Z"
-              ></path></svg
-          ></span>
-          <span>{{ name() }} is available.</span>
+              ></path>
+            </svg>
+          </span>
+          <span>{{ name() }} {{ 'PAC.Xpert.IsAvailable' | translate: {Default: 'is available'} }}</span>
         </span>
       } @else {
-        <span class="ml-8 flex justify-start items-center gap-2 text-red-500"
-          ><span aria-hidden="true" class="flex"
-            ><svg
-              aria-hidden="true"
-              focusable="false"
-              class="octicon octicon-alert-fill"
+        <span class="ml-8 flex justify-start items-center gap-2 text-red-500">
+          <span class="flex">
+            <svg
+              class="inline-block"
               viewBox="0 0 12 12"
               width="12"
               height="12"
               fill="currentColor"
-              style="display: inline-block; user-select: none; vertical-align: text-bottom; overflow: visible"
             >
               <path
                 d="M4.855.708c.5-.896 1.79-.896 2.29 0l4.675 8.351a1.312 1.312 0 0 1-1.146 1.954H1.33A1.313 1.313 0 0 1 .183 9.058ZM7 7V3H5v4Zm-1 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
-              ></path></svg></span
-          ><span id="RepoNameInput-message" class="Box-sc-g0xbh4-0 dfYMlS"
-            >The xpert <strong>{{name()}}</strong> already exists on this organization.</span
-          ></span
-        >
+              ></path>
+            </svg>
+          </span>
+          <span>
+            @if (validateName()?.error) {
+              {{validateName()?.error}}
+            } @else {
+             <strong>{{name()}}</strong> {{ 'PAC.Xpert.AlreadyExistsOrg' | translate: {Default: 'already exists on this organization'} }}
+            }
+          </span>
+        </span>
       }
     }
   </span>
 </div>
 <div class="pt-2 px-8">
-  <div class="py-2 text-sm font-medium leading-[20px] text-gray-900">描述</div>
+  <div class="py-2 text-sm font-medium leading-[20px]">
+    {{ 'PAC.KEY_WORDS.Description' | translate: {Default: 'Description'} }}
+  </div>
   <textarea
     matInput
     class="w-full px-3 py-2 text-sm font-normal bg-gray-100 rounded-lg border border-transparent outline-none appearance-none caret-primary-600 placeholder:text-gray-400 hover:bg-gray-50 hover:border hover:border-gray-300 focus:bg-gray-50 focus:border focus:border-gray-300 focus:shadow-xs h-[80px] resize-none"
-    placeholder="输入应用的描述"
+    placeholder="{{ 'PAC.Xpert.InputXpertDescription' | translate: {Default: 'Input xpert description'} }}"
     [(ngModel)]="description"
   ></textarea>
 </div>
@@ -153,7 +152,9 @@
     <button mat-flat-button mat-dialog-close>
       {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
     </button>
-    <button mat-raised-button color="accent" cdkFocusInitial (click)="create()">
+    <button mat-raised-button color="accent" cdkFocusInitial
+      [disabled]="!validateName()?.available"
+      (click)="create()">
       <span>
         {{ 'Story.Common.Save' | translate: { Default: 'Save' } }}
       </span>
@@ -168,7 +169,7 @@
     width="24"
     height="24"
     fill="currentColor"
-    class="remixicon w-4 h-4 text-gray-500"
+    class="w-4 h-4 text-gray-500"
   >
     <path
       d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"

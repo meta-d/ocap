@@ -13,7 +13,6 @@ import {
   IXpertWorkspace,
   OrderTypeEnum,
   ToolProviderCredentials,
-  TToolCredentials
 } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 
@@ -50,6 +49,10 @@ export class XpertToolsetService extends XpertWorkspaceBaseCrudService<IXpertToo
 
   getProviders() {
     return this.httpClient.get<IToolProvider[]>(this.apiBaseUrl + `/providers`)
+  }
+
+  getProvider(name: string) {
+    return this.httpClient.get<IToolProvider>(this.apiBaseUrl + `/provider/` + name)
   }
 
   getBuiltinTools(provider: string) {

@@ -1,4 +1,4 @@
-import { HttpException, BadRequestException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 
 export class ToolProviderNotFoundError extends NotFoundException {}
 

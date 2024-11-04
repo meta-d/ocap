@@ -26,14 +26,14 @@
       <div class="flex gap-2 items-center">
         <div>
           <div class="inline-block">
-            <div class="flex items-center rounded-md h-7 px-3 space-x-1 text-text-tertiary cursor-pointer hover:bg-gray-200 select-none"
+            <div class="flex items-center rounded-md h-7 px-3 space-x-1 text-text-secondary cursor-pointer hover:bg-gray-200 select-none"
               [cdkMenuTriggerFor]="parameterTypeMenu">
               <div>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="w-3.5 h-3.5">
                   <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"></path>
                 </svg>
               </div>
-              <div class="text-sm font-medium">添加</div>
+              <div class="text-xs font-medium">{{ 'PAC.ACTIONS.Add' | translate: {Default: 'Add'} }}</div>
             </div>
           </div>
         </div>
@@ -44,7 +44,7 @@
   <form [formGroup]="form" class="mt-1 px-3">
     <div class="rounded-lg border border-gray-200 bg-white overflow-x-auto dark:bg-neutral-700 dark:border-neutral-600"
       formArrayName="parameters">
-      <table class="style_table__h9XUp min-w-[440px] w-full max-w-full border-collapse border-0 rounded-lg text-sm">
+      <table class="min-w-[440px] w-full max-w-full border-collapse border-0 rounded-lg text-sm">
         <thead class="border-b  border-gray-200 text-gray-500 text-sm font-medium dark:border-neutral-600">
           <tr class="uppercase">
             <td>参数名</td>

@@ -1,10 +1,8 @@
-import { Type } from "@nestjs/common";
 import { IXpertToolset } from "@metad/contracts";
 import { ToolProviderNotFoundError } from "../../errors";
 import { BingToolset } from "./bing/bing";
 import { DuckDuckGoToolset } from "./duckduckgo/duckduckgo";
 import { TavilyToolset } from "./tavily/tavily";
-import { BuiltinToolset } from "./builtin-toolset";
 
 export const ToolProviders = [
     DuckDuckGoToolset,

@@ -17,7 +17,8 @@ export class TavilyToolset extends BuiltinToolset {
                     ...(tool.parameters ?? {}),
                     apiKey: toolset.credentials.tavily_api_key as string,
                 })
-
+				// Overwrite tool name
+				tavilySearchTool.name = tool.name
                 this.tools = [
                     tavilySearchTool
                 ]

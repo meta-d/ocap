@@ -3,13 +3,13 @@
 <div class="flex justify-start items-center px-3 pt-3 pb-2">
   <emoji-avatar [avatar]="toolset().avatar" small class="shrink-0 mr-2 rounded-lg overflow-hidden shadow-sm" />
   <div class="flex flex-col">
-    <span class="text-lg">{{toolset().name}}</span>
+    <span class="text-base">{{toolset().name}}</span>
   </div>
 </div>
 
 <div class="w-full flex flex-col justify-start items-stretch p-2">
   @for (tool of toolsetDetail()?.tools; track tool.id) {
-    <div class="relative flex items-center p-2 text-left rounded-xl bg-gray-100">
+    <div class="relative flex items-center p-2 text-left rounded-xl text-sm bg-gray-100">
       @switch (toolExecutions()[tool.name]?.status) {
         @case (eXpertAgentExecutionEnum.RUNNING) {
           <ngm-spin class="mr-2" small />

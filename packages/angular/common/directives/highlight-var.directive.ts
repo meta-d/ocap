@@ -39,7 +39,7 @@ export class NgmHighlightVarDirective {
         return `<mark class="highlight ${this.customClasses()}">${match}</mark>`
       })
       const sanitzed = this.sanitizer.sanitize(SecurityContext.HTML, newText)
-      console.log(text)
+      // console.log(text)
       // this._content = sanitzed
       this.el.nativeElement.innerHTML = sanitzed
     }

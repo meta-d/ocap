@@ -272,7 +272,8 @@ export class XpertStudioComponent {
     this.mousePosition.y = $event.screenY
   }
   public onSelectNode($event: MouseEvent, node: TXpertTeamNode) {
-    if (this.mousePosition.x === $event.screenX && this.mousePosition.y === $event.screenY) {
+    if (Math.abs(this.mousePosition.x - $event.screenX) < 5 && 
+        Math.abs(this.mousePosition.y - $event.screenY) < 5) {
       // Execute Click when 原地点击
       this.selectionService.selectNode(node.key)
     }

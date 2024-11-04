@@ -1,5 +1,12 @@
-import { CrudController, TransformInterceptor } from '@metad/server-core'
-import { Controller, Logger, UseInterceptors } from '@nestjs/common'
+import { IXpertTool } from '@metad/contracts'
+import {
+	CrudController,
+	PaginationParams,
+	ParseJsonPipe,
+	TransformInterceptor,
+	UUIDValidationPipe
+} from '@metad/server-core'
+import { Body, Controller, Get, Logger, Param, Post, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { XpertTool } from './xpert-tool.entity'
@@ -16,5 +23,18 @@ export class XpertToolController extends CrudController<XpertTool> {
 		private readonly commandBus: CommandBus
 	) {
 		super(service)
+	}
+
+	@Get(':id')
+	async findById(
+		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$relations', ParseJsonPipe) relations?: PaginationParams<XpertTool>['relations']
+	): Promise<XpertTool> {
+		return this.service.getTool(id, { relations })
+	}
+
+	@Post(':id/test')
+	async test(@Param('id', UUIDValidationPipe) id: string, @Body() body: Partial<IXpertTool>) {
+		return this.service.testTool(id, body)
 	}
 }

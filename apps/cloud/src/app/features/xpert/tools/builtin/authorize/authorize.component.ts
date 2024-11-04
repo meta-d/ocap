@@ -145,7 +145,11 @@ export class XpertToolBuiltinAuthorizeComponent {
 
   save() {
     this.loading.set(true)
-    this.toolsetService.createBuiltinToolsetInstance(this.provider(), {name: this.toolsetName(), credentials: this.#credentials()})
+    this.toolsetService.createBuiltinToolsetInstance(this.provider(), {
+      workspaceId: this.workspace()?.id,
+      name: this.toolsetName(),
+      credentials: this.#credentials()
+    })
     .pipe(takeUntilDestroyed(this.#destroyRef))
     .subscribe({
       next: (toolset) => {

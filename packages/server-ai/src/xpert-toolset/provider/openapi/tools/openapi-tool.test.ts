@@ -3,7 +3,7 @@ import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import * as fs from 'fs'
 import * as path from 'path';
-import { ApiBasedToolSchemaParser } from '../../utils/parser'
+import { ApiBasedToolSchemaParser } from '../../../utils/parser'
 import { OpenAPITool } from './openapi-tool'
 
 describe('OpenAPITool', () => {

@@ -20,7 +20,7 @@
   background-color: var(--ngm-color-surface);
 
   .cdk-menu-item {
-    @apply flex items-center bg-transparent whitespace-nowrap cursor-pointer border-none select-none px-2 rounded-md;
+    @apply flex items-center bg-transparent whitespace-nowrap cursor-pointer border-none select-none;
     min-width: 64px;
 
     &:hover {

@@ -21,9 +21,13 @@ export class ListBuiltinToolsHandler implements IQueryHandler<ListBuiltinToolsQu
 	constructor(private readonly service: XpertToolsetService) {}
 
 	public async execute(command: ListBuiltinToolsQuery): Promise<IBuiltinTool[]> {
-		const { provider } = command
+		const { provider, names } = command
 
-		return this.getBuiltinTools(provider)
+		const tools = await this.getBuiltinTools(provider)
+
+		return tools.filter((tool) =>
+			names ? names.includes(tool.identity.name) : true
+		)
 	}
 
 	private async getBuiltinTools(provider: string): Promise<IBuiltinTool[]> {

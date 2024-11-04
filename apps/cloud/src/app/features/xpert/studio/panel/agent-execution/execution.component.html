@@ -8,7 +8,8 @@
   }
   <div class="h-6 mb-1 mt-4 flex items-center gap-1 text-text-secondary system-sm-semibold">
     <div class="truncate">
-      <div class="mx-0.5 text-sm font-medium text-gray-700 max-w-[150px] truncate" [title]="'提问问题'">提问问题</div>
+      <div class="mx-0.5 text-sm font-medium text-gray-700 max-w-[150px] truncate"
+        [title]="'PAC.Xpert.AskQuestion' | translate: {Default: 'Ask a question'} ">{{ 'PAC.Xpert.AskQuestion' | translate: {Default: 'Ask a question'} }}</div>
     </div>
   </div>
   <div class="grow">
@@ -22,7 +23,7 @@
       [disabled]="loading()"
       (click)="startRunAgent()"
     >
-      <div>Start Run</div>
+      <div>{{ 'PAC.Xpert.StartRun' | translate: {Default: 'Start run'} }}</div>
     </button>
   </div>
 
