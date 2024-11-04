@@ -4,6 +4,7 @@ import {
   CopilotChatMessage,
   IChatConversation,
   IXpertAgentExecution,
+  XpertAgentExecutionEnum,
 } from 'apps/cloud/src/app/@core'
 import { derivedAsync } from 'ngxtension/derived-async'
 
@@ -50,6 +51,9 @@ export class XpertExecutionService {
     return agentExecutions
   })
 
+
+  readonly toolExecutions = signal<Record<string, {status: XpertAgentExecutionEnum}>>({})
+
   constructor() {
     effect(() => {
       this.execution.set(this.#conversation()?.execution)
@@ -75,4 +79,10 @@ export class XpertExecutionService {
     this.#messages.set([])
   }
 
+  setToolExecution(name: string, execution) {
+    this.toolExecutions.update((state) => ({
+      ...state,
+      [name]: execution
+    }))
+  }
 }

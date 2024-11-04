@@ -3,10 +3,11 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input
 import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
-import { TXpertTeamNode, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import { TXpertTeamNode, XpertAgentExecutionEnum, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { of } from 'rxjs'
+import { XpertExecutionService } from '../../services/execution.service'
 
 @Component({
   selector: 'xpert-studio-node-toolset',
@@ -22,8 +23,11 @@ import { of } from 'rxjs'
   }
 })
 export class XpertStudioNodeToolsetComponent {
+  eXpertAgentExecutionEnum = XpertAgentExecutionEnum
+  
   readonly elementRef = inject(ElementRef)
   readonly toolsetService = inject(XpertToolsetService)
+  readonly executionService = inject(XpertExecutionService)
 
   readonly node = input<TXpertTeamNode>()
   readonly toolset = computed(() => this.node().entity)
@@ -31,6 +35,8 @@ export class XpertStudioNodeToolsetComponent {
   readonly toolsetDetail = derivedAsync(() => {
     return this.toolset() ? this.toolsetService.getOneById(this.toolset().id, { relations: ['tools']}) : of(null)
   })
+
+  readonly toolExecutions = this.executionService.toolExecutions
 
   private get hostElement(): HTMLElement {
     return this.elementRef.nativeElement

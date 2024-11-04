@@ -1,8 +1,8 @@
-import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
 import { IXpertToolset, TToolCredentials } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { ToolProviderCredentialValidationError } from '../../../errors'
 import { BuiltinToolset } from '../builtin-toolset'
+import { TavilySearchResults } from './tools/tavily_search'
 
 export class TavilyToolset extends BuiltinToolset {
 	static provider = 'tavily'
@@ -18,7 +18,6 @@ export class TavilyToolset extends BuiltinToolset {
                     apiKey: toolset.credentials.tavily_api_key as string,
                 })
 
-                tavilySearchTool.name = tool.name
                 this.tools = [
                     tavilySearchTool
                 ]

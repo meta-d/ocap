@@ -7,13 +7,23 @@
   </div>
 </div>
 
-<div class="w-full flex flex-col justify-start items-stretch">
+<div class="w-full flex flex-col justify-start items-stretch p-2">
   @for (tool of toolsetDetail()?.tools; track tool.id) {
-    <div class="p-2">
-      
-      <div class="relative flex items-center p-2 text-left rounded-xl bg-gray-100">
-        <ngm-spin class="mr-2" small />
-        {{tool.name}}</div>
+    <div class="relative flex items-center p-2 text-left rounded-xl bg-gray-100">
+      @switch (toolExecutions()[tool.name]?.status) {
+        @case (eXpertAgentExecutionEnum.RUNNING) {
+          <ngm-spin class="mr-2" small />
+        }
+        @case (eXpertAgentExecutionEnum.FAILED) {
+          <div class="w-2 h-2 border border-solid rounded-[3px] bg-red-500 border-red-600 shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)] mr-2"></div>
+        }
+        @case (eXpertAgentExecutionEnum.SUCCEEDED) {
+          <div class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)] mr-2"></div>
+        }
+      }
+      <span>
+        {{tool.name}}
+      </span>
     </div>
   }
 </div>

@@ -164,7 +164,19 @@ export class XpertStudioPanelAgentExecutionComponent {
                 this.execution.set(event.data)
                 this.executionService.setAgentExecution(event.data.agentKey, event.data)
               } else if (event.type === ChatEventTypeEnum.EVENT) {
-                this.executionService.setAgentExecution(event.data.agentKey, event.data)
+                switch(event.event) {
+                  case 'on_tool_start': {
+                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
+                    break;
+                  }
+                  case 'on_tool_end': {
+                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
+                    break;
+                  }
+                  default: {
+                    this.executionService.setAgentExecution(event.data.agentKey, event.data)
+                  }
+                }
               }
             }
           }

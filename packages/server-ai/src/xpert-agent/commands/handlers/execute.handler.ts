@@ -198,15 +198,27 @@ ${agent.prompt}
 						subscriber.next({
 							data: {
 								type: ChatEventTypeEnum.EVENT,
+								event: 'on_tool_start',
 								data: {
-									agentKey,
-									tool: data
+									data,
+									...rest,
 								}
 							}
 						} as MessageEvent)
 						break
 					}
 					case 'on_tool_end': {
+						this.#logger.verbose(data, rest)
+						subscriber.next({
+							data: {
+								type: ChatEventTypeEnum.EVENT,
+								event: 'on_tool_end',
+								data: {
+									data,
+									...rest,
+								}
+							}
+						} as MessageEvent)
 						break
 					}
 				}

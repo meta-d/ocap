@@ -1,4 +1,4 @@
-<pac-menu-group [isCollapsed]="isCollapsed()"
+<pac-menu-group class="w-full" [isCollapsed]="isCollapsed()"
   [isMobile]="isMobile()"
   [menus]="general()"
   (clicked)="clicked.emit()"
@@ -6,9 +6,11 @@
 
 <div class="pac-menu__space"></div>
 
-<ng-content></ng-content>
+<div class="w-full flex flex-col items-end">
+  <ng-content></ng-content>
+</div>
 
-<pac-menu-group [isCollapsed]="isCollapsed()"
+<pac-menu-group class="w-full" [isCollapsed]="isCollapsed()"
   [isMobile]="isMobile()"
   [menus]="admin()"
   (clicked)="clicked.emit()"
