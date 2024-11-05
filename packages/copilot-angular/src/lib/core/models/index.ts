@@ -6,6 +6,7 @@ import { ChatAnthropic } from '@langchain/anthropic'
 import { AI_PROVIDERS, AiProtocol, AiProvider, ICopilot, sumTokenUsage } from '@metad/copilot'
 import { NgmChatOllama } from './chat-ollama'
 
+
 export function createLLM<T = BaseChatModel>(
   copilot: ICopilot,
   clientOptions: ClientOptions,
@@ -14,12 +15,14 @@ export function createLLM<T = BaseChatModel>(
   if (AI_PROVIDERS[copilot?.provider]?.protocol === AiProtocol.OpenAI) {
     return new ChatOpenAI({
       apiKey: copilot.apiKey,
+      model: copilot.defaultModel,
+      temperature: 0,
+      maxRetries: 0,
+      ...(clientOptions ?? {}),
       configuration: {
         baseURL: copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost || null,
         ...(clientOptions ?? {})
       },
-      model: copilot.defaultModel,
-      temperature: 0,
       callbacks: [
         {
           handleLLMEnd(output) {

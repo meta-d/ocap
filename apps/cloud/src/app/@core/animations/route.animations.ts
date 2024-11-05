@@ -22,7 +22,7 @@ const STEPS_ALL: any[] = [
     query(
       ':leave',
       [
-        style({ transform: 'translateY(0%)', opacity: 1, position: 'absolute', width: '100%', top: 0, left: 0}),
+        style({ transform: 'translateY(0%)', opacity: 1, position: 'absolute', width: '100%', top: 0, left: 0, bottom: 0}),
         animate(
           '.2s ease-in-out',
           style({ opacity: 0 })

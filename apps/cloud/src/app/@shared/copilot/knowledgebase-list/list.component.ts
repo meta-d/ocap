@@ -2,10 +2,9 @@ import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
 import { booleanAttribute, Component, input, model } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { IKnowledgebase } from '../../../@core/types'
-import { AvatarComponent } from '../../files'
+import { EmojiAvatarComponent } from '../../avatar'
 import { MaterialModule } from '../../material.module'
 
 @Component({
@@ -17,9 +16,7 @@ import { MaterialModule } from '../../material.module'
     MaterialModule,
     CdkListboxModule,
     TranslateModule,
-    ButtonGroupDirective,
-    DensityDirective,
-    AvatarComponent
+    EmojiAvatarComponent
   ],
   selector: 'pac-knowledgebase-list',
   templateUrl: 'list.component.html',

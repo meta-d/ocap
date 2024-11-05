@@ -18,7 +18,7 @@ import { CopilotPromptGeneratorComponent } from '../prompt-generator/generator.c
 })
 export class CopilotPromptEditorComponent {
 
-    readonly #dialog = inject(MatDialog)
+  readonly #dialog = inject(MatDialog)
 
   readonly regex = `{{(.*?)}}`
 

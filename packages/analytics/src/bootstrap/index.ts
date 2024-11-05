@@ -31,7 +31,7 @@ export async function bootstrap(options: {title: string; version: string}) {
 	app.use(urlencoded({ extended: true, limit: '50mb' }))
 
 	const headersForOpenAI =
-		'x-stainless-os, x-stainless-lang, x-stainless-package-version, x-stainless-runtime, x-stainless-arch, x-stainless-runtime-version'
+		'x-stainless-os, x-stainless-lang, x-stainless-package-version, x-stainless-runtime, x-stainless-arch, x-stainless-runtime-version, x-stainless-retry-count'
 	app.enableCors({
 		origin: '*',
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

@@ -44,13 +44,18 @@ export abstract class NgmCopilotService extends CopilotService {
     return role ? `Your role is '${role.title}', and your responsibility is ${role.description}.` : ''
   })
 
-  readonly languagePrompt = computed(() => `Please answer in language ${Object.entries(NgmLanguageEnum).find((item) => item[1] === this.lang())?.[0] ?? 'English'}`)
+  readonly languagePrompt = computed(
+    () =>
+      `Please answer in language ${Object.entries(NgmLanguageEnum).find((item) => item[1] === this.lang())?.[0] ?? 'English'}`
+  )
 
   readonly llm$ = combineLatest([this.copilot$, this.clientOptions$]).pipe(
     map(([copilot, clientOptions]) =>
-      copilot?.enabled ? createLLM(copilot, clientOptions, (input) => {
-        this.recordTokenUsage(input)
-      }) : null
+      copilot?.enabled
+        ? createLLM(copilot, clientOptions, (input) => {
+            this.recordTokenUsage(input)
+          })
+        : null
     ),
     shareReplay(1)
   )
@@ -62,6 +67,18 @@ export abstract class NgmCopilotService extends CopilotService {
   setRole(role: string): void {
     this.role.set(role)
   }
- 
-  abstract enableCopilot(): void;
+
+  abstract enableCopilot(): void
+
+  forkChatModel$(config: any) {
+    return this.copilot$.pipe(
+      map((copilot) =>
+        copilot?.enabled
+          ? createLLM(copilot, config, (input) => {
+              this.recordTokenUsage(input)
+            })
+          : null
+      ),
+    )
+  }
 }
