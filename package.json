@@ -167,6 +167,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "reflect-metadata": "^0.1.13",
+    "remixicon": "^4.5.0",
     "rxjs": "~7.8.0",
     "short-unique-id": "^4.4.4",
     "socket.io": "^4.4.1",

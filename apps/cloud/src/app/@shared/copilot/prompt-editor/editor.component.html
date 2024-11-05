@@ -48,14 +48,14 @@
     </div>
 
     <div class="relative">
-      <div class="px-4 pt-2 bg-white rounded-t-xl text-sm text-gray-700 overflow-y-auto">
+      <div class="px-4 pt-2 bg-white rounded-t-xl text-sm text-gray-700 overflow-y-auto"
+        [style.height.px]="height">
         <div class="relative min-h-5">
-          <div #editablePrompt [style.height.px]="height"
-            class="outline-none leading-5 text-sm text-gray-700"
+          <div #editablePrompt
+            class="outline-none leading-5 text-sm whitespace-pre-wrap break-words text-gray-700"
             contenteditable="true"
             role="textbox"
             spellcheck="true"
-            style="user-select: text; white-space: pre-wrap; word-break: break-word"
             (blur)="onPromptChange(editablePrompt)"
             ngmHighlightVar
             [regex]="regex"

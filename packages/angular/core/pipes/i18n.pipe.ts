@@ -7,7 +7,7 @@ import { NgmLanguageEnum } from '../models'
   name: 'i18n'
 })
 export class NgmI18nPipe implements PipeTransform {
-  readonly translate = inject(TranslateService)
+  private readonly translate = inject(TranslateService)
 
   transform(value: unknown): string {
     return typeof value === 'string'

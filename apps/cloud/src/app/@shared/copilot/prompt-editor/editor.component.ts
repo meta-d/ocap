@@ -37,7 +37,11 @@ export class CopilotPromptEditorComponent {
     this.#dialog.open(CopilotPromptGeneratorComponent, {
         panelClass: 'large'
     }).afterClosed().subscribe({
-
+      next: (result) => {
+        if (result) {
+          this.prompt.set(result)
+        }
+      }
     })
   }
 

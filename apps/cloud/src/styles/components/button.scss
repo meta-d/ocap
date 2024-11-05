@@ -82,4 +82,8 @@
   .action-btn-active {
     @apply bg-primary-100 text-primary-500;
   }
+
+  .pressable {
+    @apply active:scale-95 origin-bottom transition-all;
+  }
 }
