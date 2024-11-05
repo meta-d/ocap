@@ -1,3 +1,4 @@
+import { GetODataRemoteMetadataHandler } from './get-odata-remote-metadata.handler'
 import { ToolProviderIconHandler } from './get-provider-icon.handler'
 import { ListBuiltinCredentialsSchemaHandler } from './list-builtin-credentials-schema.handler'
 import { ListBuiltinToolProvidersHandler } from './list-builtin-providers.handler'
@@ -9,5 +10,6 @@ export const QueryHandlers = [
 	ListBuiltinToolProvidersHandler,
 	ToolProviderIconHandler,
 	ListBuiltinToolsHandler,
-	ListBuiltinCredentialsSchemaHandler
+	ListBuiltinCredentialsSchemaHandler,
+	GetODataRemoteMetadataHandler
 ]

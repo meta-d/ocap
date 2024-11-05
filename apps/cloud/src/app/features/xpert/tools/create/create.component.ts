@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, model, signal } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { routeAnimations } from '@metad/core'
-import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { XpertStudioConfigureToolComponent } from '../configure/configure.component'
+import { MatDialogRef } from '@angular/material/dialog'
+import { CdkListboxModule } from '@angular/cdk/listbox'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { getErrorMessage, IXpertToolset, ToastrService, XpertToolsetService } from 'apps/cloud/src/app/@core'
-import { MatDialogRef } from '@angular/material/dialog'
+import { XpertStudioConfigureToolComponent } from '../openapi/'
+import { XpertStudioConfigureODataComponent } from '../odata/'
 
 
 @Component({
@@ -18,9 +20,10 @@ import { MatDialogRef } from '@angular/material/dialog'
     ReactiveFormsModule,
     TranslateModule,
     MaterialModule,
+    CdkListboxModule,
     ButtonGroupDirective,
-    DensityDirective,
-    XpertStudioConfigureToolComponent
+    XpertStudioConfigureToolComponent,
+    XpertStudioConfigureODataComponent
   ],
   selector: 'pac-xpert-tool-create',
   templateUrl: './create.component.html',
@@ -35,10 +38,17 @@ export class XpertStudioCreateToolComponent {
 
   readonly loading = signal(false)
 
-  createTool(toolset: Partial<IXpertToolset>) {
+  readonly providerTypes = model<string[]>(['openapi'])
+
+  readonly toolset = model<IXpertToolset>()
+
+  onValueChange(event: any) {
+    this.toolset.set(event)
+  }
+
+  createTool(toolset?: Partial<IXpertToolset>) {
     this.xpertToolsetService.create({
-      ...toolset,
-      
+      ...(toolset ?? this.toolset()),
     }).subscribe({
       next: (result) => {
         this.#toastr.success('PAC.Messages.CreatedSuccessfully', {Default: 'Created Successfully!'}, result.name)

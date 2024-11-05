@@ -70,4 +70,10 @@ export class XpertToolsetService extends XpertWorkspaceBaseCrudService<IXpertToo
   getBuiltinToolInstances(workspace: IXpertWorkspace, provider: string) {
     return this.getAllByWorkspace(workspace, { where: { type: provider }, order: { updatedAt: OrderTypeEnum.DESC } })
   }
+
+  getODataRemoteMetadata(url: string,) {
+    return this.httpClient.post<{schema: string; tools: any[]}>(this.apiBaseUrl + `/provider/odata/remote`, {
+      url
+    })
+  }
 }

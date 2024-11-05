@@ -27,6 +27,7 @@ import { TestOpenAPICommand } from '../xpert-tool/commands/'
 import { ParserOpenAPISchemaCommand } from './commands/'
 import { ToolProviderDTO, ToolsetPublicDTO } from './dto'
 import {
+	GetODataRemoteMetadataQuery,
 	ListBuiltinCredentialsSchemaQuery,
 	ListBuiltinToolProvidersQuery,
 	ListBuiltinToolsQuery,
@@ -145,5 +146,10 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 	@Post('builtin-provider/:name/instance')
 	async createBuiltinInstance(@Param('name') provider: string, @Body() body: Partial<IXpertToolset>) {
 		return await this.service.createBuiltinToolset(provider, body)
+	}
+
+	@Post('provider/odata/remote')
+	async getODataMetadata(@Body() body: {url: string;}) {
+		return await this.queryBus.execute(new GetODataRemoteMetadataQuery(body.url))
 	}
 }

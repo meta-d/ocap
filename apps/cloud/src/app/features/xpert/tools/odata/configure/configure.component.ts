@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, model } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, model, output, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import {
   FormArray,
@@ -11,22 +11,25 @@ import {
   Validators
 } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { RouterModule } from '@angular/router'
 import { routeAnimations } from '@metad/core'
 import { pick } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
   ApiProviderAuthType,
   ApiToolBundle,
+  getErrorMessage,
   IXpertToolset,
   TagCategoryEnum,
+  ToastrService,
   XpertToolsetCategoryEnum,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
 import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
-import { XpertStudioToolAuthorizationComponent } from '../authorization/authorization.component'
+import { XpertStudioToolAuthorizationComponent } from '../../authorization/authorization.component'
+import { CdkMenuModule } from '@angular/cdk/menu'
+import { NgmSpinComponent } from '@metad/ocap-angular/common'
 
 
 @Component({
@@ -35,26 +38,32 @@ import { XpertStudioToolAuthorizationComponent } from '../authorization/authoriz
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterModule,
+    CdkMenuModule,
     TranslateModule,
     EmojiAvatarComponent,
-    TagSelectComponent
+    TagSelectComponent,
+    NgmSpinComponent
   ],
-  selector: 'pac-xpert-tool-configure',
+  selector: 'pac-xpert-tool-odata-configure',
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class XpertStudioConfigureToolComponent {
+export class XpertStudioConfigureODataComponent {
   eTagCategoryEnum = TagCategoryEnum
+
   private readonly xpertToolsetService = inject(XpertToolsetService)
+  readonly #toastr = inject(ToastrService)
   readonly #formBuilder = inject(FormBuilder)
   readonly #dialog = inject(MatDialog)
   readonly #cdr = inject(ChangeDetectorRef)
+  readonly #fb = inject(FormBuilder)
 
-  readonly loading = input<boolean>()
+  readonly loading = signal(false)
   readonly toolset = model<IXpertToolset>(null)
+
+  readonly valueChange = output()
 
   readonly formGroup = new FormGroup({
     name: new FormControl(null, [Validators.required]),
@@ -72,7 +81,9 @@ export class XpertStudioConfigureToolComponent {
     }),
     tags: this.#formBuilder.control(null),
     privacyPolicy: this.#formBuilder.control(null),
-    customDisclaimer: this.#formBuilder.control(null)
+    customDisclaimer: this.#formBuilder.control(null),
+
+    url: this.#fb.control('')
   })
   get invalid() {
     return this.formGroup.invalid
@@ -101,24 +112,27 @@ export class XpertStudioConfigureToolComponent {
   get tags() {
     return this.formGroup.get('tags') as FormControl
   }
+  get url() {
+    return this.formGroup.get('url') as FormControl
+  }
 
-  readonly schemas = toSignal(
-    this.schema.valueChanges.pipe(
-      filter(() => !this.toolset()),
-      distinctUntilChanged(),
-      switchMap((schema) => (!schema?.trim() ? of(null) : this.xpertToolsetService.parserOpenAPISchema(schema)))
-    )
-  )
+  // readonly schemas = toSignal(
+  //   this.schema.valueChanges.pipe(
+  //     filter(() => !this.toolset()),
+  //     distinctUntilChanged(),
+  //     switchMap((schema) => (!schema?.trim() ? of(null) : this.xpertToolsetService.parserOpenAPISchema(schema)))
+  //   )
+  // )
 
   constructor() {
-    effect(() => {
-      if (this.schemas()?.parameters_schema) {
-        this.tools.clear()
-        this.schemas().parameters_schema.forEach((schema) => {
-          this.addTool(schema)
-        })
-      }
-    })
+    // effect(() => {
+    //   if (this.schemas()?.parameters_schema) {
+    //     this.tools.clear()
+    //     this.schemas().parameters_schema.forEach((schema) => {
+    //       this.addTool(schema)
+    //     })
+    //   }
+    // })
 
     effect(() => {
       this.loading() ? this.formGroup.disable() : this.formGroup.enable()
@@ -186,5 +200,28 @@ export class XpertStudioConfigureToolComponent {
           this.#cdr.detectChanges()
         }
       })
+  }
+
+  // Get Metadata
+  getMetadata() {
+    console.log(this.formGroup.get('url').value)
+    this.loading.set(true)
+    this.xpertToolsetService.getODataRemoteMetadata(this.url.value).subscribe({
+      next: (result) => {
+        this.loading.set(false)
+        // Handle the success scenario here
+        this.formGroup.patchValue({
+          schema: result.schema,
+          tools: result.tools
+        })
+        result.tools.forEach((tool) => this.addTool({operation_id: tool.name} as ApiToolBundle))
+      },
+      error: (err) => {
+        this.#toastr.error(getErrorMessage(err))
+        this.loading.set(false)
+        // Handle the error scenario here
+      }
+    })
+    
   }
 }

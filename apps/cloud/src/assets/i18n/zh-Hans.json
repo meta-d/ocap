@@ -1753,6 +1753,8 @@
       "AlreadyExistsOrg": "已存在此组织内",
       "InputXpertDescription": "输入专家描述",
       "CreateXpert": "创建专家",
+      "Schema": "架构",
+      "ImportFromURL": "从链接导入",
       "Toolset": {
       }
     },
