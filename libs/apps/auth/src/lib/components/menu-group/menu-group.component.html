@@ -10,11 +10,10 @@
         (click)="item.expanded=!isActive(item)"
       >
         @if (isCollapsed) {
-          <button mat-icon-button class="opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-200"
+          <button type="button" class="menu-button w-12 h-12 flex justify-center items-center p-2 leading-4 rounded-xl opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-200 hover:bg-hover-bg"
             [matTooltip]="item.title"
             matTooltipPosition="right"
-            [matMenuTriggerFor]="isCollapsed && item.children ? subMenus : null"
-            #menuTrigger="matMenuTrigger"
+            [cdkMenuTriggerFor]="isCollapsed && item.children ? subMenus : null"
             [routerLink]="isCollapsed ? item.link : null"
             routerLinkActive
             #rla="routerLinkActive"
@@ -26,26 +25,27 @@
           <mat-icon displayDensity="cosy" fontSet="material-icons-round">{{ item.matIcon }}</mat-icon>
         }
 
-        <mat-menu #subMenus="matMenu" xPosition="before">
-          @for (child of item.children; track $index) {
-            @if (!child.hidden) {
-              <button mat-menu-item
-                [routerLink]="child.link"
-                routerLinkActive [routerLinkActiveOptions]="{ exact: true }"
-                #rla="routerLinkActive"
-                (isActiveChange)="child.isActive = $event"
-                [class.active]="rla.isActive"
-                (click)="clicked.emit()"
-              >
-                @if (child.matIcon) {
-                  <mat-icon fontSet="material-icons-round">{{ child.matIcon }}</mat-icon>
-                }
-
-                <span>{{ child.title }}</span>
-              </button>
+        <ng-template #subMenus>
+          <div cdkMenu class="ngm-cdk-menu p-2">
+            @for (child of item.children; track $index) {
+              @if (!child.hidden) {
+                <button cdkMenuItem class="p-2 rounded-lg"
+                  [routerLink]="child.link"
+                  routerLinkActive [routerLinkActiveOptions]="{ exact: true }"
+                  #rla="routerLinkActive"
+                  (isActiveChange)="child.isActive = $event"
+                  [class.active]="rla.isActive"
+                  (click)="clicked.emit()"
+                >
+                  @if (child.matIcon) {
+                    <mat-icon fontSet="material-icons-round" class="mr-2">{{ child.matIcon }}</mat-icon>
+                  }
+                  <span>{{ child.title }}</span>
+                </button>
+              }
             }
-          }
-        </mat-menu>
+          </div>
+        </ng-template>
 
         @if (!isCollapsed) {
           <span class="flex-1 ml-3">{{ item.title }}</span>

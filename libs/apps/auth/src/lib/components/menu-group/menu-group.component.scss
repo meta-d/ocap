@@ -18,7 +18,7 @@
   @apply transition-all duration-200 ease-in-out;
 
   &.active {
-    .mat-mdc-button-base {
+    .menu-button {
       @apply rounded-xl shadow-lg bg-white;
     }
   }

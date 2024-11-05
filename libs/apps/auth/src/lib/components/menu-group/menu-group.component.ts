@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common'
 import { Component, EventEmitter, HostBinding, Input, Output, input } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
-import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import {CdkMenuModule} from '@angular/cdk/menu'
 import { RouterModule } from '@angular/router'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { isNil } from '@metad/ocap-core'
@@ -16,7 +16,7 @@ import { PacMenuItem } from '../types'
   styleUrls: ['menu-group.component.scss'],
   imports: [
     CommonModule,
-    MatMenuModule,
+    CdkMenuModule,
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
