@@ -13,6 +13,7 @@ import {
   IXpertWorkspace,
   OrderTypeEnum,
   ToolProviderCredentials,
+  TXpertToolEntity,
 } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 
@@ -71,9 +72,25 @@ export class XpertToolsetService extends XpertWorkspaceBaseCrudService<IXpertToo
     return this.getAllByWorkspace(workspace, { where: { type: provider }, order: { updatedAt: OrderTypeEnum.DESC } })
   }
 
-  getODataRemoteMetadata(url: string,) {
-    return this.httpClient.post<{schema: string; tools: any[]}>(this.apiBaseUrl + `/provider/odata/remote`, {
-      url
+  getOpenAPIRemoteSchema(url: string, credentials: Record<string, string>) {
+    return this.httpClient.post<{schema: string; tools: TXpertToolEntity[]}>(this.apiBaseUrl + `/provider/openapi/remote`, {
+      url,
+      credentials
+    })
+  }
+
+  getODataRemoteMetadata(url: string, credentials: Record<string, string>) {
+    return this.httpClient.post<{schema: string; tools: TXpertToolEntity[]}>(this.apiBaseUrl + `/provider/odata/remote`, {
+      url,
+      credentials
+    })
+  }
+
+  parserODataSchema(schema: string) {
+    return this.httpClient.post<{
+      tools: TXpertToolEntity[]
+    }>(this.apiBaseUrl + `/provider/odata/schema`, {
+      schema
     })
   }
 }

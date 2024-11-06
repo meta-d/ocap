@@ -35,7 +35,7 @@
         @for (tool of toolset.tools; track tool.name) {
           <div class="mb-2 px-4 py-3 rounded-xl bg-gray-25 border-[0.5px] border-gary-200 shadow-xs cursor-pointer"
             (click)="selectTool(tool)">
-            <div class="text-gray-800 font-semibold text-sm leading-5">
+            <div class="flex items-center gap-2 text-gray-800 font-semibold text-sm leading-5">
               @if (tool.enabled) {
                 <span class="inline-block w-2 h-2 rounded-full bg-green-500 shadow-md shadow-green-100">
                 </span>
@@ -56,9 +56,15 @@
       <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium text-red-500 border-red-50 hover:border-red-500"
         (click)="deleteToolset()">{{ 'PAC.ACTIONS.Delete' | translate: { Default: 'Delete' } }}</button>
 
-      <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
+      <div ngmButtonGroup>
+        <button mat-stroked-button (click)="cancel()">
+          {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
+        </button>
+        <button mat-raised-button color="accent" (click)="saveToolset()">
+          {{ 'PAC.ACTIONS.Save' | translate: { Default: 'Save' } }}
+        </button>
+      </div>
 
-        (click)="saveToolset()">{{ 'PAC.ACTIONS.Save' | translate: { Default: 'Save' } }}</button>
     </div>
   </div>
 }
@@ -77,119 +83,60 @@
             </div>
           </div>
           <div class="flex items-center">
-            <input id="tool-enabled" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              [ngModel]="tool.enabled"
-              (ngModelChange)="updateTool(tool.id, {enabled: $event})">
-            <label for="tool-enabled" class="ml-2">Enabled</label>
-          </div>
-        </div>
-      </div>
-      <div class="w-full flex-1 flex flex-col p-4">
-        <div class="pt-2">
-          <div class="leading-5 text-base font-semibold">Tool description</div>
-          <div class="mt-1 leading-[18px] text-sm font-normal text-gray-600">{{tool.description}}</div>
-          <div class="mt-6">
-            <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
-              <div class="mr-3">parameters</div>
-              <div class="grow w-0 h-px bg-[#f3f4f6]"></div>
-            </div>
-            <div class="space-y-4">
-              @for (parameter of tool.options.api_bundle?.parameters; track parameter.name) {
-              <div>
-                <div class="flex items-center space-x-2 leading-[18px]">
-                  <div class="text-[13px] font-semibold text-gray-900">{{parameter.name}}</div>
-                  <div class="text-sm font-medium text-gray-500">{{parameter.type}}</div>
-                  @if (parameter.required) {
-                    <div class="text-sm font-medium text-[#EC4A0A]">Required</div>
-                  }
-                </div>
-                <div class="mt-1 leading-[18px] text-sm font-normal text-gray-600">
-                  {{parameter.human_description | i18n}}
-                </div>
-              </div>
-              }
-            </div>
+            <mat-slide-toggle [ngModel]="tool.enabled" ngm-density="small"
+              (ngModelChange)="updateTool(tool.id, {enabled: $event})"
+            >Enabled</mat-slide-toggle>
           </div>
         </div>
       </div>
 
       <div class="flex flex-col p-4">
-        <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
-          <div class="mr-3">Test</div>
-          <div class="grow w-0 h-px bg-[#f3f4f6]"></div>
-        </div>
-
-        <div>
-          <div class="w-full flex justify-end">
-            <button type="button" class="btn btn-medium h-10"
-              [disabled]="!parameters()"
-              (click)="saveAsDefault()">
-              {{ 'PAC.Xpert.SaveAsDefault' | translate: { Default: 'Save as default' } }}</button>
-          </div>
-          <div class="py-2 leading-5 text-sm font-medium text-gray-900">Parameters &amp; Value</div>
-          <div class="rounded-lg border border-gray-200">
-            <table class="w-full leading-[18px] text-sm text-gray-700 font-normal">
-              <thead class="text-gray-500 uppercase">
-                <tr class="border-b border-gray-200">
-                  <th class="p-2 pl-3 font-medium">Parameters</th>
-                  <th class="p-2 pl-3 font-medium">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (parameter of tool.options.api_bundle?.parameters; track parameter.name) {
-                <tr class="border-b last:border-0 border-gray-200">
-                  <td class="py-2 pl-3 pr-2.5">{{parameter.name}}
-                    @if (parameter.required) {
-                      <span class="inline-block text-sm font-medium text-[#EC4A0A]">*</span>
-                    }
-                  </td>
-                  <td class="">
-                    <input class="ngm-input-inline ngm-input-sm w-full" [type]="parameter.type || 'text' "
-                      [ngModel]="parameters()?.[parameter.name]"
-                      (ngModelChange)="onParameter(parameter.name, $event)">
-                  </td>
-                </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium mt-4 w-full h-10"
-          [disabled]="loading()"
-          (click)="testTool()">
-          {{ 'PAC.ACTIONS.Test' | translate: { Default: 'Test' } }}</button>
-
         <div class="mt-6">
-          <div class="flex items-center space-x-3">
-            <div class="leading-[18px] text-sm font-semibold text-gray-500">Test Results</div>
-            <div class="grow w-0 h-px bg-[rgb(243, 244, 246)]"></div>
+          <div class="flex items-center mb-4 leading-5 text-base font-semibold text-gray-500 uppercase">
+            <div class="mr-3">parameters</div>
+            <div class="grow w-0 h-px bg-gradient-to-r from-neutral-300 to-white"></div>
           </div>
-          <div class="mt-2 px-3 py-2 h-[200px] overflow-y-auto overflow-x-hidden rounded-lg whitespace-pre-line bg-gray-100 leading-4 text-sm font-normal text-gray-700">
-            @if (testResult()) {
-              {{testResult()}}
-            } @else {
-              <span class="text-gray-400">Test result will show here</span>
+          <div class="space-y-4">
+            @for (parameter of tool.schema?.parameters; track parameter.name) {
+            <div>
+              <div class="flex items-center space-x-2 leading-[18px]">
+                <div class="text-[13px] font-semibold text-gray-900">{{parameter.name}}</div>
+                <div class="text-sm font-medium text-gray-500">{{parameter.type}}</div>
+                @if (parameter.required) {
+                  <div class="text-sm font-medium text-[#EC4A0A]">Required</div>
+                }
+              </div>
+              <div class="mt-1 leading-[18px] text-sm font-normal text-gray-600">
+                {{parameter.human_description | i18n}}
+              </div>
+            </div>
             }
           </div>
         </div>
+
+        <div class="flex items-center mt-6">
+          <div class="mr-3 shrink-0 leading-5 font-semibold uppercase text-gray-500">
+            {{ 'PAC.Copilot.TryIt' | translate: {Default: 'Try it'} }}
+          </div>
+          <div class="grow h-px bg-gradient-to-r from-neutral-300 to-white"></div>
+        </div>
+        <xpert-toolset-tool-test [tool]="tool" class="flex-1"/>
       </div>
     </div>
   } @else {
     <div class="flex-1 flex flex-col p-4 overflow-auto">
-      <pac-xpert-tool-configure #configure class="mx-auto" [loading]="loading()" [toolset]="toolset()"/>
-
-      <div class="flex justify-center mt-4">
-        <div class="flex space-x-2 ">
-          <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium"
-            (click)="cancelConfigure()"
-          >{{ 'PAC.ACTIONS.Cancel' | translate: { Default: 'Cancel' } }}</button>
-          <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
-            [disabled]="configure.invalid || configure.formGroup.pristine"
-            (click)="updateToolset(configure.value);configure.formGroup.markAsPristine()">{{ 'PAC.ACTIONS.Enter' | translate: { Default: 'Enter' } }}</button>
-        </div>
-      </div>
+      @switch (toolset()?.type) {
+        @case('openapi') {
+          <xpert-tool-openapi-configure #configure class="mx-auto" [toolset]="toolset()"
+            (valueChange)="onConfigChange($event)"
+          />
+        }
+        @case('odata') {
+          <xpert-tool-odata-configure #configure class="mx-auto" [toolset]="toolset()"
+            (valueChange)="onConfigChange($event)"
+          />
+        }
+      }
     </div>
   }
-  
 </div>

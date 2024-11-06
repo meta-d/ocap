@@ -1,0 +1,9 @@
+<h2 mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle><div class="flex-1 truncate">{{tool().name | i18n}}</div></h2>
+<mat-dialog-content>
+    <xpert-tool-authorization-input [(ngModel)]="credentials" />
+    <xpert-toolset-tool-test [tool]="tool()" />
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close cdkFocusInitial>Close</button>
+</mat-dialog-actions>

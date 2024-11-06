@@ -98,7 +98,9 @@
               <path fill-rule="evenodd" clip-rule="evenodd" d="M1.75 11.0833C1.75 10.439 2.27233 9.91667 2.91667 9.91667C3.561 9.91667 4.08333 10.439 4.08333 11.0833C4.08333 11.7277 3.561 12.25 2.91667 12.25C2.27233 12.25 1.75 11.7277 1.75 11.0833Z" fill="currentColor"></path>
             </g>
           </g>
-        </svg>Built-in</li>
+        </svg>
+        {{ 'PAC.Xpert.BuiltinTool' | translate: {Default: 'Built-in Tool'} }}
+      </li>
       <li [cdkOption]="XpertToolsetCategory.API"
         class="xpert-list-option" [ngClass]="{active: type() === XpertToolsetCategory.API}">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[14px] h-[14px] mr-1" data-icon="Colors" aria-hidden="true">
@@ -106,16 +108,50 @@
             <path id="Icon" d="M7.00032 11.9422C7.61954 12.4964 8.43724 12.8334 9.33366 12.8334C11.2667 12.8334 12.8337 11.2664 12.8337 9.33342C12.8337 7.71938 11.7411 6.36051 10.2552 5.95602M3.74543 5.95601C2.25954 6.3605 1.16699 7.71937 1.16699 9.33341C1.16699 11.2664 2.734 12.8334 4.66699 12.8334C6.59999 12.8334 8.16699 11.2664 8.16699 9.33341C8.16699 8.87813 8.08006 8.44314 7.92189 8.04415M10.5003 4.66675C10.5003 6.59974 8.93332 8.16675 7.00033 8.16675C5.06733 8.16675 3.50033 6.59974 3.50033 4.66675C3.50033 2.73375 5.06733 1.16675 7.00033 1.16675C8.93332 1.16675 10.5003 2.73375 10.5003 4.66675Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
           </g>
           <defs><clipPath id="clip0_18499_53582"><rect width="14" height="14" fill="white"></rect></clipPath></defs>
-        </svg>Custom</li>
+        </svg>
+        {{ 'PAC.Xpert.CustomTool' | translate: {Default: 'Custom Tool'} }}
+      </li>
       <li [cdkOption]="XpertToolsetCategory.WORKFLOW"
-        class="xpert-list-option" [ngClass]="{active: type() === XpertToolsetCategory.WORKFLOW }">
+        class="xpert-list-option"
+        [ngClass]="{active: type() === XpertToolsetCategory.WORKFLOW }"
+        [cdkOptionDisabled]="true"
+        (mouseover)="inDevelopmentOpen.set(true)"
+        (mouseout)="inDevelopmentOpen.set(false)"
+         cdkOverlayOrigin
+         #inDevelopmentTrigger="cdkOverlayOrigin"
+      >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[14px] h-[14px] mr-1" >
           <g id="route" clip-path="url(#clip0_3167_28693)">
             <path id="Icon" d="M6.70866 2.91699H6.96206C8.73962 2.91699 9.6284 2.91699 9.96578 3.23624C10.2574 3.51221 10.3867 3.91874 10.3079 4.31245C10.2168 4.76792 9.49122 5.28116 8.03999 6.30763L5.66899 7.98468C4.21777 9.01116 3.49215 9.5244 3.40106 9.97987C3.32233 10.3736 3.45157 10.7801 3.7432 11.0561C4.08059 11.3753 4.96937 11.3753 6.74693 11.3753H7.29199M4.66699 2.91699C4.66699 3.88349 3.88349 4.66699 2.91699 4.66699C1.95049 4.66699 1.16699 3.88349 1.16699 2.91699C1.16699 1.95049 1.95049 1.16699 2.91699 1.16699C3.88349 1.16699 4.66699 1.95049 4.66699 2.91699ZM12.8337 11.0837C12.8337 12.0502 12.0502 12.8337 11.0837 12.8337C10.1172 12.8337 9.33366 12.0502 9.33366 11.0837C9.33366 10.1172 10.1172 9.33366 11.0837 9.33366C12.0502 9.33366 12.8337 10.1172 12.8337 11.0837Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
           </g>
           <defs><clipPath id="clip0_3167_28693"><rect width="14" height="14" fill="white"></rect></clipPath></defs>
-        </svg>Workflow</li>
+        </svg>
+        {{ 'PAC.Xpert.Workflow' | translate: {Default: 'Workflow'} }}
+      </li>
     </ul>
+
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="inDevelopmentTrigger"
+      [cdkConnectedOverlayOpen]="inDevelopmentOpen()"
+      [cdkConnectedOverlayOffsetY]="-5"
+      [cdkConnectedOverlayPositions]="[
+        {
+          originX: 'end',
+          originY: 'top',
+          overlayX: 'end',
+          overlayY: 'bottom'
+        },
+      ]"
+    >
+      <div class="flex items-center justify-center p-2 rounded-xl shadow-2xl bg-white border border-yellow-400">
+        <ngm-spin small></ngm-spin>
+        <span class="ml-2 text-sm font-semibold text-zinc-700">
+          {{ 'PAC.Xpert.InDevelopment' | translate: { Default: 'This feature is in development' } }}...
+        </span>
+      </div>
+    </ng-template>
+
   </div>
 
   <div class="flex items-center">

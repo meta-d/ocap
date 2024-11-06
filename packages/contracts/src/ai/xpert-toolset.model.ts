@@ -42,7 +42,7 @@ export type TXpertToolset = {
    */
   customDisclaimer?: string
 
-  options?: Record<string, any>
+  options?: TXpertToolsetOptions
   credentials?: TToolCredentials
   schema?: string
   schemaType?: 'openapi_json' | 'openapi_yaml'
@@ -56,6 +56,11 @@ export type TXpertToolset = {
  * Toolset for Xpert
  */
 export interface IXpertToolset extends IBasePerWorkspaceEntityModel, TXpertToolset {}
+
+export type TXpertToolsetOptions = {
+  baseUrl?: string
+  [key: string]: any
+}
 
 export type XpertToolContext = {
   tenantId: string
@@ -429,7 +434,8 @@ export enum ApiProviderAuthType {
    * Enum class for api provider auth type.
    */
   NONE = "none",
-  API_KEY = "api_key"
+  API_KEY = "api_key",
+  BASIC = 'basic'
 }
 
 export enum ApiProviderSchemaType {

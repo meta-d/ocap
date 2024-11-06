@@ -40,13 +40,17 @@ export class XpertToolService extends TenantOrganizationAwareCrudService<XpertTo
 		return tool
 	}
 
-	async testTool(id: string, tool: Partial<IXpertTool>) {
-		const toolDetail = await this.findOne(id, { relations: ['toolset'] })
+	async testTool(tool: Partial<IXpertTool>) {
+		let toolDetail = null
+		if (tool.id) {
+			toolDetail = await this.findOne(tool.id, { relations: ['toolset'] })
+		}
 
 		return await this.commandBus.execute(
 			new ToolInvokeCommand({
-				...toolDetail,
-				...omit(tool, 'toolset')
+				...(toolDetail ?? {}),
+				...omit(tool, 'toolset'),
+				toolset: toolDetail?.toolset ?? tool.toolset
 			})
 		)
 	}

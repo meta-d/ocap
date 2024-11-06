@@ -33,8 +33,8 @@ export class XpertToolController extends CrudController<XpertTool> {
 		return this.service.getTool(id, { relations })
 	}
 
-	@Post(':id/test')
-	async test(@Param('id', UUIDValidationPipe) id: string, @Body() body: Partial<IXpertTool>) {
-		return this.service.testTool(id, body)
+	@Post('test')
+	async test(@Body() body: Partial<IXpertTool>) {
+		return this.service.testTool(body)
 	}
 }

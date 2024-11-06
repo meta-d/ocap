@@ -137,8 +137,10 @@ export class XpertStudioXpertsComponent {
     return this.#toolsets()?.filter((toolset) => tags?.length ? tags.some((t) => toolset.tags.some((tt) => tt.name === t.name)) : true)
   })
 
+  readonly isAll = computed(() => !this.type())
   readonly isXperts = computed(() => !this.type() || Object.values(XpertTypeEnum).includes(this.type() as XpertTypeEnum))
   readonly isTools = computed(() => this.type() === XpertToolsetCategoryEnum.API )
+  readonly isBuiltinTools = computed(() => this.type() === XpertToolsetCategoryEnum.BUILTIN )
 
   refresh() {
     this.refresh$.next()
@@ -185,6 +187,7 @@ export class XpertStudioXpertsComponent {
   createTool() {
     this.#dialog
     .open(XpertStudioCreateToolComponent, {
+      disableClose: true,
       data: {
       }
     })

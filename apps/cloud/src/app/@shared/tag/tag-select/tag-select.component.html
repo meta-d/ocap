@@ -7,7 +7,10 @@
     @for (tag of selectedTags(); track tag.id) {
       <tag [tag]="tag" sm class="inline-block" />
     } @empty {
-      Choose tags(optional)
+      {{ 'PAC.KEY_WORDS.ChooseTags' | translate: {Default: 'Choose tags'} }}
+      @if (optional()) {
+        ({{ 'PAC.KEY_WORDS.Optional' | translate: {Default: 'optional'} }})
+      }
     }
   </div>
   <div class="shrink-0 ml-1 text-gray-700 opacity-60">

@@ -1,6 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CdkMenuModule } from '@angular/cdk/menu'
+import {OverlayModule} from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
@@ -57,6 +58,7 @@ export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
     DragDropModule,
     CdkListboxModule,
     CdkMenuModule,
+    OverlayModule,
     RouterModule,
     TranslateModule,
     IntersectionObserverModule,
@@ -112,6 +114,8 @@ export class XpertHomeComponent {
       name: _.label
     } as unknown as ITag)))
   ))
+
+  readonly inDevelopmentOpen = signal(false)
 
   newWorkspace() {
     this.#dialog

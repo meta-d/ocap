@@ -1,67 +1,8 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 
-@mixin nx-dialog-size($config-or-theme) {
-  .nx-dialog-container {
-    &.small {
-      min-height: 50vh;
-      min-width: 40vw;
-    }
-    &.medium {
-      min-width: 60vw;
-      min-height: 60vh;
-    }
-    &.large {
-      min-width: 80vw;
-      min-height: 80vh;
-    }
-  }
-}
-
 $dialog-container-padding: 0;
 
-@mixin dialog-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  max-width: 100%;
-
-  .mat-mdc-dialog-title {
-    padding: .25rem 1rem;
-    margin: 0;
-    // background-color: rgba(0, 0, 0, 0.08);
-    display: flex;
-    align-items: center;
-
-    h4 {
-      margin: 0;
-      text-align: left;
-      font-weight: 500;
-      font-size: 1.25rem;
-    }
-  }
-
-  .cdk-drag-handle {
-    cursor: grab;
-  }
-
-  .mdc-dialog__content {
-    flex: 1;
-    max-height: unset;
-    // padding: 1rem;
-    // margin: 0;
-  }
-  
-  .mat-mdc-dialog-actions {
-    min-height: unset;
-    margin-bottom: -$dialog-container-padding;
-    // border-top: 1px dashed mat.get-color-from-palette($foreground, divider);
-    padding: 8px;
-    &:not([align='end']) {
-      justify-content: space-between;
-    }
-  }
-}
 
 @mixin color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
@@ -115,23 +56,10 @@ $dialog-container-padding: 0;
         background: unset;
       }
     }
-
-    // .nx-dialog-container {
-    //   .mat-mdc-dialog-container {
-        
-    //     @include dialog-container;
-
-    //     .mat-mdc-dialog-actions {
-    //       display: flex;
-    //       justify-content: space-between;
-    //     }
-    //   }
-    // }
   }
 }
 
 @mixin density($config-or-theme) {
-  @include nx-dialog-size($config-or-theme);
 }
 
 @mixin theme($theme) {

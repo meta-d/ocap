@@ -24,10 +24,11 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { TestOpenAPICommand } from '../xpert-tool/commands/'
-import { ParserOpenAPISchemaCommand } from './commands/'
+import { ParserODataSchemaCommand, ParserOpenAPISchemaCommand } from './commands/'
 import { ToolProviderDTO, ToolsetPublicDTO } from './dto'
 import {
 	GetODataRemoteMetadataQuery,
+	GetOpenAPIRemoteSchemaQuery,
 	ListBuiltinCredentialsSchemaQuery,
 	ListBuiltinToolProvidersQuery,
 	ListBuiltinToolsQuery,
@@ -35,7 +36,7 @@ import {
 } from './queries'
 import { XpertToolset } from './xpert-toolset.entity'
 import { XpertToolsetService } from './xpert-toolset.service'
-import { ToolNotFoundError, ToolProviderNotFoundError } from './errors'
+import { ToolProviderNotFoundError } from './errors'
 
 
 @ApiTags('XpertToolset')
@@ -97,6 +98,11 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 			)
 		)
 	}
+	
+	@Post('provider/openapi/remote')
+	async getOpenAPISchema(@Body() body: {url: string; credentials: Record<string, string>}) {
+		return this.queryBus.execute(new GetOpenAPIRemoteSchemaQuery(body.url, body.credentials))
+	}
 
 	@Post('provider/openapi/schema')
 	async parseOpenAPISchema(@Body() { schema }: { schema: string }) {
@@ -149,7 +155,12 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 	}
 
 	@Post('provider/odata/remote')
-	async getODataMetadata(@Body() body: {url: string;}) {
-		return await this.queryBus.execute(new GetODataRemoteMetadataQuery(body.url))
+	async getODataMetadata(@Body() body: {url: string; credentials: Record<string, string>}) {
+		return await this.queryBus.execute(new GetODataRemoteMetadataQuery(body.url, body.credentials))
+	}
+
+	@Post('provider/odata/schema')
+	async parseODataSchema(@Body() { schema }: { schema: string }) {
+		return this.commandBus.execute(new ParserODataSchemaCommand(schema))
 	}
 }

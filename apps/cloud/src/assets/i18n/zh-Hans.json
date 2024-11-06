@@ -233,7 +233,13 @@
       "Parameters": "参数",
       "Settings": "设置",
       "Workspaces": "工作空间",
-      "Optional": "可选"
+      "Optional": "可选",
+      "Enabled": "启用",
+      "Method": "方法",
+      "Path": "路径",
+      "EnterUsername": "输入用户名",
+      "EnterPassword": "输入密码",
+      "ChooseTags": "选择标签"
     },
     "MENU": {
       "Certification": "认证",
@@ -1755,8 +1761,28 @@
       "CreateXpert": "创建专家",
       "Schema": "架构",
       "ImportFromURL": "从链接导入",
-      "Toolset": {
-      }
+      "Ok": "确认",
+      "Samples": "示例",
+      "Test": "测试",
+      "CreateToolset": "创建工具集",
+      "EnterToolsetName": "输入工具集名称",
+      "ViewOpenAPISwaggerSpec": "查看 OpenAPI-Swagger 规范",
+      "ViewODataSpec": "查看 OData 规范",
+      "AvailableTools": "可用工具",
+      "EnterYourOpenAPISchema": "在此处输入您的 OpenAPI Schema",
+      "EnterYourODataMetadata": "在此处输入您的 OData Metadata",
+      "Auth_none": "无",
+      "AuthType": "认证类型",
+      "EnterAPIKey": "输入 API Key",
+      "PrivacyPolicy": "隐私协议",
+      "EnterPrivacyPolicy": "请输入隐私协议",
+      "EnterCustomDisclaimer": "请输入自定义免责声明",
+      "CustomDisclaimer": "自定义免责声明",
+      "BuiltinTool": "内置工具",
+      "CustomTool": "自定义工具",
+      "Workflow": "工作流",
+      "ToolProviders": "工具提供商",
+      "InDevelopment": "此功能正在开发中"
     },
     "title": {
       "short": "Xpert AI"

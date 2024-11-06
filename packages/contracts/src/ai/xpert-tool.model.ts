@@ -19,7 +19,7 @@ export type XpertToolType = {
   enabled?: boolean
   options?: Record<string, any>
   // type?: 'command' | 'agent' | 'browser' | null
-  schema?: Record<string, any>
+  schema?: Record<string, any> | TXpertToolEntity
   /**
    * Default input parameters of tool
    */
@@ -68,4 +68,17 @@ export interface IBuiltinTool {
     llm: string
   }
   parameters: TToolParameter[]
+}
+
+// Types for OData
+export type TXpertToolEntity = {
+  name: string
+  method: 'create' | 'get' | 'query' | 'update' | 'delete'
+  path: string
+  /**
+   * Definition of properties
+   */
+  parameters: Partial<TToolParameter>[]
+
+  description?: string
 }

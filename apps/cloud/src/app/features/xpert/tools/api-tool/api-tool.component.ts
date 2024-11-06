@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, computed, effect, inject, model, signal } from '@angular/core'
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { Router, RouterModule } from '@angular/router'
+import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
 import { getErrorMessage, IXpertTool, IXpertToolset, routeAnimations, ToastrService, XpertToolsetService } from '../../../../@core'
-import { XpertStudioConfigureToolComponent } from '../openapi/configure/configure.component'
+import { XpertStudioConfigureToolComponent } from '../openapi/'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { ButtonGroupDirective, DensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective, DensityDirective, NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { distinctUntilChanged, switchMap } from 'rxjs/operators'
@@ -15,6 +15,8 @@ import { EMPTY, of } from 'rxjs'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { omit } from 'lodash-es'
+import { XpertToolsetToolTestComponent } from '../tool-test/test/tool.component'
+import { XpertStudioConfigureODataComponent } from '../odata'
 
 @Component({
   standalone: true,
@@ -28,8 +30,11 @@ import { omit } from 'lodash-es'
     ButtonGroupDirective,
     DensityDirective,
     NgmI18nPipe,
+    NgmDensityDirective,
     EmojiAvatarComponent,
     XpertStudioConfigureToolComponent,
+    XpertStudioConfigureODataComponent,
+    XpertToolsetToolTestComponent
   ],
   selector: 'pac-xpert-api-tool',
   templateUrl: './api-tool.component.html',
@@ -43,9 +48,10 @@ export class XpertStudioAPIToolComponent {
   readonly #toastr = inject(ToastrService)
   readonly #dialog = inject(MatDialog)
   readonly #router = inject(Router)
+  readonly #route = inject(ActivatedRoute)
   readonly #fb = inject(FormBuilder)
 
-  readonly toolset = signal<IXpertToolset>(null)
+  readonly toolset = model<IXpertToolset>(null)
   readonly avatar = computed(() => this.toolset()?.avatar)
 
   readonly tool = model<IXpertTool>(null)
@@ -100,8 +106,8 @@ export class XpertStudioAPIToolComponent {
     })
   }
 
-  cancelConfigure() {
-    
+  onConfigChange(value: Partial<IXpertToolset>) {
+    this.updateToolset(value)
   }
 
   updateToolset(value: Partial<IXpertToolset>) {
@@ -183,5 +189,9 @@ export class XpertStudioAPIToolComponent {
           this.#toastr.error(getErrorMessage(error))
         }
       })
+  }
+
+  cancel() {
+    this.#router.navigate(['/xpert'])
   }
 }

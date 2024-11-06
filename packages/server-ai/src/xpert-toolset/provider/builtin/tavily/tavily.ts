@@ -13,6 +13,9 @@ export class TavilyToolset extends BuiltinToolset {
 		if (toolset) {
             const tool = toolset.tools?.[0]
             if (tool?.enabled) {
+				if (!toolset.credentials?.tavily_api_key) {
+					throw new ToolProviderCredentialValidationError(`Credential 'tavily_api_key' not provided`)
+				}
                 const tavilySearchTool = new TavilySearchResults({
                     ...(tool.parameters ?? {}),
                     apiKey: toolset.credentials.tavily_api_key as string,

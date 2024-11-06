@@ -7,7 +7,7 @@ import { XpertStudioPanelComponent } from '../panel.component'
 import { CloseSvgComponent } from '@metad/ocap-angular/common'
 import { of, switchMap } from 'rxjs'
 import { derivedAsync } from 'ngxtension/derived-async'
-import { XpertToolsetToolTestComponent } from '../../../tools'
+import { XpertToolTestComponent } from '../../../tools'
 
 @Component({
   selector: 'xpert-studio-panel-toolset',
@@ -15,7 +15,7 @@ import { XpertToolsetToolTestComponent } from '../../../tools'
   styleUrls: ['./toolset.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, CloseSvgComponent, EmojiAvatarComponent, XpertToolsetToolTestComponent],
+  imports: [FFlowModule, MatIcon, CloseSvgComponent, EmojiAvatarComponent, XpertToolTestComponent],
 })
 export class XpertStudioPanelToolsetComponent {
   readonly elementRef = inject(ElementRef)

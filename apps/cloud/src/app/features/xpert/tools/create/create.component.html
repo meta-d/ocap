@@ -1,6 +1,6 @@
 <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
   <h4 style="pointer-events: none;">
-    {{ 'PAC.Xpert.CreateTool' | translate: { Default: 'Create Tool' } }}
+    {{ 'PAC.Xpert.CreateToolset' | translate: { Default: 'Create Toolset' } }}
   </h4>
 
   <ul class="w-80 mx-auto p-1 flex items-center justify-center gap-2 bg-hover-bg rounded-xl"
@@ -23,25 +23,23 @@
 <div mat-dialog-content>
   @switch (providerTypes()[0]) {
     @case ('openapi') {
-      <pac-xpert-tool-configure #configure [loading]="loading()" />
+      <xpert-tool-openapi-configure #configure
+        (valueChange)="onValueChange($event)"
+      />
     }
     @case ('odata') {
-      <pac-xpert-tool-odata-configure #configure
+      <xpert-tool-odata-configure #configure
         (valueChange)="onValueChange($event)"
       />
     }
   }
-  
 </div>
 
-<div mat-dialog-actions>
+<div mat-dialog-actions align="end">
   <div ngmButtonGroup>
     <button mat-stroked-button mat-dialog-close cdkFocusInitial>
       {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
     </button>
-  </div>
-
-  <div ngmButtonGroup>
     <button mat-raised-button color="accent"
       (click)="createTool()">
       {{ 'PAC.ACTIONS.CREATE' | translate: { Default: 'Create' } }}

@@ -219,172 +219,173 @@ export class ApiBasedToolSchemaParser {
     return ApiBasedToolSchemaParser.parseJSONSchemaToZod(jsonSchema)
   }
 
-    static async autoParseToToolBundle(
-        content: string,
-        extraInfo: Record<string, any> = {},
-        warning: Record<string, any> = {}
-    ): Promise<[ApiToolBundle[], string]> {
-        content = content.trim();
-        let loadedContent: any = null;
-        let jsonError: Error | null = null;
-        let yamlError: Error | null = null;
+  static async autoParseToToolBundle(
+      content: string,
+      extraInfo: Record<string, any> = {},
+      warning: Record<string, any> = {}
+  ): Promise<[ApiToolBundle[], string]> {
+      content = content.trim();
+      let loadedContent: any = null;
+      let jsonError: Error | null = null;
+      let yamlError: Error | null = null;
 
-        try {
-            loadedContent = JSON.parse(content);
-        } catch (e) {
-            jsonError = e;
-        }
+      try {
+          loadedContent = JSON.parse(content);
+      } catch (e) {
+          jsonError = e;
+      }
 
-        if (loadedContent === null) {
-            try {
-                loadedContent = load(content)
-            } catch (e) {
-                yamlError = e;
-            }
-        }
+      if (loadedContent === null) {
+          try {
+              loadedContent = load(content)
+          } catch (e) {
+              yamlError = e;
+          }
+      }
 
-        if (loadedContent === null) {
-            throw new ToolApiSchemaError(
-                `Invalid api schema, schema is neither json nor yaml. json error: ${jsonError?.message}, yaml error: ${yamlError?.message}`
-            );
-        }
+      if (loadedContent === null) {
+          throw new ToolApiSchemaError(
+              `Invalid api schema, schema is neither json nor yaml. json error: ${jsonError?.message}, yaml error: ${yamlError?.message}`
+          );
+      }
 
-        let swaggerError: Error | null = null;
-        let openapiError: Error | null = null;
-        let openapiPluginError: Error | null = null;
-        let schemaType: string | null = null;
+      let swaggerError: Error | null = null;
+      let openapiError: Error | null = null;
+      let openapiPluginError: Error | null = null;
+      let schemaType: string | null = null;
 
-        try {
-            const openapi = ApiBasedToolSchemaParser.parseOpenapiToToolBundle(
-                loadedContent, extraInfo, warning
-            );
-            schemaType = ApiProviderSchemaType.OPENAPI;
-            return [openapi, schemaType];
-        } catch (e) {
-            openapiError = e;
-        }
+      try {
+          const openapi = ApiBasedToolSchemaParser.parseOpenapiToToolBundle(
+              loadedContent, extraInfo, warning
+          );
+          schemaType = ApiProviderSchemaType.OPENAPI;
+          return [openapi, schemaType];
+      } catch (e) {
+          openapiError = e;
+      }
 
-        try {
-            const convertedSwagger = ApiBasedToolSchemaParser.parseSwaggerToOpenapi(
-                loadedContent, extraInfo, warning
-            );
-            schemaType = ApiProviderSchemaType.SWAGGER;
-            return [
-                ApiBasedToolSchemaParser.parseOpenapiToToolBundle(
-                    convertedSwagger, extraInfo, warning
-                ),
-                schemaType
-            ];
-        } catch (e) {
-            swaggerError = e;
-        }
+      try {
+          const convertedSwagger = ApiBasedToolSchemaParser.parseSwaggerToOpenapi(
+              loadedContent, extraInfo, warning
+          );
+          schemaType = ApiProviderSchemaType.SWAGGER;
+          return [
+              ApiBasedToolSchemaParser.parseOpenapiToToolBundle(
+                  convertedSwagger, extraInfo, warning
+              ),
+              schemaType
+          ];
+      } catch (e) {
+          swaggerError = e;
+      }
 
-        try {
-            const openapiPlugin = await ApiBasedToolSchemaParser.parseOpenaiPluginJsonToToolBundle(
-                JSON.stringify(loadedContent), extraInfo, warning
-            );
-            return [openapiPlugin, ApiProviderSchemaType.OPENAI_PLUGIN];
-        } catch (e) {
-            openapiPluginError = e;
-        }
+      try {
+          const openapiPlugin = await ApiBasedToolSchemaParser.parseOpenaiPluginJsonToToolBundle(
+              JSON.stringify(loadedContent), extraInfo, warning
+          );
+          return [openapiPlugin, ApiProviderSchemaType.OPENAI_PLUGIN];
+      } catch (e) {
+          openapiPluginError = e;
+      }
 
-        throw new ToolApiSchemaError(
-            `Invalid api schema, openapi error: ${openapiError?.message}, swagger error: ${swaggerError?.message}, openapi plugin error: ${openapiPluginError?.message}`
-        );
-    }
+      throw new ToolApiSchemaError(
+          `Invalid api schema, openapi error: ${openapiError?.message}, swagger error: ${swaggerError?.message}, openapi plugin error: ${openapiPluginError?.message}`
+      );
+  }
 
-      static parseSwaggerToOpenapi(
-          swagger: Record<string, any>,
-          extraInfo: Record<string, any> = {},
-          warning: Record<string, any> = {}
-      ): Record<string, any> {
-          const info = swagger.info || { title: "Swagger", description: "Swagger", version: "1.0.0" };
-          const servers = swagger.servers || [];
-  
-          if (servers.length === 0) {
+  static parseSwaggerToOpenapi(
+      swagger: Record<string, any>,
+      extraInfo: Record<string, any> = {},
+      warning: Record<string, any> = {}
+  ): Record<string, any> {
+      const info = swagger.info || { title: "Swagger", description: "Swagger", version: "1.0.0" };
+      const servers = swagger.servers || [];
+      if (servers.length === 0) {
+          if (!swagger.host) {
               throw new ToolApiSchemaError("No server found in the swagger yaml.");
           }
-  
-          const openapi: Record<string, any> = {
-              openapi: "3.0.0",
-              info: {
-                  title: info.title || "Swagger",
-                  description: info.description || "Swagger",
-                  version: info.version || "1.0.0",
-              },
-              servers: swagger.servers,
-              paths: {},
-              components: { schemas: {} },
-          };
-  
-          if (!swagger.paths || Object.keys(swagger.paths).length === 0) {
-              throw new ToolApiSchemaError("No paths found in the swagger yaml.");
-          }
-  
-          for (const [path, pathItem] of Object.entries(swagger.paths)) {
-              openapi.paths[path] = {};
-              for (const [method, operation] of Object.entries(pathItem)) {
-                  if (!operation.operationId) {
-                      throw new ToolApiSchemaError(`No operationId found in operation ${method} ${path}.`);
-                  }
-  
-                  if ((!operation.summary || operation.summary.length === 0) &&
-                      (!operation.description || operation.description.length === 0)) {
-                      warning["missing_summary"] = `No summary or description found in operation ${method} ${path}.`;
-                  }
-  
-                  openapi.paths[path][method] = {
-                      operationId: operation.operationId,
-                      summary: operation.summary || "",
-                      description: operation.description || "",
-                      parameters: operation.parameters || [],
-                      responses: operation.responses || {},
-                  };
-  
-                  if (operation.requestBody) {
-                      openapi.paths[path][method].requestBody = operation.requestBody;
-                  }
-              }
-          }
-  
-          for (const [name, definition] of Object.entries(swagger.definitions || {})) {
-              openapi.components.schemas[name] = definition;
-          }
-  
-          return openapi;
+          servers.push({ url: `https://${swagger.host}${swagger.basePath||''}` });
       }
-  
-      static async parseOpenaiPluginJsonToToolBundle(
-          json: string,
-          extraInfo: Record<string, any> = {},
-          warning: Record<string, any> = {}
-      ): Promise<ApiToolBundle[]> {
-          try {
-              const openaiPlugin = JSON.parse(json);
-              const api = openaiPlugin.api;
-              const apiUrl = api.url;
-              const apiType = api.type;
-  
-              if (apiType !== "openapi") {
-                  throw new ToolNotSupportedError("Only openapi is supported now.");
+
+      const openapi: Record<string, any> = {
+          openapi: "3.0.0",
+          info: {
+              title: info.title || "Swagger",
+              description: info.description || "Swagger",
+              version: info.version || "1.0.0",
+          },
+          servers: servers,
+          paths: {},
+          components: { schemas: {} },
+      };
+
+      if (!swagger.paths || Object.keys(swagger.paths).length === 0) {
+          throw new ToolApiSchemaError("No paths found in the swagger yaml.");
+      }
+
+      for (const [path, pathItem] of Object.entries(swagger.paths)) {
+          openapi.paths[path] = {};
+          for (const [method, operation] of Object.entries(pathItem)) {
+              if (!operation.operationId) {
+                  throw new ToolApiSchemaError(`No operationId found in operation ${method} ${path}.`);
               }
-  
-              const response = await fetch(apiUrl, {
-                  headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" },
-                  // timeout: 5000
-              });
-  
-              if (!response.ok) {
-                  throw new ToolProviderNotFoundError("Cannot get openapi yaml from url.");
+
+              if ((!operation.summary || operation.summary.length === 0) &&
+                  (!operation.description || operation.description.length === 0)) {
+                  warning["missing_summary"] = `No summary or description found in operation ${method} ${path}.`;
               }
-  
-              const yamlText = await response.text();
-              return ApiBasedToolSchemaParser.parseOpenapiYamlToToolBundle(yamlText, extraInfo, warning);
-          } catch (error) {
-              throw new ToolProviderNotFoundError("Invalid openai plugin json.");
+
+              openapi.paths[path][method] = {
+                  operationId: operation.operationId,
+                  summary: operation.summary || "",
+                  description: operation.description || "",
+                  parameters: operation.parameters || [],
+                  responses: operation.responses || {},
+              };
+
+              if (operation.requestBody) {
+                  openapi.paths[path][method].requestBody = operation.requestBody;
+              }
           }
       }
 
+      for (const [name, definition] of Object.entries(swagger.definitions || {})) {
+          openapi.components.schemas[name] = definition;
+      }
+
+      return openapi;
+  }
+  
+  static async parseOpenaiPluginJsonToToolBundle(
+      json: string,
+      extraInfo: Record<string, any> = {},
+      warning: Record<string, any> = {}
+  ): Promise<ApiToolBundle[]> {
+      try {
+          const openaiPlugin = JSON.parse(json);
+          const api = openaiPlugin.api;
+          const apiUrl = api.url;
+          const apiType = api.type;
+
+          if (apiType !== "openapi") {
+              throw new ToolNotSupportedError("Only openapi is supported now.");
+          }
+
+          const response = await fetch(apiUrl, {
+              headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" },
+              // timeout: 5000
+          });
+
+          if (!response.ok) {
+              throw new ToolProviderNotFoundError("Cannot get openapi yaml from url.");
+          }
+
+          const yamlText = await response.text();
+          return ApiBasedToolSchemaParser.parseOpenapiYamlToToolBundle(yamlText, extraInfo, warning);
+      } catch (error) {
+          throw new ToolProviderNotFoundError("Invalid openai plugin json.");
+      }
+  }
 
 	static convertPropertyAnyOf(
 		property: Record<string, any>,

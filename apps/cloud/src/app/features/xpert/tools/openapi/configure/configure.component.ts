@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, model, output } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, model, output, signal } from '@angular/core'
+import { outputFromObservable, toSignal } from '@angular/core/rxjs-interop'
 import {
   FormArray,
   FormBuilder,
@@ -11,22 +11,28 @@ import {
   Validators
 } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { RouterModule } from '@angular/router'
-import { routeAnimations } from '@metad/core'
+import { EntriesPipe, routeAnimations } from '@metad/core'
 import { pick } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
   ApiProviderAuthType,
   ApiToolBundle,
+  getErrorMessage,
+  IXpertTool,
   IXpertToolset,
   TagCategoryEnum,
+  ToastrService,
   XpertToolsetCategoryEnum,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
 import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
-import { XpertStudioToolAuthorizationComponent } from '../../authorization/authorization.component'
+import { CdkMenuModule } from '@angular/cdk/menu'
+import { Samples } from '../types'
+import { XpertToolAuthorizationInputComponent } from '../../authorization'
+import { NgmSpinComponent } from '@metad/ocap-angular/common'
+import { XpertToolTestDialogComponent } from '../../tool-test'
 
 
 @Component({
@@ -35,12 +41,16 @@ import { XpertStudioToolAuthorizationComponent } from '../../authorization/autho
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterModule,
+    CdkMenuModule,
     TranslateModule,
+    EntriesPipe,
     EmojiAvatarComponent,
-    TagSelectComponent
+    TagSelectComponent,
+    NgmSpinComponent,
+
+    XpertToolAuthorizationInputComponent
   ],
-  selector: 'pac-xpert-tool-configure',
+  selector: 'xpert-tool-openapi-configure',
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',
   animations: [routeAnimations],
@@ -48,34 +58,40 @@ import { XpertStudioToolAuthorizationComponent } from '../../authorization/autho
 })
 export class XpertStudioConfigureToolComponent {
   eTagCategoryEnum = TagCategoryEnum
-  private readonly xpertToolsetService = inject(XpertToolsetService)
-  readonly #formBuilder = inject(FormBuilder)
+  eSamples = Samples
+
+  readonly toolsetService = inject(XpertToolsetService)
+  readonly #fb = inject(FormBuilder)
   readonly #dialog = inject(MatDialog)
   readonly #cdr = inject(ChangeDetectorRef)
+  readonly #toastr = inject(ToastrService)
 
-  readonly loading = input<boolean>()
-  readonly toolset = model<IXpertToolset>(null)
-
-  readonly valueChange = output()
+  readonly toolset = input<IXpertToolset>(null)
+  readonly loading = signal(false)
 
   readonly formGroup = new FormGroup({
+    id: this.#fb.control(null),
     name: new FormControl(null, [Validators.required]),
     avatar: new FormControl(null),
     description: new FormControl(null),
     schema: new FormControl<string>(null, [Validators.required]),
-    type: this.#formBuilder.control('openapi'),
-    category: this.#formBuilder.control(XpertToolsetCategoryEnum.API),
+    type: this.#fb.control('openapi'),
+    category: this.#fb.control(XpertToolsetCategoryEnum.API),
     tools: new FormArray([]),
-    credentials: this.#formBuilder.group({
-      auth_type: this.#formBuilder.control(ApiProviderAuthType.NONE),
-      api_key_header: this.#formBuilder.control(null),
-      api_key_value: this.#formBuilder.control(null),
-      api_key_header_prefix: this.#formBuilder.control(null)
+    credentials: this.#fb.control({
+      auth_type: ApiProviderAuthType.NONE
     }),
-    tags: this.#formBuilder.control(null),
-    privacyPolicy: this.#formBuilder.control(null),
-    customDisclaimer: this.#formBuilder.control(null)
+    tags: this.#fb.control(null),
+    privacyPolicy: this.#fb.control(null),
+    customDisclaimer: this.#fb.control(null),
+
+    options: this.#fb.group({
+      baseUrl: this.#fb.control('')
+    })
   })
+
+  readonly valueChange = outputFromObservable(this.formGroup.valueChanges)
+
   get invalid() {
     return this.formGroup.invalid
   }
@@ -103,12 +119,18 @@ export class XpertStudioConfigureToolComponent {
   get tags() {
     return this.formGroup.get('tags') as FormControl
   }
+  get options() {
+    return this.formGroup.get('options') as FormGroup
+  }
+  get baseUrl() {
+    return this.options.get('baseUrl') as FormControl
+  }
 
   readonly schemas = toSignal(
     this.schema.valueChanges.pipe(
       filter(() => !this.toolset()),
       distinctUntilChanged(),
-      switchMap((schema) => (!schema?.trim() ? of(null) : this.xpertToolsetService.parserOpenAPISchema(schema)))
+      switchMap((schema) => (!schema?.trim() ? of(null) : this.toolsetService.parserOpenAPISchema(schema)))
     )
   )
 
@@ -124,17 +146,19 @@ export class XpertStudioConfigureToolComponent {
 
     effect(() => {
       this.loading() ? this.formGroup.disable() : this.formGroup.enable()
-    })
+    }, { allowSignalWrites: true })
 
     effect(
       () => {
-        if (this.toolset()) {
+        if (this.toolset() && !this.formGroup.value.id) {
           this.formGroup.patchValue({
             ...pick(
               this.toolset(),
+              'id',
               'name',
               'avatar',
               'description',
+              'options',
               'schema',
               'type',
               'category',
@@ -154,39 +178,53 @@ export class XpertStudioConfigureToolComponent {
 
   addTool(apiBundle: ApiToolBundle) {
     this.tools.push(
-      this.#formBuilder.group({
-        enabled: this.#formBuilder.control(false),
-        options: this.#formBuilder.control({ api_bundle: apiBundle }),
-        name: this.#formBuilder.control(apiBundle.operation_id),
-        description: this.#formBuilder.control(apiBundle.summary),
-        schema: this.#formBuilder.control(apiBundle.openapi)
+      this.#fb.group({
+        enabled: this.#fb.control(false),
+        options: this.#fb.control({ api_bundle: apiBundle }),
+        name: this.#fb.control(apiBundle.operation_id),
+        description: this.#fb.control(apiBundle.summary),
+        schema: this.#fb.control(apiBundle.openapi)
       })
     )
   }
 
-  openAuth() {
-    const credentials = this.credentials.value ?? {}
-    this.#dialog
-      .open(XpertStudioToolAuthorizationComponent, {
-        data: {
-          ...credentials,
-          auth_type: credentials.auth_type ? [credentials.auth_type] : [],
-          api_key_header_prefix: credentials.api_key_header_prefix ? [credentials.api_key_header_prefix] : []
+  getMetadata() {
+    this.loading.set(true)
+    this.toolsetService.getOpenAPIRemoteSchema(this.baseUrl.value, this.credentials.value).subscribe({
+      next: (result) => {
+        this.loading.set(false)
+        // Handle the success scenario here
+        this.formGroup.patchValue({
+          schema: result.schema,
+        })
+      },
+      error: (err) => {
+        this.#toastr.error(getErrorMessage(err))
+        this.loading.set(false)
+        // Handle the error scenario here
+      }
+    })
+  }
+
+  triggerSample(name: keyof typeof Samples) {
+    this.formGroup.patchValue({
+      schema: Samples[name].schema
+    })
+  }
+
+  openToolTest(tool: Partial<IXpertTool>) {
+    this.#dialog.open(XpertToolTestDialogComponent, {
+      panelClass: 'medium',
+      data: {
+        tool: {
+          ...tool,
+          toolset: this.formGroup.value
         }
-      })
-      .afterClosed()
-      .subscribe((value) => {
-        if (value) {
-          this.formGroup.patchValue({
-            credentials: {
-              ...value,
-              api_key_header_prefix: value.api_key_header_prefix[0],
-              auth_type: value.auth_type[0]
-            }
-          })
-          this.formGroup.markAsDirty()
-          this.#cdr.detectChanges()
-        }
-      })
+      }
+    }).afterClosed().subscribe({
+      next: (result) => {
+
+      }
+    })
   }
 }

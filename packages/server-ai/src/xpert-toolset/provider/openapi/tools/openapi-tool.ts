@@ -21,7 +21,7 @@ export class OpenAPITool extends BaseTool {
 		protected base?: IBaseTool,
 		fields?: ToolParams
 	) {
-		super(base, fields)
+		super(fields)
 
         this.name = xpertTool.name
         this.description = xpertTool.description

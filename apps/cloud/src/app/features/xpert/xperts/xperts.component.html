@@ -251,16 +251,18 @@
   }
 </div>
 
-<div class="flex items-center px-12 py-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
-  <div class="mr-3">Tool Providers</div>
-  <div class="grow w-0 h-px bg-divider-regular"></div>
-</div>
+@if (isBuiltinTools() || isAll()) {
+  <div class="flex items-center px-12 py-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
+    <div class="mr-3">{{ 'PAC.Xpert.ToolProviders' | translate: { Default: 'Tool Providers' } }}</div>
+    <div class="grow w-0 h-px bg-divider-regular"></div>
+  </div>
 
-<div class="relative grid content-start grid-cols-1 gap-4 px-12 pt-2 pb-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grow shrink-0">
-  @for (provider of builtinToolProviders(); track provider.name) {
-    <xpert-tool-provider-card [provider]="provider" (click)="configureToolBuiltin(provider)" />
-  }
-</div>
+  <div class="relative grid content-start grid-cols-1 gap-4 px-12 pt-2 pb-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grow shrink-0">
+    @for (provider of builtinToolProviders(); track provider.name) {
+      <xpert-tool-provider-card [provider]="provider" (click)="configureToolBuiltin(provider)" />
+    }
+  </div>
+}
 
 <ng-template #cardMenu let-xpert="xpert">
   <div class="ngm-cdk-menu p-2" cdkMenu >

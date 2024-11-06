@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, model, output, signal } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import {
   FormArray,
   FormBuilder,
@@ -11,25 +10,32 @@ import {
   Validators
 } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { routeAnimations } from '@metad/core'
+import { EntriesPipe, routeAnimations } from '@metad/core'
 import { pick } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
   ApiProviderAuthType,
   ApiToolBundle,
   getErrorMessage,
+  IXpert,
+  IXpertTool,
   IXpertToolset,
   TagCategoryEnum,
   ToastrService,
+  TXpertToolEntity,
   XpertToolsetCategoryEnum,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
 import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
-import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
-import { XpertStudioToolAuthorizationComponent } from '../../authorization/authorization.component'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
+import { Samples } from '../types'
+import { outputFromObservable } from '@angular/core/rxjs-interop'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
+import { NgmDensityDirective } from '@metad/ocap-angular/core'
+import { XpertToolAuthorizationInputComponent } from '../../authorization'
+import { XpertToolTestDialogComponent } from '../../tool-test'
 
 
 @Component({
@@ -40,11 +46,17 @@ import { NgmSpinComponent } from '@metad/ocap-angular/common'
     ReactiveFormsModule,
     CdkMenuModule,
     TranslateModule,
+    MatSlideToggleModule,
+
+    EntriesPipe,
     EmojiAvatarComponent,
     TagSelectComponent,
-    NgmSpinComponent
+    NgmSpinComponent,
+    NgmDensityDirective,
+
+    XpertToolAuthorizationInputComponent
   ],
-  selector: 'pac-xpert-tool-odata-configure',
+  selector: 'xpert-tool-odata-configure',
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',
   animations: [routeAnimations],
@@ -52,39 +64,41 @@ import { NgmSpinComponent } from '@metad/ocap-angular/common'
 })
 export class XpertStudioConfigureODataComponent {
   eTagCategoryEnum = TagCategoryEnum
+  eSamples = Samples
 
-  private readonly xpertToolsetService = inject(XpertToolsetService)
+  readonly toolsetService = inject(XpertToolsetService)
   readonly #toastr = inject(ToastrService)
   readonly #formBuilder = inject(FormBuilder)
   readonly #dialog = inject(MatDialog)
   readonly #cdr = inject(ChangeDetectorRef)
   readonly #fb = inject(FormBuilder)
 
+  readonly toolset = input<IXpertToolset>(null)
   readonly loading = signal(false)
-  readonly toolset = model<IXpertToolset>(null)
-
-  readonly valueChange = output()
 
   readonly formGroup = new FormGroup({
+    id: this.#formBuilder.control(null),
     name: new FormControl(null, [Validators.required]),
     avatar: new FormControl(null),
     description: new FormControl(null),
     schema: new FormControl<string>(null, [Validators.required]),
-    type: this.#formBuilder.control('openapi'),
+    type: this.#formBuilder.control('odata'),
     category: this.#formBuilder.control(XpertToolsetCategoryEnum.API),
     tools: new FormArray([]),
-    credentials: this.#formBuilder.group({
-      auth_type: this.#formBuilder.control(ApiProviderAuthType.NONE),
-      api_key_header: this.#formBuilder.control(null),
-      api_key_value: this.#formBuilder.control(null),
-      api_key_header_prefix: this.#formBuilder.control(null)
+    credentials: this.#formBuilder.control({
+      auth_type: ApiProviderAuthType.NONE
     }),
     tags: this.#formBuilder.control(null),
     privacyPolicy: this.#formBuilder.control(null),
     customDisclaimer: this.#formBuilder.control(null),
 
-    url: this.#fb.control('')
+    options: this.#formBuilder.group({
+      baseUrl: this.#fb.control('')
+    })
   })
+
+  readonly valueChange = outputFromObservable(this.formGroup.valueChanges)
+
   get invalid() {
     return this.formGroup.invalid
   }
@@ -112,41 +126,47 @@ export class XpertStudioConfigureODataComponent {
   get tags() {
     return this.formGroup.get('tags') as FormControl
   }
-  get url() {
-    return this.formGroup.get('url') as FormControl
+  get options() {
+    return this.formGroup.get('options') as FormGroup
+  }
+  get baseUrl() {
+    return this.options.get('baseUrl') as FormControl
   }
 
   // readonly schemas = toSignal(
   //   this.schema.valueChanges.pipe(
   //     filter(() => !this.toolset()),
   //     distinctUntilChanged(),
-  //     switchMap((schema) => (!schema?.trim() ? of(null) : this.xpertToolsetService.parserOpenAPISchema(schema)))
+  //     switchMap((schema) => (!schema?.trim() ? of(null) : this.toolsetService.parserODataSchema(schema)))
   //   )
   // )
 
   constructor() {
     // effect(() => {
-    //   if (this.schemas()?.parameters_schema) {
+    //   if (this.schemas()?.tools) {
     //     this.tools.clear()
-    //     this.schemas().parameters_schema.forEach((schema) => {
-    //       this.addTool(schema)
+    //     this.schemas().tools.forEach((schema) => {
+    //       this.addTool(schema as any)
     //     })
     //   }
     // })
 
     effect(() => {
       this.loading() ? this.formGroup.disable() : this.formGroup.enable()
-    })
+    },
+    { allowSignalWrites: true })
 
     effect(
       () => {
-        if (this.toolset()) {
+        if (this.toolset() && !this.formGroup.value.id) {
           this.formGroup.patchValue({
             ...pick(
               this.toolset(),
+              'id',
               'name',
               'avatar',
               'description',
+              'options',
               'schema',
               'type',
               'category',
@@ -164,57 +184,35 @@ export class XpertStudioConfigureODataComponent {
     )
   }
 
-  addTool(apiBundle: ApiToolBundle) {
+  addTool(toolSchema: TXpertToolEntity) {
     this.tools.push(
       this.#formBuilder.group({
         enabled: this.#formBuilder.control(false),
-        options: this.#formBuilder.control({ api_bundle: apiBundle }),
-        name: this.#formBuilder.control(apiBundle.operation_id),
-        description: this.#formBuilder.control(apiBundle.summary),
-        schema: this.#formBuilder.control(apiBundle.openapi)
+        // options: this.#formBuilder.control({ api_bundle: apiBundle }),
+        name: this.#formBuilder.control(toolSchema.name),
+        description: this.#formBuilder.control(toolSchema.description),
+        schema: this.#formBuilder.control(toolSchema)
       })
     )
   }
 
-  openAuth() {
-    const credentials = this.credentials.value ?? {}
-    this.#dialog
-      .open(XpertStudioToolAuthorizationComponent, {
-        data: {
-          ...credentials,
-          auth_type: credentials.auth_type ? [credentials.auth_type] : [],
-          api_key_header_prefix: credentials.api_key_header_prefix ? [credentials.api_key_header_prefix] : []
-        }
-      })
-      .afterClosed()
-      .subscribe((value) => {
-        if (value) {
-          this.formGroup.patchValue({
-            credentials: {
-              ...value,
-              api_key_header_prefix: value.api_key_header_prefix[0],
-              auth_type: value.auth_type[0]
-            }
-          })
-          this.formGroup.markAsDirty()
-          this.#cdr.detectChanges()
-        }
-      })
+  triggerSample(name: keyof typeof Samples) {
+    this.baseUrl.setValue(Samples[name].url)
+    this.getMetadata()
   }
 
   // Get Metadata
   getMetadata() {
-    console.log(this.formGroup.get('url').value)
     this.loading.set(true)
-    this.xpertToolsetService.getODataRemoteMetadata(this.url.value).subscribe({
+    this.toolsetService.getODataRemoteMetadata(this.baseUrl.value, this.credentials.value).subscribe({
       next: (result) => {
+        console.log(result)
         this.loading.set(false)
         // Handle the success scenario here
         this.formGroup.patchValue({
           schema: result.schema,
-          tools: result.tools
         })
-        result.tools.forEach((tool) => this.addTool({operation_id: tool.name} as ApiToolBundle))
+        result.tools.forEach((tool) => this.addTool(tool))
       },
       error: (err) => {
         this.#toastr.error(getErrorMessage(err))
@@ -222,6 +220,21 @@ export class XpertStudioConfigureODataComponent {
         // Handle the error scenario here
       }
     })
-    
+  }
+
+  openToolTest(tool: Partial<IXpertTool>) {
+    this.#dialog.open(XpertToolTestDialogComponent, {
+      panelClass: 'medium',
+      data: {
+        tool: {
+          ...tool,
+          toolset: this.formGroup.value
+        }
+      }
+    }).afterClosed().subscribe({
+      next: (result) => {
+
+      }
+    })
   }
 }

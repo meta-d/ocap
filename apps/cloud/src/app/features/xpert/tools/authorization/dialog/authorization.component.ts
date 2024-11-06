@@ -1,9 +1,9 @@
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
-import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
-import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { ApiProviderAuthType } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
@@ -18,13 +18,12 @@ import { MaterialModule } from 'apps/cloud/src/app/@shared'
     MaterialModule,
     CdkListboxModule,
     ButtonGroupDirective,
-    DensityDirective
   ],
-  selector: 'xpert-studio-tool-authorization',
+  selector: 'xpert-tool-authorization',
   templateUrl: 'authorization.component.html',
   styleUrls: ['authorization.component.scss']
 })
-export class XpertStudioToolAuthorizationComponent {
+export class XpertToolAuthorizationComponent {
   eApiProviderAuthType = ApiProviderAuthType
 
   readonly data = inject(MAT_DIALOG_DATA)
@@ -36,6 +35,8 @@ export class XpertStudioToolAuthorizationComponent {
     api_key_header_prefix: this.#formBuilder.control<'' | 'bearar' | 'custom'>(''),
     api_key_header: this.#formBuilder.control('Authorization'),
     api_key_value: this.#formBuilder.control(null),
+    username: this.#formBuilder.control(null),
+    password: this.#formBuilder.control(null),
   })
 
   get authType() {

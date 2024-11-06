@@ -1,5 +1,3 @@
-import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search'
-import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { BaseToolkit, DynamicStructuredTool, StructuredToolInterface, Tool, tool, ToolParams } from '@langchain/core/tools'
 import { AiProviderRole, ICopilot, IUser, IXpertToolset, ToolParameter, ToolProviderCredentials, XpertToolContext, XpertToolsetCategoryEnum } from '@metad/contracts'
@@ -186,52 +184,19 @@ export abstract class BaseTool extends Tool {
 	name: string
 	description: string
 
-	// protected _call(arg: any, runManager?: CallbackManagerForToolRun, parentConfig?: RunnableConfig): Promise<any> {
-	// 	throw new Error('Method not implemented.')
-	// }
-
+	
 	runtime?: IToolRuntime = null
 
-	constructor(protected base?: IBaseTool, fields?: ToolParams) {
-		super(fields)
-		this.runtime = base?.runtime
-	}
+	// constructor(
+	// 	protected base?: IBaseTool,
+	// 	fields?: ToolParams) {
+	// 	super(fields)
+	// 	// this.runtime = base?.runtime
+	// }
 }
 
 
-export class TavilySearchToolset extends BaseToolset {
-
-	providerType = XpertToolsetCategoryEnum.BUILTIN
-
-	constructor(toolset: IXpertToolset) {
-		super(toolset)
-
-		this.tools = [
-			new TavilySearchResults({
-				...toolset.options,
-				apiKey: toolset.options.apiKey
-			})
-		]
-	}
-}
-
-export class DuckDuckGoToolset extends BaseToolset {
-
-	providerType = XpertToolsetCategoryEnum.BUILTIN
-
-	constructor(toolset: IXpertToolset) {
-		super(toolset)
-
-		this.tools = [
-			new DuckDuckGoSearch({
-				maxResults: toolset.options?.maxResults ?? 2,
-				searchOptions: toolset.options?.searchOptions
-			})
-		]
-	}
-}
-
-export class CommandToolset extends BaseToolset<DynamicStructuredTool<z.AnyZodObject>> {
+export class CommandToolset extends BaseToolset<Tool> {
 
 	providerType = XpertToolsetCategoryEnum.BUILTIN
 
@@ -291,7 +256,7 @@ export class CommandToolset extends BaseToolset<DynamicStructuredTool<z.AnyZodOb
 					description: item.description,
 					schema: zodSchema
 				}
-			)
+			) as unknown as Tool
 		})
 	}
 
@@ -352,10 +317,10 @@ export function createToolset(
 	}
 ) {
 	switch (toolset.type) {
-		case 'DuckDuckGo':
-			return new DuckDuckGoToolset(toolset)
-		case 'TavilySearch':
-			return new TavilySearchToolset(toolset)
+		// case 'DuckDuckGo':
+		// 	return new DuckDuckGoToolset(toolset)
+		// case 'TavilySearch':
+		// 	return new TavilySearchToolset(toolset)
 		default: {
             if (toolset.category === 'command') {
                 return new CommandToolset(

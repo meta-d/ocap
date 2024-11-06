@@ -1,0 +1,14 @@
+.nx-dialog-container {
+  &.small {
+    min-height: 50vh;
+    min-width: 40vw;
+  }
+  &.medium {
+    min-width: 60vw;
+    min-height: 60vh;
+  }
+  &.large {
+    min-width: 80vw;
+    min-height: 80vh;
+  }
+}

@@ -90,8 +90,15 @@ describe('OData Tool Tests for TripPinRESTier', () => {
 	it('should list all entity sets', async () => {
 		await tripPinService.init
 		const entitySets = tripPinService.entitySets
+		const metadata = tripPinService.metadata
+		
 
-		console.log(entitySets)
+		// console.log(Object.keys(entitySets).map((name) => JSON.stringify(entitySets[name].metadata.raw, null, 2)))
+		console.log(Object.keys(entitySets).map((name) => {
+			const entitySet = metadata.getEntitySet(name)
+			const entityType = metadata.getEntityType(entitySet.EntityType)
+			return entityType.Key
+		}))
 
 		expect(entitySets).toBeDefined()
 		expect(Object.keys(entitySets).length).toBeGreaterThan(0)

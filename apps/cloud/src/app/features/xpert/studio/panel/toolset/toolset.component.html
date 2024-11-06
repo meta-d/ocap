@@ -22,6 +22,6 @@
 
 <div class="w-full flex flex-col gap-2 p-2">
   @for (tool of toolset()?.tools; track tool.id) {
-    <xpert-toolset-tool-test [tool]="tool" class="w-full" />
+    <xpert-tool-test [tool]="tool" class="w-full" />
   }
 </div>

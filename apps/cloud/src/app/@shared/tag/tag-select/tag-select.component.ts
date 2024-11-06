@@ -1,6 +1,6 @@
 import { CdkListboxModule, ListboxValueChangeEvent } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from '@angular/core'
+import { booleanAttribute, ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { NgmHighlightDirective } from '@metad/ocap-angular/common'
@@ -42,6 +42,9 @@ export class TagSelectComponent implements ControlValueAccessor {
   readonly tagService = inject(TagService)
 
   readonly category = input<string>()
+  readonly optional = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
   readonly tags = derivedAsync(() => {
     return this.tagService.getAllByCategory(this.category())
