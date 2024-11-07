@@ -4,7 +4,7 @@ import { ToolParams } from '@langchain/core/tools'
 import { ApiProviderAuthType, ApiToolBundle, IXpertTool, XpertToolsetCategoryEnum } from '@metad/contracts'
 import axios, { AxiosResponse } from 'axios'
 import { ToolParameterValidationError, ToolProviderCredentialValidationError } from '../../../errors'
-import { BaseTool, IBaseTool } from '../../../toolset'
+import { BaseTool } from '../../../toolset'
 import { ApiBasedToolSchemaParser } from '../../../utils/parser'
 
 const API_TOOL_DEFAULT_TIMEOUT = [
@@ -16,9 +16,10 @@ export class OpenAPITool extends BaseTool {
 	providerType = XpertToolsetCategoryEnum.API
 
 	protected api_bundle: ApiToolBundle
+
 	constructor(
 		protected xpertTool: IXpertTool,
-		protected base?: IBaseTool,
+		// protected base?: IBaseTool,
 		fields?: ToolParams
 	) {
 		super(fields)
@@ -26,23 +27,12 @@ export class OpenAPITool extends BaseTool {
         this.name = xpertTool.name
         this.description = xpertTool.description
 		this.api_bundle = xpertTool.options?.api_bundle
+		this.toolset = xpertTool.toolset
+
 		if (xpertTool.schema) {
 			this.schema = ApiBasedToolSchemaParser.parseParametersToZod(xpertTool.schema.parameters ?? [] /* Default empty */) as unknown as typeof this.schema
 		}
 	}
-
-	// /**
-	//  * Api tool
-	//  */
-	// fork_tool_runtime(runtime: Record<string, any>): Tool {
-	//     return new (this.constructor as any)({
-	//         identity: this.identity ? { ...this.identity } : undefined,
-	//         parameters: this.parameters ? [...this.parameters] : undefined,
-	//         description: this.description ? { ...this.description } : undefined,
-	//         api_bundle: this.api_bundle ? { ...this.api_bundle } : undefined,
-	//         runtime: new Tool.Runtime(runtime),
-	//     });
-	// }
 
 	async validate_credentials(credentials: Record<string, any>, parameters: Record<string, any>, format_only = false) {
 		const headers = this.assembling_request(parameters, credentials)
@@ -62,7 +52,7 @@ export class OpenAPITool extends BaseTool {
 
 	assembling_request(parameters: Record<string, any>, _credentials?): Record<string, any> {
 		const headers: Record<string, any> = {}
-		const credentials = _credentials || this.runtime?.credentials || {}
+		const credentials = _credentials || this.toolset?.credentials || {}
 
 		if (!credentials.auth_type) {
 			throw new ToolProviderCredentialValidationError('Missing auth_type')
@@ -238,15 +228,18 @@ export class OpenAPITool extends BaseTool {
 		runManager?: CallbackManagerForToolRun,
 		parentConfig?: RunnableConfig
 	): Promise<any> {
-		/**
-		 * invoke http request
-		 */
 		// assemble request
 		const headers = this.assembling_request(toolParameters)
 
+		let url = this.api_bundle.server_url
+		const baseUrl = this.toolset.options?.baseUrl
+		if (baseUrl) {
+			url = (baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl) + url
+		}
+
 		// do http request
 		const response = await this.do_http_request(
-			this.api_bundle.server_url,
+			url,
 			this.api_bundle.method,
 			headers,
 			toolParameters

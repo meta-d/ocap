@@ -33,6 +33,7 @@ import { Samples } from '../types'
 import { XpertToolAuthorizationInputComponent } from '../../authorization'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
 import { XpertToolTestDialogComponent } from '../../tool-test'
+import { XpertConfigureToolComponent } from '../../api-tool/types'
 
 
 @Component({
@@ -54,9 +55,15 @@ import { XpertToolTestDialogComponent } from '../../tool-test'
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',
   animations: [routeAnimations],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: XpertConfigureToolComponent,
+      useExisting: XpertStudioConfigureToolComponent
+    }
+  ]
 })
-export class XpertStudioConfigureToolComponent {
+export class XpertStudioConfigureToolComponent extends XpertConfigureToolComponent {
   eTagCategoryEnum = TagCategoryEnum
   eSamples = Samples
 
@@ -92,9 +99,10 @@ export class XpertStudioConfigureToolComponent {
 
   readonly valueChange = outputFromObservable(this.formGroup.valueChanges)
 
-  get invalid() {
-    return this.formGroup.invalid
+  isValid() {
+    return this.formGroup.valid
   }
+  
   get name() {
     return this.formGroup.get('name')
   }
@@ -126,6 +134,8 @@ export class XpertStudioConfigureToolComponent {
     return this.options.get('baseUrl') as FormControl
   }
 
+  readonly url = model('')
+
   readonly schemas = toSignal(
     this.schema.valueChanges.pipe(
       filter(() => !this.toolset()),
@@ -135,6 +145,8 @@ export class XpertStudioConfigureToolComponent {
   )
 
   constructor() {
+    super()
+
     effect(() => {
       if (this.schemas()?.parameters_schema) {
         this.tools.clear()
@@ -190,7 +202,7 @@ export class XpertStudioConfigureToolComponent {
 
   getMetadata() {
     this.loading.set(true)
-    this.toolsetService.getOpenAPIRemoteSchema(this.baseUrl.value, this.credentials.value).subscribe({
+    this.toolsetService.getOpenAPIRemoteSchema(this.url(), this.credentials.value).subscribe({
       next: (result) => {
         this.loading.set(false)
         // Handle the success scenario here

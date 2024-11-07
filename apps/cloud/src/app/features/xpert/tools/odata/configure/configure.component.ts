@@ -36,6 +36,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { NgmDensityDirective } from '@metad/ocap-angular/core'
 import { XpertToolAuthorizationInputComponent } from '../../authorization'
 import { XpertToolTestDialogComponent } from '../../tool-test'
+import { XpertConfigureToolComponent } from '../../api-tool/types'
 
 
 @Component({
@@ -60,9 +61,15 @@ import { XpertToolTestDialogComponent } from '../../tool-test'
   templateUrl: './configure.component.html',
   styleUrl: 'configure.component.scss',
   animations: [routeAnimations],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: XpertConfigureToolComponent,
+      useExisting: XpertStudioConfigureODataComponent
+    }
+  ]
 })
-export class XpertStudioConfigureODataComponent {
+export class XpertStudioConfigureODataComponent extends XpertConfigureToolComponent {
   eTagCategoryEnum = TagCategoryEnum
   eSamples = Samples
 
@@ -99,9 +106,10 @@ export class XpertStudioConfigureODataComponent {
 
   readonly valueChange = outputFromObservable(this.formGroup.valueChanges)
 
-  get invalid() {
-    return this.formGroup.invalid
+  isValid() {
+    return this.formGroup.valid
   }
+
   get name() {
     return this.formGroup.get('name')
   }
@@ -142,14 +150,7 @@ export class XpertStudioConfigureODataComponent {
   // )
 
   constructor() {
-    // effect(() => {
-    //   if (this.schemas()?.tools) {
-    //     this.tools.clear()
-    //     this.schemas().tools.forEach((schema) => {
-    //       this.addTool(schema as any)
-    //     })
-    //   }
-    // })
+    super()
 
     effect(() => {
       this.loading() ? this.formGroup.disable() : this.formGroup.enable()

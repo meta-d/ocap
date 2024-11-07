@@ -31,7 +31,7 @@
         </a>
       </div>
       <div class="flex space-x-1 justify-end relative w-[224px]">
-        <div formGroupName="options">
+        <div >
           <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small space-x-1"
             [cdkMenuTriggerFor]="urlMenu"
             #urlMenuTrigger="cdkMenuTriggerFor">
@@ -46,9 +46,9 @@
           <ng-template #urlMenu>
             <div cdkMenu class="relative p-2">
               <input class="w-[244px] h-9 pl-1.5 pr-[44px] overflow-x-auto border border-gray-200 rounded-lg text-sm" placeholder="https://..." type="text"
-                formControlName="baseUrl" >
+                [(ngModel)]="url" [ngModelOptions]="{standalone: true}" >
               <button type="button" class="btn disabled:btn-disabled btn-primary btn-small text-sm absolute top-3 right-3"
-                [disabled]="!baseUrl.value"
+                [disabled]="!url()"
                 (click)="urlMenuTrigger.close(); getMetadata();">{{ 'PAC.Xpert.Ok' | translate: {Default: 'Ok'} }}</button>
             </div>
           </ng-template>
@@ -82,6 +82,16 @@
       formControlName="schema"
       [ngClass]="{error: schema.invalid && (schema.dirty || schema.touched)}"
     ></textarea>
+
+    <div formGroupName="options" >
+      <div class="py-2 leading-5 text-sm font-medium text-gray-900">
+        {{'PAC.Xpert.BaseUrl' | translate: {Default: 'Base Url'} }}
+      </div>
+      <input matInput class="w-full h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg grow"
+        [placeholder]=" 'PAC.Xpert.EnterCustomDisclaimer' | translate: {Default: 'Please enter base url'} "
+        formControlName="baseUrl"
+        >
+    </div>
 
     @if (loading()) {
       <ngm-spin class="absolute top-0 left-0 w-full h-full" />

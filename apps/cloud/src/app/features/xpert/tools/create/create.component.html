@@ -40,7 +40,7 @@
     <button mat-stroked-button mat-dialog-close cdkFocusInitial>
       {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
     </button>
-    <button mat-raised-button color="accent"
+    <button mat-raised-button color="accent" [disabled]="!configure()?.isValid()"
       (click)="createTool()">
       {{ 'PAC.ACTIONS.CREATE' | translate: { Default: 'Create' } }}
     </button>

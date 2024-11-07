@@ -1,10 +1,11 @@
-import { IUser, TToolCredentials } from '@metad/contracts'
+import { IUser, IXpertToolset, TToolCredentials } from '@metad/contracts'
 import { UserPublicDTO } from '@metad/server-core'
 import { Exclude, Expose, Transform } from 'class-transformer'
-import { XpertToolset } from '../xpert-toolset.entity'
 
 @Expose()
-export class ToolsetPublicDTO extends XpertToolset {
+export class ToolsetPublicDTO implements IXpertToolset {
+	name: string
+	
 	@Exclude()
 	declare options: Record<string, any>
 
@@ -20,7 +21,6 @@ export class ToolsetPublicDTO extends XpertToolset {
 	updatedBy?: IUser
 
 	constructor(partial: Partial<ToolsetPublicDTO>) {
-		super()
 		Object.assign(this, partial)
 	}
 }

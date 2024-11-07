@@ -1786,7 +1786,8 @@
       "ToolProviders": "工具提供商",
       "InDevelopment": "此功能正在开发中",
       "CreateCustomTool": "创建自定义工具集",
-      "LearnCreateCustomTool": "了解更多关于自定义工具集的信息"
+      "LearnCreateCustomTool": "了解更多关于自定义工具集的信息",
+      "EnterToolsetDescription": "输入工具集描述"
     },
     "title": {
       "short": "Xpert AI"

@@ -1,6 +1,8 @@
 import { ApiToolBundle } from '@metad/contracts'
 import type { ParameterObject } from "openapi-typescript/src/types";
 import { ApiBasedToolSchemaParser } from './parser'
+import * as fs from 'fs';
+import * as path from 'path';
 
 describe('ApiBasedToolSchemaParser', () => {
 	describe('parseOpenapiToToolBundle', () => {
@@ -169,4 +171,37 @@ describe('ApiBasedToolSchemaParser', () => {
 		expect(ApiBasedToolSchemaParser.convertPropertyAnyOf({}, 'false', anyOfSchema)).toBe(false)
 		expect(ApiBasedToolSchemaParser.convertPropertyAnyOf({}, '456.78', anyOfSchema)).toBe(456)
 	})
+
+	it('parseSwaggerToOpenapi should correctly convert swagger to openapi', () => {
+
+		const openapiJsonPath = path.resolve(__dirname, '../provider/openapi/petstore-v3/openapi.json');
+		const swagger = JSON.parse(fs.readFileSync(openapiJsonPath, 'utf8'));
+		const openapi = ApiBasedToolSchemaParser.parseSwaggerToOpenapi(swagger);
+
+		expect(openapi.openapi).toBe("3.0.0");
+		expect(openapi.info.title).toBe("Swagger Petstore - OpenAPI 3.0");
+		expect(openapi.servers).toHaveLength(1);
+		expect(openapi.servers[0].url).toBe("/api/v3");
+
+		expect(openapi.tags).toHaveLength(3);
+		expect(openapi.tags[0].name).toBe("pet");
+		expect(openapi.tags[1].name).toBe("store");
+		expect(openapi.tags[2].name).toBe("user");
+
+		expect(openapi.paths["/pet"]).toBeDefined();
+		expect(openapi.paths["/pet"].put).toBeDefined();
+		expect(openapi.paths["/pet"].put.operationId).toBe("updatePet");
+
+		expect(openapi.components.schemas).toBeDefined();
+		expect(openapi.components.schemas.Pet).toBeDefined();
+		expect(openapi.components.schemas.User).toBeDefined();
+
+		expect(openapi.components.requestBodies).toBeDefined();
+		expect(openapi.components.requestBodies.Pet).toBeDefined();
+		expect(openapi.components.requestBodies.UserArray).toBeDefined();
+
+		expect(openapi.components.securitySchemes).toBeDefined();
+		expect(openapi.components.securitySchemes.petstore_auth).toBeDefined();
+		expect(openapi.components.securitySchemes.api_key).toBeDefined();
+	});
 })

@@ -8,29 +8,29 @@ export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
 
 	provider_id: string
 
-	private _parse_tool_bundle(tool_bundle: ApiToolBundle): OpenAPITool {
-		// Todo
-		return new OpenAPITool({options: {api_bundle: tool_bundle}} as unknown as IXpertTool, {
-			identity: {
-				author: tool_bundle.author,
-				name: tool_bundle.operation_id,
-				label: { en_US: tool_bundle.operation_id, zh_Hans: tool_bundle.operation_id },
-				icon: this.identity.icon,
-				provider: this.provider_id
-			},
-			description: {
-				human: { en_US: tool_bundle.summary || '', zh_Hans: tool_bundle.summary || '' },
-				llm: tool_bundle.summary || ''
-			},
-			parameters: tool_bundle.parameters || [],
-			runtime: null
-		})
-	}
+	// private _parse_tool_bundle(tool_bundle: ApiToolBundle): OpenAPITool {
+	// 	// Todo
+	// 	return new OpenAPITool({options: {api_bundle: tool_bundle}} as unknown as IXpertTool, {
+	// 		identity: {
+	// 			author: tool_bundle.author,
+	// 			name: tool_bundle.operation_id,
+	// 			label: { en_US: tool_bundle.operation_id, zh_Hans: tool_bundle.operation_id },
+	// 			icon: this.identity.icon,
+	// 			provider: this.provider_id
+	// 		},
+	// 		description: {
+	// 			human: { en_US: tool_bundle.summary || '', zh_Hans: tool_bundle.summary || '' },
+	// 			llm: tool_bundle.summary || ''
+	// 		},
+	// 		parameters: tool_bundle.parameters || [],
+	// 		runtime: null
+	// 	})
+	// }
 
-	load_bundled_tools(tools: ApiToolBundle[]): OpenAPITool[] {
-		this.tools = tools.map((tool) => this._parse_tool_bundle(tool))
-		return this.tools
-	}
+	// load_bundled_tools(tools: ApiToolBundle[]): OpenAPITool[] {
+	// 	this.tools = tools.map((tool) => this._parse_tool_bundle(tool))
+	// 	return this.tools
+	// }
 
 	getTools() {
 		if (this.tools) {
@@ -39,10 +39,9 @@ export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
 
 		const tools: OpenAPITool[] = []
 		this.toolset.tools?.filter((_) => _.enabled).forEach((item) => {
-			tools.push(new OpenAPITool(item, {
-				runtime: {
-					credentials: this.toolset.credentials
-				}
+			tools.push(new OpenAPITool({
+				...item,
+				toolset: this.toolset
 			}))
 		})
 

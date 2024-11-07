@@ -35,10 +35,10 @@
   </div>
 </div>
 
-<button type="button" class="btn disabled:btn-disabled btn-primary mt-4 w-full h-10"
+<button type="button" class="btn disabled:btn-disabled btn-primary mt-4 w-full h-10 scale-x-[0.99] scale-y-95"
   [disabled]="loading()"
-  (click)="testTool()">
-  {{ 'PAC.ACTIONS.Test' | translate: { Default: 'Test' } }}</button>
+  (click)="testTool()"
+><div class="w-full text-center">{{ 'PAC.ACTIONS.Test' | translate: { Default: 'Test' } }}</div></button>
 
 <div class="mt-6">
   <div class="flex items-center space-x-3">

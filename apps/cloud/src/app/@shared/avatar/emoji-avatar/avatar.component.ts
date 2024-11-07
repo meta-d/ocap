@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { booleanAttribute, Component, computed, HostListener, inject, input, model } from '@angular/core'
+import { booleanAttribute, Component, computed, HostListener, HostBinding, inject, input, model } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { EmojiComponent } from '@ctrl/ngx-emoji-mart/ngx-emoji'
 import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
@@ -14,7 +14,7 @@ import { EmojiAvatarEditorComponent } from '../emoji-avatar-editor/avatar-editor
   template: `@if (avatar()?.url) {
       <img class="" [src]="avatar().url" [alt]="alt()" />
     } @else if (emoji()?.emoji) {
-      <div class="flex justify-center items-center w-full h-full" [ngStyle]="{ background: emoji().background }">
+      <div class="emoji-container flex justify-center items-center w-full h-full" [ngStyle]="{ background: emoji().background }">
         <ngx-emoji
           class="flex"
           [emoji]="emoji().emoji.id"
@@ -30,6 +30,8 @@ import { EmojiAvatarEditorComponent } from '../emoji-avatar-editor/avatar-editor
     '[class.small]': 'small()',
     '[class.large]': 'large()',
     '[class.cursor-pointer]': 'editable()',
+    '[class.editable]': 'editable()',
+    '[class.focused]': 'focused'
   }
 })
 export class EmojiAvatarComponent {
@@ -66,9 +68,12 @@ export class EmojiAvatarComponent {
 
   readonly emojiSize = computed(() => (this.large() ? 24 : this.small() ? 16 : this.xs() ? 14 : 18))
 
+  @HostBinding('class.focused') focused = false;
+
   @HostListener('click')
   onClick() {
     if (this.editable()) {
+      this.focused = true
       this.dialog
         .open(EmojiAvatarEditorComponent, {
           data: this.avatar()
@@ -76,6 +81,7 @@ export class EmojiAvatarComponent {
         .afterClosed()
         .subscribe({
           next: (result) => {
+            this.focused = false
             if (result) {
               this.avatar.set(result)
               this.cva.value$.set(result)
@@ -83,5 +89,15 @@ export class EmojiAvatarComponent {
           }
         })
     }
+  }
+
+  @HostListener('focus')
+  onFocus() {
+    this.focused = true;
+  }
+
+  @HostListener('blur')
+  onBlur() {
+    this.focused = false;
   }
 }

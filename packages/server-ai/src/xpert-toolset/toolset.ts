@@ -183,16 +183,7 @@ export interface IBaseTool {
 export abstract class BaseTool extends Tool {
 	name: string
 	description: string
-
-	
-	runtime?: IToolRuntime = null
-
-	// constructor(
-	// 	protected base?: IBaseTool,
-	// 	fields?: ToolParams) {
-	// 	super(fields)
-	// 	// this.runtime = base?.runtime
-	// }
+	protected toolset?: IXpertToolset
 }
 
 

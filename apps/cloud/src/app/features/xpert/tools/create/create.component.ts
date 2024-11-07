@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject, model, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, model, signal, viewChild } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { routeAnimations } from '@metad/core'
-import { ButtonGroupDirective } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective, omitBlank } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatDialogRef } from '@angular/material/dialog'
 import { CdkListboxModule } from '@angular/cdk/listbox'
@@ -10,6 +10,8 @@ import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { getErrorMessage, IXpertToolset, ToastrService, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import { XpertStudioConfigureToolComponent } from '../openapi/'
 import { XpertStudioConfigureODataComponent } from '../odata/'
+import { XpertConfigureToolComponent } from '../api-tool/types'
+import { isNil, omitBy } from 'lodash-es'
 
 
 @Component({
@@ -36,6 +38,8 @@ export class XpertStudioCreateToolComponent {
   readonly #toastr = inject(ToastrService)
   readonly #dialogRef = inject(MatDialogRef)
 
+  readonly configure = viewChild('configure', { read: XpertConfigureToolComponent })
+
   readonly loading = signal(false)
 
   readonly providerTypes = model<string[]>(['openapi'])
@@ -46,10 +50,8 @@ export class XpertStudioCreateToolComponent {
     this.toolset.set(event)
   }
 
-  createTool(toolset?: Partial<IXpertToolset>) {
-    this.xpertToolsetService.create({
-      ...(toolset ?? this.toolset()),
-    }).subscribe({
+  createTool() {
+    this.xpertToolsetService.create(omitBy(this.toolset(), isNil)).subscribe({
       next: (result) => {
         this.#toastr.success('PAC.Messages.CreatedSuccessfully', {Default: 'Created Successfully!'}, result.name)
         this.#dialogRef.close(result)

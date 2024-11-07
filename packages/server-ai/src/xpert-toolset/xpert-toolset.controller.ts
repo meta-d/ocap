@@ -72,9 +72,9 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 		description: 'Found records'
 	})
 	@Get()
-	async findAll(
+	async findAllTools(
 		@Query('data', ParseJsonPipe) options?: PaginationParams<XpertToolset>
-	): Promise<IPagination<XpertToolset>> {
+	): Promise<IPagination<ToolsetPublicDTO>> {
 		const { items, ...rest } = await this.service.findAll(options)
 		return {
 			items: items.map((item) => new ToolsetPublicDTO(item)),

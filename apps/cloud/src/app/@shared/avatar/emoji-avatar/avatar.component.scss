@@ -4,6 +4,13 @@
   align-items: center;
   width: 2.5rem;
   height: 2.5rem;
+
+  &.editable {
+    @apply ring-1 ring-transparent hover:ring-gray-200 ring-offset-1 ring-offset-white dark:ring-offset-black;
+  }
+  &.focused {
+    @apply ring-gray-300;
+  }
 }
 :host.xs {
   width: 1.8rem;
