@@ -29,7 +29,7 @@ import {
   XpertTypeEnum,
   XpertWorkspaceService
 } from '../../../@core'
-import { AvatarComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, UserPipe } from '../../../@shared'
+import { AvatarComponent, CardCreateComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, UserPipe } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { XpertNewBlankComponent } from '../xpert/index'
 import { XpertHomeComponent } from '../home.component'
@@ -59,6 +59,7 @@ import { XpertToolConfigureBuiltinComponent } from '../tools'
     UserPipe,
     AppearanceDirective,
     TagComponent,
+    CardCreateComponent,
     ToolsetCardComponent,
     ToolProviderCardComponent
   ],

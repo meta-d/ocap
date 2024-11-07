@@ -5,3 +5,7 @@
     padding: 2px;
     box-sizing: border-box;
 }
+
+.ngm-card-shadow {
+    @apply shadow-sm transition-all duration-200 ease-in-out hover:shadow-lg;
+}

@@ -127,12 +127,12 @@
     <div class="flex-1 flex flex-col p-4 overflow-auto">
       @switch (toolset()?.type) {
         @case('openapi') {
-          <xpert-tool-openapi-configure #configure class="mx-auto" [toolset]="toolset()"
+          <xpert-tool-openapi-configure #configure class="w-[600px] max-w-full mx-auto" [toolset]="toolset()"
             (valueChange)="onConfigChange($event)"
           />
         }
         @case('odata') {
-          <xpert-tool-odata-configure #configure class="mx-auto" [toolset]="toolset()"
+          <xpert-tool-odata-configure #configure class="w-[600px] max-w-full mx-auto" [toolset]="toolset()"
             (valueChange)="onConfigChange($event)"
           />
         }

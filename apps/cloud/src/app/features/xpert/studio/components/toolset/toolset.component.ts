@@ -36,6 +36,8 @@ export class XpertStudioNodeToolsetComponent {
     return this.toolset() ? this.toolsetService.getOneById(this.toolset().id, { relations: ['tools']}) : of(null)
   })
 
+  readonly availableTools = computed(() => this.toolsetDetail()?.tools.filter((_) => _.enabled))
+
   readonly toolExecutions = this.executionService.toolExecutions
 
   private get hostElement(): HTMLElement {

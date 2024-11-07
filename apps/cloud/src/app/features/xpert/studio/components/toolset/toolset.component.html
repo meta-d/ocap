@@ -7,8 +7,8 @@
   </div>
 </div>
 
-<div class="w-full flex flex-col justify-start items-stretch p-2">
-  @for (tool of toolsetDetail()?.tools; track tool.id) {
+<div class="w-full flex flex-col justify-start items-stretch p-2 gap-1 max-h-48 overflow-y-auto" (wheel)="$event.stopPropagation()">
+  @for (tool of availableTools(); track tool.id) {
     <div class="relative flex items-center p-2 text-left rounded-xl text-sm bg-gray-100">
       @switch (toolExecutions()[tool.name]?.status) {
         @case (eXpertAgentExecutionEnum.RUNNING) {

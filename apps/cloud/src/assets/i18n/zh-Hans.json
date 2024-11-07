@@ -1772,6 +1772,7 @@
       "EnterYourOpenAPISchema": "在此处输入您的 OpenAPI Schema",
       "EnterYourODataMetadata": "在此处输入您的 OData Metadata",
       "Auth_none": "无",
+      "Auth_basic": "基础",
       "AuthType": "认证类型",
       "EnterAPIKey": "输入 API Key",
       "PrivacyPolicy": "隐私协议",
@@ -1780,9 +1781,12 @@
       "CustomDisclaimer": "自定义免责声明",
       "BuiltinTool": "内置工具",
       "CustomTool": "自定义工具",
+      "CustomToolset": "自定义工具集",
       "Workflow": "工作流",
       "ToolProviders": "工具提供商",
-      "InDevelopment": "此功能正在开发中"
+      "InDevelopment": "此功能正在开发中",
+      "CreateCustomTool": "创建自定义工具集",
+      "LearnCreateCustomTool": "了解更多关于自定义工具集的信息"
     },
     "title": {
       "short": "Xpert AI"
