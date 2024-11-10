@@ -3,7 +3,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, MessageContent, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { StateGraphArgs } from '@langchain/langgraph'
-import { ChatEventTypeEnum, ICopilot, IXpertAgent } from '@metad/contracts'
+import { ChatMessageEventTypeEnum, ChatMessageTypeEnum, ICopilot, IXpertAgent } from '@metad/contracts'
 import { AgentRecursionLimit, isNil } from '@metad/copilot'
 import { RequestContext } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
@@ -17,6 +17,7 @@ import { XpertAgentService } from '../../xpert-agent.service'
 import { createXpertAgentTool, XpertAgentExecuteCommand } from '../execute.command'
 import { GetXpertAgentQuery } from '../../../xpert/queries'
 import { XpertCopilotNotFoundException } from '../../../core/errors'
+import { XpertAgentExecutionUpsertCommand } from '../../../xpert-agent-execution/commands'
 
 
 
@@ -139,6 +140,17 @@ ${agent.prompt}
 
 		this.#logger.debug(`Start chat with xpert '${xpert.name}' & agent '${agent.title}'`)
 
+		// Record ai model info into execution
+		await this.commandBus.execute(
+			new XpertAgentExecutionUpsertCommand({
+				id: execution.id,
+				metadata: {
+					provider: copilotModel.copilot.provider,
+					model: copilotModel.model || copilotModel.copilot.defaultModel
+				}
+			})
+		)
+
 		let prevEvent = ''
 		return from(
 			graph.streamEvents(
@@ -197,8 +209,8 @@ ${agent.prompt}
 						this.#logger.verbose(data, rest)
 						subscriber.next({
 							data: {
-								type: ChatEventTypeEnum.EVENT,
-								event: 'on_tool_start',
+								type: ChatMessageTypeEnum.EVENT,
+								event: ChatMessageEventTypeEnum.ON_TOOL_START,
 								data: {
 									data,
 									...rest,
@@ -211,8 +223,8 @@ ${agent.prompt}
 						this.#logger.verbose(data, rest)
 						subscriber.next({
 							data: {
-								type: ChatEventTypeEnum.EVENT,
-								event: 'on_tool_end',
+								type: ChatMessageTypeEnum.EVENT,
+								event: ChatMessageEventTypeEnum.ON_TOOL_END,
 								data: {
 									data,
 									...rest,

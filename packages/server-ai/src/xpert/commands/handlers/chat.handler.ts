@@ -1,4 +1,4 @@
-import { ChatEventTypeEnum, CopilotChatMessage, IChatConversation, IXpert, XpertAgentExecutionEnum } from '@metad/contracts'
+import { ChatMessageTypeEnum, CopilotChatMessage, IChatConversation, IXpert, XpertAgentExecutionEnum } from '@metad/contracts'
 import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
@@ -81,7 +81,7 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 		).pipe(
 			tap({
 				next: (event) => {
-					if (event.data.type === ChatEventTypeEnum.MESSAGE) {
+					if (event.data.type === ChatMessageTypeEnum.MESSAGE) {
 						result += event.data.data
 					}
 				},

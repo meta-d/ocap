@@ -4,19 +4,19 @@
 
 <div class="node-output-bottom flex items-center gap-2 h-3 absolute -bottom-[8px] left-1/2 -ml-3">
   <div fNodeOutput [fOutputId]="node().key + '/agent'" fOutputConnectableSide="bottom" [fOutputMultiple]="true">
-    <ngm-plus-svg class="w-2.5 h-2.5 text-white" />
+    <ngm-plus-svg class="w-2 h-2 text-white" />
   </div>
   <div fNodeOutput [fOutputId]="node().key + '/xpert'" fOutputConnectableSide="bottom" [fOutputMultiple]="true">
-    <ngm-plus-svg class="w-2.5 h-2.5 text-white" />
+    <ngm-plus-svg class="w-2 h-2 text-white" />
   </div>
 </div>
 
 <div class="node-output-right flex flex-col items-center gap-2 w-3 absolute -right-[8px] top-1/2 -mt-3">
   <div fNodeOutput [fOutputId]="node().key + '/knowledge'" fOutputConnectableSide="right" [fOutputMultiple]="true">
-    <ngm-plus-svg class="w-2.5 h-2.5 text-white" />
+    <ngm-plus-svg class="w-2 h-2 text-white" />
   </div>
   <div fNodeOutput [fOutputId]="node().key + '/toolset'" fOutputConnectableSide="right" [fOutputMultiple]="true">
-    <ngm-plus-svg class="w-2.5 h-2.5 text-white" />
+    <ngm-plus-svg class="w-2 h-2 text-white" />
   </div>
 </div>
 
@@ -28,18 +28,22 @@
     </div>
   </div>
   
-  <div class="px-3 pb-2 flex flex-col items-stretch">
-      <p class="text-sm text-token-text-secondary text-left">{{xpertAgent().description}}</p>
+  <div class="px-3 pb-2 w-full flex flex-col items-stretch">
+    <p class="text-sm text-token-text-secondary text-left">{{xpertAgent().description}}</p>
+
+    <copilot-model-select readonly [inheritModel]="xpertCopilotModel()" [modelType]="eModelType.LLM"
+      [copilotModel]="copilotModel()"
+    />
   
-      @if (toolsets()?.length) {
-        <label class="mt-4 text-left">Tools:</label>
-      }
-      @for (toolset of toolsets(); track toolset.id) {
-        <xpert-studio-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
-          hover:bg-black/5 dark:hover:bg-white/10">
-          <emoji-avatar [avatar]="toolset.avatar" small class="shrink-0 mr-2 overflow-hidden rounded-full" />
-          <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
-        </xpert-studio-role-toolset>
-      }
+    @if (toolsets()?.length) {
+      <label class="mt-4 text-left">Tools:</label>
+    }
+    @for (toolset of toolsets(); track toolset.id) {
+      <xpert-studio-role-toolset [toolset]="toolset" class="flex items-center cursor-pointer px-2 py-1 rounded-md
+        hover:bg-black/5 dark:hover:bg-white/10">
+        <emoji-avatar [avatar]="toolset.avatar" small class="shrink-0 mr-2 overflow-hidden rounded-full" />
+        <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="toolset.name">{{toolset.name}}</span>
+      </xpert-studio-role-toolset>
+    }
   </div>
 }

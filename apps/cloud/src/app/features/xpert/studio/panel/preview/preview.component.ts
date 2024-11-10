@@ -4,22 +4,32 @@ import { Component, computed, DestroyRef, effect, inject, model, signal } from '
 import { FormsModule } from '@angular/forms'
 import {
   ChatConversationService,
-  ChatEventTypeEnum,
+  ChatMessageEventTypeEnum,
+  ChatMessageTypeEnum,
   CopilotChatMessage,
   ToastrService,
   uuid,
+  XpertAgentExecutionEnum,
   XpertService
 } from 'apps/cloud/src/app/@core'
 import { MaterialModule, XpertParametersCardComponent } from 'apps/cloud/src/app/@shared'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { MarkdownModule } from 'ngx-markdown'
 import { XpertStudioApiService } from '../../domain'
 import { XpertExecutionService } from '../../services/execution.service'
 import { XpertStudioComponent } from '../../studio.component'
-import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, TextFieldModule, MarkdownModule, EmojiAvatarComponent, XpertParametersCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    TextFieldModule,
+    MarkdownModule,
+    EmojiAvatarComponent,
+    XpertParametersCardComponent
+  ],
   selector: 'xpert-studio-panel-preview',
   templateUrl: 'preview.component.html',
   styleUrls: ['preview.component.scss']
@@ -54,9 +64,9 @@ export class XpertStudioPreviewComponent {
   })
 
   constructor() {
-    effect(() => {
-      console.log(this.parameters(), this.apiService.primaryAgent())
-    })
+    // effect(() => {
+    //   console.log(this.parameters(), this.apiService.primaryAgent())
+    // })
   }
 
   chat(input: string) {
@@ -79,7 +89,7 @@ export class XpertStudioPreviewComponent {
     // Send to server chat
     this.xpertService
       .chat(this.xpert().id, {
-        input: {input},
+        input: { input },
         draft: true,
         conversationId: this.conversation()?.id
       })
@@ -90,17 +100,32 @@ export class XpertStudioPreviewComponent {
           } else {
             if (msg.data) {
               const event = JSON.parse(msg.data)
-              if (event.type === ChatEventTypeEnum.MESSAGE) {
+              if (event.type === ChatMessageTypeEnum.MESSAGE) {
                 // Update last AI message
                 this.output.update((state) => state + event.data)
                 this.lastMessage.update((message) => ({
                   ...message,
                   content: message.content + event.data
                 }))
-              } else if (event.type === ChatEventTypeEnum.LOG) {
-                this.executionService.setAgentExecution(event.data.agentKey, event.data)
-              } else if (event.type === ChatEventTypeEnum.EVENT) {
-                this.executionService.setAgentExecution(event.data.agentKey, event.data)
+              } else if (event.type === ChatMessageTypeEnum.EVENT) {
+                switch(event.event) {
+                  case ChatMessageEventTypeEnum.ON_TOOL_START: {
+                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
+                    break;
+                  }
+                  case ChatMessageEventTypeEnum.ON_TOOL_END: {
+                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
+                    break;
+                  }
+                  case ChatMessageEventTypeEnum.ON_AGENT_START:
+                  case ChatMessageEventTypeEnum.ON_AGENT_END: {
+                    this.executionService.setAgentExecution(event.data.agentKey, event.data)
+                    break;
+                  }
+                  default: {
+                    console.log(`未处理的事件：`, event)
+                  }
+                }
               }
             }
           }
@@ -126,5 +151,4 @@ export class XpertStudioPreviewComponent {
   close() {
     this.studioComponent.preview.set(false)
   }
-
 }

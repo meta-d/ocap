@@ -1,9 +1,9 @@
-  <button class="px-4 py-3 text-left border-[0.5px] flex flex-col items-stretch rounded-xl p-1 cursor-default
+<button class="px-2 py-3 text-left border-[0.5px] flex flex-col items-stretch rounded-xl p-1 cursor-default
   bg-gray-50 border-gray-200 enabled:hover:bg-white enabled:shadow-sm disabled:opacity-50"
-    [disabled]="disabled()"
-  >
+  [disabled]="disabled()"
+>
   <div class="w-full text-gray-800 font-semibold leading-5 flex items-center">
-    <button class="w-6 h-6 rounded-md enabled:hover:bg-hover-bg enabled:cursor-pointer"
+    <button class="w-6 h-6 mr-2 rounded-md pressable enabled:hover:bg-hover-bg enabled:cursor-pointer"
       [disabled]="disabled()"
       (click)="toggleExpand()">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
@@ -19,7 +19,7 @@
   </div>
 
   @if (expand()) {
-    <xpert-toolset-tool-test [tool]="toolDetail$ | async" />
+    <xpert-toolset-tool-test @ifAnimationTrigger [tool]="toolDetail$ | async" />
   }
 
   @if (loading()) {

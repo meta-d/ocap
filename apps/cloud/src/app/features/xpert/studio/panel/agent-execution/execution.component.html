@@ -2,7 +2,7 @@
   {{xpertAgent().title || xpertAgent().name || xpertAgent().key}}
 </div>
 
-<div class="flex-1 px-4 overflow-auto">
+<div class="flex-1 pl-4 pr-2 overflow-auto">
   @if (parameters()?.length) {
     <xpert-parameters-card [parameters]="parameters()" [(ngModel)]="parameterValue" />
   }
@@ -47,10 +47,10 @@
 
   <div class="w-full flex flex-col mt-4">
     <div class="flex items-center mb-4 leading-[18px] text-base font-semibold text-gray-500 uppercase">
-      <div class="flex items-center cursor-pointer rounded-md hover:bg-hover-bg">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-text-tertiary">
+      <div class="flex items-center ">
+        <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-text-tertiary">
           <path d="M12 15.0006L7.75732 10.758L9.17154 9.34375L12 12.1722L14.8284 9.34375L16.2426 10.758L12 15.0006Z"></path>
-        </svg>
+        </svg> -->
         <div class="mr-3">{{ 'PAC.Xpert.Log' | translate: {Default: 'Log'} }}</div>
       </div>
       <div class="grow w-0 h-px bg-divider-regular"></div>

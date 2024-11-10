@@ -4,22 +4,28 @@
     <div class="container px-3 py-[10px] rounded-lg border-[0.5px] border-black/5 shadow-xs dark:border-white/10">
       <div class="flex">
         <div class="flex-[33%] max-w-[120px]">
-          <div class="text-sm leading-[18px] font-medium text-gray-400">STATUS</div>
+          <div class="text-sm leading-[18px] font-medium text-gray-400">
+            {{ 'PAC.KEY_WORDS.Status' | translate: {Default: 'Status'} }}
+          </div>
           <div class="indicator-container flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
             <div class="indicator w-2 h-2 border border-solid rounded-[3px] "></div>
             <span class="uppercase">{{execution.status | isNil: 'unknow'}}</span>
           </div>
         </div>
         <div class="flex-[33%] max-w-[152px]">
-          <div class="text-sm leading-[18px] font-medium text-gray-400">ELAPSED TIME</div>
+          <div class="text-sm leading-[18px] font-medium text-gray-400">
+            {{ 'PAC.KEY_WORDS.ElapsedTime' | translate: {Default: 'Elapsed Time'} }}
+          </div>
           <div class="flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
             <span>{{execution.elapsedTime / 1000 | number: '0.0-3'}}s</span>
           </div>
         </div>
         <div class="flex-[33%]">
-          <div class="text-sm leading-[18px] font-medium text-gray-400">TOTAL TOKENS</div>
+          <div class="text-sm leading-[18px] font-medium text-gray-400">
+            {{ 'PAC.KEY_WORDS.TotalTokens' | translate: {Default: 'Total Tokens'} }}
+          </div>
           <div class="flex items-center gap-1 h-[18px] text-sm leading-3 font-semibold">
-            <span>{{execution.tokens | isNil: 'NaN'}} Tokens</span>
+            <span>{{execution.tokens | number }}</span>
           </div>
         </div>
       </div>
@@ -27,7 +33,7 @@
   </div>
 
   @if (execution.error) {
-    <label class="p-1">Error: </label>
+    <label class="p-1">{{ 'PAC.KEY_WORDS.Error' | translate: {Default: 'Error'} }}: </label>
     <p class="text-xs text-text-tertiary rounded-lg p-2 bg-danger-bg text-danger-content">{{ execution.error }}</p>
   }
 }

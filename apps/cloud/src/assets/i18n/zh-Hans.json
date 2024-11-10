@@ -239,7 +239,9 @@
       "Path": "路径",
       "EnterUsername": "输入用户名",
       "EnterPassword": "输入密码",
-      "ChooseTags": "选择标签"
+      "ChooseTags": "选择标签",
+      "ElapsedTime": "已用时间",
+      "TotalTokens": "总代币数"
     },
     "MENU": {
       "Certification": "认证",

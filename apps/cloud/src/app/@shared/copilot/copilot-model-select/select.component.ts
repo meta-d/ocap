@@ -1,7 +1,7 @@
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { Component, computed, effect, inject, input, model } from '@angular/core'
+import { booleanAttribute, Component, computed, effect, inject, input, model } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatInputModule } from '@angular/material/input'
@@ -51,6 +51,10 @@ export class CopilotModelSelectComponent {
   readonly modelType = input<ModelType>()
   readonly inheritModel = input<ICopilotModel>()
   readonly copilotModel = model<ICopilotModel>()
+
+  readonly readonly = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
   readonly _copilotModel = computed(() => this.copilotModel() ?? this.inheritModel())
 

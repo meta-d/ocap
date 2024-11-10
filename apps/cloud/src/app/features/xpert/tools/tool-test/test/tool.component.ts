@@ -67,7 +67,7 @@ export class XpertToolsetToolTestComponent {
   readonly toolId = computed(() => this.tool()?.id)
 
   readonly toolAvatar = computed(() => this.tool()?.avatar)
-  readonly parameter = computed(() => this.tool()?.schema.parameters)
+  readonly parameter = computed(() => this.tool()?.schema?.parameters)
 
   readonly parameters = model<Record<string, any>>(null)
   readonly testResult = signal(null)

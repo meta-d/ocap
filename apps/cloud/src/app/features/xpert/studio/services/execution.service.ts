@@ -30,15 +30,15 @@ export class XpertExecutionService {
     return this.#messages()
   })
 
-  readonly execution = signal<IXpertAgentExecution>(null)
+  // readonly execution = signal<IXpertAgentExecution>(null)
   readonly #agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
   readonly agentExecutions = computed(() => {
-    const execution = this.execution()
-    if (!execution) {
-      return this.#agentExecutions()
-    }
+    // const execution = this.execution()
+    // if (!execution) {
+    //   return this.#agentExecutions()
+    // }
     const agentExecutions = {}
-    if (execution) {
+    Object.values(this.#agentExecutions() ?? {}).forEach((execution) => {
       execution.subExecutions?.forEach((item) => {
         if (item.agentKey) {
           agentExecutions[item.agentKey] = item
@@ -47,16 +47,19 @@ export class XpertExecutionService {
       if (execution.agentKey) {
         agentExecutions[execution.agentKey] = execution
       }
-    }
+    })
+
     return agentExecutions
   })
-
 
   readonly toolExecutions = signal<Record<string, {status: XpertAgentExecutionEnum}>>({})
 
   constructor() {
     effect(() => {
-      this.execution.set(this.#conversation()?.execution)
+      const execution = this.#conversation()?.execution
+      if (execution) {
+        this.#agentExecutions.set({[execution.agentKey]: execution})
+      }
     }, { allowSignalWrites: true })
   }
 
@@ -84,5 +87,10 @@ export class XpertExecutionService {
       ...state,
       [name]: execution
     }))
+  }
+
+  clear() {
+    this.#agentExecutions.set({})
+    this.toolExecutions.set({})
   }
 }

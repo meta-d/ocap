@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
-import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
 import { XpertStudioRoleToolsetComponent } from './toolset/toolset.component'
-import { TXpertTeamNode } from 'apps/cloud/src/app/@core'
+import { ModelType, TXpertTeamNode } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { PlusSvgComponent } from '@metad/ocap-angular/common'
+import { CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
+import { XpertStudioApiService } from '../../domain'
 
 @Component({
   selector: 'xpert-studio-node-agent',
@@ -12,7 +13,7 @@ import { PlusSvgComponent } from '@metad/ocap-angular/common'
   styleUrls: ['./agent.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, PlusSvgComponent, EmojiAvatarComponent, XpertStudioRoleToolsetComponent,],
+  imports: [FFlowModule, PlusSvgComponent, EmojiAvatarComponent, CopilotModelSelectComponent, XpertStudioRoleToolsetComponent],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',
@@ -20,13 +21,19 @@ import { PlusSvgComponent } from '@metad/ocap-angular/common'
   }
 })
 export class XpertStudioNodeAgentComponent {
+  eModelType = ModelType
   readonly elementRef = inject(ElementRef)
+  readonly apiService = inject(XpertStudioApiService)
 
   readonly node = input<TXpertTeamNode & {type: 'agent'}>()
   readonly isRoot = input<boolean>(false)
   readonly xpertAgent = computed(() => this.node().entity)
 
   readonly toolsets = computed(() => this.xpertAgent()?.toolsets)
+
+  readonly xpert = computed(() => this.apiService.viewModel()?.team)
+  readonly xpertCopilotModel = computed(() => this.xpert()?.copilotModel)
+  readonly copilotModel = computed(() => this.xpertAgent()?.copilotModel)
 
   private get hostElement(): HTMLElement {
     return this.elementRef.nativeElement

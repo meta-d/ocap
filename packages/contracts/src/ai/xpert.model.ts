@@ -205,10 +205,17 @@ export interface TXpertTeamConnection {
   type: TXpertTeamNodeType
 }
 
-export enum ChatEventTypeEnum {
-  LOG = 'log',
+export enum ChatMessageTypeEnum {
+  // LOG = 'log',
   MESSAGE = 'message',
   EVENT = 'event'
+}
+
+export enum ChatMessageEventTypeEnum {
+  ON_TOOL_START = 'on_tool_start',
+  ON_TOOL_END = 'on_tool_end',
+  ON_AGENT_START = 'on_agent_start',
+  ON_AGENT_END = 'on_agent_end',
 }
 
 // Helpers

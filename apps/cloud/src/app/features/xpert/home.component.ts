@@ -41,7 +41,7 @@ import {
   XpertTypeEnum,
   XpertWorkspaceService
 } from '../../@core'
-import { MaterialModule, TagFilterComponent, UserPipe } from '../../@shared'
+import { MaterialModule, TagFilterComponent } from '../../@shared'
 import { AppService } from '../../app.service'
 import { WorkspaceSettingsComponent } from './workspace/settings/settings.component'
 
@@ -65,9 +65,6 @@ export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
     MaterialModule,
 
     NgmCommonModule,
-    NgmTagsComponent,
-    UserPipe,
-    AppearanceDirective,
     TagFilterComponent
   ],
   selector: 'pac-xpert-home',

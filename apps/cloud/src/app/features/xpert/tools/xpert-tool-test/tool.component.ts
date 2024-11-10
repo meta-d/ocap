@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
 import { NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { IXpertTool, ToastrService, XpertToolService, XpertToolsetService } from 'apps/cloud/src/app/@core'
+import { IfAnimation, IXpertTool, ToastrService, XpertToolService, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { map, of, shareReplay, switchMap, tap } from 'rxjs'
 import { XpertToolsetToolTestComponent } from '../tool-test'
@@ -23,7 +23,6 @@ import { XpertToolsetToolTestComponent } from '../tool-test'
     MatDialogModule,
     MatTooltipModule,
     MatSlideToggleModule,
-    EmojiAvatarComponent,
     NgmI18nPipe,
     NgmDensityDirective,
     NgmSpinComponent,
@@ -32,7 +31,10 @@ import { XpertToolsetToolTestComponent } from '../tool-test'
   selector: 'xpert-tool-test',
   templateUrl: './tool.component.html',
   styleUrl: 'tool.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    IfAnimation
+  ]
 })
 export class XpertToolTestComponent {
   readonly toolsetService = inject(XpertToolsetService)

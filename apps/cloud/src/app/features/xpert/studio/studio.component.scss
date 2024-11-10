@@ -2,6 +2,7 @@
 
 :host {
   @apply w-full w-full;
+  --output-size: 14px;
 }
 
 :host::ng-deep {
@@ -40,7 +41,9 @@
     }
     &:not(.ngm-executor-agent):hover {
       .f-component.f-node-output {
-        @apply w-4 h-4 rounded-full border border-primary-400;
+        width: var(--output-size);
+        height: var(--output-size);
+        @apply rounded-full border border-primary-400;
         svg {
           visibility: visible;
         }

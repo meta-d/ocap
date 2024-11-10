@@ -1,4 +1,4 @@
-import { IXpert, IXpertAgentExecution, XpertAgentExecutionEnum } from '@metad/contracts'
+import { IXpert, IXpertAgentExecution, TAgentExecutionMetadata, XpertAgentExecutionEnum } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNumber, IsOptional, IsString, IsEnum } from 'class-validator'
@@ -54,6 +54,12 @@ export class XpertAgentExecution extends TenantOrganizationBaseEntity implements
 	@IsOptional()
 	@Column({ type: 'integer', nullable: true, default: 0 })
 	tokens?: number
+
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	metadata?: TAgentExecutionMetadata
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()

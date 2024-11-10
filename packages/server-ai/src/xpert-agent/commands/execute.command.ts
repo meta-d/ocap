@@ -1,6 +1,6 @@
 import { tool } from '@langchain/core/tools'
 import { LangGraphRunnableConfig } from '@langchain/langgraph'
-import { ChatEventTypeEnum, IXpert, IXpertAgent, IXpertAgentExecution, TXpertParameter, XpertAgentExecutionEnum, XpertParameterTypeEnum } from '@metad/contracts'
+import { ChatMessageEventTypeEnum, ChatMessageTypeEnum, IXpert, IXpertAgent, IXpertAgentExecution, TXpertParameter, XpertAgentExecutionEnum, XpertParameterTypeEnum } from '@metad/contracts'
 import { convertToUrlPath, getErrorMessage } from '@metad/server-common'
 import { CommandBus, ICommand } from '@nestjs/cqrs'
 import { lastValueFrom, Observable, reduce, Subscriber, tap } from 'rxjs'
@@ -76,7 +76,8 @@ export function createXpertAgentTool(
 			subscriber.next(
 				({
 					data: {
-						type: ChatEventTypeEnum.EVENT,
+						type: ChatMessageTypeEnum.EVENT,
+						event: ChatMessageEventTypeEnum.ON_AGENT_START,
 						data: execution
 					}
 				}) as MessageEvent
@@ -121,7 +122,8 @@ export function createXpertAgentTool(
 							subscriber.next(
 								({
 									data: {
-										type: ChatEventTypeEnum.EVENT,
+										type: ChatMessageTypeEnum.EVENT,
+										event: ChatMessageEventTypeEnum.ON_AGENT_END,
 										data: newExecution
 									}
 								}) as MessageEvent

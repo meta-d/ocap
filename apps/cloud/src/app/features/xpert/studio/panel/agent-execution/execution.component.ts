@@ -13,11 +13,10 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
-import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
-import { NgmIsNilPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
-  ChatEventTypeEnum,
+  ChatMessageEventTypeEnum,
+  ChatMessageTypeEnum,
   getErrorMessage,
   IXpert,
   IXpertAgent,
@@ -28,12 +27,10 @@ import {
   XpertAgentService
 } from 'apps/cloud/src/app/@core'
 import {
-  CopilotModelSelectComponent,
   CopilotStoredMessageComponent,
   MaterialModule,
   XpertParametersCardComponent
 } from 'apps/cloud/src/app/@shared'
-import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { MarkdownModule } from 'ngx-markdown'
 import { of } from 'rxjs'
 import { distinctUntilChanged, switchMap } from 'rxjs/operators'
@@ -55,10 +52,6 @@ import { XpertStudioComponent } from '../../studio.component'
     FormsModule,
     TranslateModule,
     MarkdownModule,
-    NgmIsNilPipe,
-    EmojiAvatarComponent,
-    NgmHighlightVarDirective,
-    CopilotModelSelectComponent,
     CopilotStoredMessageComponent,
     XpertAgentExecutionComponent,
     XpertParametersCardComponent
@@ -82,28 +75,28 @@ export class XpertStudioPanelAgentExecutionComponent {
   readonly executionId = input<string>()
   readonly xpert = input<Partial<IXpert>>()
   readonly xpertAgent = input<IXpertAgent>()
-  readonly execution = this.executionService.execution
+
+  readonly agentKey = computed(() => this.xpertAgent()?.key)
   readonly parameters = computed(() => this.xpertAgent().parameters)
 
   readonly parameterValue = model<Record<string, unknown>>()
   readonly input = model<string>(null)
 
   readonly output = signal('')
-  // readonly execution = signal<IXpertAgentExecution>(null)
+
+  readonly execution = computed(() => this.executionService.agentExecutions()?.[this.agentKey()])
   readonly executions = computed(() => {
-    const executions: IXpertAgentExecution[] = []
-    if (this.execution()) {
-      executions.push({
-        ...this.execution(),
-        agent: this.getAgent(this.execution().agentKey)
-      })
-      this.execution().subExecutions?.forEach((execution) => {
-        executions.push({
-          ...execution,
-          agent: this.getAgent(execution.agentKey)
-        })
-      })
+    const agentExecutions = this.executionService.agentExecutions()
+    if (!agentExecutions) {
+      return []
     }
+    const executions: IXpertAgentExecution[] = []
+    Object.keys(agentExecutions).forEach((key) => {
+      executions.push({
+        ...agentExecutions[key],
+        agent: this.getAgent(key)
+      })
+    })
     return executions
   })
 
@@ -115,8 +108,12 @@ export class XpertStudioPanelAgentExecutionComponent {
       switchMap((id) => (id ? this.agentExecutionService.getOneLog(id) : of(null)))
     )
     .subscribe((value) => {
-      this.execution.set(value)
-      this.output.set(value.outputs?.output)
+      // this.execution.set(value)
+      this.executionService.clear()
+      if (value) {
+        this.executionService.setAgentExecution(value.agentKey, value)
+      }
+      this.output.set(value?.outputs?.output)
     })
 
   constructor() {
@@ -124,15 +121,11 @@ export class XpertStudioPanelAgentExecutionComponent {
     this.#destroyRef.onDestroy(() => {
       this.clearStatus()
     })
-
-    // effect(() => {
-    //   console.log(this.parameterValue(), this.input())
-    // })
   }
 
   clearStatus() {
     this.output.set('')
-    this.execution.set(null)
+    this.executionService.clear()
     this.executionService.setConversation(null)
   }
 
@@ -159,23 +152,25 @@ export class XpertStudioPanelAgentExecutionComponent {
           } else {
             if (msg.data) {
               const event = JSON.parse(msg.data)
-              if (event.type === ChatEventTypeEnum.MESSAGE) {
+              if (event.type === ChatMessageTypeEnum.MESSAGE) {
                 this.output.update((state) => state + event.data)
-              } else if (event.type === ChatEventTypeEnum.LOG) {
-                this.execution.set(event.data)
-                this.executionService.setAgentExecution(event.data.agentKey, event.data)
-              } else if (event.type === ChatEventTypeEnum.EVENT) {
+              } else if (event.type === ChatMessageTypeEnum.EVENT) {
                 switch(event.event) {
-                  case 'on_tool_start': {
+                  case ChatMessageEventTypeEnum.ON_TOOL_START: {
                     this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
                     break;
                   }
-                  case 'on_tool_end': {
+                  case ChatMessageEventTypeEnum.ON_TOOL_END: {
                     this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
                     break;
                   }
-                  default: {
+                  case ChatMessageEventTypeEnum.ON_AGENT_START:
+                  case ChatMessageEventTypeEnum.ON_AGENT_END: {
                     this.executionService.setAgentExecution(event.data.agentKey, event.data)
+                    break;
+                  }
+                  default: {
+                    console.log(`未处理的事件：`, event)
                   }
                 }
               }

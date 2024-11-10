@@ -94,7 +94,7 @@ export function createReactAgent(
       if (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0) {
         return END;
       } else {
-        console.log(`call tools:`, lastMessage.tool_calls.map((tool) => tool.name).join(", "))
+        // console.log(`call tools:`, lastMessage.tool_calls.map((tool) => tool.name).join(", "))
         return "continue";
       }
     }

@@ -13,7 +13,6 @@ import {
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { FFlowModule } from '@foblex/flow'
-import { NgmHighlightVarDirective } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import {
   ICopilotModel,
@@ -55,7 +54,6 @@ import { XpertStudioPanelKnowledgeSectionComponent } from './knowledge-section/k
     TranslateModule,
 
     EmojiAvatarComponent,
-    NgmHighlightVarDirective,
     XpertStudioPanelToolsetSectionComponent,
     CopilotModelSelectComponent,
     XpertStudioPanelAgentExecutionComponent,

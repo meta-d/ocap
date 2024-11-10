@@ -1,5 +1,5 @@
 import { MessageContent } from '@langchain/core/messages'
-import { ChatEventTypeEnum, IXpert, XpertAgentExecutionEnum } from '@metad/contracts'
+import { ChatMessageEventTypeEnum, ChatMessageTypeEnum, IXpert, XpertAgentExecutionEnum } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
@@ -41,7 +41,8 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 			// Start execution event
 			subscriber.next({
 				data: {
-					type: ChatEventTypeEnum.LOG,
+					type: ChatMessageTypeEnum.EVENT,
+					event: ChatMessageEventTypeEnum.ON_AGENT_START,
 					data: execution
 				}
 			} as MessageEvent)
@@ -66,7 +67,7 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 						result += messageContent
 						return {
 							data: {
-								type: ChatEventTypeEnum.MESSAGE,
+								type: ChatMessageTypeEnum.MESSAGE,
 								data: messageContent
 							}
 						} as MessageEvent
@@ -102,7 +103,8 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 
 								subscriber.next({
 									data: {
-										type: ChatEventTypeEnum.LOG,
+										type: ChatMessageTypeEnum.EVENT,
+										event: ChatMessageEventTypeEnum.ON_AGENT_END,
 										data: fullExecution
 									}
 								} as MessageEvent)

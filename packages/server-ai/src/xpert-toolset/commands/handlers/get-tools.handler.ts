@@ -3,6 +3,7 @@ import { XpertToolsetCategoryEnum } from '@metad/contracts'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { In } from 'typeorm'
+import { ODataToolset } from '../../provider'
 import { createBuiltinToolset } from '../../provider/builtin'
 import { OpenAPIToolset } from '../../provider/openapi/openapi-toolset'
 import { BaseToolset, createToolset } from '../../toolset'
@@ -28,13 +29,22 @@ export class ToolsetGetToolsHandler implements ICommandHandler<ToolsetGetToolsCo
 		})
 
 		return toolsets.map((toolset) => {
-			if (toolset.category === XpertToolsetCategoryEnum.BUILTIN) {
-				return createBuiltinToolset(toolset.type, toolset)
-			} else {
-				if (toolset.type === 'openapi') {
-					return new OpenAPIToolset(toolset)
+			switch (toolset.category) {
+				case XpertToolsetCategoryEnum.BUILTIN: {
+					return createBuiltinToolset(toolset.type, toolset)
+				}
+				case XpertToolsetCategoryEnum.API: {
+					switch (toolset.type) {
+						case 'openapi': {
+							return new OpenAPIToolset(toolset)
+						}
+						case 'odata': {
+							return new ODataToolset(toolset)
+						}
+					}
 				}
 			}
+
 			return createToolset(toolset) as BaseToolset<Tool>
 		})
 	}
