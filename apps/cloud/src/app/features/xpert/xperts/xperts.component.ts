@@ -71,7 +71,7 @@ import { XpertToolConfigureBuiltinComponent } from '../tools'
 })
 export class XpertStudioXpertsComponent {
   DisplayBehaviour = DisplayBehaviour
-  XpertRoleTypeEnum = XpertTypeEnum
+  eXpertTypeEnum = XpertTypeEnum
 
   readonly appService = inject(AppService)
   readonly router = inject(Router)

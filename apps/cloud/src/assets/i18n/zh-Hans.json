@@ -1787,7 +1787,22 @@
       "InDevelopment": "此功能正在开发中",
       "CreateCustomTool": "创建自定义工具集",
       "LearnCreateCustomTool": "了解更多关于自定义工具集的信息",
-      "EnterToolsetDescription": "输入工具集描述"
+      "EnterToolsetDescription": "输入工具集描述",
+      "BaseUrl": "基础网址",
+      "ToolsIncluded": "工具包含",
+      "Configure": "配置",
+      "Parameters": "参数",
+      "Value": "值",
+      "Required": "必输",
+      "Description": "描述",
+      "EnterToolDescription": "输入工具描述",
+      "Enabled": "启用",
+      "TestResults": "测试结果",
+      "TestResultsHere": "测试结果将显示在这里",
+      "SaveAsDefault": "保存为默认",
+      "PleaseInput": "请输入",
+      "Output": "输出",
+      "Log": "日志"
     },
     "title": {
       "short": "Xpert AI"

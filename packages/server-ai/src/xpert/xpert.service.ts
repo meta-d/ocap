@@ -101,6 +101,23 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 		return xpert.draft
 	}
 
+	async updateDraft(id: string, draft: TXpertTeamDraft) {
+		const xpert = await this.findOne(id)
+		xpert.draft = {
+			...(xpert.draft ?? {}),
+			...draft,
+			team: {
+				...(xpert.draft?.team ?? {}),
+				...(draft.team ?? {}),
+				updatedAt: new Date(),
+				updatedById: RequestContext.currentUserId()
+			}
+		} as TXpertTeamDraft
+
+		await this.repository.save(xpert)
+		return xpert.draft
+	}
+
 	async publish(id: string) {
 		return await this.commandBus.execute(new XpertPublishCommand(id))
 	}

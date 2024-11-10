@@ -4,6 +4,7 @@ import { toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { nonBlank } from '@metad/ocap-angular/core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
 import { BehaviorSubject } from 'rxjs'
@@ -14,7 +15,6 @@ import { EmojiAvatarComponent } from '../../../@shared/avatar'
 import { AppService } from '../../../app.service'
 import { injectGetXpertTeam } from '../utils'
 import { XpertBasicComponent } from './basic/basic.component'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
 
 
 @Component({

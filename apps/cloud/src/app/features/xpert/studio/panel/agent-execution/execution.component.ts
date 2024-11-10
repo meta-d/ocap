@@ -116,6 +116,7 @@ export class XpertStudioPanelAgentExecutionComponent {
     )
     .subscribe((value) => {
       this.execution.set(value)
+      this.output.set(value.outputs?.output)
     })
 
   constructor() {
@@ -124,9 +125,9 @@ export class XpertStudioPanelAgentExecutionComponent {
       this.clearStatus()
     })
 
-    effect(() => {
-      console.log(this.parameterValue(), this.input())
-    })
+    // effect(() => {
+    //   console.log(this.parameterValue(), this.input())
+    // })
   }
 
   clearStatus() {

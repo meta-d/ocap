@@ -102,6 +102,9 @@ export class XpertStudioConfigureToolComponent extends XpertConfigureToolCompone
   isValid() {
     return this.formGroup.valid
   }
+  isDirty() {
+    return this.formGroup.dirty
+  }
   
   get name() {
     return this.formGroup.get('name')

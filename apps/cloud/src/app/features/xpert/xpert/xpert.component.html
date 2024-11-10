@@ -1,7 +1,7 @@
 <mat-sidenav-container class="flex-1 h-full" autosize>
   <mat-sidenav #sidenav [(opened)]="sideMenuOpened" [mode]="isMobile() ? 'over' : 'side'" class="w-[340px]">
 
-    <div class="flex p-2 mx-2 mt-2 rounded-lg hover:bg-gray-100 cursor-pointer active:scale-98 origin-bottom">
+    <div class="flex p-2 mx-2 mt-2 rounded-xl hover:bg-gray-100 cursor-pointer active:scale-98 origin-bottom">
       <div class="relative shrink-0 mr-2">
         <emoji-avatar [avatar]="avatar()" class="rounded-lg overflow-hidden" />
         <span class="absolute bottom-[-3px] right-[-3px] w-4 h-4 p-0.5 bg-white rounded border-[0.5px] border-[rgba(0,0,0,0.02)] shadow-sm">

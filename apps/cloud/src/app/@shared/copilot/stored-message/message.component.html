@@ -18,7 +18,7 @@
     <div class="flex items-center mb-1">Tool: {{toolMessage().name}}</div>
     <!-- <div class="mb-2">{{toolMessage().tool_call_id}}</div> -->
 
-    <markdown class="ngm-copilot-markdown mb-2 max-h-[400px] block overflow-auto"
+    <markdown class="ngm-copilot-markdown max-h-[400px] block overflow-auto"
       lineNumbers
       [start]="5"
       [data]="toolMessage().content"

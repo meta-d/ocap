@@ -109,6 +109,9 @@ export class XpertStudioConfigureODataComponent extends XpertConfigureToolCompon
   isValid() {
     return this.formGroup.valid
   }
+  isDirty() {
+    return this.formGroup.dirty
+  }
 
   get name() {
     return this.formGroup.get('name')
@@ -140,6 +143,8 @@ export class XpertStudioConfigureODataComponent extends XpertConfigureToolCompon
   get baseUrl() {
     return this.options.get('baseUrl') as FormControl
   }
+
+  readonly url = model('')
 
   // readonly schemas = toSignal(
   //   this.schema.valueChanges.pipe(
@@ -205,7 +210,7 @@ export class XpertStudioConfigureODataComponent extends XpertConfigureToolCompon
   // Get Metadata
   getMetadata() {
     this.loading.set(true)
-    this.toolsetService.getODataRemoteMetadata(this.baseUrl.value, this.credentials.value).subscribe({
+    this.toolsetService.getODataRemoteMetadata(this.url(), this.credentials.value).subscribe({
       next: (result) => {
         console.log(result)
         this.loading.set(false)

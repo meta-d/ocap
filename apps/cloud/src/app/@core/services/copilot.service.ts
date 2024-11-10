@@ -60,13 +60,14 @@ export class PACCopilotService extends NgmCopilotService {
       this.copilots.set(result.items)
     })
 
-  private roleSub = this.xpertService
-    .getAll()
+  // Use Xpert as copilot role
+  private roleSub = this.xpertService.getCopilotXperts()
     .pipe(
       map(({ items }) => items),
       takeUntilDestroyed()
     )
     .subscribe((roles) => {
+      console.log(roles)
       this.roles.set(roles as BusinessRoleType[])
     })
 

@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, inject, model, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, model, signal, viewChild } from '@angular/core'
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
-import { getErrorMessage, IXpertTool, IXpertToolset, routeAnimations, ToastrService, XpertToolsetService } from '../../../../@core'
-import { XpertStudioConfigureToolComponent } from '../openapi/'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { ButtonGroupDirective, DensityDirective, NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { MatDialog } from '@angular/material/dialog'
@@ -14,9 +12,11 @@ import { distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { EMPTY, of } from 'rxjs'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
-import { omit } from 'lodash-es'
+import { getErrorMessage, IXpertTool, IXpertToolset, routeAnimations, ToastrService, XpertToolsetService } from '../../../../@core'
 import { XpertToolsetToolTestComponent } from '../tool-test/test/tool.component'
 import { XpertStudioConfigureODataComponent } from '../odata'
+import { XpertStudioConfigureToolComponent } from '../openapi/'
+import { XpertConfigureToolComponent } from './types'
 
 @Component({
   standalone: true,
@@ -51,7 +51,13 @@ export class XpertStudioAPIToolComponent {
   readonly #route = inject(ActivatedRoute)
   readonly #fb = inject(FormBuilder)
 
+  // Inputs
   readonly toolset = model<IXpertToolset>(null)
+
+  // Children
+  readonly configure = viewChild('configure', { read: XpertConfigureToolComponent })
+  
+  // Inner states
   readonly avatar = computed(() => this.toolset()?.avatar)
 
   readonly tool = model<IXpertTool>(null)
@@ -59,14 +65,11 @@ export class XpertStudioAPIToolComponent {
   readonly testResult = signal(null)
 
   readonly toolAvatar = computed(() => this.tool()?.avatar ?? this.toolset()?.avatar)
-
-  readonly formGroup = this.#fb.group({
-    // avatar: this.#fb.control(null),
-    description: this.#fb.control(null),
+  readonly tools = computed(() => {
+    return this.toolset() ? this.toolset().tools.sort((a, b) => a.enabled === b.enabled ? 0 : a.enabled ? -1 : 1) : []
   })
-  get description() {
-    return this.formGroup.get('description') as FormControl
-  }
+
+  readonly toolsDirty = signal(false)
 
   readonly loading = signal(false)
 
@@ -76,7 +79,6 @@ export class XpertStudioAPIToolComponent {
   ).subscribe({
     next: (value) => {
       this.toolset.set(value)
-      this.formGroup.patchValue(value)
     },
     error: (error) => {
       this.#toastr.error(getErrorMessage(error))
@@ -89,32 +91,37 @@ export class XpertStudioAPIToolComponent {
     })
   }
 
+  isDirty() {
+    return this.configure()?.isDirty() || this.toolsDirty()
+  }
+
+  isValid() {
+    return this.configure()?.isValid()
+  }
+
   saveToolset() {
     this.loading.set(true)
-    this.toolsetService.update(this.toolset().id, {
-      ...this.toolset(),
-      ...this.formGroup.value
-    }).subscribe({
+    let value: Partial<IXpertToolset> = {}
+    if (this.configure()) {
+      value = {
+        ...this.configure().formGroup.value,
+      }
+    }
+    if (this.toolsDirty()) {
+      value.tools = this.toolset().tools
+    }
+
+    this.toolsetService.update(this.toolset().id, value).subscribe({
       next: () => {
         this.#toastr.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated Successfully!' })
         this.loading.set(false)
+        this.toolsDirty.set(false)
       },
       error: (error) => {
         this.#toastr.error(getErrorMessage(error))
         this.loading.set(false)
       }
     })
-  }
-
-  onConfigChange(value: Partial<IXpertToolset>) {
-    this.updateToolset(value)
-  }
-
-  updateToolset(value: Partial<IXpertToolset>) {
-    this.toolset.update((state) => ({
-      ...state,
-      ...omit(value, 'tools')
-    }))
   }
 
   selectTool(tool: IXpertTool) {
@@ -133,6 +140,7 @@ export class XpertStudioAPIToolComponent {
       }
       return state
     })
+    this.toolsDirty.set(true)
   }
 
   onParameter(name: string, event: any) {
@@ -142,8 +150,8 @@ export class XpertStudioAPIToolComponent {
     }))
   }
 
-  saveAsDefault() {
-    this.updateTool(this.tool().id, {parameters: this.parameters()})
+  saveParametersAsDefault(tool: IXpertTool, parameters: Record<string, unknown>) {
+    this.updateTool(tool.id, {parameters})
   }
 
   testTool() {

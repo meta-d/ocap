@@ -7,6 +7,7 @@ import {
   inject,
   input,
   model,
+  output,
   signal
 } from '@angular/core'
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms'
@@ -54,9 +55,15 @@ export class XpertToolsetToolTestComponent {
   readonly #cdr = inject(ChangeDetectorRef)
   readonly toolService = inject(XpertToolService)
 
+  // Inputs
   readonly tool = input<IXpertTool>()
   readonly disabled = input<boolean>(false)
   readonly enabled = model<boolean>()
+
+  // Outputs
+  readonly saveParameters = output<Record<string, string>>()
+
+  // Inner States
   readonly toolId = computed(() => this.tool()?.id)
 
   readonly toolAvatar = computed(() => this.tool()?.avatar)
@@ -67,10 +74,9 @@ export class XpertToolsetToolTestComponent {
 
   readonly loading = signal(false)
 
-  updateTool(id: string, value: Partial<IXpertTool>) {}
 
   saveAsDefault() {
-    this.updateTool(this.tool().id, { parameters: this.parameters() })
+    this.saveParameters.emit(this.parameters())
   }
 
   onParameter(name: string, event: any) {

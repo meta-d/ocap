@@ -5,6 +5,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	Put,
 	HttpCode,
 	HttpStatus,
 	Logger,
@@ -57,6 +58,10 @@ export class XpertController extends CrudController<Xpert> {
 		return this.service.validateTitle(title).then((items) => items.map((item) => new XpertPublicDTO(item)))
 	}
 
+	// @Get('my')
+	// async getMyAll(@Query('data', ParseJsonPipe) data: PaginationParams<Xpert>,) {
+	// }
+
 	@Get(':id/team')
 	async getTeam(@Param('id') id: string, @Query('data', ParseJsonPipe) data: OptionParams<Xpert>) {
 		return this.service.getTeam(id, data)
@@ -68,11 +73,19 @@ export class XpertController extends CrudController<Xpert> {
 	}
 
 	@Post(':id/draft')
-	async saveDraft(@Param('id') roleId: string, @Body() body: TXpertTeamDraft) {
+	async saveDraft(@Param('id') id: string, @Body() draft: TXpertTeamDraft) {
 		// todo 检查有权限编辑此 xpert role
-		body.savedAt = new Date()
+		draft.savedAt = new Date()
 		// Save draft
-		return await this.service.saveDraft(roleId, body)
+		return await this.service.saveDraft(id, draft)
+	}
+
+	@Put(':id/draft')
+	async updateDraft(@Param('id') id: string, @Body() draft: TXpertTeamDraft) {
+		// todo 检查有权限编辑此 xpert role
+		draft.savedAt = new Date()
+		// Save draft
+		return await this.service.updateDraft(id, draft)
 	}
 
 	@Post(':id/publish')

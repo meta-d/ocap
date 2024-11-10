@@ -43,7 +43,7 @@ import {
 } from '../../@core'
 import { MaterialModule, TagFilterComponent, UserPipe } from '../../@shared'
 import { AppService } from '../../app.service'
-import { WorkspaceSettingsComponent } from './workspace-settings/settings.component'
+import { WorkspaceSettingsComponent } from './workspace/settings/settings.component'
 
 export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
 

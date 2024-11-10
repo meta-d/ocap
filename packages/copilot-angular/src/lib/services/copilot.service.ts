@@ -25,7 +25,7 @@ export abstract class NgmCopilotService extends CopilotService {
   readonly allRoles = computed(() => {
     const lang = this.lang()
     const roles = [NgmLanguageEnum.SimplifiedChinese, NgmLanguageEnum.Chinese].includes(lang as NgmLanguageEnum)
-      ? this.roles()?.map((role) => ({ ...role, title: role.titleCN }))
+      ? this.roles()?.map((role) => ({ ...role, title: role.titleCN || role.title }))
       : this.roles()
 
     return [

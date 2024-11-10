@@ -1,7 +1,12 @@
+import { DragDropModule } from '@angular/cdk/drag-drop'
+import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, effect, inject, model, signal } from '@angular/core'
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { ChangeDetectorRef, Component, computed, effect, inject, model, signal } from '@angular/core'
+import { FormArray, FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { NgmInputComponent } from '@metad/ocap-angular/common'
+import { NgmDensityDirective } from '@metad/ocap-angular/core'
+import { TranslateModule } from '@ngx-translate/core'
 import {
   getErrorMessage,
   IfAnimation,
@@ -9,7 +14,6 @@ import {
   omitXpertRelations,
   TagCategoryEnum,
   ToastrService,
-  TXpertParameter,
   TXpertTeamDraft,
   XpertParameterTypeEnum,
   XpertService,
@@ -18,12 +22,8 @@ import {
 import { CopilotModelSelectComponent, MaterialModule, TagSelectComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { XpertComponent } from '../xpert.component'
-import { TranslateModule } from '@ngx-translate/core'
-import { NgmInputComponent } from '@metad/ocap-angular/common'
-import { NgmDensityDirective } from '@metad/ocap-angular/core'
-import { NgxFloatUiModule, NgxFloatUiTriggers } from 'ngx-float-ui'
-import { CdkListboxModule } from '@angular/cdk/listbox'
-import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop'
+import { injectGetXpertTeam } from '../../utils'
+import { derivedAsync } from 'ngxtension/derived-async'
 
 @Component({
   selector: 'xpert-basic',
@@ -37,7 +37,6 @@ import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-dr
     CdkListboxModule,
     DragDropModule,
     MaterialModule,
-    NgxFloatUiModule,
 
     NgmDensityDirective,
     EmojiAvatarComponent,
@@ -53,18 +52,29 @@ export class XpertBasicComponent {
   eXpertTypeEnum = XpertTypeEnum
   eModelType = ModelType
   eTagCategoryEnum = TagCategoryEnum
-  eNgxFloatUiTriggers = NgxFloatUiTriggers
   eXpertParameterTypeEnum = XpertParameterTypeEnum
 
   readonly xpertComponent = inject(XpertComponent)
   readonly xpertService = inject(XpertService)
+  readonly getXpertTeam = injectGetXpertTeam()
   readonly #fb = inject(FormBuilder)
   readonly #toastr = inject(ToastrService)
   readonly #cdr = inject(ChangeDetectorRef)
 
   readonly xpertId = this.xpertComponent.paramId
-  readonly xpert = this.xpertComponent.xpert
-  readonly draft = this.xpertComponent.draft
+  // readonly xpert = this.xpertComponent.xpert
+  // readonly draft = this.xpertComponent.draft
+
+  readonly xpert = derivedAsync(() => {
+    return this.xpertId() ? this.getXpertTeam(this.xpertId()) : null
+  })
+  readonly draft = computed(() => {
+    if (this.xpert()) {
+      return this.xpert().draft ?? {team: omitXpertRelations(this.xpert())}
+    }
+    return null
+  })
+  readonly team = computed(() => this.draft()?.team)
 
   readonly isExpanded = model<boolean>(false)
 
@@ -79,9 +89,8 @@ export class XpertBasicComponent {
       this.#fb.control(null),
       this.#fb.control(null),
       this.#fb.control(null),
-      this.#fb.control(null),
-    ]),
-    // parameters: this.#fb.array([])
+      this.#fb.control(null)
+    ])
   })
   get name() {
     return this.form.get('name').value
@@ -104,22 +113,14 @@ export class XpertBasicComponent {
   get starters() {
     return this.form.get('starters') as FormArray
   }
-  // get parameters() {
-  //   return this.form.get('parameters') as FormArray
-  // }
 
   readonly loading = signal(false)
-
-  private valueSub = this.form.valueChanges.subscribe((value) => {
-    console.log(value)
-  })
 
   constructor() {
     effect(
       () => {
-        if (this.xpert()) {
-          this.form.patchValue(this.xpert())
-          // this.initParameters(this.xpert().agent.parameters)
+        if (this.team()) {
+          this.form.patchValue(this.team())
           this.form.markAsPristine()
         }
       },
@@ -134,16 +135,13 @@ export class XpertBasicComponent {
   saveDraft() {
     this.loading.set(true)
     this.xpertService
-      .update(this.xpertId(), {
-        draft: {
-          ...(this.draft() ?? {}),
-          team: {
-            ...omitXpertRelations(this.xpert()),
-            ...(this.draft()?.team ?? {}),
-            ...this.form.value
-          }
-        } as TXpertTeamDraft
-      })
+      .upadteDraft(this.xpertId(), {
+        team: {
+          ...omitXpertRelations(this.xpert()),
+          ...(this.draft()?.team ?? {}),
+          ...this.form.value
+        }
+      } as TXpertTeamDraft)
       .subscribe({
         next: (value) => {
           this.#toastr.success('PAC.Messages.SavedDraft', { Default: 'Saved draft!' })
@@ -157,69 +155,4 @@ export class XpertBasicComponent {
         }
       })
   }
-
-  // initParameters(values: TXpertParameter[]) {
-  //   this.parameters.clear()
-  //   values?.forEach((p) => {
-  //     this.addParameter(p)
-  //   })
-  // }
-
-  // addParameter(param: Partial<TXpertParameter>) {
-  //   this.parameters.push(
-  //     this.#fb.group({
-  //       type: this.#fb.control(param.type),
-  //       key: this.#fb.control(param.key),
-  //       name: this.#fb.control(param.name),
-  //       description: this.#fb.control(param.description),
-  //       optional: this.#fb.control(param.optional),
-  //       maximum: this.#fb.control(param.maximum),
-  //       options: this.#fb.control(param.options),
-  //     })
-  //   )
-  // }
-
-  // deleteParameter(i: number) {
-  //   this.parameters.removeAt(i)
-  // }
-
-  // updateParameter(index: number, name: string, value: string) {
-  //   this.parameters.at(index).get(name).setValue(value, {emitEvent: true})
-  //   this.form.markAsDirty()
-  // }
-
-  // addOption(index: number) {
-  //   const control = this.parameters.at(index)
-  //   control.patchValue({
-  //     options: [
-  //       ...(control.value.options ?? []),
-  //       ''
-  //     ]
-  //   })
-  // }
-
-  // setOption(index: number, j: number, value: string) {
-  //   const control = this.parameters.at(index)
-  //   control.value.options[j] = value
-  //   control.patchValue({
-  //     options: control.value.options
-  //   })
-  // }
-
-  // deleteOption(index: number, j: number) {
-  //   const control = this.parameters.at(index)
-  //   control.value.options.splice(j)
-  //   control.patchValue({
-  //     options: control.value.options
-  //   })
-  // }
-
-  // drop(index: number, event: CdkDragDrop<string, string>) {
-  //   const control = this.parameters.at(index)
-  //   moveItemInArray(control.value.options, event.previousIndex, event.currentIndex)
-  //   control.patchValue({
-  //     options: control.value.options
-  //   })
-  // }
-
 }

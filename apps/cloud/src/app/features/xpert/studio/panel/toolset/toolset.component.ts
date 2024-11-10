@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
 import { MatIcon } from '@angular/material/icon'
-import { FFlowModule } from '@foblex/flow'
 import { IXpertToolset, TXpertTeamNode, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { XpertStudioPanelComponent } from '../panel.component'
 import { CloseSvgComponent } from '@metad/ocap-angular/common'
-import { of, switchMap } from 'rxjs'
+import { of } from 'rxjs'
 import { derivedAsync } from 'ngxtension/derived-async'
+import { sortBy } from 'lodash-es'
 import { XpertToolTestComponent } from '../../../tools'
 
 @Component({
@@ -15,7 +15,7 @@ import { XpertToolTestComponent } from '../../../tools'
   styleUrls: ['./toolset.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, MatIcon, CloseSvgComponent, EmojiAvatarComponent, XpertToolTestComponent],
+  imports: [MatIcon, CloseSvgComponent, EmojiAvatarComponent, XpertToolTestComponent],
 })
 export class XpertStudioPanelToolsetComponent {
   readonly elementRef = inject(ElementRef)
@@ -29,6 +29,9 @@ export class XpertStudioPanelToolsetComponent {
     this.toolsetId() ? this.toolsetService.getOneById(this.toolsetId(), { relations: ['tools'] }) : of(null)
   , { initialValue: this.node()?.entity as IXpertToolset})
 
+  readonly tools = computed(() => {
+    return sortBy(this.toolset()?.tools, 'enabled').reverse()
+  })
 
   closePanel() {
     this.panelComponent.close()
