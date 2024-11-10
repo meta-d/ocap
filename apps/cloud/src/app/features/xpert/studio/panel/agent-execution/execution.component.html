@@ -6,7 +6,7 @@
   @if (parameters()?.length) {
     <xpert-parameters-card [parameters]="parameters()" [(ngModel)]="parameterValue" />
   }
-  <div class="h-6 mb-1 mt-4 flex items-center gap-1 text-text-secondary system-sm-semibold">
+  <div class="h-6 mb-1 mt-2 flex items-center gap-1 text-text-secondary system-sm-semibold">
     <div class="truncate">
       <div class="mx-0.5 text-sm font-medium text-gray-700 max-w-[150px] truncate"
         [title]="'PAC.Xpert.AskQuestion' | translate: {Default: 'Ask a question'} ">{{ 'PAC.Xpert.AskQuestion' | translate: {Default: 'Ask a question'} }}</div>
@@ -16,7 +16,8 @@
     <input class="w-full px-3 text-sm leading-8 text-gray-900 border-0 rounded-lg grow h-8 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200"
       [placeholder]="'PAC.Xpert.PleaseInput' | translate: {Default: 'Please input'}"
       type="text"
-      [(ngModel)]="input">
+      [(ngModel)]="input"
+    >
   </div>
 
   <div class="mt-4 flex justify-between space-x-2">

@@ -23,12 +23,17 @@ export class ODataToolset extends BaseToolset<ODataTool> {
 		this.tools = this.toolset.tools
 			.filter((tool) => tool.enabled)
 			.map((_) => {
-				const tool = new ODataTool(_, service)
 				// Provide specific tool name to tool class
-				;(<typeof ODataTool>tool.constructor).lc_name = function() {
-					return _.name;
+				const DynamicODataTool = class extends ODataTool {
+					static lc_name(): string {
+						return _.name
+					} 
+					constructor(tool, service) {
+						super(tool, service)
+					}
 				}
-				return tool
+
+				return new DynamicODataTool(_, service)
 			})
 
 		return this.tools

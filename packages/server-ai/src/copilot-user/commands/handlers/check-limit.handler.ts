@@ -16,11 +16,13 @@ export class CopilotCheckLimitHandler implements ICommandHandler<CopilotCheckLim
 		const { copilot, tenantId, organizationId, userId } = input
 
 		const existing = await this.copilotUserService.findOneOrFail({
-			tenantId,
-			organizationId,
-			orgId: copilot.organizationId ?? IsNull(),
-			userId,
-			provider: copilot.provider
+			where: {
+				tenantId,
+				organizationId,
+				orgId: copilot.organizationId ?? IsNull(),
+				userId,
+				provider: copilot.provider
+			}
 		})
 
 		if (existing.success) {
@@ -30,9 +32,11 @@ export class CopilotCheckLimitHandler implements ICommandHandler<CopilotCheckLim
 		}
 
 		const orgExisting = await this.copilotOrganizationService.findOneOrFail({
-			tenantId: input.tenantId,
-			organizationId: input.organizationId,
-			provider: copilot.provider
+			where: {
+				tenantId: input.tenantId,
+				organizationId: input.organizationId,
+				provider: copilot.provider
+			}
 		})
 		if (orgExisting.success) {
 			if (orgExisting.record.tokenLimit && orgExisting.record.tokenUsed >= orgExisting.record.tokenLimit) {

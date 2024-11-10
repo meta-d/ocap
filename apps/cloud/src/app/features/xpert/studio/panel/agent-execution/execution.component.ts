@@ -164,6 +164,10 @@ export class XpertStudioPanelAgentExecutionComponent {
                     this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
                     break;
                   }
+                  case ChatMessageEventTypeEnum.ON_TOOL_ERROR: {
+                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.FAILED})
+                    break;
+                  }
                   case ChatMessageEventTypeEnum.ON_AGENT_START:
                   case ChatMessageEventTypeEnum.ON_AGENT_END: {
                     this.executionService.setAgentExecution(event.data.agentKey, event.data)

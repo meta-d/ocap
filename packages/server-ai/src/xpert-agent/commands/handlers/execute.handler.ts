@@ -151,6 +151,8 @@ ${agent.prompt}
 			})
 		)
 
+		const eventStack: string[] = []
+		let toolCalls = null
 		let prevEvent = ''
 		return from(
 			graph.streamEvents(
@@ -193,6 +195,49 @@ ${agent.prompt}
 
 				prevEvent = event
 				switch (event) {
+					case 'on_chain_start': {
+						eventStack.push(event)
+						break
+					}
+					case 'on_chain_end': {
+						let _event = eventStack.pop()
+						if (_event === 'on_tool_start') {
+							// 当调用 Tool 报错异常时会跳过 on_tool_end 事件，直接到此事件
+							while(_event === 'on_tool_start') {
+								_event = eventStack.pop()
+							}
+							// Clear all error tool calls
+							if (toolCalls) {
+								Object.keys(toolCalls).filter((id) => !!toolCalls[id]).forEach((id) => {
+									subscriber.next({
+										data: {
+											type: ChatMessageTypeEnum.EVENT,
+											event: ChatMessageEventTypeEnum.ON_TOOL_ERROR,
+											data: toolCalls[id]
+										}
+									} as MessageEvent)
+								})
+								toolCalls = null
+							}
+						}
+						
+						// All chains end
+						if (_event !== 'on_chain_start') {
+							eventStack.pop()
+						}
+						break
+					}
+					case 'on_chat_model_start': {
+						eventStack.push(event)
+						break
+					}
+					case 'on_chat_model_end': {
+						const _event = eventStack.pop()
+						if (_event !== 'on_chat_model_start') {
+							eventStack.pop()
+						}
+						return null
+					}
 					case 'on_chat_model_stream': {
 						// Only returns the stream events content of the current react agent (filter by tag: thread_id), not events of agent in tool call.
 						if (tags.includes(thread_id)) {
@@ -207,6 +252,10 @@ ${agent.prompt}
 					}
 					case 'on_tool_start': {
 						this.#logger.verbose(data, rest)
+						eventStack.push(event)
+						// Tools currently called in parallel
+						toolCalls ??= {}
+						toolCalls[rest.run_id] = {data, ...rest}
 						subscriber.next({
 							data: {
 								type: ChatMessageTypeEnum.EVENT,
@@ -221,6 +270,12 @@ ${agent.prompt}
 					}
 					case 'on_tool_end': {
 						this.#logger.verbose(data, rest)
+						// Clear finished tool call
+						toolCalls[rest.run_id] = null
+						const _event = eventStack.pop()
+						if (_event !== 'on_tool_start') { // 应该不会出现这种情况吧？
+							eventStack.pop()
+						}
 						subscriber.next({
 							data: {
 								type: ChatMessageTypeEnum.EVENT,

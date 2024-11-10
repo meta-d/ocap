@@ -21,11 +21,13 @@ export class CopilotUserService extends TenantOrganizationAwareCrudService<Copil
 	 */
 	async upsert(user: Partial<CopilotUser>): Promise<ICopilotUser> {
 		const existing = await this.findOneOrFail({
-			tenantId: user.tenantId,
-			organizationId: user.organizationId,
-			orgId: user.orgId ?? IsNull(),
-			userId: user.userId,
-			provider: user.provider
+			where: {
+				tenantId: user.tenantId,
+				organizationId: user.organizationId,
+				orgId: user.orgId ?? IsNull(),
+				userId: user.userId,
+				provider: user.provider
+			}
 		})
 		if (existing.success) {
 			existing.record.tokenUsed = (existing.record.tokenUsed ?? 0) + (user.tokenUsed ?? 0)

@@ -39,14 +39,20 @@ export class OpenAPIToolset extends BaseToolset<OpenAPITool> {
 
 		const tools: OpenAPITool[] = []
 		this.toolset.tools?.filter((_) => _.enabled).forEach((item) => {
-			const tool = new OpenAPITool({
+			// Provide specific tool name to tool class
+			const DynamicOpenAPITool = class extends OpenAPITool {
+				static lc_name(): string {
+					return item.name
+				} 
+				constructor(tool: IXpertTool,) {
+					super(tool)
+				}
+			}
+
+			const tool = new DynamicOpenAPITool({
 				...item,
 				toolset: this.toolset
 			})
-			// Provide specific tool name to tool class
-			;(<typeof OpenAPITool>tool.constructor).lc_name = function() {
-				return item.name;
-			}
 		
 			tools.push(tool)
 		})

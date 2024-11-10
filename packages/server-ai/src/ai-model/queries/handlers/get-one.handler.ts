@@ -1,7 +1,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RequestContext } from '@metad/server-core'
 import { CommandBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs'
-import { CopilotTokenRecordCommand } from '../../../copilot-user'
+import { CopilotCheckLimitCommand, CopilotTokenRecordCommand } from '../../../copilot-user'
 import { AIProvidersService } from '../../providers.service'
 import { AIModelGetOneQuery } from '../get-one.query'
 
@@ -18,6 +18,14 @@ export class AIModelGetOneHandler implements IQueryHandler<AIModelGetOneQuery> {
 		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
 		const userId = RequestContext.currentUserId()
+
+		// Check token limit
+		await this.commandBus.execute(new CopilotCheckLimitCommand({
+			tenantId,
+			organizationId,
+			userId,
+			copilot
+		}))
 
 		const modelProvider = this.service.getProvider(copilot.provider)
 		return modelProvider.getChatModel(
