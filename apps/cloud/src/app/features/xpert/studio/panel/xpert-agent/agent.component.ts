@@ -95,12 +95,15 @@ export class XpertStudioPanelAgentComponent {
 
   readonly parameters = computed(() => this.xpertAgent()?.parameters)
 
-
   readonly nameError = computed(() => {
     const name = this.name()
-    return name ? this.nodes()
-      .filter((_) => _.key !== this.key())
-      .some((n) => n.entity.name === name) : false
+    if (name) {
+      const isValidName = /^[a-zA-Z0-9 _-]+$/.test(name)
+      return !isValidName || this.nodes()
+        .filter((_) => _.key !== this.key())
+        .some((n) => n.entity.name === name)
+    }
+    return false
   })
 
   readonly copilotModel = model<ICopilotModel>()

@@ -22,7 +22,10 @@ export class ODataTool extends BaseTool {
 		this.description = xpertTool.description
 
 		if (xpertTool.schema) {
-			this.schema = ApiBasedToolSchemaParser.parseParametersToZod(xpertTool.schema.parameters ?? [] /* Default empty */) as unknown as typeof this.schema
+			this.schema = ApiBasedToolSchemaParser.parseParametersToZod(
+				xpertTool.schema.parameters ?? [] /* Default empty */,
+				xpertTool.parameters
+			) as unknown as typeof this.schema
 		}
 	}
 

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
-import { MatIcon } from '@angular/material/icon'
 import { IXpertToolset, TXpertTeamNode, XpertToolsetService } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { XpertStudioPanelComponent } from '../panel.component'
@@ -15,7 +14,7 @@ import { XpertToolTestComponent } from '../../../tools'
   styleUrls: ['./toolset.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIcon, CloseSvgComponent, EmojiAvatarComponent, XpertToolTestComponent],
+  imports: [CloseSvgComponent, EmojiAvatarComponent, XpertToolTestComponent],
 })
 export class XpertStudioPanelToolsetComponent {
   readonly elementRef = inject(ElementRef)
@@ -29,9 +28,7 @@ export class XpertStudioPanelToolsetComponent {
     this.toolsetId() ? this.toolsetService.getOneById(this.toolsetId(), { relations: ['tools'] }) : of(null)
   , { initialValue: this.node()?.entity as IXpertToolset})
 
-  readonly tools = computed(() => {
-    return sortBy(this.toolset()?.tools, 'enabled').reverse()
-  })
+  readonly tools = computed(() => this.toolset()?.tools.filter((_) => _.enabled).reverse())
 
   closePanel() {
     this.panelComponent.close()

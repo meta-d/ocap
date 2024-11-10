@@ -63,7 +63,7 @@
         {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
       </button>
       <button mat-raised-button color="accent"
-        [disabled]="!isDirty() || !isValid()"
+        [disabled]="(!isDirty() || !isValid()) && !toolsDirty()"
         (click)="saveToolset()">
         {{ 'PAC.ACTIONS.Save' | translate: { Default: 'Save' } }}
       </button>
@@ -81,7 +81,11 @@
             <div class="flex items-center">
               <!-- <emoji-avatar class="rounded-lg overflow-hidden"
                 [avatar]="toolAvatar()" small /> -->
-              <div class="ml-2 leading-6 text-base font-semibold text-gray-900">{{tool.name}}</div>
+              <!-- <div class="ml-2 leading-6 text-base font-semibold text-gray-900">{{tool.name}}</div> -->
+
+              <xpert-tool-name-input class="ml-2 leading-6 text-base font-semibold text-gray-900"
+                [ngModel]="tool.name"
+                (ngModelChange)="updateTool(tool.id, {name: $event})"/>
             </div>
           </div>
           <div class="flex items-center">

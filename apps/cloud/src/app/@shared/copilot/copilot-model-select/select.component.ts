@@ -56,6 +56,10 @@ export class CopilotModelSelectComponent {
     transform: booleanAttribute
   })
 
+  readonly hiddenLabel = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
+
   readonly _copilotModel = computed(() => this.copilotModel() ?? this.inheritModel())
 
   readonly copilotWithModels = derivedAsync(() => {

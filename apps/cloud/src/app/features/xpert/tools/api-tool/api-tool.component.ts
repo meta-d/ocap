@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, inject, model, signal, viewChild } from '@angular/core'
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
-import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { MaterialModule, XpertToolNameInputComponent } from 'apps/cloud/src/app/@shared'
 import { ButtonGroupDirective, NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
@@ -34,7 +34,8 @@ import { omit } from 'lodash-es'
     EmojiAvatarComponent,
     XpertStudioConfigureToolComponent,
     XpertStudioConfigureODataComponent,
-    XpertToolsetToolTestComponent
+    XpertToolsetToolTestComponent,
+    XpertToolNameInputComponent
   ],
   selector: 'pac-xpert-api-tool',
   templateUrl: './api-tool.component.html',
@@ -51,6 +52,7 @@ export class XpertStudioAPIToolComponent {
   readonly #route = inject(ActivatedRoute)
   readonly #fb = inject(FormBuilder)
   readonly #cdr = inject(ChangeDetectorRef)
+  readonly #translate = inject(TranslateService)
 
   // Inputs
   readonly toolset = model<IXpertToolset>(null)
@@ -146,6 +148,7 @@ export class XpertStudioAPIToolComponent {
       return state
     })
     this.toolsDirty.set(true)
+    this.#cdr.detectChanges()
   }
 
   onParameter(name: string, event: any) {
@@ -188,7 +191,7 @@ export class XpertStudioAPIToolComponent {
       .open(NgmConfirmDeleteComponent, {
         data: {
           value: toolset.name,
-          information: `Delete all tools of toolset:\n ${toolset.description || toolset.name}`
+          information: this.#translate.instant('PAC.Xpert.DeleteAllTools', {Default: 'Delete all tools of toolset'})
         }
       })
       .afterClosed()

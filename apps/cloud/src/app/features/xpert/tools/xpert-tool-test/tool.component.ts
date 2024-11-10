@@ -9,7 +9,6 @@ import { NgmSpinComponent } from '@metad/ocap-angular/common'
 import { NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { IfAnimation, IXpertTool, ToastrService, XpertToolService, XpertToolsetService } from 'apps/cloud/src/app/@core'
-import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { map, of, shareReplay, switchMap, tap } from 'rxjs'
 import { XpertToolsetToolTestComponent } from '../tool-test'
 

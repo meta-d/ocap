@@ -1,6 +1,9 @@
+import { BadRequestException } from '@nestjs/common'
+import { validateToolName } from '@metad/server-common'
 import { RequestContext } from '@metad/server-core'
-import { EntitySubscriberInterface, EventSubscriber, InsertEvent } from 'typeorm'
+import { EntitySubscriberInterface, EventSubscriber, InsertEvent, UpdateEvent } from 'typeorm'
 import { XpertTool } from './xpert-tool.entity'
+
 
 @EventSubscriber()
 export class XpertToolSubscriber implements EntitySubscriberInterface<XpertTool> {
@@ -15,6 +18,20 @@ export class XpertToolSubscriber implements EntitySubscriberInterface<XpertTool>
 		if (event.entity) {
 			event.entity.tenantId ??= RequestContext.currentTenantId()
 			event.entity.organizationId ??= RequestContext.getOrganizationId()
+
+			this.validateToolName(event.entity.name)
+		}
+	}
+
+	beforeUpdate(event: UpdateEvent<XpertTool>): Promise<any> | void {
+		if (event.entity) {
+			this.validateToolName(event.entity.name)
+		}
+	}
+
+	validateToolName(name: string) {
+		if (!validateToolName(name)) {
+			throw new BadRequestException(`Tool name '${name}' is not valid`)
 		}
 	}
 }

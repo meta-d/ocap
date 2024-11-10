@@ -4,7 +4,7 @@ import { fromParameter, fromSchema } from '@openapi-contrib/openapi-schema-to-js
 import { load } from 'js-yaml';
 import { jsonSchemaToZod } from 'json-schema-to-zod';
 import { ToolParameterForm, ToolParameterType } from '../types';
-import type { JSONSchema4 } from "json-schema";
+import type { JSONSchema4, JSONSchema4Type } from "json-schema";
 import type { ParameterObject } from "openapi-typescript/src/types";
 import { ToolApiSchemaError, ToolNotSupportedError, ToolProviderNotFoundError } from '../errors';
 import { lowerCase } from 'lodash';
@@ -193,7 +193,7 @@ export class ApiBasedToolSchemaParser {
     }
   }
 
-  static parseParametersToZod(parameters: ParameterObject[]) {
+  static parseParametersToZod(parameters: ParameterObject[], defaultValues?: Record<string, JSONSchema4Type | undefined>) {
     if (!parameters) {
       throw new ToolApiSchemaError(`Parameters is empty`)
     }
@@ -201,7 +201,12 @@ export class ApiBasedToolSchemaParser {
       const jsonSchemaObject = {
         type: 'object',
         properties: parameters.reduce((acc, curr) => {
-          acc[curr.name] = fromParameter(curr,)
+          acc[curr.name] = fromParameter(curr, {afterTransform: (schema, options) => {
+            if (defaultValues?.[curr.name]) {
+              (<JSONSchema4>schema).default = defaultValues[curr.name]
+            }
+            return schema as JSONSchema4
+          }})
           return acc
         }, {} as any),
         required: parameters.filter((p) => p.required).map((p) => p.name)

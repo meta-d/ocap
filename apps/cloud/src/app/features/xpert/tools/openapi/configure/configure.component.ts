@@ -25,7 +25,7 @@ import {
   XpertToolsetCategoryEnum,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
-import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
+import { TagSelectComponent, XpertToolNameInputComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs'
 import { CdkMenuModule } from '@angular/cdk/menu'
@@ -49,7 +49,8 @@ import { XpertConfigureToolComponent } from '../../api-tool/types'
     TagSelectComponent,
     NgmSpinComponent,
 
-    XpertToolAuthorizationInputComponent
+    XpertToolAuthorizationInputComponent,
+    XpertToolNameInputComponent
   ],
   selector: 'xpert-tool-openapi-configure',
   templateUrl: './configure.component.html',

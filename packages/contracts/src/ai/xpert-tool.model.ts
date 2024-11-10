@@ -83,3 +83,5 @@ export type TXpertToolEntity = {
 
   description?: string
 }
+
+export const TOOL_NAME_REGEX = /^[a-zA-Z0-9_-]+$/;

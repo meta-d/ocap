@@ -26,7 +26,7 @@ import {
   XpertToolsetCategoryEnum,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
-import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
+import { TagSelectComponent, XpertToolNameInputComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
@@ -55,7 +55,8 @@ import { XpertConfigureToolComponent } from '../../api-tool/types'
     NgmSpinComponent,
     NgmDensityDirective,
 
-    XpertToolAuthorizationInputComponent
+    XpertToolAuthorizationInputComponent,
+    XpertToolNameInputComponent
   ],
   selector: 'xpert-tool-odata-configure',
   templateUrl: './configure.component.html',

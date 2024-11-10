@@ -83,7 +83,7 @@ export class ODataToolset extends BaseToolset<ODataTool> {
 			const properties = uniq([...entityType.Key.map((_) => _.Name), ...Object.keys(entityType.Properties)])
 
 			toolsSchema.push({
-				name: `Create ` + name,
+				name: `Create_` + name,
 				method: 'create',
 				entity: name,
 				path: '/' + name,
@@ -111,7 +111,7 @@ export class ODataToolset extends BaseToolset<ODataTool> {
 				})
 
 			toolsSchema.push({
-				name: `Get ` + name,
+				name: `Get_` + name,
 				method: 'get',
 				entity: name,
 				path: '/' + name,
@@ -138,7 +138,7 @@ export class ODataToolset extends BaseToolset<ODataTool> {
 			})
 
 			toolsSchema.push({
-				name: `Query ` + name,
+				name: `Query_` + name,
 				method: 'query',
 				entity: name,
 				path: '/' + name,
@@ -166,7 +166,7 @@ export class ODataToolset extends BaseToolset<ODataTool> {
 				})
 
 			toolsSchema.push({
-				name: `Delete ` + name,
+				name: `Delete_` + name,
 				method: 'delete',
 				entity: name,
 				path: '/' + name,

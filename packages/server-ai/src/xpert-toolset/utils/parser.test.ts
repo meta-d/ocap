@@ -112,11 +112,13 @@ describe('ApiBasedToolSchemaParser', () => {
             }
         ];
 
-        const zodSchema = ApiBasedToolSchemaParser.parseParametersToZod(parameters);
+        const zodSchema = ApiBasedToolSchemaParser.parseParametersToZod(parameters, {
+			param2: 100
+		})
         const parsedData = zodSchema.parse({ param1: 'test', param3: 123 });
 
 		// param2 可以不填，param3 被忽略
-        expect(parsedData).toEqual({ param1: 'test' });
+        expect(parsedData).toEqual({ param1: 'test', param2: 100, });
     });
 
     it('should throw an error for invalid parameter data', () => {

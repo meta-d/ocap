@@ -2,7 +2,7 @@
   bg-components-panel-bg">
   <emoji-avatar [avatar]="toolset()?.avatar" small class="shrink-0 mr-2 rounded-lg overflow-hidden shadow-sm" />
   <div class="flex flex-col">
-    <span class="text-lg">{{toolset()?.name}}</span>
+    <span class="text-base">{{toolset()?.name}}</span>
   </div>
 
   <div class="flex-1"></div>
@@ -17,7 +17,7 @@
   </div>
 </div>
 
-<div class="max-w-full px-4 py-2 text-text-tertiary text-sm whitespace-normal overflow-hidden text-ellipsis">
+<div class="max-w-full px-4 py-1 text-text-tertiary text-sm line-clamp-2">
   {{toolset()?.description}}
 </div>
 
