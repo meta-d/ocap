@@ -1,4 +1,4 @@
-import { ApiProviderAuthType, IXpertToolset, TXpertToolEntity, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { ApiProviderAuthType, IXpertTool, IXpertToolset, TXpertToolEntity, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { Service } from '@sap_oss/odata-library'
 import { uniq } from 'lodash'
 import { ToolProviderCredentialValidationError } from '../../errors'
@@ -27,8 +27,8 @@ export class ODataToolset extends BaseToolset<ODataTool> {
 				const DynamicODataTool = class extends ODataTool {
 					static lc_name(): string {
 						return _.name
-					} 
-					constructor(tool, service) {
+					}
+					constructor(tool: IXpertTool, service) {
 						super(tool, service)
 					}
 				}
@@ -74,29 +74,136 @@ export class ODataToolset extends BaseToolset<ODataTool> {
 
 		const metadata = service.metadata
 
-		return Object.keys(service.entitySets).map((name) => {
+		const toolsSchema = []
+
+		Object.keys(service.entitySets).map((name) => {
 			const entitySet = metadata.getEntitySet(name)
 			const entityType = metadata.getEntityType(entitySet.EntityType)
 
 			const properties = uniq([...entityType.Key.map((_) => _.Name), ...Object.keys(entityType.Properties)])
 
-			return {
-				name,
-				method: 'get',
+			toolsSchema.push({
+				name: `Create ` + name,
+				method: 'create',
+				entity: name,
 				path: '/' + name,
-				parameters: properties.map((name) => {
-					const property = entityType.Properties[name]
+				parameters: properties.map((name) => entityType.Properties[name])
+					.filter((property) => property?.Visible)
+					.map((property) => {
+						return {
+							name: property.Name,
+							type: property.Type,
+							label: {
+								en_US: property.Label
+							},
+							human_description: {
+								en_US: property.Quickinfo,
+							},
+							llm_description: property.Quickinfo,
+							description: property.Quickinfo,
+							required: entityType.Key.some((_) => _.Name === name),
+							isKey: entityType.Key.some((_) => _.Name === name),
+							schema: {
+								type: mapODataTypeToOpenAPI(property.Type)
+							}
+						}
+					})
+				})
+
+			toolsSchema.push({
+				name: `Get ` + name,
+				method: 'get',
+				entity: name,
+				path: '/' + name,
+				parameters: entityType.Key.map(({ Name }) => {
+					const property = entityType.Properties[Name]
 					return {
 						name: property.Name,
 						type: property.Type,
-						required: entityType.Key.some((_) => _.Name === name),
-						isKey: entityType.Key.some((_) => _.Name === name),
+						label: {
+							en_US: property.Label
+						},
+						human_description: {
+							en_US: property.Quickinfo,
+						},
+						llm_description: property.Quickinfo,
+						description: property.Quickinfo,
+						required: true,
+						isKey: true,
 						schema: {
-							type: 'string'
+							type: mapODataTypeToOpenAPI(property.Type)
 						}
 					}
 				})
-			}
+			})
+
+			toolsSchema.push({
+				name: `Query ` + name,
+				method: 'query',
+				entity: name,
+				path: '/' + name,
+				parameters: properties.map((name) => entityType.Properties[name])
+					.filter((property) => property?.Visible)
+					.map((property) => {
+						return {
+							name: property.Name,
+							type: property.Type,
+							label: {
+								en_US: property.Label
+							},
+							human_description: {
+								en_US: property.Quickinfo,
+							},
+							llm_description: property.Quickinfo,
+							description: property.Quickinfo,
+							required: entityType.Key.some((_) => _.Name === name),
+							isKey: entityType.Key.some((_) => _.Name === name),
+							schema: {
+								type: mapODataTypeToOpenAPI(property.Type)
+							}
+						}
+					})
+				})
+
+			toolsSchema.push({
+				name: `Delete ` + name,
+				method: 'delete',
+				entity: name,
+				path: '/' + name,
+				parameters: entityType.Key.map(({ Name }) => {
+					const property = entityType.Properties[Name]
+					return {
+						name: property.Name,
+						type: property.Type,
+						label: {
+							en_US: property.Label
+						},
+						human_description: {
+							en_US: property.Quickinfo,
+						},
+						llm_description: property.Quickinfo,
+						description: property.Quickinfo,
+						required: true,
+						isKey: true,
+						schema: {
+							type: mapODataTypeToOpenAPI(property.Type)
+						}
+					}
+				})
+			})
 		})
+
+		return toolsSchema
+	}
+}
+
+function mapODataTypeToOpenAPI(type: string) {
+	switch (type) {
+		case 'Edm.String':
+			return 'string'
+		case 'Edm.Decimal':
+			return 'number'
+		case 'Edm.DateTime':
+			return 'number'
 	}
 }

@@ -1804,7 +1804,8 @@
       "SaveAsDefault": "保存为默认",
       "PleaseInput": "请输入",
       "Output": "输出",
-      "Log": "日志"
+      "Log": "日志",
+      "EnterBaseUrl": "请输入基础网址"
     },
     "title": {
       "short": "Xpert AI"

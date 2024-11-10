@@ -212,12 +212,13 @@ export class XpertStudioConfigureODataComponent extends XpertConfigureToolCompon
     this.loading.set(true)
     this.toolsetService.getODataRemoteMetadata(this.url(), this.credentials.value).subscribe({
       next: (result) => {
-        console.log(result)
+        // console.log(result)
         this.loading.set(false)
         // Handle the success scenario here
         this.formGroup.patchValue({
           schema: result.schema,
         })
+        this.baseUrl.setValue(this.url())
         result.tools.forEach((tool) => this.addTool(tool))
       },
       error: (err) => {

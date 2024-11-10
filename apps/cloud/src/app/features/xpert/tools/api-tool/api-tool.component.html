@@ -63,7 +63,7 @@
         {{ 'PAC.ACTIONS.CANCEL' | translate: { Default: 'Cancel' } }}
       </button>
       <button mat-raised-button color="accent"
-        [disabled]="!isDirty() || isValid()"
+        [disabled]="!isDirty() || !isValid()"
         (click)="saveToolset()">
         {{ 'PAC.ACTIONS.Save' | translate: { Default: 'Save' } }}
       </button>

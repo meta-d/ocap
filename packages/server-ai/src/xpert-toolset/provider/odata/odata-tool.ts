@@ -1,7 +1,7 @@
 import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { ToolParams } from '@langchain/core/tools'
-import { IXpertTool, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { IXpertTool } from '@metad/contracts'
 import { BaseTool } from '../../toolset'
 import { ApiBasedToolSchemaParser } from '../../utils/parser'
 import { ToolParameterValidationError } from '../../errors'
@@ -38,17 +38,22 @@ export class ODataTool extends BaseTool {
 		parentConfig?: RunnableConfig
 	): Promise<any> {
 		await this.service.init
-		const entitySet = this.service[this.xpertTool.schema.name]
+		const entitySet = this.service[this.xpertTool.schema.entity]
 		if (!entitySet) {
-			throw new ToolParameterValidationError(`Entity '${this.xpertTool.schema.name}' not found`)
+			throw new ToolParameterValidationError(`Entity '${this.xpertTool.schema.entity}' not found`)
 		}
-		if (this.xpertTool.schema.method === 'query') {
-			return await entitySet.get()
-		} else if (this.xpertTool.schema.method === 'get') {
-			return await entitySet.get(toolParameters)
+
+		switch(this.xpertTool.schema.method) {
+			case 'create':
+				return await entitySet.post(toolParameters)
+			case 'query':
+				return await entitySet.get() // todo
+			case 'get':
+				return await entitySet.get(toolParameters)
+			case 'delete':
+				return await entitySet.delete(toolParameters)
+			default:
+				return await entitySet.get(toolParameters)
 		}
-		const result = await entitySet.get(toolParameters)
-		console.log(result)
-		return result
 	}
 }

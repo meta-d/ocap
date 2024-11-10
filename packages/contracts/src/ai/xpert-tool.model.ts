@@ -74,6 +74,7 @@ export interface IBuiltinTool {
 export type TXpertToolEntity = {
   name: string
   method: 'create' | 'get' | 'query' | 'update' | 'delete'
+  entity: string
   path: string
   /**
    * Definition of properties

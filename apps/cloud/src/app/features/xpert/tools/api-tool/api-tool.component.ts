@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, effect, inject, model, signal, viewChild } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, inject, model, signal, viewChild } from '@angular/core'
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { ButtonGroupDirective, DensityDirective, NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective, NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { distinctUntilChanged, switchMap } from 'rxjs/operators'
@@ -17,6 +17,7 @@ import { XpertToolsetToolTestComponent } from '../tool-test/test/tool.component'
 import { XpertStudioConfigureODataComponent } from '../odata'
 import { XpertStudioConfigureToolComponent } from '../openapi/'
 import { XpertConfigureToolComponent } from './types'
+import { omit } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -28,7 +29,6 @@ import { XpertConfigureToolComponent } from './types'
     TranslateModule,
     MaterialModule,
     ButtonGroupDirective,
-    DensityDirective,
     NgmI18nPipe,
     NgmDensityDirective,
     EmojiAvatarComponent,
@@ -50,6 +50,7 @@ export class XpertStudioAPIToolComponent {
   readonly #router = inject(Router)
   readonly #route = inject(ActivatedRoute)
   readonly #fb = inject(FormBuilder)
+  readonly #cdr = inject(ChangeDetectorRef)
 
   // Inputs
   readonly toolset = model<IXpertToolset>(null)
@@ -109,6 +110,8 @@ export class XpertStudioAPIToolComponent {
     }
     if (this.toolsDirty()) {
       value.tools = this.toolset().tools
+    } else {
+      value = omit(value, 'tools')
     }
 
     this.toolsetService.update(this.toolset().id, value).subscribe({
@@ -116,6 +119,8 @@ export class XpertStudioAPIToolComponent {
         this.#toastr.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated Successfully!' })
         this.loading.set(false)
         this.toolsDirty.set(false)
+        this.configure()?.formGroup.markAsPristine()
+        this.#cdr.detectChanges()
       },
       error: (error) => {
         this.#toastr.error(getErrorMessage(error))
