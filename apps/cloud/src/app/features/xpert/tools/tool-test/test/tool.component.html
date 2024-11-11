@@ -17,19 +17,19 @@
         </tr>
       </thead>
       <tbody>
-        @for (parameter of parameter(); track parameter.name) {
-        <tr class="border-b last:border-0 border-gray-200">
-          <td class="py-2 pl-3 pr-2.5">{{parameter.name}}
-            @if (parameter.required) {
-              <span class="inline-block text-sm font-medium text-[#EC4A0A]">*</span>
-            }
-          </td>
-          <td class="">
-            <input class="ngm-input-inline ngm-input-sm w-full" [type]="parameter.type || 'text' "
-              [ngModel]="parameters()?.[parameter.name]"
-              (ngModelChange)="onParameter(parameter.name, $event)">
-          </td>
-        </tr>
+        @for (parameter of parameterList(); track parameter.name) {
+          <tr class="border-b last:border-0 border-gray-200">
+            <td class="py-2 pl-3 pr-2.5">{{parameter.name}}
+              @if (parameter.required) {
+                <span class="inline-block text-sm font-medium text-[#EC4A0A]">*</span>
+              }
+            </td>
+            <td class="">
+              <input class="ngm-input-inline ngm-input-sm w-full" [type]="parameter.type || 'text' "
+                [ngModel]="parameters()?.[parameter.name]"
+                (ngModelChange)="onParameter(parameter.name, $event)">
+            </td>
+          </tr>
         }
       </tbody>
     </table>

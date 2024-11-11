@@ -59,6 +59,10 @@ export type TToolParameter = {
   }
 
   default: string
+  /**
+   * Is visible for ai tool parameters
+   */
+  visible?: boolean
 }
 
 export interface IBuiltinTool {

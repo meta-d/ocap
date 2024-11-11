@@ -73,7 +73,7 @@
 </div>
 
 <div class="flex-1 flex flex-col rounded-xl overflow-hidden bg-components-panel-bg">
-  @if (tool(); as tool) {
+  @for (tool of selectedTools(); track tool.id) {
     <div class="flex-1 flex flex-col overflow-auto">
       <div class="sticky top-0 z-20 !border-b-black/5 shrink-0 border-b border-b-gray-100 p-4 bg-components-panel-bg">
         <div class="flex justify-between items-center h-6">
@@ -116,20 +116,25 @@
           </div>
           <div class="px-2 space-y-4 max-h-60 overflow-y-auto">
             @for (parameter of tool.schema?.parameters; track parameter.name) {
-            <div>
-              <div class="flex items-center space-x-2 leading-[18px]">
-                <div class="text-[13px] font-semibold text-gray-900">{{parameter.name}}</div>
-                <div class="text-sm font-medium text-gray-500">{{parameter.type}}</div>
-                @if (parameter.required) {
-                  <div class="text-sm font-medium text-[#EC4A0A]">
-                    {{'PAC.Xpert.Required' | translate: {Default: 'Required'} }}
+              <div class="flex justify-start items-start">
+                <mat-slide-toggle [ngModel]="parameter.visible" ngm-density="xs" [matTooltip]="'PAC.Xpert.IsVisible' | translate: {Default: 'Is visible'}"
+                  (ngModelChange)="updateParameter(tool, parameter.name, {visible: $event})"/>
+
+                <div>
+                  <div class="flex items-center space-x-2 leading-[18px]">
+                    <div class="text-[13px] font-semibold text-gray-900">{{parameter.name}}</div>
+                    <div class="text-sm font-medium text-gray-500">{{parameter.type}}</div>
+                    @if (parameter.required) {
+                      <div class="text-sm font-medium text-[#EC4A0A]">
+                        {{'PAC.Xpert.Required' | translate: {Default: 'Required'} }}
+                      </div>
+                    }
                   </div>
-                }
+                  <div class="mt-1 leading-[18px] text-xs font-normal text-text-tertiary">
+                    {{parameter.human_description | i18n}}
+                  </div>
+                </div>
               </div>
-              <div class="mt-1 leading-[18px] text-sm font-normal text-gray-600">
-                {{parameter.human_description | i18n}}
-              </div>
-            </div>
             }
           </div>
         </div>
@@ -144,7 +149,7 @@
         <xpert-toolset-tool-test [tool]="tool" class="flex-1" (saveParameters)="saveParametersAsDefault(tool, $event)" />
       </div>
     </div>
-  } @else {
+  } @empty {
     <div class="flex-1 flex flex-col p-4 overflow-auto">
       @switch (toolset()?.type) {
         @case('openapi') {

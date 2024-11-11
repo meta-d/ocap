@@ -12,7 +12,7 @@ import { distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { EMPTY, of } from 'rxjs'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
-import { getErrorMessage, IXpertTool, IXpertToolset, routeAnimations, ToastrService, XpertToolsetService } from '../../../../@core'
+import { getErrorMessage, IXpertTool, IXpertToolset, routeAnimations, ToastrService, TToolParameter, XpertToolsetService } from '../../../../@core'
 import { XpertToolsetToolTestComponent } from '../tool-test/test/tool.component'
 import { XpertStudioConfigureODataComponent } from '../odata'
 import { XpertStudioConfigureToolComponent } from '../openapi/'
@@ -62,12 +62,12 @@ export class XpertStudioAPIToolComponent {
   
   // Inner states
   readonly avatar = computed(() => this.toolset()?.avatar)
-
-  readonly tool = model<IXpertTool>(null)
+  // Single tool
+  readonly selectedToolIds = signal<string[]>([])
+  readonly selectedTools = computed(() => this.selectedToolIds().map((id) => this.toolset()?.tools.find((_) => _.id === id)))
   readonly parameters = model<Record<string, any>>(null)
   readonly testResult = signal(null)
 
-  readonly toolAvatar = computed(() => this.tool()?.avatar ?? this.toolset()?.avatar)
   readonly tools = computed(() => {
     return this.toolset() ? this.toolset().tools.sort((a, b) => a.enabled === b.enabled ? 0 : a.enabled ? -1 : 1) : []
   })
@@ -90,7 +90,7 @@ export class XpertStudioAPIToolComponent {
 
   constructor() {
     effect(() => {
-      // console.log(this.toolset())
+      // console.log(this.selectedTools())
     })
   }
 
@@ -131,8 +131,8 @@ export class XpertStudioAPIToolComponent {
     })
   }
 
-  selectTool(tool: IXpertTool) {
-    this.tool.set(tool)
+  selectTool(tool?: IXpertTool) {
+    this.selectedToolIds.set(tool ? [tool.id] : [])
     this.parameters.set(null)
   }
 
@@ -145,7 +145,10 @@ export class XpertStudioAPIToolComponent {
           ...value
         }
       }
-      return state
+      return {
+        ...state,
+        tools: [...state.tools]
+      }
     })
     this.toolsDirty.set(true)
     this.#cdr.detectChanges()
@@ -158,6 +161,47 @@ export class XpertStudioAPIToolComponent {
     }))
   }
 
+  /**
+   * Update parameter of tool
+   * 
+   * @param tool Xpert tool
+   * @param name Name of parameter
+   * @param parameter New value of parameter
+   */
+  updateParameter(tool: IXpertTool, name: string, parameter: Partial<TToolParameter>) {
+    this.toolset.update((state) => {
+      const index = state.tools.findIndex((item) => item.id === tool.id)
+      if (index > -1) {
+        const parameters = state.tools[index].schema?.parameters ?? []
+        const j = parameters.findIndex((_) => _.name === name)
+        if (j > -1) {
+          parameters[j] = {
+            ...parameters[j],
+            ...parameter
+          }
+        } else {
+          parameters.push({
+            name,
+            ...parameter
+          })
+        }
+        state.tools[index] = {
+          ...state.tools[index],
+          schema: {
+            ...state.tools[index].schema,
+            parameters: [...parameters]
+          }
+        }
+      }
+      return {
+        ...state,
+        tools: [...state.tools]
+      }
+    })
+    this.toolsDirty.set(true)
+    this.#cdr.detectChanges()
+  }
+
   saveParametersAsDefault(tool: IXpertTool, parameters: Record<string, unknown>) {
     this.updateTool(tool.id, {parameters})
   }
@@ -166,7 +210,7 @@ export class XpertStudioAPIToolComponent {
     this.loading.set(true)
     this.testResult.set(null)
     this.toolsetService.testOpenAPI({
-      ...this.tool(),
+      ...this.selectedTools()[0],
       parameters: this.parameters(),
       toolset: this.toolset(),
     }).subscribe({

@@ -1812,7 +1812,8 @@
       "EnterTitle": "输入标题",
       "NameExistedOrInvalid": "名称已存在或不合法，请使用 a-zA-Z0-9 _-",
       "NameDefaultUseKey": "名称，默认使用 ",
-      "DeleteAllTools": "删除工具集包含其所有工具"
+      "DeleteAllTools": "删除工具集包含其所有工具",
+      "IsVisible": "是否可见"
     },
     "title": {
       "short": "Xpert AI"

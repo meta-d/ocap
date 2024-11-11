@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common'
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   computed,
+  effect,
   inject,
   input,
   model,
@@ -15,7 +17,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
-import { NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
+import { NgmDensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
   getErrorMessage,
@@ -24,7 +26,6 @@ import {
   XpertToolService,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
-import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 
 @Component({
@@ -37,8 +38,6 @@ import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
     MatDialogModule,
     MatTooltipModule,
     MatSlideToggleModule,
-    EmojiAvatarComponent,
-    NgmI18nPipe,
     NgmDensityDirective,
     NgmSpinComponent
   ],
@@ -58,6 +57,9 @@ export class XpertToolsetToolTestComponent {
   // Inputs
   readonly tool = input<IXpertTool>()
   readonly disabled = input<boolean>(false)
+  readonly visibleAll = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
   readonly enabled = model<boolean>()
 
   // Outputs
@@ -67,13 +69,18 @@ export class XpertToolsetToolTestComponent {
   readonly toolId = computed(() => this.tool()?.id)
 
   readonly toolAvatar = computed(() => this.tool()?.avatar)
-  readonly parameter = computed(() => this.tool()?.schema?.parameters)
+  readonly parameterList = computed(() => this.tool()?.schema?.parameters?.filter((_) => _.visible || this.visibleAll()))
 
   readonly parameters = model<Record<string, any>>(null)
   readonly testResult = signal(null)
 
   readonly loading = signal(false)
 
+  constructor() {
+    effect(() => {
+      // console.log(this.tool())
+    })
+  }
 
   saveAsDefault() {
     this.saveParameters.emit(this.parameters())
