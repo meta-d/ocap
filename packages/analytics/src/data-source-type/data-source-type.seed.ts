@@ -1,5 +1,5 @@
 import { AdapterBaseOptions, QUERY_RUNNERS } from '@metad/adapter'
-import { ITenant } from '@metad/contracts'
+import { DataSourceProtocolEnum, DataSourceSyntaxEnum, ITenant } from '@metad/contracts'
 import { Connection } from 'typeorm'
 import { DataSourceType } from './data-source-type.entity'
 
@@ -18,8 +18,8 @@ export function createDefaultDataSourceTypes(tenant: ITenant) {
 		dsType.tenant = tenant
 		dsType.name = queryRunner.name
 		dsType.type = queryRunner.type
-		dsType.syntax = queryRunner.syntax
-		dsType.protocol = queryRunner.protocol
+		dsType.syntax = queryRunner.syntax as unknown as DataSourceSyntaxEnum
+		dsType.protocol = queryRunner.protocol as unknown as DataSourceProtocolEnum
 		dsType.configuration = queryRunner.configurationSchema
 		return dsType
 	})

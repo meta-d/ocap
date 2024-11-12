@@ -7,6 +7,8 @@ export class QuerySchemaCommand implements ICommand {
 
 	constructor(
 		public readonly args: {
+			dataSource: string
+			schema: string
 			tables: string[]
 		},
 		public readonly config: RunnableConfig,

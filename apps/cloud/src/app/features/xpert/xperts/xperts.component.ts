@@ -143,6 +143,9 @@ export class XpertStudioXpertsComponent {
   readonly isTools = computed(() => this.type() === XpertToolsetCategoryEnum.API )
   readonly isBuiltinTools = computed(() => this.type() === XpertToolsetCategoryEnum.BUILTIN )
 
+  readonly builtinToolsets = computed(() => this.toolsets()?.filter((_) => _.category === XpertToolsetCategoryEnum.BUILTIN))
+  readonly apiToolsets = computed(() => this.toolsets()?.filter((_) => _.category === XpertToolsetCategoryEnum.API))
+
   refresh() {
     this.refresh$.next()
   }

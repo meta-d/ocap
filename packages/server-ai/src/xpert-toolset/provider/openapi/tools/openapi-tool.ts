@@ -13,13 +13,13 @@ const API_TOOL_DEFAULT_TIMEOUT = [
 ]
 
 export class OpenAPITool extends BaseTool {
+
 	providerType = XpertToolsetCategoryEnum.API
 
 	protected api_bundle: ApiToolBundle
 
 	constructor(
 		protected xpertTool: IXpertTool,
-		// protected base?: IBaseTool,
 		fields?: ToolParams
 	) {
 		super(fields)
@@ -27,7 +27,7 @@ export class OpenAPITool extends BaseTool {
         this.name = xpertTool.name
         this.description = xpertTool.description
 		this.api_bundle = xpertTool.options?.api_bundle
-		this.toolset = xpertTool.toolset
+		// this.toolset = xpertTool.toolset
 
 		if (xpertTool.schema) {
 			this.schema = ApiBasedToolSchemaParser.parseParametersToZod(xpertTool.schema.parameters ?? [] /* Default empty */) as unknown as typeof this.schema
@@ -52,7 +52,7 @@ export class OpenAPITool extends BaseTool {
 
 	assembling_request(parameters: Record<string, any>, _credentials?): Record<string, any> {
 		const headers: Record<string, any> = {}
-		const credentials = _credentials || this.toolset?.credentials || {}
+		const credentials = _credentials || this.xpertTool.toolset?.credentials || {}
 
 		if (!credentials.auth_type) {
 			throw new ToolProviderCredentialValidationError('Missing auth_type')
@@ -223,6 +223,10 @@ export class OpenAPITool extends BaseTool {
 		}
 	}
 
+	getBaseUrl() {
+		return this.xpertTool.toolset.options?.baseUrl
+	}
+
 	protected async _call(
 		toolParameters: any,
 		runManager?: CallbackManagerForToolRun,
@@ -232,7 +236,7 @@ export class OpenAPITool extends BaseTool {
 		const headers = this.assembling_request(toolParameters)
 
 		let url = this.api_bundle.server_url
-		const baseUrl = this.toolset.options?.baseUrl
+		const baseUrl = this.getBaseUrl()
 		if (baseUrl) {
 			url = (baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl) + url
 		}

@@ -10,11 +10,13 @@ export class NgmI18nPipe implements PipeTransform {
   private readonly translate = inject(TranslateService)
 
   transform(value: unknown): string {
-    return typeof value === 'string'
-      ? value
-      : typeof value === 'object'
-        ? (value[mapLanguage(this.translate.currentLang as NgmLanguageEnum)] ?? value['en_US'])
-        : value
+    if (typeof value === 'string') {
+      return value
+    } else if (typeof value === 'object' && value !== null) {
+      return value[mapLanguage(this.translate.currentLang as NgmLanguageEnum)] ?? value['en_US']
+    } else {
+      return value as string
+    }
   }
 }
 

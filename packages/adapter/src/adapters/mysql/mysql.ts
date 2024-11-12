@@ -1,7 +1,7 @@
 import { Connection, Pool, createConnection } from 'mysql' // mysql2 package 的连不上 Doris
 import { BaseSQLQueryRunner, SQLAdapterOptions, register } from '../../base'
 import { convertMySQLSchema, pick, typeToMySqlDB } from '../../helpers'
-import { IDSSchema, QueryOptions } from '../../types'
+import { DBProtocolEnum, DBSyntaxEnum, IDSSchema, QueryOptions } from '../../types'
 
 export const MYSQL_TYPE = 'mysql'
 export const RDS_TYPE = 'rds_mysql'
@@ -13,8 +13,8 @@ export interface MysqlAdapterOptions extends SQLAdapterOptions {
 export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> extends BaseSQLQueryRunner<T> {
   readonly name: string = 'MySQL'
   readonly type: string = MYSQL_TYPE
-  readonly syntax = 'sql'
-  readonly protocol = 'sql'
+  readonly syntax = DBSyntaxEnum.SQL
+  readonly protocol = DBProtocolEnum.SQL
 
   readonly jdbcDriver = 'com.mysql.jdbc.Driver'
   jdbcUrl(schema?: string) {

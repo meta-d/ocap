@@ -1,7 +1,7 @@
 import { AxiosResponse } from 'axios'
 import * as https from 'https'
 import { BaseHTTPQueryRunner, HttpAdapterOptions, register } from '../base'
-import { IDSSchema } from '../types'
+import { DBProtocolEnum, DBSyntaxEnum, IDSSchema } from '../types'
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false })
 
@@ -16,8 +16,8 @@ export class XMLA extends BaseHTTPQueryRunner<XmlaAdapterOptions> {
 
   name = 'XMLA'
   type = XMLA.type
-  syntax = 'mdx'
-  protocol = 'xmla'
+  syntax = DBSyntaxEnum.MDX
+  protocol = DBProtocolEnum.XMLA
 
   // Inner status
   private authCookie: string

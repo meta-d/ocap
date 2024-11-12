@@ -1,11 +1,11 @@
-import { PaginationParams, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { PaginationParams, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, Logger, NotFoundException, Type } from '@nestjs/common'
 import { CommandBus, ICommand, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindConditions, IsNull, Not, Repository } from 'typeorm'
 import { XpertToolset } from './xpert-toolset.entity'
 import { CopilotService } from '../copilot'
-import { AiProviderRole, IUser, IXpertToolset, TToolCredentials, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { AiProviderRole, IUser, IXpertToolset, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { assign } from 'lodash'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
 import { defaultToolTags } from './utils/tags'
@@ -104,12 +104,19 @@ export class XpertToolsetService extends TenantOrganizationAwareCrudService<Xper
 		// // Get instances in workspace
 		// const {items: exists} = await this.getAllByWorkspace(entity.workspaceId, {where: {type: provider}}, null, user)
 
-		const toolproviderController = createBuiltinToolset(provider)
+		const toolproviderController = createBuiltinToolset(provider, null, {
+			toolsetService: this,
+			commandBus: this.commandBus
+		})
 
 		// validate credentials
 		await toolproviderController.validateCredentials(entity.credentials)
 		// encrypt credentials
 		// credentials = tool_configuration.encrypt_tool_credentials(credentials)
+
+		if (entity.id) {
+			return await this.update(entity.id, entity)
+		}
 
 		return await this.create({
 			// Provider properties as the default fields

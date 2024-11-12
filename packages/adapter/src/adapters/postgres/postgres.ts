@@ -1,7 +1,7 @@
 import { Client, ClientConfig, types } from 'pg'
 import { BaseSQLQueryRunner, QueryResult, SQLAdapterOptions, register } from '../../base'
 import { convertPGSchema, getPGSchemaQuery, pgTypeMap, typeToPGDB } from '../../helpers'
-import { CreationTable, IDSSchema, QueryOptions } from '../../types'
+import { CreationTable, DBProtocolEnum, DBSyntaxEnum, IDSSchema, QueryOptions } from '../../types'
 import { pgFormat } from './pg-format'
 
 
@@ -24,8 +24,8 @@ export interface PostgresAdapterOptions extends SQLAdapterOptions {
 export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
   readonly name = 'Postgres'
   readonly type = POSTGRES_TYPE
-  readonly syntax = 'sql'
-  readonly protocol = 'sql'
+  readonly syntax = DBSyntaxEnum.SQL
+  readonly protocol = DBProtocolEnum.SQL
 
   readonly jdbcDriver = 'org.postgresql.Driver'
 

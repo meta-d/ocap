@@ -86,6 +86,29 @@ export class DataSourceController extends CrudController<DataSource> {
 		}
 	}
 
+	@Get('sql-select-options')
+	@UseInterceptors(ClassSerializerInterceptor)
+	async getSqlDataSources() {
+		const { items } = await this.dsService.findSqlDataSources()
+		return items.map((item) => ({
+			value: item.id,
+			label: item.name
+		}))
+	}
+
+	@Get('sql-schema-select-options')
+	@UseInterceptors(ClassSerializerInterceptor)
+	async getSqlSchemas(@Query('dataSources') dataSources: string[] ) {
+		if (!dataSources?.[0]) {
+			return []
+		}
+		const items = await this.dsService.getCatalogs(dataSources[0])
+		return items.map((item) => ({
+			value: item.name,
+			label: item.label || item.name
+		}))
+	}
+
 	@ApiOperation({ summary: 'Find by id' })
 	@ApiResponse({
 		status: HttpStatus.OK,

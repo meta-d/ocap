@@ -31,7 +31,10 @@ export class ToolsetGetToolsHandler implements ICommandHandler<ToolsetGetToolsCo
 		return toolsets.map((toolset) => {
 			switch (toolset.category) {
 				case XpertToolsetCategoryEnum.BUILTIN: {
-					return createBuiltinToolset(toolset.type, toolset)
+					return createBuiltinToolset(toolset.type, toolset, {
+						toolsetService: this.toolsetService,
+						commandBus: this.commandBus
+					})
 				}
 				case XpertToolsetCategoryEnum.API: {
 					switch (toolset.type) {

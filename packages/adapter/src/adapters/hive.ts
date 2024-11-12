@@ -1,4 +1,4 @@
-import { IColumnDef, IDSSchema, IDSTable, QueryOptions } from '../types'
+import { DBProtocolEnum, DBSyntaxEnum, IColumnDef, IDSSchema, IDSTable, QueryOptions } from '../types'
 import { auth, connections, HiveClient, HiveUtils, thrift } from 'hive-driver'
 import { ColumnRequest, TablesRequest } from 'hive-driver/dist/contracts/IHiveSession'
 import { BaseSQLQueryRunner, QueryResult, register, SQLAdapterOptions } from '../base'
@@ -14,8 +14,8 @@ export interface HiveAdapterOptions extends SQLAdapterOptions {
 export class HiveQueryRunner extends BaseSQLQueryRunner<HiveAdapterOptions> {
   readonly name = 'Hive'
   readonly type = 'hive'
-  readonly syntax = 'sql'
-  readonly protocol = 'sql'
+  readonly syntax = DBSyntaxEnum.SQL
+  readonly protocol = DBProtocolEnum.SQL
 
   readonly jdbcDriver = 'org.apache.hive.jdbc.HiveDriver'
   jdbcUrl(catalog?: string) {

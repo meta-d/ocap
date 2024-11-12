@@ -1,7 +1,7 @@
 import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { ToolParams } from '@langchain/core/tools'
-import { IXpertTool } from '@metad/contracts'
+import { IXpertTool, TXpertToolEntity } from '@metad/contracts'
 import { BaseTool } from '../../toolset'
 import { ApiBasedToolSchemaParser } from '../../utils/parser'
 import { ToolParameterValidationError } from '../../errors'
@@ -46,7 +46,9 @@ export class ODataTool extends BaseTool {
 			throw new ToolParameterValidationError(`Entity '${this.xpertTool.schema.entity}' not found`)
 		}
 
-		switch(this.xpertTool.schema.method) {
+		const schema = this.xpertTool.schema as TXpertToolEntity
+
+		switch(schema.method) {
 			case 'create':
 				return await entitySet.post(toolParameters)
 			case 'query':

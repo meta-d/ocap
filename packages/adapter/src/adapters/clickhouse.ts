@@ -1,7 +1,7 @@
 import { ClickHouse } from 'clickhouse'
 import { BaseSQLQueryRunner, register, SQLAdapterOptions } from '../base'
 import { groupBy, typeOfObj } from '../helpers'
-import { IDSSchema } from '../types'
+import { DBProtocolEnum, DBSyntaxEnum, IDSSchema } from '../types'
 
 export interface ClickHouseAdapterOptions extends SQLAdapterOptions {
   dbname?: string
@@ -10,8 +10,8 @@ export interface ClickHouseAdapterOptions extends SQLAdapterOptions {
 export class ClickHouseRunner extends BaseSQLQueryRunner<ClickHouseAdapterOptions> {
   readonly name = 'ClickHouse'
   readonly type = 'clickhouse'
-  readonly syntax = 'sql'
-  readonly protocol = 'sql'
+  readonly syntax = DBSyntaxEnum.SQL
+  readonly protocol = DBProtocolEnum.SQL
 
   readonly jdbcDriver = 'ru.yandex.clickhouse.ClickHouseDriver'
 

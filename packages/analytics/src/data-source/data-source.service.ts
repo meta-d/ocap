@@ -1,5 +1,5 @@
 import { AdapterBaseOptions, createQueryRunnerByType, DBQueryRunner } from '@metad/adapter'
-import { IDataSource, IDSSchema, IDSTable } from '@metad/contracts'
+import { DataSourceProtocolEnum, IDataSource, IDSSchema, IDSTable } from '@metad/contracts'
 import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -221,5 +221,21 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 			dataSourceId: id,
 			userId
 		})
+	}
+
+	async findSqlDataSources() {
+		const [items, total] = await this.repository.createQueryBuilder("dataSource")
+			.leftJoinAndSelect("dataSource.type", "type")
+			.where("dataSource.tenantId = :tenantId and dataSource.organizationId = :organizationId and type.protocol = :protocol",
+				{
+					tenantId: RequestContext.currentTenantId(),
+					organizationId: RequestContext.getOrganizationId(),
+					protocol: DataSourceProtocolEnum.SQL
+				})
+			.getManyAndCount()
+		return {
+			items,
+			total
+		}
 	}
 }

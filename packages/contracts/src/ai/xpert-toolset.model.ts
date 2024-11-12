@@ -62,6 +62,9 @@ export type TXpertToolsetOptions = {
   [key: string]: any
 }
 
+/**
+ * @deprecated
+ */
 export type XpertToolContext = {
   tenantId: string
   organizationId?: string
@@ -73,48 +76,6 @@ export type XpertToolContext = {
 }
 
 export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()
-
-// TOOLSET_TYPES.set('TavilySearch', {
-//   name: 'TavilySearch',
-//   description: 'Tavily Search is a robust search API tailored specifically for LLM Agents.',
-//   avatar: { url: '/assets/icons/tavily.ico' },
-//   schema: {
-//     type: 'object',
-//     properties: {
-//       apiKey: { type: 'string', title: 'Api Key' },
-//       maxResults: { type: 'number', title: 'Max results', default: '2' }
-//     },
-//     required: ['apiKey'],
-//     secret: ['apiKey']
-//   }
-// })
-
-// TOOLSET_TYPES.set('DuckDuckGo', {
-//   name: 'DuckDuckGo',
-//   description: 'DuckDuckGo Search.',
-//   avatar: { url: '/assets/icons/duckduckgo-icon.webp' },
-//   schema: {
-//     type: 'object',
-//     properties: {
-//       maxResults: { type: 'number', title: 'Max results', default: '2' },
-//       searchOptions: {
-//         type: 'object',
-//         properties: {
-//           safeSearch: { type: 'number', title: 'SafeSearch Level', default: '0' },
-//           locale: { type: 'string', title: 'Locale' }
-//         }
-//       }
-//     },
-//     required: [],
-//     secret: []
-//   }
-// })
-
-// TOOLSET_TYPES.set('Wikipedia', {
-//   name: 'Wikipedia',
-//   description: 'Wikipedia Query.',
-//   avatar: { url: '/assets/icons/wikipedia-icon.png' }
-// })
 
 TOOLSET_TYPES.set('ChatDB', {
   name: 'ChatDB',
@@ -192,30 +153,6 @@ TOOLSET_TYPES.set('ChatBI', {
 
 // 临时
 export const TOOLSETS: IXpertToolset[] = [
-  // {
-  //   id: '1',
-  //   name: 'DuckDuckGo',
-  //   description: 'DuckDuckGo Search',
-  //   avatar: '/assets/icons/duckduckgo-icon.webp',
-  //   tools: [
-  //     {
-  //       name: 'DuckDuckGoSearch',
-  //       description: 'DuckDuckGo Search'
-  //     }
-  //   ]
-  // },
-  // {
-  //   id: '2',
-  //   name: 'Wikipedia',
-  //   description: 'Wikipedia Query',
-  //   avatar: '/assets/icons/wikipedia-icon.png',
-  //   tools: [
-  //     {
-  //       name: 'WikipediaQuery',
-  //       description: 'Wikipedia Query Tool'
-  //     }
-  //   ]
-  // },
   // {
   //   id: '3',
   //   name: 'ChatBI',
@@ -296,21 +233,6 @@ export const TOOLSETS: IXpertToolset[] = [
       }
     ]
   },
-  // {
-  //   id: '6',
-  //   name: 'TavilySearch',
-  //   description: 'Tavily Search is a robust search API tailored specifically for LLM Agents.',
-  //   avatar: '/assets/icons/tavily.ico',
-  //   tools: [
-  //     {
-  //       name: 'TavilySearch',
-  //       description: 'Search tool tailored specifically for LLM Agents',
-  //       options: {
-  //         maxResults: 2
-  //       }
-  //     }
-  //   ]
-  // },
   {
     id: '7',
     name: 'ExaSearch',
@@ -350,10 +272,11 @@ export enum CredentialsType {
   SECRET_INPUT = 'secret-input',
   TEXT_INPUT = 'text-input',
   SELECT = 'select',
+  REMOTE_SELECT = 'remote-select',
   BOOLEAN = 'boolean'
 }
 
-interface ToolCredentialsOption {
+export interface ToolCredentialsOption {
   value: string
   label: I18nObject | string
 }
@@ -364,69 +287,25 @@ export interface ToolProviderCredentials {
   required?: boolean
   default?: number | string
   options?: ToolCredentialsOption[]
+  /**
+   * Url for fetch remote select options
+   */
+  selectUrl?: string
+  /**
+   * Is multiple select
+   */
+  multi?: boolean
+  /**
+   * Depends on credentials
+   */
+  depends?: string[]
   label?: I18nObject
   help?: I18nObject
+  /**
+   * Url for help document
+   */
   url?: string
   placeholder?: I18nObject
-}
-
-interface ToolParameterOption {
-  value: string;
-  label: I18nObject;
-}
-
-enum ToolParameterType {
-  STRING = "string",
-  NUMBER = "number",
-  BOOLEAN = "boolean",
-  SELECT = "select",
-  SECRET_INPUT = "secret-input",
-  FILE = "file"
-}
-
-enum ToolParameterForm {
-  SCHEMA = "schema",  // should be set while adding tool
-  FORM = "form",      // should be set before invoking tool
-  LLM = "llm"         // will be set by LLM
-}
-
-export interface ToolParameter {
-  name: string;
-  label: I18nObject;
-  human_description?: I18nObject;
-  placeholder?: I18nObject;
-  type: ToolParameterType;
-  form: ToolParameterForm;
-  llm_description?: string;
-  required?: boolean;
-  default?: number | string;
-  min?: number;
-  max?: number;
-  options?: ToolParameterOption[];
-}
-
-export interface ApiToolBundle {
-    /**
-     * This interface is used to store the schema information of an api based tool,
-     * such as the url, the method, the parameters, etc.
-     */
-
-    // server_url
-    server_url: string;
-    // method
-    method: string;
-    // summary
-    summary?: string;
-    // operation_id
-    operation_id?: string;
-    // parameters
-    parameters?: ToolParameter[];
-    // author
-    author: string;
-    // icon
-    icon?: string;
-    // openapi operation
-    openapi: Record<string, any>;
 }
 
 export enum ApiProviderAuthType {

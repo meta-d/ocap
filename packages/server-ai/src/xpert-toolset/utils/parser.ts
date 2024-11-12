@@ -1,9 +1,8 @@
-import { ApiProviderSchemaType, ApiToolBundle, ToolParameter } from '@metad/contracts';
-import { shortuuid } from '@metad/server-common';
+import { ApiProviderSchemaType, ApiToolBundle, ToolParameterForm, ToolParameterType, TToolParameter } from '@metad/contracts';
+import { getErrorMessage, shortuuid } from '@metad/server-common';
 import { fromParameter, fromSchema } from '@openapi-contrib/openapi-schema-to-json-schema';
 import { load } from 'js-yaml';
 import { jsonSchemaToZod } from 'json-schema-to-zod';
-import { ToolParameterForm, ToolParameterType } from '../types';
 import type { JSONSchema4, JSONSchema4Type } from "json-schema";
 import type { ParameterObject } from "openapi-typescript/src/types";
 import { ToolApiSchemaError, ToolNotSupportedError, ToolProviderNotFoundError } from '../errors';
@@ -11,6 +10,7 @@ import { lowerCase } from 'lodash';
 
 
 export class ApiBasedToolSchemaParser {
+  
   static parseOpenapiToToolBundle(
     openapi: Record<string, any>,
     extraInfo: Record<string, any> = {},
@@ -40,10 +40,10 @@ export class ApiBasedToolSchemaParser {
 
     const bundles: ApiToolBundle[] = [];
     for (const interfaceObj of interfaces) {
-      const parameters: ToolParameter[] = [];
+      const parameters: TToolParameter[] = [];
       if (interfaceObj.operation.parameters) {
         for (const parameter of interfaceObj.operation.parameters) {
-          const toolParameter: ToolParameter = {
+          const toolParameter: TToolParameter = {
             name: parameter.name,
             label: { en_US: parameter.name, zh_Hans: parameter.name },
             human_description: {
@@ -86,7 +86,7 @@ export class ApiBasedToolSchemaParser {
               const required = bodySchema.required || [];
               const properties = bodySchema.properties || {};
               for (const [name, property] of Object.entries<any>(properties)) {
-                const tool: ToolParameter = {
+                const tool: TToolParameter = {
                   name,
                   label: { en_US: name, zh_Hans: name },
                   human_description: {
@@ -214,8 +214,8 @@ export class ApiBasedToolSchemaParser {
 
       return eval(jsonSchemaToZod(jsonSchemaObject, { module: 'cjs' }))
     } catch (err) {
-      console.error(err)
-      throw new Error(`Invalid input schema.`)
+      // console.error(err)
+      throw new Error(`Invalid input schema: ` + getErrorMessage(err))
     }
   }
 

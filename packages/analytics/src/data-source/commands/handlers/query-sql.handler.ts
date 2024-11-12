@@ -14,9 +14,7 @@ export class QuerySqlHandler implements ICommandHandler<QuerySqlCommand> {
 	}
 
 	public async execute(command: QuerySqlCommand): Promise<string> {
-		const { query } = command.args
-		const { roleContext } = command.context
-		const { dataSourceId, schema } = roleContext ?? {}
+		const { dataSource: dataSourceId, schema, query } = command.args
 		const isDev = process.env.NODE_ENV === 'development'
 		
 		const dataSource = await this.dataSourceService.prepareDataSource(dataSourceId)

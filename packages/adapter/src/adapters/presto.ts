@@ -1,4 +1,4 @@
-import { IDSSchema } from '../types'
+import { DBProtocolEnum, DBSyntaxEnum, IDSSchema } from '../types'
 import { Client } from 'presto-client'
 import { BaseSQLQueryRunner, QueryResult, register, SQLAdapterOptions } from '../base'
 import { convertPGSchema, getPGSchemaQuery, pgTypeMap } from '../helpers'
@@ -12,8 +12,8 @@ export interface PrestoAdapterOptions extends SQLAdapterOptions {
 export class PrestoQueryRunner extends BaseSQLQueryRunner<PrestoAdapterOptions> {
   name = 'Presto'
   type = 'presto'
-  readonly syntax = 'sql'
-  readonly protocol = 'sql'
+  readonly syntax = DBSyntaxEnum.SQL
+  readonly protocol = DBProtocolEnum.SQL
 
   jdbcDriver = 'com.facebook.presto.jdbc.prestodriver'
   jdbcUrl(schema?: string) {

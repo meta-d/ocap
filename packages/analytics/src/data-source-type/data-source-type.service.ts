@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { AdapterBaseOptions, DBQueryRunner, QUERY_RUNNERS } from '@metad/adapter'
-import { ITenant } from '@metad/contracts'
+import { DataSourceProtocolEnum, DataSourceSyntaxEnum, ITenant } from '@metad/contracts'
 import { TenantAwareCrudService, TenantService } from '@metad/server-core'
 import { environment as env } from '@metad/server-config'
 import chalk from 'chalk'
@@ -53,8 +53,8 @@ export class DataSourceTypeService extends TenantAwareCrudService<DataSourceType
 				tenantId: tenant.id,
 				name: queryRunner.name,
 				type: queryRunner.type,
-				syntax: queryRunner.syntax,
-				protocol: queryRunner.protocol,
+				syntax: queryRunner.syntax as unknown as DataSourceSyntaxEnum,
+				protocol: queryRunner.protocol as unknown as DataSourceProtocolEnum,
 				configuration: queryRunner.configurationSchema,
 			})
 		} else {

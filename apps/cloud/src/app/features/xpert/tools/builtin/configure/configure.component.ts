@@ -7,13 +7,13 @@ import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
   getErrorMessage,
+  IBuiltinTool,
   IXpertToolset,
   IXpertWorkspace,
   TagCategoryEnum,
   ToastrService,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
-import { TagSelectComponent } from 'apps/cloud/src/app/@shared'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, of } from 'rxjs'
@@ -30,7 +30,6 @@ import { XpertToolBuiltinToolComponent } from '../tool/tool.component'
     TranslateModule,
     MatDialogModule,
     EmojiAvatarComponent,
-    TagSelectComponent,
     NgmI18nPipe,
 
     XpertToolBuiltinAuthorizeComponent,
@@ -92,19 +91,13 @@ export class XpertToolConfigureBuiltinComponent {
 
   constructor() {
     effect(() => {
-      console.log(this.toolset())
+      // console.log(this.toolset())
     })
-    // effect(() => {
-    //   if (this.credentials()) {
-    //     this.authorized.set(true)
-    //   }
-    // }, { allowSignalWrites: true })
   }
 
   openAuthorize(toolset?: IXpertToolset) {
     this.toolset.set(toolset)
     this.authorizing.set(true)
-    // this.authorized.set(false)
   }
 
   closeAuthorize(refresh: boolean) {
@@ -123,7 +116,7 @@ export class XpertToolConfigureBuiltinComponent {
     return this.toolset()?.tools?.find((_) => _.name === name)?.enabled
   }
 
-  setToolEnabled(name: string, enabled: boolean) {
+  setToolEnabled(name: string, enabled: boolean, schema: IBuiltinTool) {
     const tool = this.toolset().tools?.find((_) => _.name === name)
     if (tool) {
       tool.enabled = enabled
@@ -135,7 +128,8 @@ export class XpertToolConfigureBuiltinComponent {
             ...(state.tools ?? []),
             {
               name,
-              enabled
+              enabled,
+              schema
             }
           ]
         }

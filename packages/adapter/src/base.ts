@@ -1,5 +1,5 @@
 import * as _axios from 'axios'
-import { AdapterBaseOptions, DBQueryRunner, DBQueryRunnerType, IColumnDef, IDSSchema, IDSTable, QueryOptions } from './types'
+import { AdapterBaseOptions, DBProtocolEnum, DBQueryRunner, DBQueryRunnerType, DBSyntaxEnum, IColumnDef, IDSSchema, IDSTable, QueryOptions } from './types'
 
 const axios = _axios.default
 
@@ -19,8 +19,8 @@ export interface QueryResult {
 export abstract class BaseQueryRunner<T extends AdapterBaseOptions = AdapterBaseOptions> implements DBQueryRunner {
   type: string
   name: string
-  syntax: string
-  protocol: string
+  syntax: DBSyntaxEnum
+  protocol: DBProtocolEnum
   jdbcDriver: string
   abstract get host(): string
   abstract get port(): number | string
@@ -105,8 +105,8 @@ export interface SQLAdapterOptions extends AdapterBaseOptions {
 }
 
 export abstract class BaseSQLQueryRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extends BaseQueryRunner<T> {
-  syntax = 'sql'
-  protocol = 'sql'
+  syntax = DBSyntaxEnum.SQL
+  protocol = DBProtocolEnum.SQL
 
   get host() {
     if (this.options?.host) {

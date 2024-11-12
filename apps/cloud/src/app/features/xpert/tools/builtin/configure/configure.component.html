@@ -24,12 +24,14 @@
         <button type="button" class="btn disabled:btn-disabled btn-medium shrink-0 my-3 w-full bg-white"
           (click)="openAuthorize(toolset())">
           <div class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)] mr-2"></div>
-          <div class="text-[13px] font-medium text-gray-700">Authorized: {{toolset()?.name}}</div>
+          <div class="text-[13px] font-medium text-gray-700">{{'PAC.Xpert.Authorized' | translate: {Default: 'Authorized'} }}: {{toolset()?.name}}</div>
         </button>
       } @else {
         <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium shrink-0 my-3 w-full text-center"
           (click)="openAuthorize()">
-          <div class="text-white font-medium">To Authorize</div>
+          <div class="text-white font-medium">
+            {{'PAC.Xpert.ToAuthorize' | translate: {Default: 'To Authorize'} }}
+          </div>
         </button>
       }
     </div>
@@ -38,13 +40,13 @@
   @if (toolsets()?.length) {
     <div class="flex flex-col gap-1 border-b-[0.5px] border-black/5">
       <div class="text-sm font-medium leading-6 text-gray-500">
-        <span class="">{{toolsets()?.length ?? 0}} Authorizations</span>
+        <span class="">{{toolsets()?.length ?? 0}} {{'PAC.Xpert.Authorizations' | translate: {Default: 'Authorizations'} }}</span>
       </div>
       @for (toolset of toolsets(); track toolset.id) {
         <button type="button" class="btn disabled:btn-disabled btn-medium shrink-0 my-1 w-full bg-white"
           (click)="openAuthorize(toolset)">
           <div class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)] mr-2"></div>
-          <div class="text-[13px] font-medium text-gray-700">Authorized: <span>{{toolset.name}}</span> </div>
+          <div class="text-[13px] font-medium text-gray-700">{{'PAC.Xpert.Authorized' | translate: {Default: 'Authorized'} }}: <span>{{toolset.name}}</span> </div>
         </button>
       }
     </div>
@@ -52,19 +54,21 @@
 
   <div class="pt-3">
     <div class="text-sm font-medium leading-6 text-gray-500">
-      <span class="">{{tools()?.length ?? 0}} TOOLS INCLUDED</span>
+      <span class="">{{tools()?.length ?? 0}} {{'PAC.Xpert.ToolsIncluded' | translate: {Default: 'Tools Included'} }}</span>
       @if (!toolset()) {
         <span class="px-1">·</span>
-        <span class="text-[#DC6803]">SET UP AUTHORIZATION TO USE</span>
+        <span class="text-[#DC6803]">{{'PAC.Xpert.SetUpAuthorizationToUse' | translate: {Default: 'Set Up Authorization to Use'} }}</span>
       }
     </div>
     
     <div class="mt-1">
       @for (tool of tools(); track tool.identity.name) {
-        <xpert-tool-builtin-tool [tool]="tool" [disabled]="!toolset()"
-          class=""
+        <xpert-tool-builtin-tool class=""
+          [disabled]="!toolset()"
+          [tool]="tool"
+          [toolset]="toolset()"
           [enabled]="getToolEnabled(tool.identity.name)"
-          (enabledChange)="setToolEnabled(tool.identity.name, $event)"
+          (enabledChange)="setToolEnabled(tool.identity.name, $event, tool)"
         />
       }
     </div>
@@ -75,10 +79,11 @@
 
 <mat-dialog-actions align="end">
   <div class="flex space-x-2">
-    <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium" (click)="cancel($event)">Cancel</button>
+    <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium"
+      (click)="cancel($event)">{{'PAC.ACTIONS.Cancel' | translate: {Default: 'Cancel'} }}</button>
     <button type="button" class="btn disabled:btn-disabled btn-primary btn-medium"
       [disabled]="!dirty()"
       (click)="save()"
-    >Save</button>
+    >{{'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}</button>
   </div>
 </mat-dialog-actions>

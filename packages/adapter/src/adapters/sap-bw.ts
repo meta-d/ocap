@@ -1,4 +1,5 @@
 import { register } from '../base'
+import { DBProtocolEnum, DBSyntaxEnum } from '../types'
 import { XMLA } from './xmla'
 
 export class SAPBW extends XMLA {
@@ -6,8 +7,8 @@ export class SAPBW extends XMLA {
 
   name = 'SAP BW (OLAP)'
   type = SAPBW.type
-  syntax = 'mdx'
-  protocol = 'xmla'
+  syntax = DBSyntaxEnum.MDX
+  protocol = DBProtocolEnum.XMLA
 }
 
 register(SAPBW.type, SAPBW)

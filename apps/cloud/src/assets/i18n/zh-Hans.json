@@ -1813,7 +1813,15 @@
       "NameExistedOrInvalid": "名称已存在或不合法，请使用 a-zA-Z0-9 _-",
       "NameDefaultUseKey": "名称，默认使用 ",
       "DeleteAllTools": "删除工具集包含其所有工具",
-      "IsVisible": "是否可见"
+      "IsVisible": "是否可见",
+      "SetUpAuthorization": "设置授权",
+      "AfterConfiguringCredentials": "配置凭证后，将为该工具创建一个工具集",
+      "CustomName": "自定义名称",
+      "ToAuthorize": "授权",
+      "Authorizations": "授权",
+      "Authorized": "已授权",
+      "SetUpAuthorizationToUse": "设置授权才能使用",
+      "BuiltinToolsets": "内置工具集"
     },
     "title": {
       "short": "Xpert AI"

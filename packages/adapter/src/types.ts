@@ -148,6 +148,16 @@ export interface QueryOptions {
   headers?: Record<string, string>
 }
 
+export enum DBSyntaxEnum {
+  SQL = 'sql',
+  MDX = 'mdx'
+}
+
+export enum DBProtocolEnum {
+  SQL = 'sql',
+  XMLA = 'xmla'
+}
+
 /**
  * Duties:
  * - Convert error messages into a unified format
@@ -156,8 +166,8 @@ export interface QueryOptions {
 export interface DBQueryRunner {
   type: string
   name: string
-  syntax: string
-  protocol: string
+  syntax: DBSyntaxEnum
+  protocol: DBProtocolEnum
   host: string
   port: number | string
   jdbcDriver: string
@@ -187,7 +197,7 @@ export interface DBQueryRunner {
    * @param catalog
    * @param tableName
    */
-  getSchema(catalog?: string, tableName?: string): Promise<IDSTable[]>
+  getSchema(catalog?: string, tableName?: string): Promise<IDSSchema[]>
   /**
    * Describe a sql query result schema
    *

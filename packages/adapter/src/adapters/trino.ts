@@ -1,12 +1,13 @@
 import { register } from '../base'
+import { DBProtocolEnum, DBSyntaxEnum } from '../types'
 import { PrestoQueryRunner } from './presto'
 
 
 export class TrinoQueryRunner extends PrestoQueryRunner {
   name = 'Trino'
   type = 'trino'
-  readonly syntax = 'sql'
-  readonly protocol = 'sql'
+  readonly syntax = DBSyntaxEnum.SQL
+  readonly protocol = DBProtocolEnum.SQL
 
   readonly jdbcDriver = 'io.trino.jdbc.TrinoDriver'
   jdbcUrl(schema?: string) {

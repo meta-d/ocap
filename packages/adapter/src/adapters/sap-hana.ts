@@ -1,7 +1,7 @@
 import { Connection, createConnection } from '@sap/hana-client'
 import { BaseSQLQueryRunner, QueryResult, SQLAdapterOptions, register } from '../base'
 import { groupBy } from '../helpers'
-import { CreationTable, IDSSchema, QueryOptions } from '../types'
+import { CreationTable, DBProtocolEnum, DBSyntaxEnum, IDSSchema, QueryOptions } from '../types'
 
 export interface HANAAdapterOptions extends SQLAdapterOptions {
   database: string
@@ -10,8 +10,8 @@ export interface HANAAdapterOptions extends SQLAdapterOptions {
 export class HANAQueryRunner extends BaseSQLQueryRunner<HANAAdapterOptions> {
   readonly name = 'HANA'
   readonly type = 'hana'
-  readonly syntax = 'sql'
-  readonly protocol = 'sql'
+  readonly syntax = DBSyntaxEnum.SQL
+  readonly protocol = DBProtocolEnum.SQL
 
   readonly jdbcDriver = 'com.sap.db.jdbc.Driver'
   jdbcUrl(schema?: string) {

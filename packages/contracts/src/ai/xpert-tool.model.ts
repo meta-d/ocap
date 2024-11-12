@@ -18,8 +18,7 @@ export type XpertToolType = {
    */
   enabled?: boolean
   options?: Record<string, any>
-  // type?: 'command' | 'agent' | 'browser' | null
-  schema?: Record<string, any> | TXpertToolEntity
+  schema?: Record<string, any> | TXpertToolEntity | IBuiltinTool
   /**
    * Default input parameters of tool
    */
@@ -42,27 +41,75 @@ export type TToolProviderIdentity = {
   author: string
   label: I18nObject
   provider: string
+  entity?: string
+}
+
+interface ToolParameterOption {
+  value: string;
+  label: I18nObject;
+}
+
+export enum ToolParameterType {
+  STRING = "string",
+  NUMBER = "number",
+  BOOLEAN = "boolean",
+  ARRAY = "array",
+  SELECT = "select",
+  SECRET_INPUT = "secret-input",
+  FILE = "file"
+}
+
+export enum ToolParameterForm {
+  SCHEMA = "schema",  // should be set while adding tool
+  FORM = "form",      // should be set before invoking tool
+  LLM = "llm"         // will be set by LLM
 }
 
 export type TToolParameter = {
-  name: string
-  type: string
-  required: boolean
-  label: I18nObject
-  human_description: I18nObject
-  llm_description: string
-  form: string
-
-  options: {
-    value: string
-    label: I18nObject
+  name: string;
+  label: I18nObject;
+  human_description?: I18nObject;
+  placeholder?: I18nObject;
+  type: ToolParameterType;
+  form: ToolParameterForm;
+  llm_description?: string;
+  required?: boolean;
+  default?: number | string;
+  min?: number;
+  max?: number;
+  options?: ToolParameterOption[];
+  items?: {
+    type: ToolParameterType
   }
 
-  default: string
   /**
    * Is visible for ai tool parameters
    */
   visible?: boolean
+}
+
+export interface ApiToolBundle {
+  /**
+   * This interface is used to store the schema information of an api based tool,
+   * such as the url, the method, the parameters, etc.
+   */
+
+  // server_url
+  server_url: string;
+  // method
+  method: string;
+  // summary
+  summary?: string;
+  // operation_id
+  operation_id?: string;
+  // parameters
+  parameters?: TToolParameter[];
+  // author
+  author: string;
+  // icon
+  icon?: string;
+  // openapi operation
+  openapi: Record<string, any>;
 }
 
 export interface IBuiltinTool {
@@ -72,6 +119,7 @@ export interface IBuiltinTool {
     llm: string
   }
   parameters: TToolParameter[]
+  entity: string
 }
 
 // Types for OData

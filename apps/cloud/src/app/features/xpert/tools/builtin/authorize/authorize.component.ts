@@ -13,8 +13,8 @@ import {
   signal
 } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MatDialog, MatDialogModule } from '@angular/material/dialog'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatDialogModule } from '@angular/material/dialog'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { routeAnimations } from '@metad/core'
@@ -22,6 +22,7 @@ import { NgmSpinComponent } from '@metad/ocap-angular/common'
 import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
+  CredentialsType,
   getErrorMessage,
   IXpertToolset,
   IXpertWorkspace,
@@ -30,9 +31,10 @@ import {
   TToolCredentials,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
-import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { of } from 'rxjs'
+import { XpertToolBuiltinCredentialComponent } from './credential/credential.component'
+import { isNil } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -44,9 +46,10 @@ import { of } from 'rxjs'
     MatDialogModule,
     MatTooltipModule,
     MatSlideToggleModule,
-    EmojiAvatarComponent,
     NgmI18nPipe,
-    NgmSpinComponent
+    NgmSpinComponent,
+
+    XpertToolBuiltinCredentialComponent
   ],
   selector: 'xpert-tool-builtin-authorize',
   templateUrl: './authorize.component.html',
@@ -56,10 +59,9 @@ import { of } from 'rxjs'
 })
 export class XpertToolBuiltinAuthorizeComponent {
   eTagCategoryEnum = TagCategoryEnum
+  eCredentialsType = CredentialsType
 
   readonly toolsetService = inject(XpertToolsetService)
-  readonly #formBuilder = inject(FormBuilder)
-  readonly #dialog = inject(MatDialog)
   readonly #cdr = inject(ChangeDetectorRef)
   readonly #toastr = inject(ToastrService)
   readonly #destroyRef = inject(DestroyRef)
@@ -86,6 +88,11 @@ export class XpertToolBuiltinAuthorizeComponent {
 
   readonly toolsetName = model<string>()
   readonly #credentials = signal<TToolCredentials>(null)
+  readonly credentialsValue = computed(() => this.#credentials())
+
+  readonly credentialsInvalid = computed(() => {
+    return this.credentialsSchema()?.filter((item) => item.required).some((_) => isNil(this.#credentials()?.[_.name]))
+  })
 
   constructor() {
     effect(
@@ -145,24 +152,37 @@ export class XpertToolBuiltinAuthorizeComponent {
 
   save() {
     this.loading.set(true)
-    this.toolsetService.createBuiltinToolsetInstance(this.provider(), {
+    const entity: Partial<IXpertToolset> = {
       workspaceId: this.workspace()?.id,
       name: this.toolsetName(),
       credentials: this.#credentials()
-    })
-    .pipe(takeUntilDestroyed(this.#destroyRef))
-    .subscribe({
-      next: (toolset) => {
-        this.#toastr.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created successfully' }, toolset.type)
-        this.loading.set(false)
-        this.credentials.set(this.#credentials())
-        this.toolset.set(toolset)
-        this.close.emit(true)
-      },
-      error: (err) => {
-        this.#toastr.error(getErrorMessage(err))
-        this.loading.set(false)
-      }
-    })
+    }
+    if (this.toolsetId()) {
+      entity.id = this.toolsetId()
+    }
+    this.toolsetService.createBuiltinToolsetInstance(this.provider(), entity)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (toolset) => {
+          if (this.toolsetId()) {
+            this.#toastr.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated successfully' }, this.toolset().type)
+          } else {
+            this.#toastr.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created successfully' }, toolset.type)
+          }
+          if (toolset) {
+            this.toolset.update((state) => ({
+              ...(state ?? {}),
+              ...toolset
+            }))
+          }
+          this.loading.set(false)
+          this.credentials.set(this.#credentials())
+          this.close.emit(true)
+        },
+        error: (err) => {
+          this.#toastr.error(getErrorMessage(err))
+          this.loading.set(false)
+        }
+      })
   }
 }

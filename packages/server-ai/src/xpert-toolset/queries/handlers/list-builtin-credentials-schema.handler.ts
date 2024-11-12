@@ -1,6 +1,5 @@
 import { ToolProviderCredentials } from '@metad/contracts'
-import { ConfigService } from '@metad/server-config'
-import { Inject, Logger } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs'
 import { ToolProviderNotFoundError } from '../../errors'
 import { TToolsetProviderSchema } from '../../types'
@@ -10,9 +9,6 @@ import { ListBuiltinToolProvidersQuery } from '../list-builtin-providers.query'
 @QueryHandler(ListBuiltinCredentialsSchemaQuery)
 export class ListBuiltinCredentialsSchemaHandler implements IQueryHandler<ListBuiltinCredentialsSchemaQuery> {
 	protected logger = new Logger(ListBuiltinCredentialsSchemaHandler.name)
-
-	@Inject(ConfigService)
-	protected readonly configService: ConfigService
 
 	constructor(private readonly queryBus: QueryBus) {}
 

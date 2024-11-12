@@ -105,7 +105,7 @@ export class XpertToolsetToolTestComponent {
         next: (result) => {
           this.loading.set(false)
           if (result) {
-            this.testResult.set(JSON.stringify(result, null, 4))
+            this.testResult.set(result)
           } else {
             this.testResult.set(null)
           }

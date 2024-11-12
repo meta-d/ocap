@@ -1,5 +1,7 @@
 import { createQueryRunnerByType } from '@metad/adapter'
+import { IDSTable } from '@metad/contracts'
 import { XpertToolsetService } from '@metad/server-ai'
+import { NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { DataSourceService } from '../../data-source.service'
 import { QuerySchemaCommand } from '../query-schema.command'
@@ -13,12 +15,10 @@ export class QuerySchemaHandler implements ICommandHandler<QuerySchemaCommand> {
 		this.toolsetService.registerCommand('QuerySchema', QuerySchemaCommand)
 	}
 
-	public async execute(command: QuerySchemaCommand): Promise<string> {
-		const { tables } = command.args
-		const { roleContext } = command.context
-		const { dataSourceId, schema } = roleContext ?? {}
+	public async execute(command: QuerySchemaCommand): Promise<IDSTable[]> {
+		const { dataSource: dataSourceId, schema, tables } = command.args
 		const isDev = process.env.NODE_ENV === 'development'
-		
+
 		const dataSource = await this.dataSourceService.prepareDataSource(dataSourceId)
 
 		const runner = createQueryRunnerByType(dataSource.type.type, {
@@ -28,16 +28,25 @@ export class QuerySchemaHandler implements ICommandHandler<QuerySchemaCommand> {
 		})
 
 		try {
-			let result = ''
+			const results = []
 			for await (const table of tables) {
-				const tableSchema = await runner.getSchema(schema, table)
-				result += `Table ${table}:\n${tableSchema}\n`
+				const tableName = table.replace(new RegExp(`^${schema}\\.`), '')
+				const tableSchema = await runner.getSchema(schema, tableName)
 				// Query samples data
 				const data = await runner.runQuery(`SELECT * FROM ${table} LIMIT 10`, { catalog: schema })
-				result += `Sample data:\n` + JSON.stringify(data) + '\n\n'
+				// result += `Sample data:\n` + JSON.stringify(data) + '\n\n'
+
+				const _table = tableSchema[0]?.tables[0]
+				if (!_table) {
+					throw new NotFoundException(`Not found schema of table '${table}'`)
+				}
+				results.push({
+					..._table,
+					sample_data: data
+				})
 			}
 
-			return result
+			return results
 		} finally {
 			await runner.teardown()
 		}
