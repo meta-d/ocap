@@ -1,3 +1,4 @@
+import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { ICommand } from '@nestjs/cqrs'
 
@@ -9,6 +10,7 @@ export class DataSourcePingCommand implements ICommand {
 			dataSource: string
 			schema: string
 		},
-		public readonly config: RunnableConfig,
+		public readonly runManager?: CallbackManagerForToolRun,
+		public readonly parentConfig?: RunnableConfig,
 	) {}
 }

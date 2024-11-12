@@ -1,7 +1,9 @@
-import { ToolParameterForm, TToolParameter, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { XpertToolsetCategoryEnum } from '@metad/contracts'
+import { RequestContext } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { isNil, pick } from 'lodash'
+import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
+import { isNil } from 'lodash'
+import { Subject } from 'rxjs'
 import {
 	ApiBasedToolSchemaParser,
 	createBuiltinToolset,
@@ -18,7 +20,9 @@ export class ToolInvokeHandler implements ICommandHandler<ToolInvokeCommand> {
 
 	constructor(
 		private readonly toolsetService: XpertToolsetService,
-		private readonly commandBus: CommandBus) {}
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
+	) {}
 
 	public async execute(command: ToolInvokeCommand): Promise<any> {
 		// Default enabled tool for invoke
@@ -36,40 +40,73 @@ export class ToolInvokeHandler implements ICommandHandler<ToolInvokeCommand> {
 			return acc
 		}, {})
 
-		switch(toolset.category) {
+		const events = []
+		const subscriber = new Subject()
+
+		subscriber.subscribe((event) => events.push(event))
+
+		const toolContext = {
+			tenantId: RequestContext.currentTenantId(),
+			organizationId: RequestContext.getOrganizationId(),
+			user: RequestContext.currentUser(),
+			subscriber
+		}
+
+		switch (toolset.category) {
 			case XpertToolsetCategoryEnum.BUILTIN: {
-				const builtinToolset = createBuiltinToolset(toolset.type, {
-					...toolset,
-					tools: [{
-						...tool,
-						enabled: true,
-					}]
-				}, {
-					toolsetService: this.toolsetService,
-					commandBus: this.commandBus
-				})
+				const builtinToolset = createBuiltinToolset(
+					toolset.type,
+					{
+						...toolset,
+						tools: [
+							{
+								...tool,
+								enabled: true
+							}
+						]
+					},
+					{
+						toolsetService: this.toolsetService,
+						commandBus: this.commandBus,
+						queryBus: this.queryBus
+					}
+				)
 
 				// const parameterNames = (<TToolParameter[]>tool.schema.parameters)
 				// 	.filter((param) => param.form === ToolParameterForm.LLM)
 				// 	.map((param) => param.name)
 
-				return await builtinToolset.getTool(tool.name).invoke(parameters)
+				const result = await builtinToolset.getTool(tool.name).invoke(parameters, {
+					configurable: toolContext
+				})
+
+				if (events.length) {
+					return {
+						events,
+						result
+					}
+				}
+				return result
 			}
 			case XpertToolsetCategoryEnum.API: {
 				switch (toolset.type) {
 					case 'openapi': {
 						const openapiToolset = new OpenAPIToolset({ ...toolset, tools: [tool] })
 						const toolRuntime = openapiToolset.getTool(tool.name)
-						return await toolRuntime.invoke(parameters)
+						return await toolRuntime.invoke(parameters, {
+							configurable: toolContext
+						})
 					}
 
 					case 'odata': {
 						const openapiToolset = new ODataToolset({ ...toolset, tools: [tool] })
 						const toolRuntime = openapiToolset.getTool(tool.name)
-						return await toolRuntime.invoke(parameters)
+						return await toolRuntime.invoke(parameters, {
+							configurable: toolContext
+						})
 					}
 				}
-				break;
+				break
 			}
 		}
 

@@ -6,6 +6,7 @@ import { IXpertTool, XpertToolType } from './xpert-tool.model'
 import { IXpert } from './xpert.model'
 import { IBasePerWorkspaceEntityModel } from './xpert-workspace.model'
 import { ITag } from '../tag-entity.model'
+import { TCopilotModel } from './copilot-model.model'
 
 
 export enum XpertToolsetCategoryEnum {
@@ -63,16 +64,13 @@ export type TXpertToolsetOptions = {
 }
 
 /**
- * @deprecated
  */
 export type XpertToolContext = {
   tenantId: string
   organizationId?: string
   user: IUser
-  copilot: ICopilot
+  copilotModel: TCopilotModel
   chatModel: unknown // BaseChatModel in langchain
-  roleContext: Record<string, any>
-  xpert: IXpert
 }
 
 export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()

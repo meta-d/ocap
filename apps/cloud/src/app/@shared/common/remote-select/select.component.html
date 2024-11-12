@@ -33,6 +33,7 @@
       </div>
     </div>
     <ul class="p-1 max-h-[264px] overflow-y-auto" cdkListbox [cdkListboxMultiple]="multiple()"
+      [cdkListboxCompareWith]="compareWith"
       [cdkListboxValue]="values()"
       (cdkListboxValueChange)="selectValues($event)"
       >

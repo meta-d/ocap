@@ -28,6 +28,7 @@
 
   <div class="w-full flex justify-end">
     <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small space-x-1"
+      [disabled]="disabled()"
       (click)="openToolTest(tool())">
       <div class="text-sm font-medium">{{ 'PAC.Xpert.Test' | translate: {Default: 'Test'} }}</div>
     </button>

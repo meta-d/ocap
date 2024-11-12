@@ -45,8 +45,10 @@ import {
 	createReferencesRetrieverTool,
 	XpertToolsetService
 } from '@metad/server-ai'
+import { getErrorMessage, race, shortuuid, TimeoutError } from '@metad/server-common'
 import { CACHE_MANAGER, Inject, Logger } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { omit, upperFirst } from 'lodash'
 import { Cache } from 'cache-manager'
 import { firstValueFrom, Subject, Subscriber, switchMap, takeUntil } from 'rxjs'
 import { ChatBIModelService } from '../../../chatbi-model/'
@@ -61,12 +63,16 @@ import { ChatBIService } from '../../chatbi.service'
 import { ChatAnswer, createDimensionMemberRetrieverTool } from '../../tools'
 import { ChatAnswerSchema, GetCubesContextSchema, insightAgentState } from '../../types'
 import { ChatBIToolCommand } from '../chat-bi.command'
-import { getErrorMessage, race, shortuuid, TimeoutError } from '@metad/server-common'
 import { markdownCubes } from '../../graph'
-import { CallbackManager } from '@langchain/core/callbacks/manager'
-import { omit, upperFirst } from 'lodash'
+import { In } from 'typeorm'
+
 
 const DefaultToolMaximumWaitTime = 30 * 1000 // 30s
+
+type XpertToolChatBIContext = XpertToolContext & {
+	maximumWaitTime: number
+	models: string[]
+}
 
 @CommandHandler(ChatBIToolCommand)
 export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
@@ -92,28 +98,29 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 	}
 
 	public async execute(command: ChatBIToolCommand): Promise<any> {
-		const { args, config, context } = command
-		const parentRunId = (<CallbackManager>config.callbacks).getParentRunId()
+		const { args, runManager, parentConfig } = command
+		const parentRunId = runManager?.parentRunId
+		const context = parentConfig.configurable as XpertToolChatBIContext
 
 		// console.log(`execute ChatBINewCommand`, args, config, context)
 
 		const controller = new AbortController()
 		const abortEventListener = () => { controller.abort() }
-		config.signal.addEventListener('abort', abortEventListener)
+		parentConfig.signal?.addEventListener('abort', abortEventListener)
 
 		// New Ocap context for every chatbi conversation
 		const dsCoreService = new NgmDSCoreService(this.agent, this.dataSourceFactory)
 		// Register all chat models (改成根据 Copilot 角色来)
 		const cubesContext = await this.registerChatModels(dsCoreService, context)
 		// Prepare LLM
-		const { copilot, chatModel } = context
+		const { copilotModel, chatModel } = context
 		const llm =
 			<BaseChatModel>chatModel ??
-			createLLM<BaseChatModel>(copilot, {}, (input) => {
+			createLLM<BaseChatModel>(copilotModel?.copilot, {}, (input) => {
 				//
 			})
 		const { tenantId, organizationId } = context
-		const { thread_id, subscriber } = config.configurable as { thread_id: string; subscriber: Subscriber<ChatGatewayMessage>}
+		const { thread_id, subscriber } = parentConfig.configurable as { thread_id: string; subscriber: Subscriber<ChatGatewayMessage>}
 
 		// Create graph
 		const agent = this.createGraphAgent(llm, context, dsCoreService, subscriber)
@@ -126,13 +133,13 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 			command: this.commandName,
 			k: 1
 		})
-		const { question } = args
-		const content = await exampleFewShotPrompt.format({ input: question })
+		const { input } = args
+		const content = await exampleFewShotPrompt.format({ input: input })
 		
 		try {
 			const streamResults = agent.streamEvents(
 				{
-					input: question,
+					...args,
 					messages: [new HumanMessage(content)],
 					context: cubesContext
 				},
@@ -140,7 +147,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 					version: 'v2',
 					configurable: {
 						thread_id,
-						checkpoint_ns: this.commandName,
+						checkpoint_ns: '',
 						tenantId,
 						organizationId,
 					},
@@ -185,7 +192,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 					case 'on_chat_model_end': {
 						if (chatContent) {
 							// 最终的回答会在主 Agent 中被返回，在此处不用返回结果。
-							// subscriber.next({
+							// subscriber?.next({
 							// 	event: ChatGatewayEvent.Agent,
 							// 	data: {
 							// 		id: parentRunId,
@@ -210,7 +217,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 						if (tools[rest.run_id]) {
 							content += '\n```json\n' + tools[rest.run_id] + '\n```'
 						}
-						subscriber.next({
+						subscriber?.next({
 							event: ChatGatewayEvent.Agent,
 							data: {
 								id: parentRunId,
@@ -229,13 +236,13 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 			console.error(error)
 			return `Error:` + getErrorMessage(error)
 		} finally {
-			config.signal.removeEventListener('abort', abortEventListener)
+			parentConfig.signal.removeEventListener('abort', abortEventListener)
 		}
 
 		const state = await agent.getState({
 			configurable: {
 				thread_id,
-				checkpoint_ns: this.commandName
+				checkpoint_ns: ''
 			}
 		})
 
@@ -251,27 +258,30 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 		await this.cacheManager.set(modelId + '/' + cubeName, data)
 	}
 
-	async registerChatModels(dsCoreService: DSCoreService, context: XpertToolContext) {
-		const { tenantId, organizationId, xpert } = context
+	async registerChatModels(dsCoreService: DSCoreService, context: XpertToolChatBIContext) {
+		const { tenantId, organizationId, models } = context
 		const { items } = await this.modelService.findAll({
-			where: { tenantId, organizationId },
+			where: { tenantId, organizationId, id: In(models) },
 			relations: ['model', 'model.dataSource', 'model.dataSource.type', 'model.roles', 'model.indicators', 'xperts'],
 			order: {
 				visits: OrderTypeEnum.DESC
 			}
 		})
 
-		const models = items.filter((item) => xpert ? item.xperts.some((_) => _.id === xpert.id) : true)
+		// const models = items.filter((item) => xpert ? item.xperts.some((_) => _.id === xpert.id) : true)
 			// .map((item) => ({ ...item, model: convertOcapSemanticModel(item.model) }))
 
 		// Register all models
-		models.forEach((item) => registerSemanticModel(item.model, dsCoreService))
+		items.forEach((item) => registerSemanticModel(item.model, dsCoreService))
 
-		return markdownCubes(models)
+		return markdownCubes(items)
 	}
 
-	createGraphAgent(llm: BaseChatModel, context: XpertToolContext, dsCoreService: DSCoreService, subscriber: Subscriber<any>) {
+	createGraphAgent(llm: BaseChatModel, context: XpertToolChatBIContext, dsCoreService: DSCoreService, subscriber: Subscriber<any>) {
 		const { tenantId, organizationId } = context
+
+		// Maximum waiting time of tool call
+		const { maximumWaitTime = DefaultToolMaximumWaitTime } = context
 
 		const referencesRetrieverTool = createReferencesRetrieverTool(this.copilotKnowledgeService, {
 			tenantId,
@@ -286,7 +296,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 			createDimensionMemberRetriever({ logger: this.logger }, this.semanticModelMemberService)
 		)
 
-		const getCubeContext = this.createCubeContextTool(context, dsCoreService)
+		const getCubeContext = this.createCubeContextTool(dsCoreService, maximumWaitTime)
 
 		const answerTool = this.createChatAnswerTool({
 			dsCoreService,
@@ -342,15 +352,14 @@ ${createAgentStepsInstructions(
 	 * @param dsCoreService 
 	 * @returns 
 	 */
-	createCubeContextTool(context: XpertToolContext, dsCoreService: DSCoreService) {
-		// Maximum waiting time of tool call
-		const { toolMaximumWaitTime = DefaultToolMaximumWaitTime } = context.roleContext
+	createCubeContextTool(dsCoreService: DSCoreService, maximumWaitTime: number) {
+		
 		return tool(
 			async ({ cubes }): Promise<string> => {
 				this.logger.debug(`Tool 'getCubeContext' params:`, JSON.stringify(cubes))
 				try {
 					return await race(
-						toolMaximumWaitTime,
+						maximumWaitTime,
 						async () => {
 							let context = ''
 							for await (const item of cubes) {
@@ -515,7 +524,7 @@ ${members}
 					reject(result.error)
 				} else {
 					if (answer.visualType === 'KPI') {
-						subscriber.next({
+						subscriber?.next({
 							event: ChatGatewayEvent.Message,
 							data: {
 								id: shortuuid(),
@@ -537,7 +546,7 @@ ${members}
 							}
 						} as ChatGatewayMessage)
 					} else {
-						subscriber.next({
+						subscriber?.next({
 							event: ChatGatewayEvent.Message,
 							data: {
 								id: shortuuid(),

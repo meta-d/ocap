@@ -32,7 +32,7 @@ import {
   XpertParametersCardComponent
 } from 'apps/cloud/src/app/@shared'
 import { MarkdownModule } from 'ngx-markdown'
-import { of } from 'rxjs'
+import { of, Subscription } from 'rxjs'
 import { distinctUntilChanged, switchMap } from 'rxjs/operators'
 import { XpertAgentExecutionComponent } from '../../../../../@shared/'
 import { XpertStudioApiService } from '../../domain'
@@ -101,6 +101,7 @@ export class XpertStudioPanelAgentExecutionComponent {
   })
 
   readonly loading = signal(false)
+  #agentSubscription: Subscription = null
 
   private executionSub = toObservable(this.executionId)
     .pipe(
@@ -135,7 +136,7 @@ export class XpertStudioPanelAgentExecutionComponent {
     this.clearStatus()
 
     // Call chat server
-    this.xpertAgentService
+    this.#agentSubscription = this.xpertAgentService
       .chatAgent({
         input: {
           ...(this.parameterValue() ?? {}),
@@ -189,6 +190,11 @@ export class XpertStudioPanelAgentExecutionComponent {
           this.loading.set(false)
         }
       })
+  }
+
+  stopAgent() {
+    this.#agentSubscription?.unsubscribe()
+    this.loading.set(false)
   }
 
   getAgent(key: string): IXpertAgent {

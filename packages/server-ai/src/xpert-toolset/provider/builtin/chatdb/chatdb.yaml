@@ -12,7 +12,7 @@ identity:
     - search
     - db
 credentials_for_provider:
-  dataSources:
+  dataSource:
     type: remote-select
     required: true
     label:
@@ -35,4 +35,4 @@ credentials_for_provider:
     selectUrl: /api/data-source/sql-schema-select-options
     multi: false
     depends:
-      - dataSources
+      - dataSource

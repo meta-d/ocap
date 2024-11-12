@@ -1,5 +1,5 @@
+import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'
-import { XpertToolContext } from '@metad/contracts'
 import { ICommand } from '@nestjs/cqrs'
 
 export class ChatBIToolCommand implements ICommand {
@@ -7,9 +7,9 @@ export class ChatBIToolCommand implements ICommand {
 
 	constructor(
 		public readonly args: {
-			question: string
+			input: string
 		},
-		public readonly config: RunnableConfig,
-		public readonly context: XpertToolContext
+		public readonly runManager?: CallbackManagerForToolRun,
+		public readonly parentConfig?: RunnableConfig,
 	) {}
 }

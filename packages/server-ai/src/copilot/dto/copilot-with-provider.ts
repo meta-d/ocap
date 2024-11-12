@@ -4,6 +4,9 @@ import { ProviderWithModelsDto } from './provider-with-models'
 
 @Expose()
 export class CopilotWithProviderDto implements Partial<ICopilotWithProvider> {
+
+	id: string
+
 	providerWithModels: ProviderWithModelsDto
 
 	@Exclude()

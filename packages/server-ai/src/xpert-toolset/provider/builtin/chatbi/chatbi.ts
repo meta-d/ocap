@@ -2,23 +2,23 @@ import { IXpertTool, IXpertToolset, TToolCredentials } from '@metad/contracts'
 import { getErrorMessage, omit } from '@metad/server-common'
 import { ToolProviderCredentialValidationError } from '../../../errors'
 import { BuiltinToolset, TBuiltinToolsetParams } from '../builtin-toolset'
-import { ChatDBCommandTool } from './tools/chatdb-command'
+import { ChatBICommandTool } from './tools/chatbi-command'
 
-export class ChatDBToolset extends BuiltinToolset {
-	static provider = 'chatdb'
+export class ChatBIToolset extends BuiltinToolset {
+	static provider = 'chatbi'
 
 	constructor(
 		protected toolset: IXpertToolset,
 		params: TBuiltinToolsetParams,
 	) {
-		super(ChatDBToolset.provider, toolset, params)
+		super(ChatBIToolset.provider, toolset, params)
 
 		if (toolset) {
 			this.tools = toolset.tools
 				.filter((tool) => tool.enabled)
 				.map((tool) => {
 					// Provide specific tool name to tool class
-					const DynamicCommandTool = class extends ChatDBCommandTool {
+					const DynamicCommandTool = class extends ChatBICommandTool {
 						static lc_name(): string {
 							return tool.name
 						}
@@ -34,12 +34,11 @@ export class ChatDBToolset extends BuiltinToolset {
 
 	async _validateCredentials(credentials: TToolCredentials) {
 		try {
-			const dataSource = credentials.dataSource
-			const schema = credentials.schema
-			await this.params.toolsetService.executeCommand('PingDataSource', {
-				dataSource: dataSource,
-				schema: schema
-			})
+			const models = credentials.models
+			// await this.params.toolsetService.executeCommand('PingDataSource', {
+			// 	dataSource: dataSources[0],
+			// 	schema: schema?.[0]
+			// })
 		} catch (e) {
 			throw new ToolProviderCredentialValidationError(getErrorMessage(e))
 		}

@@ -2,13 +2,15 @@ import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { ModelType } from './ai-model.model'
 import { ICopilot } from './copilot.model'
 
-export interface ICopilotModel extends IBasePerTenantAndOrganizationEntityModel {
+export interface ICopilotModel extends TCopilotModel, IBasePerTenantAndOrganizationEntityModel {}
+
+export type TCopilotModel = {
   /**
    * Use a separate copilot
    */
   copilot?: ICopilot
   copilotId?: string
-  
+
   /**
    * Referenced copilot model if not using a separate copilot
    */
@@ -18,7 +20,7 @@ export interface ICopilotModel extends IBasePerTenantAndOrganizationEntityModel 
   modelType?: ModelType
   model?: string
 
-  /** 
+  /**
    * Details config for ai model
    */
   options?: TCopilotModelOptions

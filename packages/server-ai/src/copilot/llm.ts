@@ -12,6 +12,9 @@ import { ChatOpenAI, ClientOptions, OpenAIEmbeddings } from '@langchain/openai'
 import { ICopilot, OllamaEmbeddingsProviders, OpenAIEmbeddingsProviders } from '@metad/contracts'
 import { AI_PROVIDERS, AiProtocol, AiProvider, sumTokenUsage } from '@metad/copilot'
 
+/**
+ * @deprecated use Command `AIModelGetOneQuery`
+ */
 export function createLLM<T = ChatOpenAI | BaseChatModel>(
 	copilot: ICopilot,
 	clientOptions: ClientOptions,

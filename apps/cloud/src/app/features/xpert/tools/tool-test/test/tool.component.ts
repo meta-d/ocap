@@ -26,6 +26,7 @@ import {
   XpertToolService,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
+import { Subscription } from 'rxjs'
 
 
 @Component({
@@ -75,6 +76,7 @@ export class XpertToolsetToolTestComponent {
   readonly testResult = signal(null)
 
   readonly loading = signal(false)
+  #testSubscription: Subscription = null
 
   constructor() {
     effect(() => {
@@ -96,7 +98,7 @@ export class XpertToolsetToolTestComponent {
   testTool() {
     this.loading.set(true)
     this.testResult.set(null)
-    this.toolService
+    this.#testSubscription = this.toolService
       .test({
         ...this.tool(),
         parameters: this.parameters()
@@ -116,5 +118,10 @@ export class XpertToolsetToolTestComponent {
           this.testResult.set(JSON.stringify(getErrorMessage(error), null, 4))
         }
       })
+  }
+
+  stopTestTool() {
+    this.#testSubscription?.unsubscribe()
+    this.loading.set(false)
   }
 }

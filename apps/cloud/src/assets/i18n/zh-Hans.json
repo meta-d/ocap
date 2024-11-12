@@ -1821,7 +1821,8 @@
       "Authorizations": "授权",
       "Authorized": "已授权",
       "SetUpAuthorizationToUse": "设置授权才能使用",
-      "BuiltinToolsets": "内置工具集"
+      "BuiltinToolsets": "内置工具集",
+      "Stop": "停止"
     },
     "title": {
       "short": "Xpert AI"

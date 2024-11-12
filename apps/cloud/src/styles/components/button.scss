@@ -30,7 +30,7 @@
 }
 
 .ngm-btn, .btn {
-  @apply flex items-center cursor-pointer pr-[30px] rounded-xl px-2
+  @apply flex items-center cursor-pointer rounded-xl px-2
     active:scale-95 origin-bottom transition-all
     disabled:shadow-none disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
    bg-gray-100 border border-gray-100 hover:border-gray-200;
@@ -69,7 +69,6 @@
         @apply hover:bg-red-50 hover:text-red-500;
       }
     }
-
   }
 
   .action-btn-sm {
@@ -86,5 +85,11 @@
 
   .pressable {
     @apply active:scale-95 origin-bottom transition-all;
+  }
+
+  .btn {
+    &.btn-danger {
+      @apply text-red-500 border-red-50 hover:border-red-500 hover:bg-red-50;
+    }
   }
 }

@@ -15,8 +15,8 @@ export class ChatDBCommandTool extends BaseCommandTool {
 		const args = {
 			...this.tool.parameters, // Form parameters on setup
 			...arg, // LLM parameters in runtime,
-			dataSource: this.tool.toolset.credentials.dataSources[0], // DataSources in credentials configuration
-			schema: this.tool.toolset.credentials.schema?.[0]
+			dataSource: this.tool.toolset.credentials.dataSource, // DataSource in credentials configuration
+			schema: this.tool.toolset.credentials.schema
 		}
 		const result = await super._call(args, runManager, parentConfig)
 		return JSON.stringify(result) 

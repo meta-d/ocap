@@ -54,6 +54,9 @@ export class XpertToolBuiltinToolComponent {
   }
 
   openToolTest(tool: Partial<IBuiltinTool>) {
+    if (this.disabled()) {
+      return
+    }
     this.#dialog.open(XpertToolTestDialogComponent, {
       panelClass: 'medium',
       data: {
@@ -61,6 +64,7 @@ export class XpertToolBuiltinToolComponent {
           name: tool.identity.name,
           description: this.i18n.transform(tool.description.human),
           schema: tool,
+          toolsetId: this.toolset()?.id,
           toolset: this.toolset()
         }
       }

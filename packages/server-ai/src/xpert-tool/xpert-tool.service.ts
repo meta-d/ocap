@@ -6,7 +6,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { uniq } from 'lodash'
 import { Repository } from 'typeorm'
-import { ListBuiltinToolsQuery } from '../xpert-toolset'
+import { ListBuiltinToolsQuery, XpertToolsetService } from '../xpert-toolset'
 import { ToolInvokeCommand } from './commands'
 import { XpertTool } from './xpert-tool.entity'
 
@@ -17,6 +17,7 @@ export class XpertToolService extends TenantOrganizationAwareCrudService<XpertTo
 	constructor(
 		@InjectRepository(XpertTool)
 		repository: Repository<XpertTool>,
+		private readonly toolsetService: XpertToolsetService,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
 	) {
@@ -41,16 +42,20 @@ export class XpertToolService extends TenantOrganizationAwareCrudService<XpertTo
 	}
 
 	async testTool(tool: Partial<IXpertTool>) {
+		let toolset = null
+		if (tool.toolsetId) {
+			toolset = await this.toolsetService.findOne(tool.toolsetId)
+		}
 		let toolDetail = null
 		if (tool.id) {
-			toolDetail = await this.findOne(tool.id, { relations: ['toolset'] })
+			toolDetail = await this.findOne(tool.id)
 		}
 
 		return await this.commandBus.execute(
 			new ToolInvokeCommand({
 				...(toolDetail ?? {}),
 				...omit(tool, 'toolset'),
-				toolset: toolDetail?.toolset ?? tool.toolset
+				toolset: toolset ?? tool.toolset
 			})
 		)
 	}

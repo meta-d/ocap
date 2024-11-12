@@ -231,14 +231,14 @@ export class CommandToolset extends BaseToolset<Tool> {
 								...args
 							},
 							config,
-							<XpertToolContext>{
-								tenantId: this.tenantId,
-								organizationId: this.organizationId,
-								user: this.user,
-								chatModel,
-								// role,
-								roleContext: this.toolset.options
-							}
+							// <XpertToolContext>{
+							// 	tenantId: this.tenantId,
+							// 	organizationId: this.organizationId,
+							// 	user: this.user,
+							// 	chatModel,
+							// 	// role,
+							// 	roleContext: this.toolset.options
+							// }
 						)
 					} catch (error) {
 						return `Error: ${getErrorMessage(error)}`

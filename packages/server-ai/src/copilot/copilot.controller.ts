@@ -29,6 +29,7 @@ import { AIModelGetIconQuery } from '../ai-model'
 import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
 import { FindCopilotModelsQuery, ModelParameterRulesQuery } from './queries'
+import { CopilotWithProviderDto } from './dto'
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
@@ -51,6 +52,27 @@ export class CopilotController extends CrudController<Copilot> {
 	@Get()
 	async findAll(filter?: PaginationParams<Copilot>, ...options: any[]): Promise<IPagination<Copilot>> {
 		return this.service.findAvalibles(filter)
+	}
+
+	@Get('model-select-options')
+	async getCopilotModelSelectOptions(@Query('type') type: ModelType) {
+		const copilots = await this.queryBus.execute<FindCopilotModelsQuery, CopilotWithProviderDto[]>(new FindCopilotModelsQuery(type))
+		const items = []
+		copilots.forEach((copilot) => {
+			copilot.providerWithModels.models.forEach((model) => {
+				items.push({
+					value: {
+						id: copilot.id + '/' + model.model,
+						copilotId: copilot.id,
+						provider: copilot.providerWithModels.provider,
+						model: model.model
+					},
+					label: model.label
+				})
+			})
+		})
+
+		return items
 	}
 
 	@ApiOperation({ summary: 'Create new record' })
@@ -77,7 +99,7 @@ export class CopilotController extends CrudController<Copilot> {
 	 */
 	@Get('models')
 	async getModels(@Query('type') type: ModelType) {
-		return this.queryBus.execute(new FindCopilotModelsQuery(type))
+		return this.queryBus.execute<FindCopilotModelsQuery, CopilotWithProviderDto[]>(new FindCopilotModelsQuery(type))
 	}
 
 	@Get('provider/:name/model-parameter-rules')

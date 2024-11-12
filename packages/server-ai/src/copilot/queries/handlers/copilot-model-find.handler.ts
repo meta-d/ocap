@@ -11,9 +11,9 @@ export class FindCopilotModelsHandler implements IQueryHandler<FindCopilotModels
 		private readonly providersService: AIProvidersService
 	) {}
 
-	public async execute(command: FindCopilotModelsQuery): Promise<any[]> {
+	public async execute(command: FindCopilotModelsQuery): Promise<CopilotWithProviderDto[]> {
 		const copilots = await this.service.findAllCopilots(null, null)
-		const copilotSchemas = []
+		const copilotSchemas: CopilotWithProviderDto[] = []
 		for (const copilot of copilots) {
 			const provider = this.providersService.getProvider(copilot.provider)
 			if (provider) {

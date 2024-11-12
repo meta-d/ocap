@@ -167,7 +167,8 @@ ${agent.prompt}
 						checkpoint_ns: '',
 						tenantId: tenantId,
 						organizationId: organizationId,
-						userId: user.id
+						userId: user.id,
+						subscriber
 					},
 					recursionLimit: AgentRecursionLimit,
 					signal: abortController.signal

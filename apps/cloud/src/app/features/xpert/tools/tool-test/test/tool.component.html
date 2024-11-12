@@ -36,12 +36,26 @@
   </div>
 </div>
 
-<button type="button" class="btn disabled:btn-disabled btn-primary mt-4 w-full h-10 scale-x-[0.99] scale-y-95"
-  [disabled]="loading()"
-  (click)="testTool()"
-><div class="w-full text-center">{{ 'PAC.Xpert.Test' | translate: { Default: 'Test' } }}</div></button>
+<div class="flex gap-2 items-center mt-4 ">
+  <button type="button" class="flex-1 btn disabled:btn-disabled btn-primary h-10 
+    active:scale-x-[0.99] active:scale-y-95"
+    [disabled]="loading()"
+    (click)="testTool()"
+  ><div class="w-full text-center">{{ 'PAC.Xpert.Test' | translate: { Default: 'Test' } }}</div></button>
 
-<div class="mt-6">
+  @if (loading()) {
+    <button type="button" class="btn disabled:btn-disabled btn-danger h-10 pressable"
+      (click)="stopTestTool()"
+    >
+      <div class="w-full text-center">
+        <i class="ri-stop-line"></i>
+        {{ 'PAC.Xpert.Stop' | translate: { Default: 'Stop' } }}
+      </div>
+    </button>
+  }
+</div>
+
+<div class="relative mt-6">
   <div class="flex items-center space-x-3">
     <div class="leading-[18px] text-sm font-semibold text-gray-500">
       {{ 'PAC.Xpert.TestResults' | translate: { Default: 'Test Results' } }}
@@ -56,8 +70,9 @@
       <span class="text-gray-400">{{ 'PAC.Xpert.TestResultsHere' | translate: { Default: 'Test result will show here' } }}</span>
     }
   </div>
-</div>
 
-@if (loading()) {
-  <ngm-spin class="absolute top-0 left-0 w-full h-full" />
-}
+  @if (loading()) {
+    <ngm-spin class="absolute top-0 left-0 w-full h-full" />
+  }
+
+</div>

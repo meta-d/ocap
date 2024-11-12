@@ -3,7 +3,7 @@ import { ChatMessageEventTypeEnum, ChatMessageTypeEnum, IXpert, XpertAgentExecut
 import { getErrorMessage } from '@metad/server-common'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
-import { from, map, Observable, switchMap, tap } from 'rxjs'
+import { from, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
 import {
 	XpertAgentExecutionUpsertCommand
 } from '../../../xpert-agent-execution/commands'
@@ -47,6 +47,7 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 				}
 			} as MessageEvent)
 
+			const destroy$ = new Subject<void>()
 			let status = XpertAgentExecutionEnum.SUCCEEDED
 			let error = null
 			let result = ''
@@ -114,7 +115,8 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 								subscriber.error(err)
 							}
 						}
-					})
+					}),
+					takeUntil(destroy$)
 				)
 				.subscribe({
 					next: (event) => {
@@ -127,6 +129,10 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 						 */
 					}
 				})
+			return () => {
+				console.log(`================ 我被 Stop 了 ==================`)
+				destroy$.next()
+			}
 		})
 	}
 }

@@ -1,6 +1,6 @@
 import { IXpertToolset, TToolCredentials, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { Logger } from '@nestjs/common'
-import { CommandBus } from '@nestjs/cqrs'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { BaseToolset } from '../../toolset'
 import { BuiltinTool } from './builtin-tool'
 import { XpertToolsetService } from '../../xpert-toolset.service'
@@ -8,6 +8,7 @@ import { XpertToolsetService } from '../../xpert-toolset.service'
 export type TBuiltinToolsetParams = {
 	toolsetService: XpertToolsetService
 	commandBus: CommandBus
+	queryBus: QueryBus
 }
 
 export abstract class BuiltinToolset extends BaseToolset<BuiltinTool> {
@@ -16,10 +17,21 @@ export abstract class BuiltinToolset extends BaseToolset<BuiltinTool> {
 
 	providerType: XpertToolsetCategoryEnum.BUILTIN
 
+	get commandBus() {
+		return this.params?.commandBus
+	}
+	get queryBus() {
+		return this.params?.queryBus
+	}
+
+	get toolsetService() {
+		return this.params?.toolsetService
+	}
+
 	constructor(
 		public provider: string,
 		protected toolset?: IXpertToolset,
-		public params?: TBuiltinToolsetParams
+		protected params?: TBuiltinToolsetParams
 	) {
 		super(toolset)
 	}

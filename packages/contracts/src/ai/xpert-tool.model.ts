@@ -31,6 +31,7 @@ export type XpertToolType = {
   aiProviderRole?: AiProviderRole
 
   toolset?: IXpertToolset
+  toolsetId?: string
 
   // Temporary properties
   provider?: IBuiltinTool

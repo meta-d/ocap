@@ -98,11 +98,11 @@ export class DataSourceController extends CrudController<DataSource> {
 
 	@Get('sql-schema-select-options')
 	@UseInterceptors(ClassSerializerInterceptor)
-	async getSqlSchemas(@Query('dataSources') dataSources: string[] ) {
-		if (!dataSources?.[0]) {
+	async getSqlSchemas(@Query('dataSource') dataSource: string,) {
+		if (!dataSource) {
 			return []
 		}
-		const items = await this.dsService.getCatalogs(dataSources[0])
+		const items = await this.dsService.getCatalogs(dataSource)
 		return items.map((item) => ({
 			value: item.name,
 			label: item.label || item.name

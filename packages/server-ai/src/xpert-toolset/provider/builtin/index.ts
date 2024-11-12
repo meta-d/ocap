@@ -5,12 +5,14 @@ import { DuckDuckGoToolset } from "./duckduckgo/duckduckgo";
 import { TavilyToolset } from "./tavily/tavily";
 import { ChatDBToolset } from "./chatdb/chatdb";
 import { TBuiltinToolsetParams } from "./builtin-toolset";
+import { ChatBIToolset } from "./chatbi/chatbi";
 
 export const ToolProviders = [
     DuckDuckGoToolset,
     TavilyToolset,
     BingToolset,
-    ChatDBToolset
+    ChatDBToolset,
+    ChatBIToolset
 ]
 
 export function createBuiltinToolset(provider: string, toolset?: IXpertToolset, params?: TBuiltinToolsetParams) {

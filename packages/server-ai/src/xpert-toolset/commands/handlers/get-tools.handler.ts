@@ -1,7 +1,7 @@
 import { Tool } from '@langchain/core/tools'
 import { XpertToolsetCategoryEnum } from '@metad/contracts'
 import { Logger } from '@nestjs/common'
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { In } from 'typeorm'
 import { ODataToolset } from '../../provider'
 import { createBuiltinToolset } from '../../provider/builtin'
@@ -16,6 +16,7 @@ export class ToolsetGetToolsHandler implements ICommandHandler<ToolsetGetToolsCo
 
 	constructor(
 		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus,
 		private readonly toolsetService: XpertToolsetService
 	) {}
 
@@ -33,7 +34,8 @@ export class ToolsetGetToolsHandler implements ICommandHandler<ToolsetGetToolsCo
 				case XpertToolsetCategoryEnum.BUILTIN: {
 					return createBuiltinToolset(toolset.type, toolset, {
 						toolsetService: this.toolsetService,
-						commandBus: this.commandBus
+						commandBus: this.commandBus,
+						queryBus: this.queryBus
 					})
 				}
 				case XpertToolsetCategoryEnum.API: {

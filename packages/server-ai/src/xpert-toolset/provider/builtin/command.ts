@@ -1,14 +1,19 @@
 import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { ToolParams } from '@langchain/core/tools'
-import { IBuiltinTool, IXpertTool, ToolParameterForm, ToolParameterType, TToolParameter, XpertToolContext } from '@metad/contracts'
+import { IBuiltinTool, IXpertTool, ToolParameterForm, TToolParameter } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
+import { RequestContext } from '@metad/server-core'
 import { BaseTool } from '../../toolset'
-import { BuiltinToolset } from './builtin-toolset'
 import { ApiBasedToolSchemaParser } from '../../utils/parser'
+import { BuiltinToolset } from './builtin-toolset'
 
 export class BaseCommandTool extends BaseTool {
 	public command: string
+
+	get queryBus() {
+		return this.toolset.queryBus
+	}
 
 	constructor(
 		protected tool: IXpertTool,
@@ -26,8 +31,9 @@ export class BaseCommandTool extends BaseTool {
 
 	setSchema(tool: IXpertTool) {
 		// let zodSchema: z.AnyZodObject = null
-		// Default empty 
-		const parameters = (<TToolParameter[]>tool.schema.parameters)?.filter((param) => param.form === ToolParameterForm.LLM) ?? []
+		// Default empty
+		const parameters =
+			(<TToolParameter[]>tool.schema.parameters)?.filter((param) => param.form === ToolParameterForm.LLM) ?? []
 		try {
 			this.schema = ApiBasedToolSchemaParser.parseParametersToZod(parameters as any[])
 			// zodSchema = eval(jsonSchemaToZod(tool.schema, { module: 'cjs' }))
@@ -37,23 +43,31 @@ export class BaseCommandTool extends BaseTool {
 		// this.schema = zodSchema as unknown as typeof this.schema
 	}
 
-    getToolsetService() {
-        return this.toolset.params?.toolsetService
-    }
+	getToolsetService() {
+		return this.toolset.toolsetService
+	}
 
 	protected async _call(
 		arg: any,
 		runManager?: CallbackManagerForToolRun,
 		parentConfig?: RunnableConfig
 	): Promise<any> {
+		const configurable = parentConfig.configurable ?? {}
 		try {
 			return await this.getToolsetService().executeCommand(
 				this.command,
 				{
 					...arg
 				},
-				parentConfig,
-				<XpertToolContext>{}
+				runManager,
+				{
+					...parentConfig,
+					configurable: {
+						...(parentConfig.configurable ?? {}),
+						tenantId: configurable.tenantId ?? RequestContext.currentTenantId(),
+						organizationId: configurable.organizationId ?? RequestContext.getOrganizationId()
+					}
+				}
 			)
 		} catch (error) {
 			return `Error: ${getErrorMessage(error)}`

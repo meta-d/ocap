@@ -13,6 +13,11 @@ import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { debounceTime, startWith } from 'rxjs'
 
+type TSelectOptionValue = string | { id: string }
+
+/**
+ * The value of option is primitive or object with id like `{ id: primitive, ... }`
+ */
 @Component({
   standalone: true,
   imports: [
@@ -31,7 +36,8 @@ import { debounceTime, startWith } from 'rxjs'
 })
 export class RemoteSelectComponent {
   readonly httpClient = inject(HttpClient)
-  protected cva = inject<NgxControlValueAccessor<string[] | null>>(NgxControlValueAccessor)
+  protected cva =
+    inject<NgxControlValueAccessor<TSelectOptionValue[] | TSelectOptionValue | null>>(NgxControlValueAccessor)
   readonly i18n = new NgmI18nPipe()
 
   // Inputs
@@ -43,10 +49,18 @@ export class RemoteSelectComponent {
   readonly placeholder = input<string>()
 
   readonly searchControl = new FormControl()
-  readonly values = this.cva.value$
+  readonly values = computed(() => {
+    if (this.multiple()) {
+      return this.cva.value$() as TSelectOptionValue[]
+    } else {
+      return this.cva.value$() ? [this.cva.value$() as TSelectOptionValue] : []
+    }
+  })
 
   readonly selectOptions = derivedAsync(() => {
-    return this.url() ? this.httpClient.get<ISelectOption[]>(this.url(), { params: this.params() ? toParams(this.params()) : null }) : []
+    return this.url()
+      ? this.httpClient.get<ISelectOption[]>(this.url(), { params: this.params() ? toParams(this.params()) : null })
+      : []
   })
 
   readonly searchText = toSignal<string>(this.searchControl.valueChanges.pipe(debounceTime(300), startWith(null)))
@@ -58,14 +72,28 @@ export class RemoteSelectComponent {
   })
 
   readonly selectedOptions = computed(() => {
-    return this.values()?.map((value) => this.selectOptions()?.find((_) => _.value === value) ?? { value })
+    return this.values()?.map(
+      (value) => this.selectOptions()?.find((_) => this.compareWith(_.value, value)) ?? { value }
+    )
   })
 
-  selectValues(event: ListboxValueChangeEvent<string>) {
-    this.cva.value$.set([...event.value])
+  selectValues(event: ListboxValueChangeEvent<TSelectOptionValue>) {
+    if (this.multiple()) {
+      this.cva.value$.set([...event.value])
+    } else {
+      this.cva.value$.set(event.value[0] ?? null)
+    }
   }
 
-  checkedWith(value: string) {
-    return this.values()?.some((_) => _ === value)
+  checkedWith(value: TSelectOptionValue) {
+    return this.values()?.some((_) => this.compareWith(_, value))
+  }
+
+  compareWith(a: TSelectOptionValue, b: TSelectOptionValue) {
+    if (typeof a === 'object' && typeof b === 'object') {
+      return a.id === b.id
+    } else {
+      return a === b
+    }
   }
 }

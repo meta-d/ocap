@@ -106,7 +106,8 @@ export class XpertToolsetService extends TenantOrganizationAwareCrudService<Xper
 
 		const toolproviderController = createBuiltinToolset(provider, null, {
 			toolsetService: this,
-			commandBus: this.commandBus
+			commandBus: this.commandBus,
+			queryBus: this.queryBus
 		})
 
 		// validate credentials
