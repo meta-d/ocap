@@ -9,14 +9,14 @@ import { KnowledgeSearchQuery } from './queries'
  * Docs Retriever for signle Knowledgebase
  */
 export class KnowledgeRetriever extends BaseRetriever {
-	lc_namespace: string[]
+	lc_namespace = ['xpert', 'knowledgenase']
+	
 	readonly #logger = new Logger(KnowledgeRetriever.name)
 
 	tenantId: string
 	organizationId: string
-	knowledgebaseId: string
 
-	constructor(private readonly queryBus: QueryBus) {
+	constructor(private readonly queryBus: QueryBus, private readonly knowledgebaseId) {
 		super()
 	}
 

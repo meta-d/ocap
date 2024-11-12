@@ -18,6 +18,9 @@ import { createXpertAgentTool, XpertAgentExecuteCommand } from '../execute.comma
 import { GetXpertAgentQuery } from '../../../xpert/queries'
 import { XpertCopilotNotFoundException } from '../../../core/errors'
 import { XpertAgentExecutionUpsertCommand } from '../../../xpert-agent-execution/commands'
+import { KnowledgeRetriever } from '../../../knowledgebase/retriever'
+import { EnsembleRetriever } from "langchain/retrievers/ensemble";
+import z from 'zod'
 
 
 
@@ -73,6 +76,21 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		toolsets.forEach((toolset) => tools.push(...toolset.getTools()))
 
 		this.#logger.debug(`Use tools:\n ${tools.map((_) => _.name + ': ' + _.description)}`)
+
+		// Knowledgebases
+		console.log(agent.knowledgebaseIds, agent.knowledgebases)
+		if (agent.knowledgebaseIds?.length) {
+			const retrievers = agent.knowledgebaseIds.map((id) => new KnowledgeRetriever(this.queryBus, id))
+			const retriever = new EnsembleRetriever({
+				retrievers: retrievers,
+				weights: retrievers.map(() => 0.5),
+			  })
+			tools.push(retriever.asTool({
+				name: "info_retriever",
+				description: "Get information about question.",
+				schema: z.string(),
+			  }))
+		}
 
 		if (agent.followers?.length) {
 			this.#logger.debug(`Use sub agents:\n ${agent.followers.map((_) => _.name)}`)

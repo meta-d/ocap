@@ -1,4 +1,4 @@
-@if (hiddenLabel()) {
+@if (!hiddenLabel()) {
   <div class="flex justify-between items-center">
     <div class="flex items-center h-6">
       <div class="">{{'PAC.Copilot.Models' | translate: {Default: 'Models'} }}</div>
@@ -7,7 +7,8 @@
   </div>
 }
 
-<div class="flex items-center px-2 h-8 rounded-lg cursor-pointer bg-gray-100 border border-gray-100 hover:border-gray-200">
+<div class="flex items-center px-2 h-8 rounded-lg cursor-pointer border
+ bg-gray-100 border-gray-100 hover:border-gray-200 dark:bg-zinc-800 dark:border-zinc-700 dark:hover:border-zinc-600">
   <div class="flex-1 relative flex items-center overflow-hidden"
     [cdkMenuTriggerFor]="readonly() ? null : modelsMenu"
   >
@@ -15,11 +16,11 @@
       <img [src]="copilot.providerWithModels.icon_small | i18n" class="w-4 h-4 mr-1.5">
     }
 
-    <div class="flex items-center truncate text-[13px] font-medium text-gray-800 mr-1.5">
+    <div class="flex items-center truncate text-[13px] font-medium mr-1.5">
       <div class="truncate" [title]="_copilotModel()?.model">{{_copilotModel()?.model}}</div>
       
       <div
-        class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+        class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium cursor-default ml-1"
       >
         CHAT
       </div>

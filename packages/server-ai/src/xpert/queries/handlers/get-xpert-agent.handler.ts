@@ -22,15 +22,22 @@ export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
 			const toolNodes = draft.connections
 				.filter((_) => _.type === 'toolset' && _.from === agentKey)
 				.map((conn) => draft.nodes.find((_) => _.key === conn.to))
+
+			const knowledgeNodes = draft.connections
+				.filter((_) => _.type === 'knowledge' && _.from === agentKey)
+				.map((conn) => draft.nodes.find((_) => _.key === conn.to))
+
 			const subAgents = draft.connections
 				.filter((_) => _.type === 'agent' && _.from === agentKey)
 				.map((conn) => draft.nodes.find((_) => _.type === 'agent' && _.key === conn.to))
 			const collaborators = draft.connections
 				.filter((_) => _.type === 'xpert' && _.from === agentKey)
 				.map((conn) => draft.nodes.find((_) => _.type === 'xpert' && _.key === conn.to))
+			
 			return {
 				...agentNode.entity,
 				toolsetIds: toolNodes.filter(nonNullable).map((node) => node.key),
+				knowledgebaseIds: knowledgeNodes.filter(nonNullable).map((node) => node.key),
 				followers: subAgents.filter(nonNullable).map((node) => node.entity),
 				collaborators: collaborators.filter(nonNullable).map((node) => node.entity),
 				team: {
