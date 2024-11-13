@@ -174,6 +174,18 @@ export class XpertStudioPanelAgentExecutionComponent {
                     this.executionService.setAgentExecution(event.data.agentKey, event.data)
                     break;
                   }
+                  case ChatMessageEventTypeEnum.ON_RETRIEVER_START: {
+                    this.executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
+                    break;
+                  }
+                  case ChatMessageEventTypeEnum.ON_RETRIEVER_END: {
+                    this.executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
+                    break;
+                  }
+                  case ChatMessageEventTypeEnum.ON_RETRIEVER_ERROR: {
+                    this.executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.FAILED})
+                    break;
+                  }
                   default: {
                     console.log(`未处理的事件：`, event)
                   }

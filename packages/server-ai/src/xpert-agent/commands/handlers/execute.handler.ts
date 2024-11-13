@@ -18,8 +18,8 @@ import { createXpertAgentTool, XpertAgentExecuteCommand } from '../execute.comma
 import { GetXpertAgentQuery } from '../../../xpert/queries'
 import { XpertCopilotNotFoundException } from '../../../core/errors'
 import { XpertAgentExecutionUpsertCommand } from '../../../xpert-agent-execution/commands'
-import { KnowledgeRetriever } from '../../../knowledgebase/retriever'
-import { EnsembleRetriever } from "langchain/retrievers/ensemble";
+import { createKnowledgeRetriever } from '../../../knowledgebase/retriever'
+import { EnsembleRetriever } from "langchain/retrievers/ensemble"
 import z from 'zod'
 
 
@@ -78,15 +78,14 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		this.#logger.debug(`Use tools:\n ${tools.map((_) => _.name + ': ' + _.description)}`)
 
 		// Knowledgebases
-		console.log(agent.knowledgebaseIds, agent.knowledgebases)
 		if (agent.knowledgebaseIds?.length) {
-			const retrievers = agent.knowledgebaseIds.map((id) => new KnowledgeRetriever(this.queryBus, id))
+			const retrievers = agent.knowledgebaseIds.map((id) => createKnowledgeRetriever(this.queryBus, id))
 			const retriever = new EnsembleRetriever({
 				retrievers: retrievers,
 				weights: retrievers.map(() => 0.5),
 			  })
 			tools.push(retriever.asTool({
-				name: "info_retriever",
+				name: "knowledge_retriever",
 				description: "Get information about question.",
 				schema: z.string(),
 			  }))
@@ -299,6 +298,34 @@ ${agent.prompt}
 							data: {
 								type: ChatMessageTypeEnum.EVENT,
 								event: ChatMessageEventTypeEnum.ON_TOOL_END,
+								data: {
+									data,
+									...rest,
+								}
+							}
+						} as MessageEvent)
+						break
+					}
+					case 'on_retriever_start': {
+						this.#logger.verbose(data, rest)
+						subscriber.next({
+							data: {
+								type: ChatMessageTypeEnum.EVENT,
+								event: ChatMessageEventTypeEnum.ON_RETRIEVER_START,
+								data: {
+									data,
+									...rest,
+								}
+							}
+						} as MessageEvent)
+						break
+					}
+					case 'on_retriever_end': {
+						this.#logger.verbose(data, rest)
+						subscriber.next({
+							data: {
+								type: ChatMessageTypeEnum.EVENT,
+								event: ChatMessageEventTypeEnum.ON_RETRIEVER_END,
 								data: {
 									data,
 									...rest,

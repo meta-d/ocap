@@ -29,11 +29,11 @@
           </div>
         </div>
       </div>
+
+      @if (execution.error) {
+        <div class="my-2 h-[0.5px] bg-black opacity-5"></div>
+        <p class="text-xs text-text-tertiary rounded-lg p-2 whitespace-break-spaces text-red-500">{{ execution.error }}</p>
+      }
     </div>
   </div>
-
-  @if (execution.error) {
-    <label class="p-1">{{ 'PAC.KEY_WORDS.Error' | translate: {Default: 'Error'} }}: </label>
-    <p class="text-xs text-text-tertiary rounded-lg p-2 bg-danger-bg whitespace-break-spaces text-danger-content">{{ execution.error }}</p>
-  }
 }

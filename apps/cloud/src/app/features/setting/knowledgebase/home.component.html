@@ -12,7 +12,7 @@
     />
 
     @for (item of knowledgebases(); track item.id) {
-      <div class="ngm-card flex-1 flex flex-col p-4 group bg-gray-50 hover:bg-white">
+      <div class="ngm-card min-h-[160px] flex-1 flex flex-col p-4 group bg-gray-50 hover:bg-white">
         <button mat-icon-button class="ngm-card__menu transition-opacity opacity-0 group-hover:opacity-100" displayDensity="cosy"
           [matMenuTriggerFor]="menu"
           [matMenuTriggerData]="{item: item}"
@@ -39,8 +39,8 @@
 
           </div>
 
-          <div class="w-full h-20 text-xs font-thin overflow-hidden hover:overflow-auto">
-            <span class="text-zinc-400 text-sm">{{item.description}}</span>
+          <div class="w-full pt-2 text-sm font-thin overflow-hidden line-clamp-3 text-text-secondary" [title]="item.description">
+            {{item.description}}
           </div>
           
         </div>

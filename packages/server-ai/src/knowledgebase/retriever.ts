@@ -10,20 +10,24 @@ import { KnowledgeSearchQuery } from './queries'
  */
 export class KnowledgeRetriever extends BaseRetriever {
 	lc_namespace = ['xpert', 'knowledgenase']
-	
+
 	readonly #logger = new Logger(KnowledgeRetriever.name)
 
 	tenantId: string
 	organizationId: string
 
-	constructor(private readonly queryBus: QueryBus, private readonly knowledgebaseId) {
+	constructor(
+		private readonly queryBus: QueryBus,
+		private readonly knowledgebaseId: string
+	) {
 		super()
 	}
 
 	async _getRelevantDocuments(query: string, runManager?: CallbackManagerForRetrieverRun): Promise<Document[]> {
-		this.#logger.debug(`Retrieving dimension members for query: ${query}`)
+		this.#logger.debug(`Retrieving knowledge documents for query: ${query}`)
 
-		// const results = await this.memberService.retrieveMembers(this.tenantId, this.organizationId, modelId, cube, query, 6)
+		this.metadata.knowledgebaseId = this.knowledgebaseId
+
 		const results = await this.queryBus.execute<
 			KnowledgeSearchQuery,
 			{
@@ -41,4 +45,18 @@ export class KnowledgeRetriever extends BaseRetriever {
 
 		return results.map(({ doc }) => doc)
 	}
+}
+
+export function createKnowledgeRetriever(queryBus: QueryBus, knowledgebaseId: string) {
+	
+	class DynamicKnowledgeRetriever extends KnowledgeRetriever {
+		// To enable langchain to obtain the actual knowledgebaseId of the Retriever as the event name
+		static lc_name(): string {
+			return knowledgebaseId
+		}
+		constructor(queryBus: QueryBus, knowledgebaseId: string) {
+			super(queryBus, knowledgebaseId)
+		}
+	}
+	return new DynamicKnowledgeRetriever(queryBus, knowledgebaseId) as KnowledgeRetriever
 }

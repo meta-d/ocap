@@ -1,19 +1,19 @@
 <ng-template>
   <div #menu="cdkMenu" cdkMenu class="ngm-cdk-menu">
     <div cdkMenuItem class="ngm-cdk-menu-item" (click)="createAgent(menu)">
-      <span>新建成员</span>
+      <span>{{ 'PAC.Xpert.NewAgent' | translate: {Default: 'New Agent'} }}</span>
     </div>
     <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="teamsMenu">
-      <span>添加外部成员</span>
+      <span>{{ 'PAC.Xpert.AddExternalExpert' | translate: {Default: 'Add External Expert'} }}</span>
     </div>
     <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="knowledgeMenu">
-      <span>添加知识库</span>
+      <span>{{ 'PAC.Xpert.AddKnowledgebase' | translate: {Default: 'Add Knowledgebase'} }}</span>
     </div>
     <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="toolsetMenu">
-      <span>添加工具集</span>
+      <span>{{ 'PAC.Xpert.AddToolset' | translate: {Default: 'Add Toolset'} }}</span>
     </div>
     <div cdkMenuItem class="ngm-cdk-menu-item danger" (click)="deleteNode(menu, node)">
-      <span>删除</span>
+      <span>{{ 'PAC.Xpert.Remove' | translate: {Default: 'Remove'} }}</span>
     </div>
   </div>
 </ng-template>

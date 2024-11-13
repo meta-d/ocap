@@ -130,7 +130,6 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 					}
 				})
 			return () => {
-				console.log(`================ 我被 Stop 了 ==================`)
 				destroy$.next()
 			}
 		})

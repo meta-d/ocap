@@ -10,6 +10,7 @@ import { SelectionService } from '../../domain/selection.service'
 import { XpertStudioComponent } from '../../studio.component'
 import { XpertStudioKnowledgeMenuComponent } from '../knowledge-menu/knowledge.component'
 import { XpertStudioToolsetMenuComponent } from '../toolset-menu/toolset.component'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'xpert-studio-context-menu',
@@ -18,6 +19,7 @@ import { XpertStudioToolsetMenuComponent } from '../toolset-menu/toolset.compone
   imports: [
     CommonModule,
     CdkMenuModule,
+    TranslateModule,
     MatTabsModule,
     XpertStudioKnowledgeMenuComponent,
     XpertStudioToolsetMenuComponent,

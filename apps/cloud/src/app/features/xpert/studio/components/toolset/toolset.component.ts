@@ -1,6 +1,4 @@
-import { JsonPipe } from '@angular/common'
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
-import { MatIcon } from '@angular/material/icon'
 import { FFlowModule } from '@foblex/flow'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
 import { TXpertTeamNode, XpertAgentExecutionEnum, XpertToolsetService } from 'apps/cloud/src/app/@core'
@@ -15,7 +13,7 @@ import { XpertExecutionService } from '../../services/execution.service'
   styleUrls: ['./toolset.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [JsonPipe, FFlowModule, MatIcon, EmojiAvatarComponent, NgmSpinComponent],
+  imports: [FFlowModule, EmojiAvatarComponent, NgmSpinComponent],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',

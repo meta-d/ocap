@@ -13,10 +13,5 @@ import { EmojiAvatarComponent } from '../../avatar'
 })
 export class XpertInlineProfileComponent {
   readonly xpert = input<IXpert>()
-  readonly avatar = computed(() => this.xpert()?.avatar ?? {
-    emoji: {
-      id: '🤖'
-    },
-    background: 'rgb(213, 245, 246)'
-  })
+  readonly avatar = computed(() => this.xpert()?.avatar)
 }

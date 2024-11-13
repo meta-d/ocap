@@ -1,13 +1,18 @@
-import { IXpertAgent } from '@metad/contracts'
+import { ICopilotModel, IXpertAgent } from '@metad/contracts'
 import { nonNullable } from '@metad/copilot'
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
+import { pick } from '@metad/server-common'
+import { IQueryHandler, QueryHandler, QueryBus } from '@nestjs/cqrs'
 import { XpertService } from '../../xpert.service'
 import { GetXpertAgentQuery } from '../get-xpert-agent.query'
-import { pick } from '@metad/server-common'
+import { CopilotGetOneQuery } from '../../../copilot'
+
 
 @QueryHandler(GetXpertAgentQuery)
 export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
-	constructor(private readonly service: XpertService) {}
+	constructor(
+		private readonly service: XpertService,
+		private readonly queryBus: QueryBus
+	) {}
 
 	public async execute(command: GetXpertAgentQuery): Promise<IXpertAgent> {
 		const { id, agentKey, draft } = command
@@ -34,6 +39,7 @@ export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
 				.filter((_) => _.type === 'xpert' && _.from === agentKey)
 				.map((conn) => draft.nodes.find((_) => _.type === 'xpert' && _.key === conn.to))
 			
+			await this.fillCopilot((<IXpertAgent>agentNode.entity).copilotModel)
 			return {
 				...agentNode.entity,
 				toolsetIds: toolNodes.filter(nonNullable).map((node) => node.key),
@@ -49,6 +55,7 @@ export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
 			const agents = [xpert.agent, ...xpert.agents]
 			const agent = agentKey ? agents.find((_) => _.key === agentKey) : xpert.agent
 			if (agent) {
+				await this.fillCopilot(agent.copilotModel)
 				return {
 					...agent,
 					followers: [xpert.agent, ...xpert.agents].filter((_) => _.leaderKey === agent.key),
@@ -59,5 +66,16 @@ export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
 		}
 
 		return null
+	}
+
+	/**
+	 * Find the runtime copilot fill in the copilot model for agent
+	 * 
+	 * @param copilotModel 
+	 */
+	async fillCopilot(copilotModel: ICopilotModel) {
+		if (copilotModel?.copilotId) {
+			copilotModel.copilot = await this.queryBus.execute(new CopilotGetOneQuery(copilotModel.copilotId))
+		}
 	}
 }

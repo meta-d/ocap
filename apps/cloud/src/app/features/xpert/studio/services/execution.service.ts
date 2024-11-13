@@ -33,10 +33,6 @@ export class XpertExecutionService {
   // readonly execution = signal<IXpertAgentExecution>(null)
   readonly #agentExecutions = signal<Record<string, IXpertAgentExecution>>({})
   readonly agentExecutions = computed(() => {
-    // const execution = this.execution()
-    // if (!execution) {
-    //   return this.#agentExecutions()
-    // }
     const agentExecutions = {}
     Object.values(this.#agentExecutions() ?? {}).forEach((execution) => {
       execution.subExecutions?.forEach((item) => {
@@ -49,10 +45,15 @@ export class XpertExecutionService {
       }
     })
 
+    Object.keys(this.knowledgeExecutions() ?? {}).forEach((id) => {
+      agentExecutions[id] = this.knowledgeExecutions()[id]
+    })
+
     return agentExecutions
   })
 
   readonly toolExecutions = signal<Record<string, {status: XpertAgentExecutionEnum}>>({})
+  readonly knowledgeExecutions = signal<Record<string, {status: XpertAgentExecutionEnum}>>({})
 
   constructor() {
     effect(() => {
@@ -89,8 +90,16 @@ export class XpertExecutionService {
     }))
   }
 
+  setKnowledgeExecution(name: string, execution: { status: XpertAgentExecutionEnum }) {
+    this.knowledgeExecutions.update((state) => ({
+      ...state,
+      [name]: execution
+    }))
+  }
+
   clear() {
     this.#agentExecutions.set({})
     this.toolExecutions.set({})
+    this.knowledgeExecutions.set({})
   }
 }
