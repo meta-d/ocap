@@ -2,7 +2,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
-import { ChatGatewayEvent, ChatGatewayMessage, XpertToolContext, JSONValue, OrderTypeEnum } from '@metad/contracts'
+import { ChatGatewayEvent, ChatGatewayMessage, XpertToolContext, JSONValue, OrderTypeEnum, ChatMessageTypeEnum, ChatMessageEventTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, referencesCommandName } from '@metad/copilot'
 import {
 	Agent,
@@ -546,21 +546,39 @@ ${members}
 							}
 						} as ChatGatewayMessage)
 					} else {
-						subscriber?.next({
-							event: ChatGatewayEvent.Message,
+						subscriber.next({
 							data: {
-								id: shortuuid(),
-								role: 'component',
+								type: ChatMessageTypeEnum.MESSAGE,
 								data: {
-									type: 'AnalyticalCard',
-									data: result.data,
-									dataSettings,
-									chartSettings,
-									slicers,
-									title: answer.preface
-								} as unknown as JSONValue
+									id: shortuuid(),
+									role: 'component',
+									data: {
+										type: 'AnalyticalCard',
+										data: result.data,
+										dataSettings,
+										chartSettings,
+										slicers,
+										title: answer.preface
+									} as unknown as JSONValue
+								}
 							}
-						} as ChatGatewayMessage)
+						} as MessageEvent)
+						
+						// subscriber?.next({
+						// 	event: ChatGatewayEvent.Message,
+						// 	data: {
+						// 		id: shortuuid(),
+						// 		role: 'component',
+						// 		data: {
+						// 			type: 'AnalyticalCard',
+						// 			data: result.data,
+						// 			dataSettings,
+						// 			chartSettings,
+						// 			slicers,
+						// 			title: answer.preface
+						// 		} as unknown as JSONValue
+						// 	}
+						// } as ChatGatewayMessage)
 					}
 					resolve({ data: result.data })
 				}

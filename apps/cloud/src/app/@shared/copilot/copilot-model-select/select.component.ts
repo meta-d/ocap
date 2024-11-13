@@ -46,6 +46,7 @@ export class CopilotModelSelectComponent {
   protected cva = inject<NgxControlValueAccessor<Partial<ICopilotModel> | null>>(NgxControlValueAccessor)
   readonly copilotService = inject(PACCopilotService)
 
+  // Inputs
   readonly modelType = input<ModelType>()
   readonly inheritModel = input<ICopilotModel>()
   readonly copilotModel = model<ICopilotModel>()
@@ -58,6 +59,7 @@ export class CopilotModelSelectComponent {
     transform: booleanAttribute
   })
 
+  // States
   readonly _copilotModel = computed(() => this.copilotModel() ?? this.inheritModel())
 
   readonly copilotWithModels = derivedAsync(() => this.copilotService.getCopilotModels(this.modelType()))
@@ -106,6 +108,8 @@ export class CopilotModelSelectComponent {
     return null
   })
 
+  readonly isInherit = computed(() => !this.copilotModel())
+  
   constructor() {
     effect(
       () => {

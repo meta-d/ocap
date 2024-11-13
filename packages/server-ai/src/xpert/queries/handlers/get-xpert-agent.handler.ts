@@ -40,6 +40,7 @@ export class GetXpertAgentHandler implements IQueryHandler<GetXpertAgentQuery> {
 				.map((conn) => draft.nodes.find((_) => _.type === 'xpert' && _.key === conn.to))
 			
 			await this.fillCopilot((<IXpertAgent>agentNode.entity).copilotModel)
+			await this.fillCopilot(draft.team.copilotModel)
 			return {
 				...agentNode.entity,
 				toolsetIds: toolNodes.filter(nonNullable).map((node) => node.key),

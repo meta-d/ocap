@@ -154,42 +154,13 @@ export class XpertStudioPanelAgentExecutionComponent {
             if (msg.data) {
               const event = JSON.parse(msg.data)
               if (event.type === ChatMessageTypeEnum.MESSAGE) {
-                this.output.update((state) => state + event.data)
-              } else if (event.type === ChatMessageTypeEnum.EVENT) {
-                switch(event.event) {
-                  case ChatMessageEventTypeEnum.ON_TOOL_START: {
-                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_TOOL_END: {
-                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_TOOL_ERROR: {
-                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.FAILED})
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_AGENT_START:
-                  case ChatMessageEventTypeEnum.ON_AGENT_END: {
-                    this.executionService.setAgentExecution(event.data.agentKey, event.data)
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_RETRIEVER_START: {
-                    this.executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_RETRIEVER_END: {
-                    this.executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_RETRIEVER_ERROR: {
-                    this.executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.FAILED})
-                    break;
-                  }
-                  default: {
-                    console.log(`未处理的事件：`, event)
-                  }
+                if (typeof event.data === 'string') {
+                  this.output.update((state) => state + event.data)
+                } else {
+                  console.log(`未处理的消息：`, event)
                 }
+              } else if (event.type === ChatMessageTypeEnum.EVENT) {
+                processEvents(event, this.executionService)
               }
             }
           }
@@ -211,5 +182,42 @@ export class XpertStudioPanelAgentExecutionComponent {
 
   getAgent(key: string): IXpertAgent {
     return this.apiService.getNode(key)?.entity as IXpertAgent
+  }
+}
+
+export function processEvents(event, executionService: XpertExecutionService) {
+  switch(event.event) {
+    case ChatMessageEventTypeEnum.ON_TOOL_START: {
+      executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
+      break;
+    }
+    case ChatMessageEventTypeEnum.ON_TOOL_END: {
+      executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
+      break;
+    }
+    case ChatMessageEventTypeEnum.ON_TOOL_ERROR: {
+      executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.FAILED})
+      break;
+    }
+    case ChatMessageEventTypeEnum.ON_AGENT_START:
+    case ChatMessageEventTypeEnum.ON_AGENT_END: {
+      executionService.setAgentExecution(event.data.agentKey, event.data)
+      break;
+    }
+    case ChatMessageEventTypeEnum.ON_RETRIEVER_START: {
+      executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
+      break;
+    }
+    case ChatMessageEventTypeEnum.ON_RETRIEVER_END: {
+      executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
+      break;
+    }
+    case ChatMessageEventTypeEnum.ON_RETRIEVER_ERROR: {
+      executionService.setKnowledgeExecution(event.data.name, {status: XpertAgentExecutionEnum.FAILED})
+      break;
+    }
+    default: {
+      console.log(`未处理的事件：`, event)
+    }
   }
 }

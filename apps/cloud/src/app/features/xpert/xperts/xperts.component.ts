@@ -21,6 +21,7 @@ import {
   IToolProvider,
   IXpertRole,
   IXpertToolset,
+  OrderTypeEnum,
   routeAnimations,
   ToastrService,
   XpertService,
@@ -105,6 +106,7 @@ export class XpertStudioXpertsComponent {
       switchMap(() =>
         this.xpertService.getAllByWorkspace(workspace, {
           where: omitBy(where, isNil),
+          order: {updatedAt: OrderTypeEnum.DESC},
           relations: ['createdBy', 'tags']
         })
       ),

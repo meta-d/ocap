@@ -4,12 +4,10 @@ import { Component, computed, DestroyRef, effect, inject, model, signal } from '
 import { FormsModule } from '@angular/forms'
 import {
   ChatConversationService,
-  ChatMessageEventTypeEnum,
   ChatMessageTypeEnum,
   CopilotChatMessage,
   ToastrService,
   uuid,
-  XpertAgentExecutionEnum,
   XpertService
 } from 'apps/cloud/src/app/@core'
 import { MaterialModule, XpertParametersCardComponent } from 'apps/cloud/src/app/@shared'
@@ -18,6 +16,7 @@ import { MarkdownModule } from 'ngx-markdown'
 import { XpertStudioApiService } from '../../domain'
 import { XpertExecutionService } from '../../services/execution.service'
 import { XpertStudioComponent } from '../../studio.component'
+import { processEvents } from '../agent-execution/execution.component'
 
 @Component({
   standalone: true,
@@ -101,31 +100,18 @@ export class XpertStudioPreviewComponent {
             if (msg.data) {
               const event = JSON.parse(msg.data)
               if (event.type === ChatMessageTypeEnum.MESSAGE) {
-                // Update last AI message
-                this.output.update((state) => state + event.data)
-                this.lastMessage.update((message) => ({
-                  ...message,
-                  content: message.content + event.data
-                }))
-              } else if (event.type === ChatMessageTypeEnum.EVENT) {
-                switch(event.event) {
-                  case ChatMessageEventTypeEnum.ON_TOOL_START: {
-                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_TOOL_END: {
-                    this.executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.SUCCEEDED})
-                    break;
-                  }
-                  case ChatMessageEventTypeEnum.ON_AGENT_START:
-                  case ChatMessageEventTypeEnum.ON_AGENT_END: {
-                    this.executionService.setAgentExecution(event.data.agentKey, event.data)
-                    break;
-                  }
-                  default: {
-                    console.log(`未处理的事件：`, event)
-                  }
+                if (typeof event.data === 'string') {
+                  // Update last AI message
+                  this.output.update((state) => state + event.data)
+                  this.lastMessage.update((message) => ({
+                    ...message,
+                    content: message.content + event.data
+                  }))
+                } else {
+                  console.log(`未处理的消息：`, event)
                 }
+              } else if (event.type === ChatMessageTypeEnum.EVENT) {
+                processEvents(event, this.executionService)
               }
             }
           }

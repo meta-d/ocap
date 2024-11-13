@@ -1380,6 +1380,7 @@
       "Parameters": "参数",
       "Role_primary": "主",
       "Role_secondary": "次",
+      "Inherited": "继承的",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",

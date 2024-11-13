@@ -26,6 +26,7 @@ import {
   IXpert,
   IXpertAgent,
   IXpertToolset,
+  OrderTypeEnum,
   TXpertOptions,
   TXpertTeamDraft,
   TXpertTeamNode
@@ -113,7 +114,7 @@ export class XpertStudioApiService {
     map(({ items }) => items),
     shareReplay(1)
   )
-  readonly toolsets$ = this.toolsetService.getAllInOrg().pipe(
+  readonly toolsets$ = this.toolsetService.getAllInOrg({order: {updatedAt: OrderTypeEnum.DESC}}).pipe(
     map(({ items }) => items),
     shareReplay(1)
   )

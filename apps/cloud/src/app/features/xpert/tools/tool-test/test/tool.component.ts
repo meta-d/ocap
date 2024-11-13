@@ -26,6 +26,7 @@ import {
   XpertToolService,
   XpertToolsetService
 } from 'apps/cloud/src/app/@core'
+import { isNil } from 'lodash-es'
 import { Subscription } from 'rxjs'
 
 
@@ -70,7 +71,7 @@ export class XpertToolsetToolTestComponent {
   readonly toolId = computed(() => this.tool()?.id)
 
   readonly toolAvatar = computed(() => this.tool()?.avatar)
-  readonly parameterList = computed(() => this.tool()?.schema?.parameters?.filter((_) => _.visible || this.visibleAll()))
+  readonly parameterList = computed(() => this.tool()?.schema?.parameters?.filter((_) => isNil(_.visible) || _.visible || this.visibleAll()))
 
   readonly parameters = model<Record<string, any>>(null)
   readonly testResult = signal(null)

@@ -1,5 +1,19 @@
 <ng-content></ng-content>
 
+<ul class="w-full flex items-center px-3 py-2 space-x-1 bg-gray-25 border-b-[0.5px] border-black/[0.08]"
+  cdkListbox
+  [(ngModel)]="type"
+  >
+  @for (type of TYPES; track type.value) {
+    <div #option="cdkOption" class="flex items-center px-2 h-6 rounded-md hover:bg-gray-100 cursor-pointer text-sm font-medium text-gray-700 "
+      [ngClass]="{'bg-gray-200': option.isSelected()}"
+      [cdkOption]="type.value"
+    >
+      {{type.label | i18n }}
+    </div>
+  }
+</ul>
+
 @for (toolset of toolsets(); track toolset.id) {
   <div cdkMenuItem class="ngm-cdk-menu-item shrink-0 w-full flex justify-start items-center py-0.5 overflow-hidden"
     (click)="createToolset(toolset)">

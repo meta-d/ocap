@@ -65,7 +65,8 @@ export class CopilotController extends CrudController<Copilot> {
 						id: copilot.id + '/' + model.model,
 						copilotId: copilot.id,
 						provider: copilot.providerWithModels.provider,
-						model: model.model
+						model: model.model,
+						modelType: model.model_type
 					},
 					label: model.label
 				})

@@ -29,7 +29,7 @@
   </div>
   
   <div class="px-3 pb-2 w-full flex flex-col items-stretch">
-    <p class="text-sm text-token-text-secondary text-left">{{xpertAgent().description}}</p>
+    <p class="mb-2 text-sm text-token-text-secondary text-left line-clamp-3" [title]="xpertAgent().description">{{xpertAgent().description}}</p>
 
     <copilot-model-select readonly hiddenLabel [inheritModel]="xpertCopilotModel()" [modelType]="eModelType.LLM"
       [copilotModel]="copilotModel()"

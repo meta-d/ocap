@@ -14,6 +14,10 @@
     [cdkMenuTriggerFor]="readonly() ? null : modelsMenu"
   >
     @if (selectedCopilotWithModels(); as copilot) {
+      @if (isInherit()) {
+        <i class="ri-skip-up-line mr-1" [matTooltip]="'PAC.Copilot.Inherited' | translate: {Default: 'Inherited'}"></i>
+      }
+
       <img [src]="copilot.providerWithModels.icon_small | i18n" class="w-4 h-4 mr-1.5">
       <div class="flex items-center truncate text-[13px] font-medium mr-1.5">
         <div class="truncate" [title]="_copilotModel()?.model">{{_copilotModel()?.model}}</div>
