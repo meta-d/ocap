@@ -1,4 +1,3 @@
-import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RequestContext } from '@metad/server-core'
 import { CommandBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { CopilotCheckLimitCommand, CopilotTokenRecordCommand } from '../../../copilot-user'
@@ -12,7 +11,7 @@ export class AIModelGetOneHandler implements IQueryHandler<AIModelGetOneQuery> {
 		private readonly service: AIProvidersService
 	) {}
 
-	public async execute(command: AIModelGetOneQuery): Promise<BaseChatModel> {
+	public async execute(command: AIModelGetOneQuery) {
 		const { abortController, tokenCallback } = command.options ?? {}
 		const copilot = command.copilot
 		const tenantId = RequestContext.currentTenantId()
@@ -27,10 +26,12 @@ export class AIModelGetOneHandler implements IQueryHandler<AIModelGetOneQuery> {
 			copilot
 		}))
 
+		const copilotModel = command.copilotModel
 		const modelProvider = this.service.getProvider(copilot.provider)
-		return modelProvider.getChatModel(
+		return modelProvider.getModelInstance(
+			copilotModel.modelType,
 			{
-				...command.copilotModel,
+				...copilotModel,
 				copilot
 			},
 			{

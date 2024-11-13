@@ -10,12 +10,11 @@ import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmHighlightDirective, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { NgmDensityDirective, NgmI18nPipe, nonBlank } from '@metad/ocap-angular/core'
-import { NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { debounceTime } from 'rxjs'
-import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } from '../../../@core'
 import { TranslateModule } from '@ngx-translate/core'
+import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } from '../../../@core'
 
 @Component({
   standalone: true,
@@ -41,9 +40,8 @@ import { TranslateModule } from '@ngx-translate/core'
   hostDirectives: [NgxControlValueAccessor]
 })
 export class CopilotModelSelectComponent {
-  eNgxFloatUiTriggers = NgxFloatUiTriggers
-  eNgxFloatUiPlacements = NgxFloatUiPlacements
   eModelFeature = ModelFeature
+  eModelType = ModelType
 
   protected cva = inject<NgxControlValueAccessor<Partial<ICopilotModel> | null>>(NgxControlValueAccessor)
   readonly copilotService = inject(PACCopilotService)
@@ -62,9 +60,7 @@ export class CopilotModelSelectComponent {
 
   readonly _copilotModel = computed(() => this.copilotModel() ?? this.inheritModel())
 
-  readonly copilotWithModels = derivedAsync(() => {
-    return this.copilotService.getCopilotModels(this.modelType())
-  })
+  readonly copilotWithModels = derivedAsync(() => this.copilotService.getCopilotModels(this.modelType()))
   readonly copilotWithModels$ = toObservable(this.copilotWithModels)
 
   readonly searchControl = new FormControl()
@@ -99,6 +95,7 @@ export class CopilotModelSelectComponent {
   readonly copilots = this.copilotService.copilots
   readonly provider = computed(() => this.copilots()?.find((_) => _.id === this.copilotId())?.provider)
   readonly model = computed(() => this._copilotModel()?.model)
+  readonly selectedAiModel = computed(() => this.selectedCopilotWithModels()?.providerWithModels?.models?.find((_) => _.model === this.model()))
 
   readonly modelParameterRules = derivedAsync(() => {
     const provider = this.provider()
@@ -127,7 +124,7 @@ export class CopilotModelSelectComponent {
       ...(this._copilotModel() ?? {}),
       model,
       copilotId: copilot.id,
-      copilot: copilot,
+      // copilot: copilot,
       modelType: this.modelType()
     }
     this.copilotModel.set(nValue)

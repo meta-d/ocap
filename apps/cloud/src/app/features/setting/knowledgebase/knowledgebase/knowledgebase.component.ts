@@ -1,20 +1,19 @@
-import { AsyncPipe } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { BehaviorSubject, of, pipe, switchMap } from 'rxjs'
 import { KnowledgebaseService, ToastrService, routeAnimations } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
-import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   standalone: true,
   selector: 'pac-settings-knowledgebase',
   templateUrl: './knowledgebase.component.html',
   styleUrls: ['./knowledgebase.component.scss'],
-  imports: [AsyncPipe, RouterModule, TranslateModule, MaterialModule, EmojiAvatarComponent],
+  imports: [RouterModule, TranslateModule, MaterialModule, EmojiAvatarComponent],
   animations: [routeAnimations]
 })
 export class KnowledgebaseComponent extends TranslationBaseComponent {
@@ -27,7 +26,11 @@ export class KnowledgebaseComponent extends TranslationBaseComponent {
     [this.paramId],
     pipe(
       switchMap(([id]) =>
-        id ? this.refresh$.pipe(switchMap(() => this.knowledgebaseService.getOneById(id))) : of(null)
+        id
+          ? this.refresh$.pipe(
+              switchMap(() => this.knowledgebaseService.getOneById(id, { relations: ['copilotModel'] }))
+            )
+          : of(null)
       )
     ),
     {

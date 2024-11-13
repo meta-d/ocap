@@ -23,7 +23,7 @@ describe('OpenAIProvider', () => {
   });
 
   it('should get OpenAILargeLanguageModel instance', async () => {
-    const modelInstance = await provider.getModelInstance(ModelType.LLM);
+    const modelInstance = await provider.getModelManager(ModelType.LLM);
     expect(modelInstance).toBeInstanceOf(OpenAILargeLanguageModel);
   });
 
@@ -33,7 +33,7 @@ describe('OpenAIProvider', () => {
       { model: 'model2', modelType: 'type2' }
     ];
 
-    const modelInstance = await provider.getModelInstance(ModelType.LLM);
+    const modelInstance = await provider.getModelManager(ModelType.LLM);
     const models = modelInstance.predefinedModels()
     expect(models).toEqual(mockPredefinedModels);
   });

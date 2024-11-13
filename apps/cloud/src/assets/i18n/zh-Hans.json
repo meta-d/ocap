@@ -1375,6 +1375,11 @@
       "GeneratedPrompt": "生成的提示词",
       "DescribeYourUseCase": "在左侧描述您的用例",
       "ThePromptPreview": "提示词预览将显示在这里",
+      "Chat": "对话",
+      "SelectModel": "选择模型",
+      "Parameters": "参数",
+      "Role_primary": "主",
+      "Role_secondary": "次",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",

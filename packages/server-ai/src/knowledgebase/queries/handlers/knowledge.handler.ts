@@ -22,7 +22,7 @@ export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearc
 				tenantId,
 				organizationId,
 				id: knowledgebases ? In(knowledgebases) : Not(IsNull())
-			}
+			},
 		})
 		const _knowledgebases = result.items
 
@@ -30,9 +30,9 @@ export class KnowledgeSearchQueryHandler implements IQueryHandler<KnowledgeSearc
 		const kbs = await Promise.all(
 			_knowledgebases.map(async (kb) => {
 				return this.knowledgebaseService
-					.getVectorStore(kb, tenantId, organizationId)
+					.getVectorStore(kb.id, tenantId, organizationId)
 					.then((vectorStore) => {
-						this.logger.debug(`SimilaritySearch question='${query}' kb='${kb.name}' in ai provider='${kb.aiProvider}' and model='${vectorStore.embeddingModel}'`)
+						this.logger.debug(`SimilaritySearch question='${query}' kb='${kb.name}' in ai provider='${kb.copilotModel?.copilot?.provider}' and model='${vectorStore.embeddingModel}'`)
 						return vectorStore.similaritySearchWithScore(query, k, filter)
 					})
 					.then((docs) =>

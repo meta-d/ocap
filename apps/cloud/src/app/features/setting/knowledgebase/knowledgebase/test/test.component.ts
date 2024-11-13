@@ -1,4 +1,3 @@
-import { AsyncPipe } from '@angular/common'
 import { Component, inject, model, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
@@ -14,7 +13,7 @@ import { KnowledgebaseComponent } from '../knowledgebase.component'
   selector: 'pac-settings-knowledgebase-test',
   templateUrl: './test.component.html',
   styleUrls: ['./test.component.scss'],
-  imports: [AsyncPipe, RouterModule, FormsModule, TranslateModule, MaterialModule, NgmCommonModule],
+  imports: [RouterModule, FormsModule, TranslateModule, MaterialModule, NgmCommonModule],
   animations: [routeAnimations]
 })
 export class KnowledgeTestComponent extends TranslationBaseComponent {

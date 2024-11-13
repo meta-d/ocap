@@ -41,14 +41,16 @@ export class KnowledgeDocumentService extends TenantOrganizationAwareCrudService
 	}
 
 	async getChunks(id: string) {
-		const document = await this.findOne(id, { relations: ['knowledgebase'] })
-		const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, this.pgPool)
+		const document = await this.findOne(id, { relations: ['knowledgebase', 'knowledgebase.copilotModel', 'knowledgebase.copilotModel.copilot'] })
+		const vectorStore = await this.knowledgebaseService.getVectorStore(document.knowledgebase)
+		// const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, this.pgPool)
 		return await vectorStore.getChunks(id)
 	}
 
 	async deleteChunk(documentId: string, id: string) {
-		const document = await this.findOne(documentId, { relations: ['knowledgebase'] })
-		const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, this.pgPool)
+		const document = await this.findOne(id, { relations: ['knowledgebase', 'knowledgebase.copilotModel', 'knowledgebase.copilotModel.copilot'] })
+		const vectorStore = await this.knowledgebaseService.getVectorStore(document.knowledgebase)
+		// const vectorStore = new KnowledgeDocumentVectorStore(document.knowledgebase, this.pgPool)
 		return await vectorStore.deleteChunk(id)
 	}
 

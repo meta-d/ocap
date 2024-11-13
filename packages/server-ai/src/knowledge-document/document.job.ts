@@ -23,6 +23,9 @@ export class KnowledgeDocumentConsumer {
 	private readonly logger = new Logger(KnowledgeDocumentConsumer.name)
 
 	private knowledgebase: IKnowledgebase
+	get copilot() {
+		return this.knowledgebase?.copilotModel?.copilot
+	}
 	storageProvider: Provider<any>
 	constructor(
 		@Inject(JOB_REF) jobRef: Job,
@@ -35,7 +38,7 @@ export class KnowledgeDocumentConsumer {
 	async process(job: Job<{ userId: string; docs: IKnowledgeDocument[] }>) {
 		const userId = job.data.userId
 		const knowledgebaseId = job.data.docs[0]?.knowledgebaseId
-		this.knowledgebase = await this.knowledgebaseService.findOne(knowledgebaseId)
+		this.knowledgebase = await this.knowledgebaseService.findOne(knowledgebaseId, { relations: ['copilotModel', 'copilotModel.copilot'] })
 		let vectorStore: KnowledgeDocumentVectorStore
 		try {
 			const doc = job.data.docs[0]
@@ -93,7 +96,7 @@ export class KnowledgeDocumentConsumer {
 								tenantId: this.knowledgebase.tenantId,
 								organizationId: this.knowledgebase.organizationId,
 								userId,
-								copilot: vectorStore.copilot,
+								copilot: this.copilot,
 								tokenUsed
 							})
 						)

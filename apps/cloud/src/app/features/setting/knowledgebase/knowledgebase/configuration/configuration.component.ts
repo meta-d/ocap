@@ -1,4 +1,3 @@
-import { AsyncPipe } from '@angular/common'
 import { ChangeDetectorRef, Component, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
@@ -7,19 +6,20 @@ import { AI_PROVIDERS, AiModelCapability, AiProviderRole, isNil } from '@metad/c
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { upperFirst } from 'lodash-es'
+import { omit, pick, upperFirst } from 'lodash-es'
 import { startWith } from 'rxjs'
 import {
   IKnowledgebase,
   KnowledgebasePermission,
   KnowledgebaseService,
+  ModelType,
   PACCopilotService,
   Store,
   ToastrService,
   getErrorMessage,
   routeAnimations
 } from '../../../../../@core'
-import { AvatarEditorComponent, MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
+import { AvatarEditorComponent, CopilotModelSelectComponent, MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { KnowledgebaseComponent } from '../knowledgebase.component'
 import { EmojiAvatarComponent } from "../../../../../@shared/avatar/emoji-avatar/avatar.component";
 
@@ -29,19 +29,20 @@ import { EmojiAvatarComponent } from "../../../../../@shared/avatar/emoji-avatar
   templateUrl: './configuration.component.html',
   styleUrls: ['./configuration.component.scss'],
   imports: [
-    AsyncPipe,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
     MaterialModule,
     NgmCommonModule,
-    EmojiAvatarComponent
+    EmojiAvatarComponent,
+    CopilotModelSelectComponent
 ],
   animations: [routeAnimations]
 })
 export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   KnowledgebasePermission = KnowledgebasePermission
   DisplayBehaviour = DisplayBehaviour
+  eModelType = ModelType
 
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)
@@ -61,8 +62,8 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
     avatar: new FormControl(null),
     language: new FormControl(null, [Validators.required]),
     permission: new FormControl<KnowledgebasePermission>(null),
-    copilotId: new FormControl(null),
-    embeddingModelId: new FormControl(null),
+    // copilotId: new FormControl(null),
+    // embeddingModelId: new FormControl(null),
 
     parserConfig: new FormGroup({
       embeddingBatchSize: new FormControl(null),
@@ -70,56 +71,60 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
       chunkOverlap: new FormControl(null)
     }),
 
-    similarityThreshold: new FormControl(null)
+    similarityThreshold: new FormControl(null),
+
+    copilotModel: new FormControl(null),
+    copilotModelId: new FormControl(null),
   })
 
-  readonly copilots = computed(() =>
-    this.copilotService.copilots()?.filter((item) => item.enabled && item.organizationId === this.organizationId())
-  )
-  readonly copilotOptions = computed(() =>
-    this.copilots()?.map((copilot) => {
-      const provider = AI_PROVIDERS[copilot.provider]
-      const roleName = upperFirst(copilot.role || AiProviderRole.Primary)
-      return {
-        key: copilot.id,
-        caption:
-          this.getTranslation('PAC.Copilot.Provider_' + provider?.caption, { Default: provider?.caption }) +
-          `(${this.getTranslation('PAC.KEY_WORDS.' + roleName, { Default: roleName })})`
-      }
-    })
-  )
 
-  readonly copilotId = toSignal(
-    this.formGroup.get('copilotId').valueChanges.pipe(startWith(this.formGroup.value.copilotId))
-  )
+  // readonly copilots = computed(() =>
+  //   this.copilotService.copilots()?.filter((item) => item.enabled && item.organizationId === this.organizationId())
+  // )
+  // readonly copilotOptions = computed(() =>
+  //   this.copilots()?.map((copilot) => {
+  //     const provider = AI_PROVIDERS[copilot.provider]
+  //     const roleName = upperFirst(copilot.role || AiProviderRole.Primary)
+  //     return {
+  //       key: copilot.id,
+  //       caption:
+  //         this.getTranslation('PAC.Copilot.Provider_' + provider?.caption, { Default: provider?.caption }) +
+  //         `(${this.getTranslation('PAC.KEY_WORDS.' + roleName, { Default: roleName })})`
+  //     }
+  //   })
+  // )
 
-  readonly copilot = computed(() => this.copilots()?.find((item) => item.id === this.copilotId()))
-  readonly provider = computed(() => this.copilot()?.provider)
+  // readonly copilotId = toSignal(
+  //   this.formGroup.get('copilotId').valueChanges.pipe(startWith(this.formGroup.value.copilotId))
+  // )
 
-  readonly models = computed(() => {
-    const copilot = this.copilot()
-    const models = AI_PROVIDERS[this.copilot()?.provider]?.models || []
-    const items = []
-    if (copilot) {
-      items.push({
-        key: copilot.defaultModel,
-        caption: models.find((_) => _.id === copilot.defaultModel)?.name
-      })
-      items.push(
-        ...models
-          .filter(
-            (_) =>
-              _.id !== copilot.defaultModel &&
-              (isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Embed))
-          )
-          .map((item) => ({
-            key: item.id,
-            caption: item.name
-          }))
-      )
-    }
-    return items
-  })
+  // readonly copilot = computed(() => this.copilots()?.find((item) => item.id === this.copilotId()))
+  // readonly provider = computed(() => this.copilot()?.provider)
+
+  // readonly models = computed(() => {
+  //   const copilot = this.copilot()
+  //   const models = AI_PROVIDERS[this.copilot()?.provider]?.models || []
+  //   const items = []
+  //   if (copilot) {
+  //     items.push({
+  //       key: copilot.defaultModel,
+  //       caption: models.find((_) => _.id === copilot.defaultModel)?.name
+  //     })
+  //     items.push(
+  //       ...models
+  //         .filter(
+  //           (_) =>
+  //             _.id !== copilot.defaultModel &&
+  //             (isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Embed))
+  //         )
+  //         .map((item) => ({
+  //           key: item.id,
+  //           caption: item.name
+  //         }))
+  //     )
+  //   }
+  //   return items
+  // })
 
   readonly loading = signal(false)
 
@@ -155,7 +160,9 @@ export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   save() {
     this.loading.set(true)
     this.knowledgebaseService
-      .update(this.knowledgebase().id, { ...this.formGroup.value } as Partial<IKnowledgebase>)
+      .update(this.knowledgebase().id, {
+        ...this.formGroup.value,
+      } as Partial<IKnowledgebase>)
       .subscribe({
         next: () => {
           this.formGroup.markAsPristine()

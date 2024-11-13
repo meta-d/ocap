@@ -23,6 +23,9 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 		super(repository)
 	}
 
+	/**
+	 * To solve the problem that Update cannot create OneToOne relation, it is uncertain whether using save to update might pose risks
+	 */
 	async update(id: string, entity: Partial<Xpert>) {
 		const _entity = await super.findOne(id)
 		assign(_entity, entity)

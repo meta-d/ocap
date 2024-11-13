@@ -1,10 +1,11 @@
+import { ModelType } from '@metad/contracts'
 import { ConfigModule } from '@metad/server-config'
 import { Injectable, Module } from '@nestjs/common'
-import { PROVIDE_AI_MODEL_LLM } from '../../types/types'
 import { ModelProvider } from '../../ai-provider'
+import { PROVIDE_AI_MODEL_LLM, PROVIDE_AI_MODEL_TEXT_EMBEDDING } from '../../types/types'
 import { CredentialsValidateFailedError } from '../errors'
 import { OpenAILargeLanguageModel } from './llm/llm'
-import { ModelType } from '@metad/contracts'
+import { OpenAITextEmbeddingModel } from './text-embedding/text-embedding'
 
 @Injectable()
 export class OpenAIProvider extends ModelProvider {
@@ -14,7 +15,7 @@ export class OpenAIProvider extends ModelProvider {
 
 	async validateProviderCredentials(credentials: Record<string, any>): Promise<void> {
 		try {
-			const modelInstance = this.getModelInstance(ModelType.LLM)
+			const modelInstance = this.getModelManager(ModelType.LLM)
 
 			// 使用 `gpt-3.5-turbo` 模型进行验证，
 			// 无论您传入什么模型，文本补全模型或聊天模型
@@ -41,6 +42,10 @@ export class OpenAIProvider extends ModelProvider {
 		{
 			provide: PROVIDE_AI_MODEL_LLM,
 			useClass: OpenAILargeLanguageModel
+		},
+		{
+			provide: PROVIDE_AI_MODEL_TEXT_EMBEDDING,
+			useClass: OpenAITextEmbeddingModel
 		}
 	],
 	exports: [ModelProvider, OpenAIProvider]

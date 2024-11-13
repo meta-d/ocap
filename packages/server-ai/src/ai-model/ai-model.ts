@@ -1,17 +1,12 @@
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIModelEntity, FetchFrom, ICopilotModel, ModelType, ParameterRule } from '@metad/contracts'
 import { Injectable, Logger } from '@nestjs/common'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import * as path from 'path'
 import { ModelProvider } from './ai-provider'
-import {
-	DefaultParameterName,
-	PARAMETER_RULE_TEMPLATE,
-	PriceInfo,
-	PriceType,
-	valueOf
-} from './entities'
-import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { DefaultParameterName, PARAMETER_RULE_TEMPLATE, PriceInfo, PriceType, valueOf } from './entities'
 import { TChatModelOptions } from './types/types'
 
 @Injectable()
@@ -119,16 +114,16 @@ export abstract class AIModel {
 		}
 
 		if (credentials) {
-			return this.getCustomizableModelSchemaFromCredentials(model, credentials)
+			// return this.getCustomizableModelSchemaFromCredentials(model, credentials)
 		}
 
 		return null
 	}
 
-	protected abstract getCustomizableModelSchemaFromCredentials(
-		model: string,
-		credentials: Record<string, any>
-	): AIModelEntity | null
+	// protected getCustomizableModelSchemaFromCredentials(
+	// 	model: string,
+	// 	credentials: Record<string, any>
+	// ): AIModelEntity | null
 
 	private processParameterRules(yamlData: Record<string, any>): void {
 		const newParameterRules: any[] = []
@@ -171,7 +166,6 @@ export abstract class AIModel {
 		const modelSchema = this.getModelSchema(model, credentials)
 		return modelSchema?.parameter_rules ?? []
 	}
-
 }
 
 function getDefaultParameterRuleVariableMap(name: DefaultParameterName): ParameterRule {

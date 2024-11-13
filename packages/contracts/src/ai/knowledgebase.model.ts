@@ -1,7 +1,6 @@
-import { AiProvider } from './ai.model'
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { ICopilot } from './copilot.model'
 import { IStorageFile } from '../storage-file.model'
+import { ICopilotModel } from './copilot-model.model'
 import { TAvatar } from './types'
 
 export type KnowledgebaseParserConfig = {
@@ -16,7 +15,6 @@ export type KnowledgebaseParserConfig = {
  * Knowledgebase
  */
 export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel {
-
   /**
    * KB name
    */
@@ -39,11 +37,20 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
    */
   permission?: KnowledgebasePermission
 
-  aiProvider?: AiProvider
+  // /**
+  //  * @deprecated use copilotModel
+  //  */
+  // aiProvider?: AiProvider
+  // /**
+  //  * @deprecated use copilotModel
+  //  */
+  // embeddingModelId?: string
+
   /**
-   * default embedding model ID
+   * Copilot model for knowledgebase
    */
-  embeddingModelId?: string
+  copilotModel?: ICopilotModel
+  copilotModelId?: string
 
   documentNum?: number | null
   tokenNum?: number | null
@@ -51,19 +58,25 @@ export interface IKnowledgebase extends IBasePerTenantAndOrganizationEntityModel
   /**
    *
    */
-  similarityThreshold: number
-  vectorSimilarityWeight: number
+  similarityThreshold?: number
+  vectorSimilarityWeight?: number
   /**
    * default parser ID
    */
-  parserId: string
+  parserId?: string
 
-  parserConfig: KnowledgebaseParserConfig
+  parserConfig?: KnowledgebaseParserConfig
 
-  status: string
+  status?: string
 
-  copilotId?: string
-  copilot?: ICopilot
+  // /**
+  //  * @deprecated use copilotModel
+  //  */
+  // copilotId?: string
+  // /**
+  //  * @deprecated use copilotModel
+  //  */
+  // copilot?: ICopilot
 }
 
 export enum KnowledgebasePermission {

@@ -1,23 +1,23 @@
 import { PGVectorStore } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
-import { ICopilot, IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
+import { Embeddings } from '@langchain/core/embeddings'
+import { IKnowledgebase, IKnowledgeDocument } from '@metad/contracts'
 import { Pool } from 'pg'
-import { createEmbeddings } from '../copilot'
 
 export class KnowledgeDocumentVectorStore extends PGVectorStore {
-	private model: string | null= null
+	private model: string | null = null
 
 	get embeddingModel() {
-		return this.knowledgebase.embeddingModelId || this.copilot?.defaultModel
+		return getCopilotModel(this.knowledgebase)
 	}
 
 	constructor(
+		embeddings: Embeddings,
 		public knowledgebase: IKnowledgebase,
 		public pgPool: Pool,
-		public copilot?: ICopilot,
 	) {
-		const model = knowledgebase.embeddingModelId || copilot?.defaultModel
-		const embeddings = copilot ? createEmbeddings(copilot, { model }) : null
+		const model = getCopilotModel(knowledgebase)
+		// const embeddings = knowledgebase.copilotModel?.copilot ? createEmbeddings(knowledgebase.copilotModel?.copilot, { model }) : null
 
 		super(embeddings, {
 			pool: pgPool,
@@ -37,24 +37,25 @@ export class KnowledgeDocumentVectorStore extends PGVectorStore {
 
 	async getChunks(knowledgeId: string) {
 		const filter = { knowledgeId }
-		let collectionId;
+		let collectionId: string
 		if (this.collectionTableName) {
-		  collectionId = await this.getOrCreateCollection();
+			collectionId = await this.getOrCreateCollection()
 		}
-	
+
 		// Set parameters of dynamically generated query
-		const params = collectionId ? [filter, collectionId] : [filter];
-	
+		const params = collectionId ? [filter, collectionId] : [filter]
+
 		const queryString = `
 		  SELECT * FROM ${this.computedTableName}
-		  WHERE ${collectionId ? "collection_id = $2 AND " : ""}${
-		  this.metadataColumnName
-		}::jsonb @> $1
-		`;
+		  WHERE ${collectionId ? 'collection_id = $2 AND ' : ''}${this.metadataColumnName}::jsonb @> $1
+		`
 		return (await this.pool.query(queryString, params)).rows
 	}
 
-	async addKnowledgeDocument(knowledgeDocument: IKnowledgeDocument, documents: Document<Record<string, any>>[]): Promise<void> {
+	async addKnowledgeDocument(
+		knowledgeDocument: IKnowledgeDocument,
+		documents: Document<Record<string, any>>[]
+	): Promise<void> {
 		documents.forEach((item) => {
 			item.metadata.knowledgeId = knowledgeDocument.id
 			item.metadata.model = this.model
@@ -81,4 +82,8 @@ export class KnowledgeDocumentVectorStore extends PGVectorStore {
 		await super.ensureTableInDatabase()
 		await super.ensureCollectionTableInDatabase()
 	}
+}
+
+function getCopilotModel(knowledgebase: IKnowledgebase) {
+	return knowledgebase.copilotModel?.model || knowledgebase.copilotModel?.copilot?.defaultModel
 }

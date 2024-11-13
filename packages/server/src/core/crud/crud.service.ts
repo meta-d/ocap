@@ -21,6 +21,7 @@ import { ITryRequest } from './try-request';
 import { filterQuery } from './query-builder';
 import { RequestContext } from '../context';
 import { FindOptionsWhere } from './FindOptionsWhere';
+import { getErrorMessage } from '@metad/server-common';
 
 export abstract class CrudService<T extends BaseEntity>
 	implements ICrudService<T> {
@@ -250,7 +251,7 @@ export abstract class CrudService<T extends BaseEntity>
 				updatedById: userId ?? partialEntity.updatedById
 			});
 		} catch (err /*: WriteError*/) {
-			throw new BadRequestException(err);
+			throw new BadRequestException(getErrorMessage(err));
 		}
 	}
 

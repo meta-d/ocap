@@ -15,6 +15,6 @@ export class ModelParameterRulesHandler implements IQueryHandler<ModelParameterR
 
 		const modelProvider = this.providersService.getProvider(provider)
 
-		return modelProvider.getModelInstance(modelType)?.getParameterRules(model, null)
+		return modelProvider.getModelManager(modelType)?.getParameterRules(model, null)
 	}
 }

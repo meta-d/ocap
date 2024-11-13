@@ -32,13 +32,13 @@ describe('AIProviderModule', () => {
 
     it('should get OpenAILargeLanguageModel instance', async () => {
 		const modelInstance = provider.getProvider('openai')
-        const llmModel = modelInstance.getModelInstance(ModelType.LLM)
+        const llmModel = modelInstance.getModelManager(ModelType.LLM)
 		expect(llmModel).toBeInstanceOf(OpenAILargeLanguageModel)
 	})
 
 	it('should get model predefinedModels', async () => {
 		const modelInstance = provider.getProvider('openai')
-        const llmModel = modelInstance.getModelInstance(ModelType.LLM)
+        const llmModel = modelInstance.getModelManager(ModelType.LLM)
 		const models = llmModel.predefinedModels()
 		console.log(models)
 		expect(models).not.toBeNull()

@@ -1,3 +1,5 @@
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIModelEntity, ICopilotModel, IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
 import { ConfigService } from '@metad/server-config'
 import { loadYamlFile } from '@metad/server-core'
@@ -6,6 +8,8 @@ import * as path from 'path'
 import { AIModel } from './ai-model'
 import { AIProviderRegistry } from './registry'
 import { TChatModelOptions } from './types/types'
+import { TextEmbeddingModelManager } from './types/text-embedding-model'
+import { Embeddings } from '@langchain/core/embeddings'
 
 @Injectable()
 export abstract class ModelProvider {
@@ -17,7 +21,7 @@ export abstract class ModelProvider {
 
 	protected providerSchema: IProviderEntity | null = null
 
-	protected modelInstances: Map<ModelType, AIModel> = new Map()
+	protected modelManagers: Map<ModelType, AIModel> = new Map()
 
 	constructor(public name: string) {
 		AIProviderRegistry.getInstance().registerProvider(this)
@@ -53,22 +57,22 @@ export abstract class ModelProvider {
 			return []
 		}
 
-		const modelInstance = this.getModelInstance(modelType)
+		const modelInstance = this.getModelManager(modelType)
 		return modelInstance.predefinedModels()
 	}
 
 	registerAIModelInstance(modelType: ModelType, modelInstance: AIModel): void {
-		this.modelInstances.set(modelType, modelInstance)
+		this.modelManagers.set(modelType, modelInstance)
 	}
 
-	getModelInstance(modelType: ModelType): AIModel {
-		const modelInstance = this.modelInstances.get(modelType)
+	getModelManager<T extends AIModel>(modelType: ModelType): T {
+		const modelInstance = this.modelManagers.get(modelType)
 
 		if (!modelInstance) {
 			throw new Error(`Missing AIModel instance for model type ${modelType}`)
 		}
 
-		return modelInstance
+		return modelInstance as T
 	}
 
 	/**
@@ -98,15 +102,28 @@ export abstract class ModelProvider {
 	getSystemProviderModels(modelTypes: ModelType[]) {
 		const models = []
 		modelTypes?.forEach((modelType) => {
-			const modelInstance = this.modelInstances.get(modelType)
-			if (modelInstance) {
-				models.push(...modelInstance.predefinedModels())
+			const modelManager = this.modelManagers.get(modelType)
+			if (modelManager) {
+				models.push(...modelManager.predefinedModels())
 			}
 		})
 		return models
 	}
 
 	getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions) {
-		return this.getModelInstance(ModelType.LLM)?.getChatModel(copilotModel, options)
+		return this.getModelManager(ModelType.LLM)?.getChatModel(copilotModel, options)
+	}
+
+	getModelInstance(
+		type: ModelType,
+		copilotModel: ICopilotModel,
+		options?: TChatModelOptions
+	): BaseLanguageModel | BaseChatModel | Embeddings {
+		if (type === ModelType.LLM) {
+			return this.getModelManager(type)?.getChatModel(copilotModel, options)
+		} else if (type === ModelType.TEXT_EMBEDDING) {
+			return this.getModelManager<TextEmbeddingModelManager>(type)?.getEmbeddingInstance(copilotModel)
+		}
+		return null
 	}
 }
