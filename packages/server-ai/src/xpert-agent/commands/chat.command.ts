@@ -1,4 +1,4 @@
-import { IXpert, IXpertAgentExecution } from '@metad/contracts'
+import { IXpert, IXpertAgentExecution, TChatOptions } from '@metad/contracts'
 import { ICommand } from '@nestjs/cqrs'
 
 /**
@@ -15,7 +15,7 @@ export class XpertAgentChatCommand implements ICommand {
 		public readonly agentKey: string,
 		
 		public readonly xpert: Partial<IXpert>,
-		public readonly options: {
+		public readonly options: TChatOptions & {
 			// Use xpert's draft
 			isDraft?: boolean
 			/**

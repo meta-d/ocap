@@ -11,6 +11,7 @@ import { ChatConversationUpsertCommand } from '../../../chat-conversation/comman
 import {
 	XpertAgentExecutionUpsertCommand
 } from '../../../xpert-agent-execution/commands'
+import { MessageContent } from '@langchain/core/messages'
 
 @CommandHandler(XpertChatCommand)
 export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
@@ -23,8 +24,8 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 	) {}
 
 	public async execute(command: XpertChatCommand): Promise<Observable<MessageEvent>> {
-		const { xpertId, input, options } = command
-		const { conversationId } = options
+		const { options } = command
+		const { xpertId, input, conversationId } = command.request
 
 		const timeStart = Date.now()
 
@@ -32,7 +33,7 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 
 		const userMessage: CopilotChatMessage = {
 			id: shortuuid(),
-			role: 'user',
+			role: 'human',
 			content: input.input,
 		}
 		let conversation: IChatConversation
@@ -67,6 +68,12 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 			)
 		}
 
+		const aiMessage: CopilotChatMessage = {
+			id: shortuuid(),
+			role: 'ai',
+			content: ``,
+		}
+
 		let status = XpertAgentExecutionEnum.SUCCEEDED
 		let error = null
 		let result = ''
@@ -74,7 +81,8 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 		return (
 			await this.commandBus.execute<XpertAgentChatCommand, Promise<Observable<MessageEvent>>>(
 				new XpertAgentChatCommand(input, xpert.agent.key, xpert, {
-					isDraft: options.isDraft,
+					...(options ?? {}),
+					isDraft: options?.isDraft,
 					execution: conversation.execution
 				})
 			)
@@ -82,7 +90,10 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 			tap({
 				next: (event) => {
 					if (event.data.type === ChatMessageTypeEnum.MESSAGE) {
-						result += event.data.data
+						appendMessageContent(aiMessage, event.data.data)
+						if (typeof event.data.data === 'string') {
+						  result += event.data.data
+						}
 					}
 				},
 				error: (err) => {
@@ -99,11 +110,7 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 								...conversation,
 								messages: [
 									...conversation.messages,
-									{
-										id: shortuuid(),
-										role: 'assistant',
-										content: result
-									}
+									aiMessage
 								],
 								execution: {
 									...conversation.execution,
@@ -122,5 +129,42 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 				}
 			})
 		)
+	}
+}
+
+function appendMessageContent(aiMessage: CopilotChatMessage, content: MessageContent) {
+	const _content = aiMessage.content
+	if (typeof content === 'string') {
+		if (typeof _content === 'string') {
+			aiMessage.content = _content + content
+		} else if (Array.isArray(_content)) {
+			const lastContent = _content[_content.length - 1]
+			if (lastContent.type === 'text') {
+				lastContent.text = lastContent.text + content
+			} else {
+				_content.push({
+					type: 'text',
+					text: content
+				})
+			}
+		} else {
+			aiMessage.content = content
+		}
+	} else {
+		if (Array.isArray(_content)) {
+			_content.push(content)
+		} else if(_content) {
+			aiMessage.content = [
+				{
+					type: 'text',
+					text: _content
+				},
+				content
+			]
+		} else {
+			aiMessage.content = [
+				content
+			]
+		}
 	}
 }

@@ -1,33 +1,34 @@
 <form class="mx-4 lg:mx-auto my-8 flex flex-col justify-start lg:w-[600px]" [formGroup]="form">
   <div class="pt-2">
-    <div class="py-2 font-medium leading-[20px] text-gray-900">图标 &amp; 名称</div>
+    <div class="py-2 font-medium leading-[20px] text-gray-900">{{ 'PAC.Xpert.Icon' | translate: {Default: 'Icon'} }} &amp; {{ 'PAC.Xpert.Name' | translate: {Default: 'Name'} }}</div>
     <div class="flex items-center justify-between space-x-2">
   
       <emoji-avatar editable formControlName="avatar" class="rounded-lg overflow-hidden shadow-sm" />
   
-      <input matInput placeholder="给你的专家起个名字" class="grow h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg border border-transparent outline-none appearance-none caret-primary-600 placeholder:text-gray-400 hover:bg-gray-50 hover:border hover:border-gray-300 focus:bg-gray-50 focus:border focus:border-gray-300 focus:shadow-xs"
+      <input matInput
+        class="grow h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg border border-transparent outline-none appearance-none caret-primary-600 placeholder:text-gray-400 hover:bg-gray-50 hover:border hover:border-gray-300 focus:bg-gray-50 focus:border focus:border-gray-300 focus:shadow-xs"
         [value]="name"
         disabled
-        >
+      >
     </div>
   </div>
   
   <div class="pt-2">
-    <div class="py-2 font-medium leading-[20px] text-gray-900">标题</div>
-    <input matInput placeholder="标题" class="w-full h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg border border-transparent outline-none appearance-none caret-primary-600 placeholder:text-gray-400 hover:bg-gray-50 hover:border hover:border-gray-300 focus:bg-gray-50 focus:border focus:border-gray-300 focus:shadow-xs"
+    <div class="py-2 font-medium leading-[20px] text-gray-900">{{ 'PAC.Xpert.Title' | translate: {Default: 'Title'} }}</div>
+    <input matInput [placeholder]="'PAC.Xpert.EnterTitle' | translate: {Default: 'Enter title'}" class="w-full h-10 px-3 text-sm font-normal bg-gray-100 rounded-lg border border-transparent outline-none appearance-none caret-primary-600 placeholder:text-gray-400 hover:bg-gray-50 hover:border hover:border-gray-300 focus:bg-gray-50 focus:border focus:border-gray-300 focus:shadow-xs"
       formControlName="title">
   </div>
   
   <div class="pt-2">
-    <div class="py-2 font-medium leading-[20px] text-gray-900">描述</div>
+    <div class="py-2 font-medium leading-[20px] text-gray-900">{{ 'PAC.Xpert.Description' | translate: {Default: 'Description'} }}</div>
     <textarea matInput class="w-full px-3 py-2 text-sm font-normal bg-gray-100 rounded-lg border border-transparent outline-none appearance-none caret-primary-600 placeholder:text-gray-400 hover:bg-gray-50 hover:border hover:border-gray-300 focus:bg-gray-50 focus:border focus:border-gray-300 focus:shadow-xs h-[80px] resize-none"
-      placeholder="输入应用的描述"
+      [placeholder]="'PAC.Xpert.EnterXpertDesc' | translate: {Default: 'Enter xpert description'}"
       formControlName="description"
-      ></textarea>
+    ></textarea>
   </div>
   
   <div class="pt-2">
-    <div class="py-2 font-medium leading-[20px] text-gray-900">Tags</div>
+    <div class="py-2 font-medium leading-[20px] text-gray-900">{{'PAC.Xpert.Tags' | translate: {Default: 'Tags'} }}</div>
     <tag-select [category]="eTagCategoryEnum.XPERT" formControlName="tags"></tag-select>
   </div>
   
@@ -65,10 +66,12 @@
       (click)="saveDraft()"
     >
       <span>
-        保存至草稿
+        {{ 'PAC.Xpert.SaveDraft' | translate: {Default: 'Save draft'} }}
       </span>
 
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="inline-block w-4 h-4 ml-0.5"><path d="M20 2C20.5523 2 21 2.44772 21 3V6.757L19 8.757V4H5V20H19V17.242L21 15.242V21C21 21.5523 20.5523 22 20 22H4C3.44772 22 3 21.5523 3 21V3C3 2.44772 3.44772 2 4 2H20ZM21.7782 8.80761L23.1924 10.2218L15.4142 18L13.9979 17.9979L14 16.5858L21.7782 8.80761ZM13 12V14H8V12H13ZM16 8V10H8V8H16Z"></path></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="inline-block w-4 h-4 ml-0.5">
+        <path d="M20 2C20.5523 2 21 2.44772 21 3V6.757L19 8.757V4H5V20H19V17.242L21 15.242V21C21 21.5523 20.5523 22 20 22H4C3.44772 22 3 21.5523 3 21V3C3 2.44772 3.44772 2 4 2H20ZM21.7782 8.80761L23.1924 10.2218L15.4142 18L13.9979 17.9979L14 16.5858L21.7782 8.80761ZM13 12V14H8V12H13ZM16 8V10H8V8H16Z"></path>
+      </svg>
     </button>
   </div>
 </form>

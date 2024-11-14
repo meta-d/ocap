@@ -9,11 +9,12 @@
         [class.cdk-option-selected]="option.isSelected()"
         [cdkOptionDisabled]="disabled()"
       >
-        @if (option.isSelected()) {
-          <mat-icon class="absolute left-1" fontSet="material-icons-outlined" color="accent">check_small</mat-icon>
-        }
-        <pac-avatar [avatar]="item.avatar" class="shrink-0 mr-2 w-6 h-6 overflow-hidden rounded-full" />
+        <emoji-avatar [avatar]="item.avatar" small class="shrink-0 mr-2 rounded-lg overflow-hidden" />
         <span class="whitespace-nowrap text-ellipsis overflow-hidden" [title]="item.name">{{item.name}}</span>
+
+        @if (option.isSelected()) {
+          <mat-icon class="absolute right-1" fontSet="material-icons-outlined" color="accent">check_small</mat-icon>
+        }
       </li>
     }
   </ul>

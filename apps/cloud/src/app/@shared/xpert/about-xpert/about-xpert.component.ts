@@ -2,11 +2,9 @@ import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog'
-import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { AvatarComponent } from '../../files/avatar/avatar.component'
 import { MaterialModule } from '../../material.module'
-import { IXpertRole } from '../../../@core'
+import { IXpert } from '../../../@core'
 import { KnowledgebaseCardComponent } from '../../copilot'
 import { ToolsetCardComponent } from '../toolset-card/toolset.component'
 import { EmojiAvatarComponent } from "../../avatar/emoji-avatar/avatar.component";
@@ -23,9 +21,6 @@ import { EmojiAvatarComponent } from "../../avatar/emoji-avatar/avatar.component
     ReactiveFormsModule,
     MaterialModule,
     TranslateModule,
-    ButtonGroupDirective,
-    AppearanceDirective,
-    DensityDirective,
     KnowledgebaseCardComponent,
     ToolsetCardComponent,
     EmojiAvatarComponent
@@ -34,10 +29,10 @@ import { EmojiAvatarComponent } from "../../avatar/emoji-avatar/avatar.component
 export class AboutXpertComponent {
   private readonly _dialog = inject(MatDialog)
   readonly #dialogRef = inject(MatDialogRef)
-  private readonly _data = inject<{ role: IXpertRole }>(MAT_DIALOG_DATA)
+  private readonly _data = inject<{ xpert: IXpert }>(MAT_DIALOG_DATA)
 
-  get role() {
-    return this._data.role
+  get xpert() {
+    return this._data.xpert
   }
   
   onStart(statement: string): void {

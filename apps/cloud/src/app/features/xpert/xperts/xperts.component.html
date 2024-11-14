@@ -214,7 +214,7 @@
     />
 
     @for (toolset of apiToolsets(); track toolset.id) {
-      <xpert-toolset-card class="col-span-1 cursor-pointer bg-components-card-bg"
+      <xpert-toolset-card class="col-span-1 min-h-[160px] cursor-pointer bg-components-card-bg"
         [toolset]="toolset"
         (click)="navigateTo(toolset)"
       />
@@ -230,7 +230,7 @@
 
   <div class="xpert-card-container">
     @for (toolset of builtinToolsets(); track toolset.id) {
-      <xpert-toolset-card class="col-span-1 cursor-pointer bg-components-card-bg"
+      <xpert-toolset-card class="col-span-1 min-h-[160px] cursor-pointer bg-components-card-bg"
         [toolset]="toolset"
         (click)="navigateTo(toolset)"
       />

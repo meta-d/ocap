@@ -1,4 +1,4 @@
-import { TXpertTeamDraft } from '@metad/contracts'
+import { TChatRequest, TXpertTeamDraft } from '@metad/contracts'
 import { CrudController, OptionParams, PaginationParams, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
 import {
 	Body,
@@ -101,11 +101,13 @@ export class XpertController extends CrudController<Xpert> {
 	@Header('content-type', 'text/event-stream')
 	@Post(':id/chat')
 	@Sse()
-	async chat(@Param('id') id: string, @Body() body: {input: {
-		input?: string
-		[key: string]: unknown
-	}; draft: boolean; conversationId?: string;}) {
-		return await this.commandBus.execute(new XpertChatCommand(body.input, id, body))
+	async chat(@Param('id') id: string, @Body() body: {
+		request: TChatRequest;
+		options: {
+			isDraft: boolean;
+		}
+	}) {
+		return await this.commandBus.execute(new XpertChatCommand(body.request, body.options))
 	}
 
 	@ApiOperation({ summary: 'Delete record' })

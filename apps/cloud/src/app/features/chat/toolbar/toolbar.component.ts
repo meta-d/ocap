@@ -47,7 +47,7 @@ export class ChatToolbarComponent {
   readonly chatInput = input<ChatInputComponent>()
 
   readonly lang = this.appService.lang
-  readonly _role = toSignal(this.chatService.role$)
+  readonly _role = toSignal(this.chatService.xpert$)
 
   readonly allKnowledgebases = toSignal(
     combineLatest([this.knowledgebaseService.getMyAllInOrg(), this.knowledgebaseService.getAllByPublicInOrg()]).pipe(
@@ -63,7 +63,7 @@ export class ChatToolbarComponent {
   readonly toolsetList = computed(() => this._role()?.toolsets)
   readonly toolsets = this.chatService.toolsets
 
-  readonly role = this.chatService.role
+  readonly xpert = this.chatService.xpert
   readonly disabled = computed(() => !!this.chatService.conversation()?.id)
 
   // constructor() {
@@ -74,7 +74,7 @@ export class ChatToolbarComponent {
     this.#dialog
       .open(AboutXpertComponent, {
         data: {
-          role: this.role()
+          xpert: this.xpert()
         }
       })
       .afterClosed()

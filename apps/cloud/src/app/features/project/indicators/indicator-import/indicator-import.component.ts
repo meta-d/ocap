@@ -7,7 +7,7 @@ import { AppearanceDirective, ButtonGroupDirective, ISelectOption, NgmDSCoreServ
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { Indicator, assign, isNil, isString, omitBy } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { IndicatorsService, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
+import { IndicatorsService, SemanticModelServerService, NgmSemanticModel } from '@metad/cloud/state'
 import { ToastrService, getErrorMessage, registerModel } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { combineLatest, firstValueFrom } from 'rxjs'
@@ -31,7 +31,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 })
 export class IndicatorImportComponent {
   private readonly data = inject(MAT_DIALOG_DATA)
-  private readonly modelsService = inject(ModelsService)
+  private readonly modelsService = inject(SemanticModelServerService)
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly wasmAgent = inject(WasmAgentService)
   private readonly indicatorsService = inject(IndicatorsService)

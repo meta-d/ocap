@@ -1,12 +1,11 @@
-import { IUser } from '../user.model'
 import { I18nObject } from './ai-model.model'
-import { AiProviderRole, ICopilot } from './copilot.model'
+import { AiProviderRole } from './copilot.model'
 import { TAvatar } from './types'
 import { IXpertTool, XpertToolType } from './xpert-tool.model'
-import { IXpert } from './xpert.model'
 import { IBasePerWorkspaceEntityModel } from './xpert-workspace.model'
 import { ITag } from '../tag-entity.model'
 import { TCopilotModel } from './copilot-model.model'
+import { Subscriber } from 'rxjs'
 
 
 export enum XpertToolsetCategoryEnum {
@@ -64,93 +63,96 @@ export type TXpertToolsetOptions = {
 }
 
 /**
+ * Context env when tool call in langchain.js
  */
 export type XpertToolContext = {
   tenantId: string
   organizationId?: string
-  user: IUser
+  userId: string
   copilotModel: TCopilotModel
   chatModel: unknown // BaseChatModel in langchain
+  tool_call_id: string
+  subscriber: Subscriber<MessageEvent>
 }
 
-export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()
+// export const TOOLSET_TYPES = new Map<string, IXpertToolset & { schema?: any }>()
 
-TOOLSET_TYPES.set('ChatDB', {
-  name: 'ChatDB',
-  description: 'ChatDB Tools.',
-  category: 'command',
-  avatar: { url: '/assets/images/chatbi.jpg' },
-  aiProviderRole: AiProviderRole.Primary,
-  // schema: {
-  //   type: 'object',
-  //   properties: {
-  //     dataSourceId: { type: 'string', title: 'DataSource Id' },
-  //     schema: { type: 'string', title: 'Schema' }
-  //   },
-  //   required: [],
-  //   secret: []
-  // },
-  tools: [
-    {
-      name: 'ListTables',
-      description: 'List tables',
-      // schema: zodToJsonSchema(
-      //   z.object({
-      //     // dataSourceId: z.string().describe('The id of dataSource'),
-      //     // schema: z.string().describe('The schema in dataSource db'),
-      //   })
-      // )
-    },
-    {
-      name: 'QuerySchema',
-      description: 'Query schema for tables',
-      // schema: zodToJsonSchema(
-      //   z.object({
-      //     // dataSourceId: z.string().describe('The id of dataSource'),
-      //     // schema: z.string().describe('The schema in dataSource db'),
-      //     tables: z.array(z.string()).describe('The tables to query')
-      //   })
-      // )
-    },
-    {
-      name: 'QuerySql',
-      description: 'Execute SQL statement of query',
-      // schema: zodToJsonSchema(
-      //   z.object({
-      //     query: z.string().describe('The sql statement of query')
-      //   })
-      // )
-    }
-  ]
-})
+// TOOLSET_TYPES.set('ChatDB', {
+//   name: 'ChatDB',
+//   description: 'ChatDB Tools.',
+//   category: 'command',
+//   avatar: { url: '/assets/images/chatbi.jpg' },
+//   aiProviderRole: AiProviderRole.Primary,
+//   // schema: {
+//   //   type: 'object',
+//   //   properties: {
+//   //     dataSourceId: { type: 'string', title: 'DataSource Id' },
+//   //     schema: { type: 'string', title: 'Schema' }
+//   //   },
+//   //   required: [],
+//   //   secret: []
+//   // },
+//   tools: [
+//     {
+//       name: 'ListTables',
+//       description: 'List tables',
+//       // schema: zodToJsonSchema(
+//       //   z.object({
+//       //     // dataSourceId: z.string().describe('The id of dataSource'),
+//       //     // schema: z.string().describe('The schema in dataSource db'),
+//       //   })
+//       // )
+//     },
+//     {
+//       name: 'QuerySchema',
+//       description: 'Query schema for tables',
+//       // schema: zodToJsonSchema(
+//       //   z.object({
+//       //     // dataSourceId: z.string().describe('The id of dataSource'),
+//       //     // schema: z.string().describe('The schema in dataSource db'),
+//       //     tables: z.array(z.string()).describe('The tables to query')
+//       //   })
+//       // )
+//     },
+//     {
+//       name: 'QuerySql',
+//       description: 'Execute SQL statement of query',
+//       // schema: zodToJsonSchema(
+//       //   z.object({
+//       //     query: z.string().describe('The sql statement of query')
+//       //   })
+//       // )
+//     }
+//   ]
+// })
 
-TOOLSET_TYPES.set('ChatBI', {
-  name: 'ChatBI',
-  description: 'Chat with BI.',
-  category: 'command',
-  avatar: { url: '/assets/images/chatbi.jpg' },
-  aiProviderRole: AiProviderRole.Primary,
-  // schema: {
-  //   type: 'object',
-  //   properties: {},
-  //   required: [],
-  //   secret: []
-  // },
-  tools: [
-    {
-      name: 'ChatBI',
-      description: 'ChatBI Command Tool',
-      // schema: zodToJsonSchema(
-      //   z.object({
-      //     question: z.string().describe('The question to ask bi tool')
-      //   })
-      // )
-    }
-  ]
-})
+// TOOLSET_TYPES.set('ChatBI', {
+//   name: 'ChatBI',
+//   description: 'Chat with BI.',
+//   category: 'command',
+//   avatar: { url: '/assets/images/chatbi.jpg' },
+//   aiProviderRole: AiProviderRole.Primary,
+//   // schema: {
+//   //   type: 'object',
+//   //   properties: {},
+//   //   required: [],
+//   //   secret: []
+//   // },
+//   tools: [
+//     {
+//       name: 'ChatBI',
+//       description: 'ChatBI Command Tool',
+//       // schema: zodToJsonSchema(
+//       //   z.object({
+//       //     question: z.string().describe('The question to ask bi tool')
+//       //   })
+//       // )
+//     }
+//   ]
+// })
 
 // 临时
-export const TOOLSETS: IXpertToolset[] = [
+// export const TOOLSETS: IXpertToolset[] = [
   // {
   //   id: '3',
   //   name: 'ChatBI',
@@ -216,55 +218,55 @@ export const TOOLSETS: IXpertToolset[] = [
   //     }
   //   ]
   // },
-  {
-    id: '5',
-    name: 'SearchApi',
-    description: 'SearchApi for Search',
-    avatar: { url: '/assets/icons/search-api.png' },
-    tools: [
-      {
-        name: 'SearchApi',
-        description: 'SearchApi for Search',
-        options: {
-          engine: 'google'
-        }
-      }
-    ]
-  },
-  {
-    id: '7',
-    name: 'ExaSearch',
-    description: 'Exa is a knowledge API for AI and developers.',
-    avatar: { url: '/assets/icons/exa-ai.png' },
-    tools: [
-      {
-        name: 'ExaSearch',
-        description: 'Search tool of Exa',
-        options: {
-          numResults: 2
-        }
-      }
-    ]
-  },
-  {
-    id: '8',
-    name: 'SearxngSearch',
-    description:
-      'SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.',
-    avatar: { url: '/assets/icons/searxng.svg' },
-    tools: [
-      {
-        name: 'SearxngSearch',
-        description:
-          'This tool is useful for performing meta-search engine queries using the SearxNG API. It is particularly helpful in answering questions about current events.',
-        options: {
-          apiBase: 'https://search.inetol.net/',
-          engines: 'google'
-        }
-      }
-    ]
-  }
-]
+//   {
+//     id: '5',
+//     name: 'SearchApi',
+//     description: 'SearchApi for Search',
+//     avatar: { url: '/assets/icons/search-api.png' },
+//     tools: [
+//       {
+//         name: 'SearchApi',
+//         description: 'SearchApi for Search',
+//         options: {
+//           engine: 'google'
+//         }
+//       }
+//     ]
+//   },
+//   {
+//     id: '7',
+//     name: 'ExaSearch',
+//     description: 'Exa is a knowledge API for AI and developers.',
+//     avatar: { url: '/assets/icons/exa-ai.png' },
+//     tools: [
+//       {
+//         name: 'ExaSearch',
+//         description: 'Search tool of Exa',
+//         options: {
+//           numResults: 2
+//         }
+//       }
+//     ]
+//   },
+//   {
+//     id: '8',
+//     name: 'SearxngSearch',
+//     description:
+//       'SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.',
+//     avatar: { url: '/assets/icons/searxng.svg' },
+//     tools: [
+//       {
+//         name: 'SearxngSearch',
+//         description:
+//           'This tool is useful for performing meta-search engine queries using the SearxNG API. It is particularly helpful in answering questions about current events.',
+//         options: {
+//           apiBase: 'https://search.inetol.net/',
+//           engines: 'google'
+//         }
+//       }
+//     ]
+//   }
+// ]
 
 export enum CredentialsType {
   SECRET_INPUT = 'secret-input',

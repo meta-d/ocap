@@ -1,6 +1,6 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
+import { convertNewSemanticModelResult, SemanticModelServerService, NgmSemanticModel } from '@metad/cloud/state'
 import { CopilotChatMessage, nanoid } from '@metad/copilot'
 import { markdownModelCube } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -26,7 +26,7 @@ import { QuestionAnswer } from './types'
 
 @Injectable()
 export class ChatbiService {
-  readonly #modelsService = inject(ModelsService)
+  readonly #modelsService = inject(SemanticModelServerService)
   readonly #dsCoreService = inject(NgmDSCoreService)
   readonly #wasmAgent = inject(WasmAgentService)
   readonly conversationService = inject(ChatBIConversationService)

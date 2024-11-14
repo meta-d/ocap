@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core'
 import { ActivatedRouteSnapshot, ResolveFn, Router, RouterStateSnapshot } from '@angular/router'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { EMPTY, Observable, catchError } from 'rxjs'
 import { ISemanticModel } from '../../../@core'
 
@@ -9,7 +9,7 @@ import { ISemanticModel } from '../../../@core'
  */
 @Injectable()
 export class StoryModelResolver  {
-  constructor(private modelsService: ModelsService) {}
+  constructor(private modelsService: SemanticModelServerService) {}
 
   resolve(
     route: ActivatedRouteSnapshot,
@@ -36,7 +36,7 @@ export const semanticModelResolver: ResolveFn<ISemanticModel> = (
   state: RouterStateSnapshot,
 ) => {
   const router = inject(Router)
-  return inject(ModelsService).getById(route.paramMap.get('id')!, [
+  return inject(SemanticModelServerService).getById(route.paramMap.get('id')!, [
     'dataSource',
     'dataSource.type',
     'stories',

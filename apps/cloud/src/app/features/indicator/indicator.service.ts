@@ -3,7 +3,7 @@ import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { getEntityDimensions, isEntityType } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { Indicator, IndicatorsService, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
+import { Indicator, IndicatorsService, SemanticModelServerService, NgmSemanticModel } from '@metad/cloud/state'
 import { includes, isString } from 'lodash-es'
 import { BehaviorSubject, EMPTY, combineLatest } from 'rxjs'
 import { catchError, filter, map, switchMap, tap } from 'rxjs/operators'
@@ -90,7 +90,7 @@ export class PACIndicatorService extends ComponentStore<IndicatorState> {
   })
   constructor(
     private indicatorsService: IndicatorsService,
-    private modelsService: ModelsService,
+    private modelsService: SemanticModelServerService,
     private dsCoreService: NgmDSCoreService,
     private wasmAgent: WasmAgentService
   ) {

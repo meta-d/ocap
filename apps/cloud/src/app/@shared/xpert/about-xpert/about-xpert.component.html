@@ -1,14 +1,14 @@
-<div class="p-8 flex flex-col justify-start items-center gap-4 max-w-full lg:max-w-md xl:max-w-xl">
-  <emoji-avatar [avatar]="role.avatar" class="rounded-lg shadow-sm overflow-hidden" />
+<div class="p-8 flex flex-col justify-start items-center gap-4 max-w-full min-w-[400px] lg:max-w-md xl:max-w-xl">
+  <emoji-avatar [avatar]="xpert.avatar" large class="rounded-xl shadow-sm overflow-hidden" />
 
-  <p class="text-xl">{{ role.title }}</p>
-  <p class="text-center text-token-text-secondary">{{ role.description }}</p>
-  <p class="text-sm text-token-text-secondary p-4 rounded-lg bg-black/5 dark:bg-white/10">{{ role.agent?.prompt }}</p>
+  <p class="text-xl">{{ xpert.title }}</p>
+  <p class="text-center text-token-text-secondary">{{ xpert.description }}</p>
+  <p class="text-sm text-token-text-secondary p-4 rounded-lg bg-black/5 dark:bg-white/10">{{ xpert.agent?.prompt }}</p>
   
   <div class="w-full flex flex-col items-start mb-8">
     <label class="text-lg font-bold">{{'PAC.KEY_WORDS.ConversationStarters' | translate: {Default: 'Conversation Starters'} }}</label>
     <div class="w-full mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
-    @for (statement of role.starters; track statement) {
+    @for (statement of xpert.starters; track statement) {
       @if (statement) {
         <div class="flex" tabindex="0">
           <a class="group relative cursor-pointer ml-2 h-14 flex-grow rounded-xl border border-token-border-medium bg-token-main-surface-primary px-4
@@ -49,22 +49,22 @@
     </div>
   </div>
   
-  @if (role.knowledgebases?.length) {
+  @if (xpert.knowledgebases?.length) {
     <div class="w-full flex flex-col mb-8">
       <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Knowledgebases' | translate: {Default: 'Knowledgebases'} }}</label>
       <div class="w-full mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
-        @for (knowledgebase of role.knowledgebases; track knowledgebase) {
+        @for (knowledgebase of xpert.knowledgebases; track knowledgebase) {
           <pac-knowledgebase-card [knowledgebase]="knowledgebase" />
         }
       </div>
     </div>
   }
 
-  @if (role.toolsets?.length) {
+  @if (xpert.toolsets?.length) {
     <div class="w-full flex flex-col mb-8">
       <label class="text-lg font-bold">{{'PAC.KEY_WORDS.Toolsets' | translate: {Default: 'Toolsets'} }}</label>
       <div class="mt-4 grid grid-cols-2 gap-x-1.5 gap-y-2">
-        @for (toolset of role.toolsets; track toolset) {
+        @for (toolset of xpert.toolsets; track toolset) {
           <xpert-toolset-card [toolset]="toolset" inline />
         }
       </div>

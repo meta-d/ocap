@@ -13,7 +13,7 @@ import {
 import { from, map, Observable, switchMap } from 'rxjs'
 import { Server, Socket } from 'socket.io'
 import { WsJWTGuard, WsUser } from '@metad/server-core'
-import { CancelChatCommand, ChatCommand } from './commands'
+import { CancelChatCommand, ChatWSCommand } from './commands'
 
 @WebSocketGateway({
 	namespace: 'chat',
@@ -57,7 +57,7 @@ export class ChatEventsGateway implements OnGatewayDisconnect {
 		// Chat
 		return from(
 			this.commandBus.execute(
-				new ChatCommand({
+				new ChatWSCommand({
 					...data,
 					tenantId: user.tenantId,
 					user,

@@ -50,12 +50,14 @@ import { Request, Response } from 'express'
 import { FindOneOptions } from 'typeorm'
 import { VisitCreateCommand } from '../visit/commands'
 import { SemanticModelCacheDeleteCommand, SemanticModelCreateCommand, SemanticModelUpdateCommand } from './commands'
-import { CreateSemanticModelDTO, SemanticModelPublicDTO, UpdateSemanticModelDTO } from './dto/index'
+import { CreateSemanticModelDTO, SemanticModelDTO, SemanticModelPublicDTO, UpdateSemanticModelDTO } from './dto/index'
 import { SemanticModel } from './model.entity'
 import { SemanticModelService } from './model.service'
 
+
 @ApiTags('SemanticModel')
 @ApiBearerAuth()
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller()
 export class ModelController extends CrudController<SemanticModel> {
 	constructor(private readonly modelService: SemanticModelService, private readonly commandBus: CommandBus) {
@@ -148,7 +150,7 @@ export class ModelController extends CrudController<SemanticModel> {
 				})
 			)
 
-			return model
+			return new SemanticModelDTO(model)
 		})
 	}
 

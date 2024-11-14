@@ -1,10 +1,9 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
-import { CopilotChatMessage } from '@metad/copilot'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NxWidgetKpiComponent } from '@metad/story/widgets/kpi'
@@ -12,9 +11,8 @@ import { TranslateModule } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
 import { Store } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
-import { ChatLoadingComponent } from '../../../@shared/copilot'
-import { AvatarComponent } from '../../../@shared/files/'
 import { ChatService } from '../chat.service'
+import { ChatHomeComponent } from '../home.component'
 
 @Component({
   standalone: true,
@@ -29,8 +27,6 @@ import { ChatService } from '../chat.service'
     MarkdownModule,
     MaterialModule,
     NgmCommonModule,
-    AvatarComponent,
-    ChatLoadingComponent,
     AnalyticalCardModule,
     NxWidgetKpiComponent
   ],
@@ -42,8 +38,9 @@ import { ChatService } from '../chat.service'
 export class ChatComponentMessageComponent {
   readonly #store = inject(Store)
   readonly chatService = inject(ChatService)
+  readonly homeComponent = inject(ChatHomeComponent)
 
-  readonly message = input<CopilotChatMessage>()
+  readonly message = input<any>()
 
   readonly data = computed(() => this.message()?.data as any)
 
@@ -55,4 +52,16 @@ export class ChatComponentMessageComponent {
       theme: this.primaryTheme()
     }
   })
+
+  readonly dataSource = computed(() => {
+    return this.data()?.dataSettings?.dataSource
+  })
+
+  constructor() {
+    effect(() => {
+      if (this.dataSource()) {
+        this.homeComponent.registerSemanticModel(this.dataSource())
+      }
+    }, { allowSignalWrites: true })
+  }
 }

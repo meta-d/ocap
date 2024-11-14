@@ -2,7 +2,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
-import { ChatGatewayEvent, ChatGatewayMessage, XpertToolContext, JSONValue, OrderTypeEnum, ChatMessageTypeEnum, ChatMessageEventTypeEnum } from '@metad/contracts'
+import { ChatGatewayEvent, ChatGatewayMessage, XpertToolContext, JSONValue, OrderTypeEnum, ChatMessageTypeEnum } from '@metad/contracts'
 import { AgentRecursionLimit, createAgentStepsInstructions, referencesCommandName } from '@metad/copilot'
 import {
 	Agent,
@@ -51,6 +51,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { omit, upperFirst } from 'lodash'
 import { Cache } from 'cache-manager'
 import { firstValueFrom, Subject, Subscriber, switchMap, takeUntil } from 'rxjs'
+import { In } from 'typeorm'
 import { ChatBIModelService } from '../../../chatbi-model/'
 import { createDimensionMemberRetriever, SemanticModelMemberService } from '../../../model-member'
 import {
@@ -64,7 +65,7 @@ import { ChatAnswer, createDimensionMemberRetrieverTool } from '../../tools'
 import { ChatAnswerSchema, GetCubesContextSchema, insightAgentState } from '../../types'
 import { ChatBIToolCommand } from '../chat-bi.command'
 import { markdownCubes } from '../../graph'
-import { In } from 'typeorm'
+
 
 
 const DefaultToolMaximumWaitTime = 30 * 1000 // 30s
@@ -102,7 +103,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 		const parentRunId = runManager?.parentRunId
 		const context = parentConfig.configurable as XpertToolChatBIContext
 
-		// console.log(`execute ChatBINewCommand`, args, config, context)
+		this.logger.verbose(`parentRunId=${parentRunId}, tool_call_id=${context.tool_call_id}`,)
 
 		const controller = new AbortController()
 		const abortEventListener = () => { controller.abort() }
@@ -120,7 +121,8 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 				//
 			})
 		const { tenantId, organizationId } = context
-		const { thread_id, subscriber } = parentConfig.configurable as { thread_id: string; subscriber: Subscriber<ChatGatewayMessage>}
+		const { thread_id } = parentConfig.configurable as { thread_id: string }
+		const { subscriber } = context
 
 		// Create graph
 		const agent = this.createGraphAgent(llm, context, dsCoreService, subscriber)
@@ -217,17 +219,17 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 						if (tools[rest.run_id]) {
 							content += '\n```json\n' + tools[rest.run_id] + '\n```'
 						}
-						subscriber?.next({
-							event: ChatGatewayEvent.Agent,
-							data: {
-								id: parentRunId,
-								message: {
-									id: rest.run_id,
-									role: 'tool',
-									content
-								}
-							}
-						})
+						// subscriber?.next({
+						// 	event: ChatGatewayEvent.Agent,
+						// 	data: {
+						// 		id: parentRunId,
+						// 		message: {
+						// 			id: rest.run_id,
+						// 			role: 'tool',
+						// 			content
+						// 		}
+						// 	}
+						// })
 						break
 					}
 				}
@@ -551,7 +553,7 @@ ${members}
 								type: ChatMessageTypeEnum.MESSAGE,
 								data: {
 									id: shortuuid(),
-									role: 'component',
+									type: 'component',
 									data: {
 										type: 'AnalyticalCard',
 										data: result.data,

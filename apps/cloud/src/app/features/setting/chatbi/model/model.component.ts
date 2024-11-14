@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormBuilder, FormControl, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { IsDirty } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
@@ -36,7 +36,7 @@ import { ChatBIModelsComponent } from '../models/models.component'
 export class ChatBIModelComponent extends UpsertEntityComponent<IChatBIModel> implements IsDirty {
   DisplayBehaviour = DisplayBehaviour
 
-  readonly modelsService = inject(ModelsService)
+  readonly modelsService = inject(SemanticModelServerService)
   readonly chatbiModelService = inject(ChatBIModelService)
   readonly roleService = inject(XpertService)
   readonly integrationService = inject(IntegrationService)

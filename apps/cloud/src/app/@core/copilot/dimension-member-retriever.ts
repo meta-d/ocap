@@ -2,7 +2,7 @@ import { Inject, Injectable, Optional, inject } from '@angular/core'
 import type { CallbackManagerForRetrieverRun } from '@langchain/core/callbacks/manager'
 import { Document } from '@langchain/core/documents'
 import { type BaseRetrieverInput } from '@langchain/core/retrievers'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { BaseDimensionMemberRetriever, MEMBER_RETRIEVER_TOKEN } from '@metad/core'
 import { NGXLogger } from 'ngx-logger'
 import { catchError, firstValueFrom, of, timeout } from 'rxjs'
@@ -14,7 +14,7 @@ export class CustomRetrieverInput implements BaseRetrieverInput {}
 @Injectable()
 export class DimensionMemberRetriever extends BaseDimensionMemberRetriever {
   readonly #logger = inject(NGXLogger)
-  readonly modelsService = inject(ModelsService)
+  readonly modelsService = inject(SemanticModelServerService)
 
   lc_namespace = ['langchain', 'retrievers']
 

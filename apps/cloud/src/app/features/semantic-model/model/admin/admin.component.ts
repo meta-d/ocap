@@ -9,7 +9,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { ISemanticModel, IUser, Store, ToastrService } from 'apps/cloud/src/app/@core'
 import {
   TranslationBaseComponent,
@@ -47,7 +47,7 @@ export class ModelAdminComponent extends TranslationBaseComponent {
   userLabel = userLabel
 
   // Injectors
-  private modelsService = inject(ModelsService)
+  private modelsService = inject(SemanticModelServerService)
   private store = inject(Store)
   private route = inject(ActivatedRoute)
   readonly #model = inject(ModelComponent)

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
@@ -9,6 +9,7 @@ import { MaterialModule } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { ChatService } from '../chat.service'
 import { uuid } from '../../../@core'
+
 
 @Component({
   standalone: true,
@@ -44,20 +45,32 @@ export class ChatInputComponent {
     this.ask(this.prompt().trim())
   }
 
+  // askWebsocket() {
+  //   const content = this.prompt().trim()
+  //   const id = uuid()
+  //   this.chatWebsocketService.appendMessage({
+  //     id,
+  //     role: 'user',
+  //     content
+  //   })
+  //   this.chatWebsocketService.message(id, content)
+  //   this.promptControl.setValue('')
+  // }
+
   ask(statement: string) {
     const id = uuid()
     // const content = this.prompt().trim()
-    this.answering.set(true)
-    this.chatService.messages.update((messages) => [
-      ...(messages ?? []),
-      {
-        id,
-        role: 'user',
-        content: statement
-      }
-    ])
+    // this.answering.set(true)
+    this.chatService.appendMessage({
+      id,
+      role: 'user',
+      content: statement
+    })
     this.promptControl.setValue('')
-    this.chatService.message(id, statement)
+
+    // Send message
+    // this.chatService.message(id, statement)
+    this.chatService.chat(id, statement)
   }
 
   stopGenerating() {

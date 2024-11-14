@@ -8,7 +8,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule, MatSelectionList } from '@angular/material/list'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
@@ -49,7 +49,7 @@ import { SemanticModelService } from '../../model.service'
 export class ModelMembersCubeComponent {
   readonly modelService = inject(SemanticModelService)
   readonly modelEntityService = inject(SemanticModelEntityService)
-  readonly modelsService = inject(ModelsService)
+  readonly modelsService = inject(SemanticModelServerService)
   readonly toastrService = inject(ToastrService)
   readonly dialog = inject(MatDialog)
   readonly translate = inject(TranslateService)

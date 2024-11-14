@@ -16,8 +16,8 @@ import { isYesterday } from 'date-fns/isYesterday'
 import { subDays } from 'date-fns/subDays'
 import { NGXLogger } from 'ngx-logger'
 import { switchMap, tap } from 'rxjs/operators'
-import { ChatBIModelService, ChatConversationService, IChatConversation, IXpertRole, OrderTypeEnum, registerModel, routeAnimations } from '../../@core'
-import { AvatarComponent, MaterialModule } from '../../@shared'
+import { ChatConversationService, IChatConversation, ISemanticModel, IXpert, OrderTypeEnum, registerModel, routeAnimations } from '../../@core'
+import { MaterialModule } from '../../@shared'
 import { AppService } from '../../app.service'
 import { ChatAiMessageComponent } from './ai-message/ai-message.component'
 import { ChatInputComponent } from './chat-input/chat-input.component'
@@ -25,8 +25,7 @@ import { ChatService } from './chat.service'
 import { ChatMoreComponent } from './icons'
 import { ChatSidenavMenuComponent } from './sidenav-menu/sidenav-menu.component'
 import { ChatToolbarComponent } from './toolbar/toolbar.component'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { convertNewSemanticModelResult, NgmSemanticModel } from '@metad/cloud/state'
+import { convertNewSemanticModelResult, NgmSemanticModel, SemanticModelServerService } from '@metad/cloud/state'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { EmojiAvatarComponent } from '../../@shared/avatar'
 
@@ -44,7 +43,6 @@ import { EmojiAvatarComponent } from '../../@shared/avatar'
     IntersectionObserverModule,
     MaterialModule,
     NgmCommonModule,
-    AvatarComponent,
     EmojiAvatarComponent,
 
     ChatAiMessageComponent,
@@ -58,7 +56,7 @@ import { EmojiAvatarComponent } from '../../@shared/avatar'
   styleUrl: 'home.component.scss',
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [provideOcapCore(), ChatService]
+  providers: [provideOcapCore(), ChatService,]
 })
 export class ChatHomeComponent {
   DisplayBehaviour = DisplayBehaviour
@@ -67,7 +65,8 @@ export class ChatHomeComponent {
   readonly #wasmAgent = inject(WasmAgentService)
   readonly chatService = inject(ChatService)
   readonly conversationService = inject(ChatConversationService)
-  readonly chatbiModelService = inject(ChatBIModelService)
+  // readonly chatbiModelService = inject(ChatBIModelService)
+  readonly semanticModelService = inject(SemanticModelServerService)
   readonly appService = inject(AppService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
@@ -118,8 +117,8 @@ export class ChatHomeComponent {
     return groups
   })
 
-  readonly roles = this.chatService.roles
-  readonly role = this.chatService.role
+  readonly xperts = this.chatService.xperts
+  readonly role = this.chatService.xpert
 
   readonly editingConversation = signal<string>(null)
   readonly editingTitle = signal<string>(null)
@@ -129,25 +128,28 @@ export class ChatHomeComponent {
   readonly currentPage = signal(0)
   readonly done = signal(false)
 
+  // SemanticModel
+  readonly semanticModels = new Map<string, ISemanticModel>()
+
   constructor() {
     this.loadConversations()
 
-    this.chatbiModelService.getAllInOrg({
-      relations: [
-        'model',
-        'model.indicators',
-        'model.createdBy',
-        'model.updatedBy',
-        'model.dataSource',
-        'model.dataSource.type'
-      ]
-    }).pipe(
-      takeUntilDestroyed()
-    ).subscribe(({items}) => {
-      items.forEach(({model}) => {
-        this.registerModel(convertNewSemanticModelResult({...model, key: model.id}))
-      })
-    })
+    // this.chatbiModelService.getAllInOrg({
+    //   relations: [
+    //     'model',
+    //     'model.indicators',
+    //     'model.createdBy',
+    //     'model.updatedBy',
+    //     'model.dataSource',
+    //     'model.dataSource.type'
+    //   ]
+    // }).pipe(
+    //   takeUntilDestroyed()
+    // ).subscribe(({items}) => {
+    //   items.forEach(({model}) => {
+    //     this.registerModel(convertNewSemanticModelResult({...model, key: model.id}))
+    //   })
+    // })
 
     effect(() => {
       if (this.chatService.messages()) {
@@ -164,8 +166,8 @@ export class ChatHomeComponent {
     this.chatService.deleteConversation(id)
   }
 
-  selectRole(role: IXpertRole) {
-    this.chatService.newConversation(role)
+  selectXpert(xpert: IXpert) {
+    this.chatService.newConversation(xpert)
   }
 
   updateTitle(conv: IChatConversation) {
@@ -214,6 +216,19 @@ export class ChatHomeComponent {
 
   private registerModel(model: NgmSemanticModel) {
     registerModel(model, this.#dsCoreService, this.#wasmAgent)
+  }
+
+  registerSemanticModel(id: string) {
+    if (!this.semanticModels.get(id)) {
+      this.semanticModelService.getById(id, ['indicators',
+          'createdBy',
+          'updatedBy',
+          'dataSource',
+          'dataSource.type']).subscribe((semanticModel) => {
+            this.semanticModels.set(id, semanticModel)
+            this.registerModel(convertNewSemanticModelResult({...semanticModel, key: semanticModel.id}))
+          })
+    }
   }
 
   scrollBottom(smooth = false) {

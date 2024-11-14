@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { Router } from '@angular/router'
-import { DataSourceService, ModelsService } from '@metad/cloud/state'
+import { DataSourceService, SemanticModelServerService } from '@metad/cloud/state'
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { uploadYamlFile } from '@metad/core'
 import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent, NgmTreeSelectComponent, TreeTableColumn, TreeTableModule } from '@metad/ocap-angular/common'
@@ -100,7 +100,7 @@ export class ModelsComponent extends TranslationBaseComponent implements AfterVi
 
   constructor(
     public appService: AppService,
-    private store: ModelsService,
+    private store: SemanticModelServerService,
     private dataSourcesStore: DataSourceService,
     @Inject(NX_STORY_STORE) private storyStore: NxStoryStore,
     private router: Router,

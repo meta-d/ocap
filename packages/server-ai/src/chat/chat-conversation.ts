@@ -1,5 +1,3 @@
-import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_run'
-import { SearchApi } from "@langchain/community/tools/searchapi"
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessageChunk, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
@@ -30,12 +28,7 @@ import { CopilotTokenRecordCommand } from '../copilot-user/commands'
 import { KnowledgeSearchQuery } from '../knowledgebase/queries'
 import { ChatService } from './chat.service'
 import { ChatAgentState, chatAgentState } from './types'
-import { ExaSearchResults } from "@langchain/exa"
-import Exa from "exa-js"
-import { SearxngSearch } from "@langchain/community/tools/searxng_search"
-import { createToolset } from '../xpert-toolset'
-
-const exaClient = process.env.EXASEARCH_API_KEY ? new Exa(process.env.EXASEARCH_API_KEY) : null
+import { RunnableConfig } from '@langchain/core/runnables'
 
 
 export class ChatConversationAgent {
@@ -99,125 +92,126 @@ export class ChatConversationAgent {
 		}
 
 		const tools = []
-		toolsets.forEach((toolset) => {
-			const toolkit = createToolset(toolset, {
-				tenantId: this.tenantId,
-				organizationId: this.organizationId,
-				toolsetService: this.chatService.toolsetService,
-				commandBus: this.commandBus,
-				user: this.user,
-				copilots: this.chatService.getCopilots(this.tenantId, this.organizationId),
-				chatModel: llm
-			})
-			if (toolkit) {
-				tools.push(...toolkit.getTools())
-			} else {
-				switch (toolset.name) {
-					case 'Wikipedia': {
-						const wikiTool = new WikipediaQueryRun({
-							topKResults: 3,
-							maxDocContentLength: 4000
-						})
-						tools.push(wikiTool)
-						break
-					}
-					// case 'DuckDuckGo': {
-					// 	const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
-					// 	tools.push(duckTool)
-					// 	break
-					// }
-					case 'SearchApi': {
-						tools.push(new SearchApi(process.env.SEARCHAPI_API_KEY, {
-							...(toolset.tools?.[0]?.options ?? {}),
-						}))
-						break
-					}
-					// case 'TavilySearch': {
-					// 	tools.push(new TavilySearchResults({
-					// 		...(toolset.tools?.[0]?.options ?? {}),
-					// 		apiKey: process.env.TAVILY_API_KEY
-					// 	}))
-					// 	break
-					// }
-					case 'ExaSearch': {
-						tools.push(new ExaSearchResults({
-							client: exaClient,
-							searchArgs: {
-							...(toolset.tools?.[0]?.options ?? {}),
-							} as any,
-						})
-						)
-						break
-					}
-					case 'SearxngSearch': {
-						tools.push(new SearxngSearch({
-							apiBase: (toolset.tools?.[0]?.options ?? {}).apiBase,
-							params: {
-								engines: "google",
-								...omit(toolset.tools?.[0]?.options ?? {}, 'apiBase'),
-								format: "json", // Do not change this, format other than "json" is will throw error
-							},
-							// Custom Headers to support rapidAPI authentication Or any instance that requires custom headers
-							headers: {},
-						})
-						)
-						break
-					}
 
-					default: {
-						// toolset.tools?.forEach((item) => {
-						// 	switch (item.type) {
-						// 		case 'command': {
-						// 			let zodSchema: z.AnyZodObject = null
-						// 			try {
-						// 				zodSchema = eval(jsonSchemaToZod(JSON.parse(item.schema), { module: 'cjs' }))
-						// 			} catch (err) {
-						// 				throw new Error(`Invalid input schema for tool: ${item.name}`)
-						// 			}
-						// 			// Copilot
-						// 			let chatModel = llm
-						// 			if (item.providerRole || toolset.providerRole) {
-						// 				const copilot = this.chatService.findCopilot(this.tenantId, this.organizationId, item.providerRole || toolset.providerRole)
-						// 				chatModel = this.createLLM(copilot)
-						// 			}
+		// toolsets.forEach((toolset) => {
+		// 	const toolkit = createToolset(toolset, {
+		// 		tenantId: this.tenantId,
+		// 		organizationId: this.organizationId,
+		// 		toolsetService: this.chatService.toolsetService,
+		// 		commandBus: this.commandBus,
+		// 		user: this.user,
+		// 		copilots: this.chatService.getCopilots(this.tenantId, this.organizationId),
+		// 		chatModel: llm
+		// 	})
+		// 	if (toolkit) {
+		// 		tools.push(...toolkit.getTools())
+		// 	} else {
+		// 		switch (toolset.name) {
+		// 			case 'Wikipedia': {
+		// 				const wikiTool = new WikipediaQueryRun({
+		// 					topKResults: 3,
+		// 					maxDocContentLength: 4000
+		// 				})
+		// 				tools.push(wikiTool)
+		// 				break
+		// 			}
+		// 			// case 'DuckDuckGo': {
+		// 			// 	const duckTool = new DuckDuckGoSearch({ maxResults: 1 })
+		// 			// 	tools.push(duckTool)
+		// 			// 	break
+		// 			// }
+		// 			case 'SearchApi': {
+		// 				tools.push(new SearchApi(process.env.SEARCHAPI_API_KEY, {
+		// 					...(toolset.tools?.[0]?.options ?? {}),
+		// 				}))
+		// 				break
+		// 			}
+		// 			// case 'TavilySearch': {
+		// 			// 	tools.push(new TavilySearchResults({
+		// 			// 		...(toolset.tools?.[0]?.options ?? {}),
+		// 			// 		apiKey: process.env.TAVILY_API_KEY
+		// 			// 	}))
+		// 			// 	break
+		// 			// }
+		// 			case 'ExaSearch': {
+		// 				tools.push(new ExaSearchResults({
+		// 					client: exaClient,
+		// 					searchArgs: {
+		// 					...(toolset.tools?.[0]?.options ?? {}),
+		// 					} as any,
+		// 				})
+		// 				)
+		// 				break
+		// 			}
+		// 			case 'SearxngSearch': {
+		// 				tools.push(new SearxngSearch({
+		// 					apiBase: (toolset.tools?.[0]?.options ?? {}).apiBase,
+		// 					params: {
+		// 						engines: "google",
+		// 						...omit(toolset.tools?.[0]?.options ?? {}, 'apiBase'),
+		// 						format: "json", // Do not change this, format other than "json" is will throw error
+		// 					},
+		// 					// Custom Headers to support rapidAPI authentication Or any instance that requires custom headers
+		// 					headers: {},
+		// 				})
+		// 				)
+		// 				break
+		// 			}
 
-						// 			// Default args values in copilot role for tool function
-						// 			const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
+		// 			default: {
+		// 				// toolset.tools?.forEach((item) => {
+		// 				// 	switch (item.type) {
+		// 				// 		case 'command': {
+		// 				// 			let zodSchema: z.AnyZodObject = null
+		// 				// 			try {
+		// 				// 				zodSchema = eval(jsonSchemaToZod(JSON.parse(item.schema), { module: 'cjs' }))
+		// 				// 			} catch (err) {
+		// 				// 				throw new Error(`Invalid input schema for tool: ${item.name}`)
+		// 				// 			}
+		// 				// 			// Copilot
+		// 				// 			let chatModel = llm
+		// 				// 			if (item.providerRole || toolset.providerRole) {
+		// 				// 				const copilot = this.chatService.findCopilot(this.tenantId, this.organizationId, item.providerRole || toolset.providerRole)
+		// 				// 				chatModel = this.createLLM(copilot)
+		// 				// 			}
 
-						// 			tools.push(
-						// 				tool(
-						// 					async (args, config) => {
-						// 						try {
-						// 							return await this.chatService.executeCommand(item.name, {
-						// 									...(defaultArgs ?? {}),
-						// 									...args
-						// 								}, config, <XpertToolContext>{
-						// 									tenantId: this.tenantId,
-						// 									organizationId: this.organizationId,
-						// 									user: this.user,
-						// 									chatModel,
-						// 									role,
-						// 									roleContext: role?.options?.context,
-						// 								})
-						// 						} catch(error) {
-						// 							return `Error: ${getErrorMessage(error)}`
-						// 						}
-						// 					},
-						// 					{
-						// 						name: item.name,
-						// 						description: item.description,
-						// 						schema: defaultArgs ? null : zodSchema
-						// 					}
-						// 				)
-						// 			)
-						// 			break
-						// 		}
-						// 	}
-						// })
-					}
-				}
-			}
-		})
+		// 				// 			// Default args values in copilot role for tool function
+		// 				// 			const defaultArgs = role?.options?.toolsets?.[toolset.id]?.[item.name]?.defaultArgs
+
+		// 				// 			tools.push(
+		// 				// 				tool(
+		// 				// 					async (args, config) => {
+		// 				// 						try {
+		// 				// 							return await this.chatService.executeCommand(item.name, {
+		// 				// 									...(defaultArgs ?? {}),
+		// 				// 									...args
+		// 				// 								}, config, <XpertToolContext>{
+		// 				// 									tenantId: this.tenantId,
+		// 				// 									organizationId: this.organizationId,
+		// 				// 									user: this.user,
+		// 				// 									chatModel,
+		// 				// 									role,
+		// 				// 									roleContext: role?.options?.context,
+		// 				// 								})
+		// 				// 						} catch(error) {
+		// 				// 							return `Error: ${getErrorMessage(error)}`
+		// 				// 						}
+		// 				// 					},
+		// 				// 					{
+		// 				// 						name: item.name,
+		// 				// 						description: item.description,
+		// 				// 						schema: defaultArgs ? null : zodSchema
+		// 				// 					}
+		// 				// 				)
+		// 				// 			)
+		// 				// 			break
+		// 				// 		}
+		// 				// 	}
+		// 				// })
+		// 			}
+		// 		}
+		// 	}
+		// })
 
 		this.graph = createReactAgent({
 			state: chatAgentState,
@@ -354,7 +348,7 @@ References documents:
 							const msg = data.chunk as AIMessageChunk
 							if (!msg.tool_call_chunks?.length) {
 								if (msg.content) {
-									this.message.content += msg.content
+									this.message.content = (<string>this.message.content) + msg.content
 									return {
 										event: ChatGatewayEvent.MessageStream,
 										data: {
@@ -578,7 +572,7 @@ References documents:
 					tenantId: this.tenantId,
 					organizationId: this.organizationId,
 				}
-			},
+			} as RunnableConfig,
 			state
 		)
 	}
@@ -606,7 +600,7 @@ References documents:
 	addStepMessage(id: string, message: CopilotBaseMessage) {
 		const index = this.message.messages.findIndex((item) => item.id === id)
 		if (index > -1) {
-			const step = this.message.messages[index] as CopilotMessageGroup
+			const step = this.message.messages[index] as unknown as CopilotMessageGroup
 			step.messages ??= []
 			step.messages.push(message)
 		}
@@ -643,7 +637,7 @@ References documents:
 			new ChatConversationUpdateCommand({
 				id: this.id,
 				entity: {
-					title: this.conversation.title || message.content,
+					title: this.conversation.title ,
 					messages: [...(this.conversation.messages ?? []), message]
 				}
 			})

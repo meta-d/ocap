@@ -3,7 +3,7 @@ import { Component, Inject, inject } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
-import { BusinessAreasService, ModelsService, StoriesService } from '@metad/cloud/state'
+import { BusinessAreasService, SemanticModelServerService, StoriesService } from '@metad/cloud/state'
 import { NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, SemanticModel, TreeNodeInterface } from '@metad/ocap-core'
@@ -75,7 +75,7 @@ export class StoryCreationComponent {
 
   constructor(
     private businessAreaService: BusinessAreasService,
-    private modelsService: ModelsService,
+    private modelsService: SemanticModelServerService,
     @Inject(MAT_DIALOG_DATA)
     public data: {
       story: {

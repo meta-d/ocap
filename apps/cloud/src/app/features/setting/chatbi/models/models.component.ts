@@ -3,7 +3,7 @@ import { Component, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { NgmConfirmDeleteComponent, NgmTableComponent, TableColumn } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, EMPTY } from 'rxjs'
@@ -21,7 +21,7 @@ import { AppearanceDirective } from '@metad/ocap-angular/core'
   animations: [routeAnimations]
 })
 export class ChatBIModelsComponent extends TranslationBaseComponent {
-  readonly modelsService = inject(ModelsService)
+  readonly modelsService = inject(SemanticModelServerService)
   readonly chatbiModelsService = inject(ChatBIModelService)
   readonly _toastrService = inject(ToastrService)
   readonly router = inject(Router)

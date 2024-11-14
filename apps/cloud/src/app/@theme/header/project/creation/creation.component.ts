@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { ISemanticModel } from 'apps/cloud/src/app/@core'
 import { InlineSearchComponent, MaterialModule } from 'apps/cloud/src/app/@shared'
 import { combineLatest, debounceTime, map, startWith } from 'rxjs'
@@ -36,7 +36,7 @@ import { combineLatest, debounceTime, map, startWith } from 'rxjs'
   ]
 })
 export class ProjectCreationComponent {
-  private modelsService = inject(ModelsService)
+  private modelsService = inject(SemanticModelServerService)
 
   form = new FormGroup({
     name: new FormControl(null, [Validators.required]),

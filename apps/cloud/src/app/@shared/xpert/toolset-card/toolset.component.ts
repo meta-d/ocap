@@ -28,15 +28,4 @@ export class ToolsetCardComponent {
       ?.map((t) => t.name)
       .join(',')
   )
-
-  // readonly title = input<string>(null)
-  // readonly description = input<string>(null)
-  // readonly helpUrl = input<string>(null)
-  // readonly helpTitle = input<string>(null)
-
-  // readonly create = output()
-
-  // onCreate() {
-  //   this.create.emit()
-  // }
 }

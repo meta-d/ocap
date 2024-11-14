@@ -1,6 +1,6 @@
 import { TableColumnType, TableEntity, omit, pick } from '@metad/ocap-core'
 import { ColumnDef } from '../../@core'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { firstValueFrom } from 'rxjs'
 import { saveAsYaml } from '@metad/core'
 
@@ -132,7 +132,7 @@ export function convertExcelDate2ISO(cell: number, type: TableColumnType) {
   return cell
 }
 
-export async function exportSemanticModel(modelService: ModelsService, id: string) {
+export async function exportSemanticModel(modelService: SemanticModelServerService, id: string) {
   const model = await firstValueFrom(modelService.getById(id, ['roles']))
   model.roles = model.roles?.map((role) => omit(role, 'id',  'tenantId', 'organizationId', 'createdById', 'updatedById', 'createdAt', 'updatedAt', 'modelId'))
   saveAsYaml(model.name + '.yml', pick(model, 'key', 'name', 'description', 'type', 'catalog', 'cube', 'options', 'preferences', 'roles'))

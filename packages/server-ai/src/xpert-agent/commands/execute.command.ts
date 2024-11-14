@@ -1,6 +1,6 @@
 import { tool } from '@langchain/core/tools'
 import { LangGraphRunnableConfig } from '@langchain/langgraph'
-import { ChatMessageEventTypeEnum, ChatMessageTypeEnum, IXpert, IXpertAgent, IXpertAgentExecution, TXpertParameter, XpertAgentExecutionEnum, XpertParameterTypeEnum } from '@metad/contracts'
+import { ChatMessageEventTypeEnum, ChatMessageTypeEnum, IXpert, IXpertAgent, IXpertAgentExecution, TChatOptions, TXpertParameter, XpertAgentExecutionEnum, XpertParameterTypeEnum } from '@metad/contracts'
 import { convertToUrlPath, getErrorMessage } from '@metad/server-common'
 import { CommandBus, ICommand } from '@nestjs/cqrs'
 import { lastValueFrom, Observable, reduce, Subscriber, tap } from 'rxjs'
@@ -17,7 +17,7 @@ export class XpertAgentExecuteCommand implements ICommand {
 		},
 		public readonly agentKey: string,
 		public readonly xpert: Partial<IXpert>,
-		public readonly options: {
+		public readonly options: TChatOptions & {
 			// The id of root agent execution
 			rootExecutionId: string
 			// Langgraph thread id

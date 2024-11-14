@@ -14,7 +14,7 @@ import { convertIndicatorResult, convertStoryModel } from './types'
 @Injectable({
   providedIn: 'root'
 })
-export class ModelsService extends OrganizationBaseService {
+export class SemanticModelServerService extends OrganizationBaseService {
   constructor(public httpClient: HttpClient, private businessAreaService: BusinessAreasService) {
     super()
   }

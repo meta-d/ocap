@@ -1,7 +1,6 @@
 import {
 	ChatGatewayEvent,
 	ChatGatewayMessage,
-	ChatUserMessage,
 	IChatConversation,
 	IXpert,
 	IXpertToolset,
@@ -12,13 +11,13 @@ import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/c
 import { isNil } from 'lodash'
 import { Observable } from 'rxjs'
 import { ChatConversationCreateCommand, FindChatConversationQuery } from '../../../chat-conversation'
-import { CopilotCheckpointSaver } from '../../../copilot-checkpoint/'
+import { CopilotCheckpointSaver } from '../../../copilot-checkpoint'
 import { CopilotCheckLimitCommand } from '../../../copilot-user'
 import { ChatConversationAgent } from '../../chat-conversation'
 import { ChatService } from '../../chat.service'
-import { ChatCommand } from '../chat.command'
 import { FindXpertToolsetsQuery } from '../../../xpert-toolset/index'
-import { FindXpertQuery } from '../../../xpert'
+import { FindXpertQuery, XpertChatCommand } from '../../../xpert'
+import { ChatCommand } from '../chat.command'
 
 
 @CommandHandler(ChatCommand)
@@ -31,127 +30,132 @@ export class ChatCommandHandler implements ICommandHandler<ChatCommand> {
 	) {}
 
 	public async execute(command: ChatCommand): Promise<Observable<any>> {
-		const { tenantId, organizationId, user, xpert, data } = command.input
-		const { conversationId, id, language, content } = data as ChatUserMessage
 
-		return new Observable<ChatGatewayMessage>((subscriber) => {
-			(async () => {
-				let chatConversation: IChatConversation = null
-				if (isNil(conversationId)) {
-					chatConversation = await this.commandBus.execute(
-						new ChatConversationCreateCommand({
-							entity: {
-								tenantId,
-								organizationId,
-								createdById: user.id,
-								xpertId: xpert?.id,
-								title: content, // 改成 AI 自动总结标题
-								options: {
-									knowledgebases: xpert?.knowledgebases,
-									toolsets: xpert?.toolsets
-								}
-							}
-						})
-					)
+		// const { tenantId, organizationId, user } = command.options
+		// const { conversationId, id, input } = command.request
 
-					subscriber.next({
-						event: ChatGatewayEvent.ConversationCreated,
-						data: chatConversation
-					})
-				} else {
-					chatConversation = await this.queryBus.execute(
-						new FindChatConversationQuery({
-							id: conversationId
-						})
-					)
-				}
+		return await this.commandBus.execute(
+			new XpertChatCommand(command.request, command.options)
+		)
 
-				let _xpert: IXpert = null
-				if (xpert?.id) {
-					_xpert = await this.queryBus.execute<FindXpertQuery, IXpert>(
-						new FindXpertQuery({ tenantId, organizationId, id: xpert.id }, ['agent'])
-					)
-				}
+		// return new Observable<ChatGatewayMessage>((subscriber) => {
+		// 	(async () => {
+		// 		let chatConversation: IChatConversation = null
+		// 		if (isNil(conversationId)) {
+		// 			chatConversation = await this.commandBus.execute(
+		// 				new ChatConversationCreateCommand({
+		// 					entity: {
+		// 						tenantId,
+		// 						organizationId,
+		// 						createdById: user.id,
+		// 						xpertId: xpert?.id,
+		// 						title: content, // 改成 AI 自动总结标题
+		// 						options: {
+		// 							knowledgebases: xpert?.knowledgebases,
+		// 							toolsets: xpert?.toolsets
+		// 						}
+		// 					}
+		// 				})
+		// 			)
 
-				if (!this.chatService.getConversation(chatConversation.id)) {
-					await this.chatService.fetchCopilots(tenantId, organizationId)
-					const toolsets = await this.queryBus.execute<FindXpertToolsetsQuery, IXpertToolset[]>(new FindXpertToolsetsQuery(xpert?.toolsets ?? []))
+		// 			subscriber.next({
+		// 				event: ChatGatewayEvent.ConversationCreated,
+		// 				data: chatConversation
+		// 			})
+		// 		} else {
+		// 			chatConversation = await this.queryBus.execute(
+		// 				new FindChatConversationQuery({
+		// 					id: conversationId
+		// 				})
+		// 			)
+		// 		}
 
-					try {
-						this.chatService.setConversation(
-							chatConversation.id,
-							new ChatConversationAgent(
-								chatConversation,
-								organizationId,
-								user,
-								this.copilotCheckpointSaver,
-								this.chatService,
-								this.commandBus,
-								this.queryBus
-							).createAgentGraph(_xpert, toolsets)
-						)
-					} catch (error) {
-						subscriber.next({
-							event: ChatGatewayEvent.Error,
-							data: {
-								id: shortuuid(),
-								role: 'info',
-								error: getErrorMessage(error),
-							}
-						})
-						subscriber.complete()
-						return
-					}
-				}
-				const conversation = this.chatService.getConversation(chatConversation.id)
+		// 		let _xpert: IXpert = null
+		// 		if (xpert?.id) {
+		// 			_xpert = await this.queryBus.execute<FindXpertQuery, IXpert>(
+		// 				new FindXpertQuery({ tenantId, organizationId, id: xpert.id }, ['agent'])
+		// 			)
+		// 		}
 
-				if (language) {
-					conversation.updateState({ language: this.languagePrompt(language) })
-				}
-				if (_xpert) {
-					conversation.updateState({ role: _xpert.agent.prompt })
-				}
+		// 		if (!this.chatService.getConversation(chatConversation.id)) {
+		// 			await this.chatService.fetchCopilots(tenantId, organizationId)
+		// 			const toolsets = await this.queryBus.execute<FindXpertToolsetsQuery, IXpertToolset[]>(new FindXpertToolsetsQuery(xpert?.toolsets ?? []))
 
-				const answerId = shortuuid()
-				// Response start event
-				subscriber.next({
-					event: ChatGatewayEvent.ChainStart,
-					data: {
-						id: answerId
-					}
-				})
+		// 			try {
+		// 				this.chatService.setConversation(
+		// 					chatConversation.id,
+		// 					new ChatConversationAgent(
+		// 						chatConversation,
+		// 						organizationId,
+		// 						user,
+		// 						this.copilotCheckpointSaver,
+		// 						this.chatService,
+		// 						this.commandBus,
+		// 						this.queryBus
+		// 					).createAgentGraph(_xpert, toolsets)
+		// 				)
+		// 			} catch (error) {
+		// 				subscriber.next({
+		// 					event: ChatGatewayEvent.Error,
+		// 					data: {
+		// 						id: shortuuid(),
+		// 						role: 'info',
+		// 						error: getErrorMessage(error),
+		// 					}
+		// 				})
+		// 				subscriber.complete()
+		// 				return
+		// 			}
+		// 		}
+		// 		const conversation = this.chatService.getConversation(chatConversation.id)
 
-				conversation.newMessage(answerId)
-				// Update conversation messages
-				await conversation.saveMessage({ id, content, role: 'user' })
+		// 		if (language) {
+		// 			conversation.updateState({ language: this.languagePrompt(language) })
+		// 		}
+		// 		if (_xpert) {
+		// 			conversation.updateState({ role: _xpert.agent.prompt })
+		// 		}
 
-				// Check token limit
-				try {
-					await this.commandBus.execute(new CopilotCheckLimitCommand({
-						tenantId,
-						organizationId,
-						userId: user.id,
-						copilot: conversation.copilot
-					}))
-				} catch(err) {
-					await conversation.saveMessage({ id, content: err.message, role: 'assistant' })
-					subscriber.next({
-						event: ChatGatewayEvent.Error,
-						data: {
-							id: answerId,
-							role: 'info',
-							error: err.message,
-						}
-					})
-					subscriber.complete()
-					return
-				}
+		// 		const answerId = shortuuid()
+		// 		// Response start event
+		// 		subscriber.next({
+		// 			event: ChatGatewayEvent.ChainStart,
+		// 			data: {
+		// 				id: answerId
+		// 			}
+		// 		})
 
-				conversation
-					.chat(content, answerId)
-					.subscribe(subscriber)
-			})()
-		})
+		// 		conversation.newMessage(answerId)
+		// 		// Update conversation messages
+		// 		await conversation.saveMessage({ id, content, role: 'user' })
+
+		// 		// Check token limit
+		// 		try {
+		// 			await this.commandBus.execute(new CopilotCheckLimitCommand({
+		// 				tenantId,
+		// 				organizationId,
+		// 				userId: user.id,
+		// 				copilot: conversation.copilot
+		// 			}))
+		// 		} catch(err) {
+		// 			await conversation.saveMessage({ id, content: err.message, role: 'assistant' })
+		// 			subscriber.next({
+		// 				event: ChatGatewayEvent.Error,
+		// 				data: {
+		// 					id: answerId,
+		// 					role: 'info',
+		// 					error: err.message,
+		// 				}
+		// 			})
+		// 			subscriber.complete()
+		// 			return
+		// 		}
+
+		// 		conversation
+		// 			.chat(content, answerId)
+		// 			.subscribe(subscriber)
+		// 	})()
+		// })
 	}
 
 	private languagePrompt(language: string) {

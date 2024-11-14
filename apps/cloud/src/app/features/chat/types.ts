@@ -1,4 +1,4 @@
-import { XpertTypeEnum } from '../../@core/types'
+import { CopilotChatMessage, XpertTypeEnum } from '../../@core/types'
 
 export const COMMON_COPILOT_ROLE = {
   slug: null,
@@ -8,4 +8,9 @@ export const COMMON_COPILOT_ROLE = {
   titleCN: '通用',
   description: '通用角色',
   type: XpertTypeEnum.Agent
+}
+
+
+export type TCopilotChatMessage = CopilotChatMessage & {
+  event?: string
 }

@@ -241,7 +241,14 @@
       "EnterPassword": "输入密码",
       "ChooseTags": "选择标签",
       "ElapsedTime": "已用时间",
-      "TotalTokens": "总代币数"
+      "TotalTokens": "总代币数",
+      "Emoticons": "表情符号",
+      "Picture": "图片",
+      "Supports": "支持",
+      "And": "和",
+      "Browse": "浏览",
+      "DropImageHereOr": "将图片拖至此处，或者",
+      "ChooseStyle": "选择样式"
     },
     "MENU": {
       "Certification": "认证",
@@ -1835,7 +1842,20 @@
       "AddExternalExpert": "添加外部专家",
       "Remove": "移除",
       "PleaseEnter": "请输入",
-      "Query": "查询"
+      "Query": "查询",
+      "Icon": "图标",
+      "EnterXpertDesc": "输入专家的描述",
+      "Tags": "标签",
+      "SaveDraft": "保存至草稿",
+      "Title": "标题",
+      "DigitalXpert": "数字专家",
+      "Agents": "智能体",
+      "Basic": "基础",
+      "BasicInfo": "基础信息",
+      "APIAccess": "访问 API",
+      "Logs": "日志",
+      "Monitoring": "监测",
+      "Preview": "预览"
     },
     "title": {
       "short": "Xpert AI"

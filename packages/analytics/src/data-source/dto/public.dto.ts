@@ -3,6 +3,7 @@ import { UserPublicDTO } from '@metad/server-core'
 import { Exclude, Expose, Transform } from 'class-transformer'
 import { IsOptional } from 'class-validator'
 import { DataSource } from '../data-source.entity'
+import { DataSourceTypeDTO } from '../../data-source-type'
 
 @Exclude()
 export class DataSourcePublicDTO {
@@ -12,6 +13,7 @@ export class DataSourcePublicDTO {
 	@Expose()
 	name: string
 
+	@Transform(({ value }) => value && new DataSourceTypeDTO(value))
 	@Expose()
 	@IsOptional()
 	type?: IDataSourceType

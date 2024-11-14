@@ -17,6 +17,7 @@ import { XpertStudioApiService } from '../../domain'
 import { XpertExecutionService } from '../../services/execution.service'
 import { XpertStudioComponent } from '../../studio.component'
 import { processEvents } from '../agent-execution/execution.component'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   standalone: true,
@@ -24,6 +25,7 @@ import { processEvents } from '../agent-execution/execution.component'
     CommonModule,
     FormsModule,
     MaterialModule,
+    TranslateModule,
     TextFieldModule,
     MarkdownModule,
     EmojiAvatarComponent,
@@ -89,8 +91,10 @@ export class XpertStudioPreviewComponent {
     this.xpertService
       .chat(this.xpert().id, {
         input: { input },
-        draft: true,
-        conversationId: this.conversation()?.id
+        conversationId: this.conversation()?.id,
+        xpertId: this.xpert().id
+      }, {
+        isDraft: true,
       })
       .subscribe({
         next: (msg) => {

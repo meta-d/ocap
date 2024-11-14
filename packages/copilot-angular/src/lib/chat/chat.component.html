@@ -176,7 +176,7 @@
                 <mat-chip-option @fadeAnimation [selected]="role() === item.name" [value]="item.name"
                   [matTooltip]="item.description"
                   matTooltipPosition="above"
-                  >{{item.title}}</mat-chip-option>
+                  >{{item.title || item.name}}</mat-chip-option>
               }
             </mat-chip-listbox>
           }

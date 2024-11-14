@@ -5,7 +5,7 @@ import {
   BusinessAreasService,
   IndicatorAppService,
   IndicatorsService,
-  ModelsService,
+  SemanticModelServerService,
   convertIndicatorResult,
   convertNewSemanticModelResult
 } from '@metad/cloud/state'
@@ -165,7 +165,7 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   ).subscribe()
 
   constructor(
-    private modelsService: ModelsService,
+    private modelsService: SemanticModelServerService,
     private indicatorService: IndicatorsService,
     private businessAreaService: BusinessAreasService,
     private ngmDSCore: NgmDSCoreService

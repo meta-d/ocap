@@ -1,16 +1,19 @@
+import { MessageContent, MessageType } from '@langchain/core/messages'
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { JSONValue } from '../core.model'
 import { IXpertAgentExecution } from './xpert-agent-execution.model'
 import { IXpert } from './xpert.model'
 
+export type TChatConversationOptions = {
+  knowledgebases?: string[]
+  toolsets?: string[]
+}
+
 export interface IChatConversation extends IBasePerTenantAndOrganizationEntityModel {
   key: string
   title?: string
   
-  options?: {
-    knowledgebases: string[]
-    toolsets: string[]
-  }
+  options?: TChatConversationOptions
 
   messages?: CopilotBaseMessage[] | null
 
@@ -27,7 +30,6 @@ export interface IChatConversation extends IBasePerTenantAndOrganizationEntityMo
    */
   xpert?: IXpert
   xpertId?: string | null
-  
 }
 
 // Types
@@ -104,10 +106,18 @@ export type ChatGatewayMessage = {
   }
 })
 
+/**
+ * @deprecated
+ */
+export type DeprecatedMessageType = 'assistant' | 'user' | 'info' | 'component'
+export type CopilotMessageType = MessageType | DeprecatedMessageType
+/**
+ * 
+ */
 export interface CopilotBaseMessage {
   id: string
   createdAt?: Date
-  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info' | 'component'
+  role: CopilotMessageType
   
   /**
    * Status of the message:
@@ -120,10 +130,11 @@ export interface CopilotBaseMessage {
    */
   status?: 'thinking' | 'answering' | 'pending' | 'done' | 'aborted' | 'error'
 
-  content?: string | any
+  content?: string | MessageContent
 }
 
 export type CopilotChatMessage = CopilotBaseMessage & {
+
   tool_call_id?: string
   
   /**
@@ -135,6 +146,8 @@ export type CopilotChatMessage = CopilotBaseMessage & {
   data?: JSONValue
 
   error?: string
+
+  messages?: Array<any> // StoredMessage
 }
 
 export interface CopilotMessageGroup extends CopilotBaseMessage {

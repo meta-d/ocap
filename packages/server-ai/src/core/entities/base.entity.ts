@@ -6,7 +6,7 @@ import {
 	IXpertWorkspace
 } from '@metad/contracts';
 import { TenantOrganizationBaseEntity } from '@metad/server-core';
-import { XpertWorkspace } from './internal';
+import { XpertWorkspace } from '../../xpert-workspace/workspace.entity';
 
 export abstract class WorkspaceBaseEntity
 	extends TenantOrganizationBaseEntity

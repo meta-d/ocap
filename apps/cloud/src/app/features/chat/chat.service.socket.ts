@@ -1,6 +1,7 @@
 import { Location } from '@angular/common'
-import { computed, DestroyRef, effect, inject, Injectable, signal } from '@angular/core'
+import { DestroyRef, effect, inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
+import { CopilotBaseMessage, CopilotChatMessage, CopilotMessageGroup } from '../../@core/types'
 import { nonNullable } from '@metad/ocap-core'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
@@ -19,6 +20,8 @@ import {
   withLatestFrom
 } from 'rxjs'
 import {
+  ChatGatewayEvent,
+  ChatGatewayMessage,
   getErrorMessage,
   IChatConversation,
   IXpertRole,
@@ -26,24 +29,18 @@ import {
   IKnowledgebase,
   LanguagesEnum,
   XpertTypeEnum,
-  ChatMessageTypeEnum,
-  uuid,
-  CopilotBaseMessage,
-  CopilotMessageGroup,
-  CopilotChatMessage,
-  ChatMessageEventTypeEnum,
-  IXpert,
 } from '../../@core'
-import { ChatConversationService, ChatService as ChatServerService, XpertService, ToastrService } from '../../@core/services'
+import { ChatConversationService, XpertService, ToastrService } from '../../@core/services'
 import { AppService } from '../../app.service'
 import { COMMON_COPILOT_ROLE } from './types'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
+import { ChatWebsocketServer } from '../../@core/services/chat.service.socket'
 
 
 @Injectable()
-export class ChatService {
-  readonly chatService = inject(ChatServerService)
+export class ChatWebsocketService {
+  readonly chatService = inject(ChatWebsocketServer)
   readonly conversationService = inject(ChatConversationService)
   readonly xpertService = inject(XpertService)
   readonly appService = inject(AppService)
@@ -56,11 +53,10 @@ export class ChatService {
   readonly paramId = injectParams('id')
 
   readonly conversationId = signal<string>(null)
-  readonly xpert$ = new BehaviorSubject<IXpert>(null)
+  readonly role$ = new BehaviorSubject<IXpertRole>(null)
   readonly conversation = signal<IChatConversation>(null)
 
-  readonly #messages = signal<CopilotBaseMessage[]>([])
-  readonly messages = computed(() => this.#messages() ?? [])
+  readonly messages = signal<CopilotBaseMessage[]>([])
 
   // Conversations
   readonly conversations = signal<IChatConversation[]>([])
@@ -71,7 +67,7 @@ export class ChatService {
   readonly answering = signal<boolean>(false)
 
   readonly lang = this.appService.lang
-  readonly xperts = derivedFrom(
+  readonly roles = derivedFrom(
     [this.xpertService.getAllInOrg({ where: { type: XpertTypeEnum.Agent, latest: true }, relations: ['knowledgebases', 'toolsets'] }).pipe(map(({ items }) => items)), this.lang],
     pipe(
       map(([roles, lang]) => {
@@ -84,9 +80,9 @@ export class ChatService {
     ),
     { initialValue: [] }
   )
-
-  readonly xpert = derivedFrom(
-    [this.xpert$, this.lang],
+  
+  readonly role = derivedFrom(
+    [this.role$, this.lang],
     pipe(
       map(([role, lang]) => {
         if (!role) {
@@ -96,7 +92,7 @@ export class ChatService {
           }
         }
         if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
-          return { ...role, title: role.titleCN || role.title }
+          return { ...role, title: role.titleCN }
         } else {
           return role
         }
@@ -104,7 +100,7 @@ export class ChatService {
     )
   )
 
-  private roleSub = this.xpert$
+  private roleSub = this.role$
     .pipe(
       withLatestFrom(toObservable(this.paramRole)),
       filter(() => !this.conversationId()),
@@ -125,10 +121,10 @@ export class ChatService {
       }
     })
   private paramRoleSub = toObservable(this.paramRole)
-    .pipe(combineLatestWith(toObservable(this.xperts)), withLatestFrom(this.xpert$), takeUntilDestroyed())
+    .pipe(combineLatestWith(toObservable(this.roles)), withLatestFrom(this.role$), takeUntilDestroyed())
     .subscribe(([[paramRole, roles], role]) => {
       if (roles && role?.slug !== paramRole) {
-        this.xpert$.next(roles.find((item) => item.slug === paramRole))
+        this.role$.next(roles.find((item) => item.slug === paramRole))
       }
     })
   private idSub = toObservable(this.conversationId)
@@ -155,13 +151,13 @@ export class ChatService {
           this.conversation.set({} as IChatConversation)
         }
       }),
-      combineLatestWith(toObservable(this.xperts)),
+      combineLatestWith(toObservable(this.roles)),
       takeUntilDestroyed()
     )
     .subscribe({
       next: ([conversation, roles]) => {
         if (conversation) {
-          this.xpert$.next(roles?.find((role) => role.id === conversation.xpertId))
+          this.role$.next(roles?.find((role) => role.id === conversation.xpertId))
         }
       },
       error: (error) => {
@@ -180,11 +176,11 @@ export class ChatService {
       const roleName = this.paramRole()
       const paramId = this.paramId()
       // if (paramId !== id) {
-      if (this.xpert$.value?.slug) {
+      if (this.role$.value?.slug) {
         if (id) {
-          this.#location.replaceState('/chat/r/' + this.xpert$.value.slug + '/c/' + id)
+          this.#location.replaceState('/chat/r/' + this.role$.value.slug + '/c/' + id)
         } else {
-          this.#location.replaceState('/chat/r/' + this.xpert$.value.slug)
+          this.#location.replaceState('/chat/r/' + this.role$.value.slug)
         }
       } else if (id) {
         this.#location.replaceState('/chat/c/' + id)
@@ -194,13 +190,114 @@ export class ChatService {
       // }
     })
 
+  private chatListener = (result: ChatGatewayMessage) => {
+    this.#logger.trace('message return:', result)
+    switch (result.event) {
+      case ChatGatewayEvent.ChainStart: {
+        this.messages.update((items) => [
+          ...items,
+          {
+            id: result.data.id,
+            role: 'assistant',
+            status: 'thinking'
+          }
+        ])
+        break
+      }
+      case ChatGatewayEvent.ConversationCreated: {
+        this.conversation.set({ ...result.data, messages: [...(this.messages() ?? [])] })
+        this.conversations.update((items) => [{ ...result.data }, ...items])
+        break
+      }
+      case ChatGatewayEvent.Message: {
+        this.appendMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.MessageStream: {
+        this.appendStreamMessage(result.data.content)
+        break
+      }
+      case ChatGatewayEvent.StepStart: {
+        this.appendMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.StepEnd: {
+        this.updateMessageStep(result.data)
+        break
+      }
+      case ChatGatewayEvent.ToolStart: {
+        const toolCalls = Array.isArray(result.data) ? result.data : [result.data]
+        toolCalls.forEach((item) => {
+          // this.appendMessageStep(item)
+        })
+        break
+      }
+      case ChatGatewayEvent.ToolEnd: {
+        const toolCalls = Array.isArray(result.data) ? result.data : [result.data]
+        toolCalls.forEach((item) => {
+          const { messages, ...step } = item
+          this.updateMessageStep(step)
+          if (messages?.length > 0) {
+            messages.forEach((m) => this.appendStepMessage(step.id, m))
+          }
+        })
+        break
+      }
+      case ChatGatewayEvent.ChainEnd: {
+        this.answering.set(false)
+        this.updateMessage(result.data.id, {
+          status: 'done'
+        })
+        break
+      }
+      case ChatGatewayEvent.ChainAborted: {
+        this.answering.set(false)
+        if (this.conversation()?.id === result.data.conversationId) {
+          this.abortMessage(result.data.id)
+        }
+        break
+      }
+      case ChatGatewayEvent.Error: {
+        this.answering.set(false)
+        this.updateMessage(result.data.id, {
+          status: 'error',                                
+          content: result.data.error
+        })
+        break
+      }
+      case ChatGatewayEvent.Agent: {
+        this.appendStepMessage(result.data.id, result.data.message)
+        break
+      }
+    }
+  }
+
+  // private websocket = toSignal(this.chatService.socket$.pipe(
+  //   startWith(null),
+  //   pairwise(),
+  //   map(([prev, curr]) => {
+  //     if (prev) {
+  //       prev.off('message', this.chatListener)
+  //     }
+  //     curr?.on('message', this.chatListener)
+  //     return curr
+  //   })
+  // ))
+
+  private onMessageSub = this.chatService.onMessage().pipe(takeUntilDestroyed()).subscribe((data) => {
+    this.chatListener(data)
+  })
+
   constructor() {
+    this.chatService.connect()
+    // this.chatService.on('message', this.chatListener)
+
     effect(
       () => {
         if (this.conversation()) {
-          this.#messages.set(this.conversation().messages)
+          this.messages.set(this.conversation().messages)
         } else {
-          this.#messages.set([])
+          this.messages.set([])
         }
       },
       { allowSignalWrites: true }
@@ -222,74 +319,40 @@ export class ChatService {
     })
   }
 
-  chat(id: string, content: string) {
-    this.answering.set(true)
-
-    // Add ai message placeholder
-    this.appendMessage({
-      id: uuid(),
-      role: 'assistant',
-      content: ``,
-      status: 'thinking'
-    })
-
-    this.chatService.chat({
-      input: {
-        input: content,
+  message(id: string, content: string) {
+    return this.chatService.message({
+      event: ChatGatewayEvent.MessageStream,
+      xpert: {
+        id: this.role$.value?.id,
+        knowledgebases: this.knowledgebases().map(({ id }) => id),
+        toolsets: this.toolsets()?.map(({ id }) => id)
       },
-      xpertId: this.xpert$.value?.id,
-      conversationId: this.conversation()?.id,
-      id,
-    }, {
-      knowledgebases: this.knowledgebases().map(({ id }) => id),
-      toolsets: this.toolsets()?.map(({ id }) => id)
-    })
-    .subscribe({
-      next: (msg) => {
-        if (msg.event === 'error') {
-          this.#toastr.error(msg.data)
-        } else {
-          if (msg.data) {
-            const event = JSON.parse(msg.data)
-            if (event.type === ChatMessageTypeEnum.MESSAGE) {
-              if (typeof event.data === 'string') {
-                this.appendStreamMessage(event.data)
-              } else {
-                this.appendMessageComponent(event.data)
-              }
-            } else if (event.type === ChatMessageTypeEnum.EVENT) {
-              this.updateEvent(event.event)
-            }
-          }
-        }
-      },
-      error: (error) => {
-        this.#toastr.error(getErrorMessage(error))
-        this.answering.set(false)
-      },
-      complete: () => {
-        this.answering.set(false)
+      data: {
+        conversationId: this.conversation()?.id,
+        id,
+        language: this.appService.lang(),
+        content
       }
     })
   }
 
   cancelMessage() {
     this.answering.set(false)
-    // return this.chatService.message({
-    //   event: ChatGatewayEvent.CancelChain,
-    //   data: {
-    //     conversationId: this.conversation().id
-    //   }
-    // })
+    return this.chatService.message({
+      event: ChatGatewayEvent.CancelChain,
+      data: {
+        conversationId: this.conversation().id
+      }
+    })
   }
 
-  async newConversation(xpert?: IXpertRole) {
+  async newConversation(role?: IXpertRole) {
     if (this.answering() && this.conversation()?.id) {
       this.cancelMessage()
     }
     this.conversation.set(null)
     this.conversationId.set(null)
-    this.xpert$.next(xpert)
+    this.role$.next(role)
   }
 
   setConversation(id: string) {
@@ -309,72 +372,20 @@ export class ChatService {
   }
 
   updateMessage(id: string, message: Partial<CopilotBaseMessage>) {
-    this.#messages.update((messages) => {
+    this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
       messages[messages.length - 1] = { ...lastMessage, ...message }
       return [...messages]
     })
   }
 
-  appendMessageComponent(message) {
-    this.updateLatestMessage((lastM) => {
-      const content = lastM.content
-      if (typeof content === 'string') {
-        lastM.content = [
-          {
-            type: 'text',
-            text: content
-          },
-          message
-        ]
-      } else if (Array.isArray(content)) {
-        lastM.content = [
-          ...content,
-          message
-        ]
-      } else {
-        lastM.content = [
-          message
-        ]
-      }
-      return {
-        ...lastM
-      }
-    })
-  }
-
-  appendStreamMessage(text: string) {
-    this.updateLatestMessage((lastM) => {
-      const content = lastM.content
-
-      if (typeof content === 'string') {
-        lastM.content = content + text
-      } else if (Array.isArray(content)) {
-        const lastContent = content[content.length - 1]
-        if (lastContent.type === 'text') {
-          content[content.length - 1] = {
-            ...lastContent,
-            text: lastContent.text + text
-          }
-          lastM.content = [
-            ...content,
-          ]
-        } else {
-          lastM.content = [
-            ...content,
-            {
-              type: 'text',
-              text
-            }
-          ]
-        }
-      } else {
-        lastM.content = text
-      }
-
-      return {
-        ...lastM
-      }
+  appendStreamMessage(content: string) {
+    this.messages.update((messages) => {
+      messages ??= []
+      const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
+      lastMessage.content = (lastMessage.content ?? '') + content
+      messages[messages.length - 1] = { ...lastMessage }
+      return [...messages]
     })
   }
 
@@ -386,10 +397,21 @@ export class ChatService {
   }
 
   updateLatestMessage(updateFn: (value: CopilotMessageGroup) => CopilotMessageGroup) {
-    this.#messages.update((messages) => {
+    this.messages.update((messages) => {
       const lastMessage = messages[messages.length - 1] as CopilotMessageGroup
       messages[messages.length - 1] = updateFn(lastMessage)
       return [...messages]
+    })
+  }
+
+  appendStepMessage(id: string, subStep: CopilotChatMessage) {
+    this.updateLatestMessage((lastMessage) => {
+      const index = lastMessage.messages.findIndex((item) => item.id === id)
+      if (index > -1) {
+        // (<CopilotMessageGroup>lastMessage.messages[index]).messages ??= [];
+        // (<CopilotMessageGroup>lastMessage.messages[index]).messages.push(subStep)
+      }
+      return {...lastMessage, messages: [...lastMessage.messages]}
     })
   }
 
@@ -425,18 +447,9 @@ export class ChatService {
   }
 
   appendMessage(message: CopilotBaseMessage) {
-    this.#messages.update((messages) => [
+    this.messages.update((messages) => [
       ...(messages ?? []),
       message
     ])
-  }
-
-  updateEvent(event: string) {
-    this.updateLatestMessage((lastMessage) => {
-      return {
-        ...lastMessage,
-        event: event === ChatMessageEventTypeEnum.ON_AGENT_END ? null : event
-      }
-    })
   }
 }

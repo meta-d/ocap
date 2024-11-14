@@ -17,7 +17,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
-import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
+import { SemanticModelServerService, NgmSemanticModel } from '@metad/cloud/state'
 import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty, nonBlank } from '@metad/core'
 import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
@@ -85,7 +85,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
 
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
-  private modelsService = inject(ModelsService)
+  private modelsService = inject(SemanticModelServerService)
   private storyStore = inject<NxStoryStore>(NX_STORY_STORE)
   private route = inject(ActivatedRoute)
   private router = inject(Router)

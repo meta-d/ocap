@@ -1,23 +1,23 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
-import { CopilotBaseMessage, CopilotChatMessage, isMessageGroup } from '@metad/copilot'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
 import { MaterialModule } from '../../../@shared'
-import { ChatLoadingComponent } from '../../../@shared/copilot'
 import { ChatService } from '../chat.service'
 import { ChatComponentMessageComponent } from '../component-message/component-message.component'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
+import { TCopilotChatMessage } from '../types'
+import { CopilotChatMessage, isMessageGroup } from '../../../@core'
 
 interface ICopilotChatMessage extends CopilotChatMessage {
-  expanded: boolean
-  messages: CopilotChatMessage[]
-  data: any[]
+  expanded?: boolean
+  // messages: CopilotChatMessage[]
+  // data: any[]
 }
 
 @Component({
@@ -35,7 +35,6 @@ interface ICopilotChatMessage extends CopilotChatMessage {
     MaterialModule,
     NgmCommonModule,
     EmojiAvatarComponent,
-    ChatLoadingComponent,
     ChatComponentMessageComponent
   ],
   selector: 'pac-ai-message',
@@ -46,10 +45,11 @@ interface ICopilotChatMessage extends CopilotChatMessage {
 export class ChatAiMessageComponent {
   readonly chatService = inject(ChatService)
 
-  readonly message = input<CopilotBaseMessage>()
-  readonly #content = computed(() => {
+  readonly message = input<TCopilotChatMessage>()
+
+  readonly #contentStr = computed(() => {
     const content = this.message()?.content
-    if (content) {
+    if (typeof content === 'string') {
       const count = (content.match(/```/g) || []).length
       if (count % 2 === 0) {
         return content
@@ -59,21 +59,36 @@ export class ChatAiMessageComponent {
     }
     return ''
   })
-  readonly content = computed(() => {
-    const content = this.#content()
+
+  readonly contentStr = computed(() => {
+    const content = this.#contentStr()
     if (['thinking', 'answering'].includes(this.message().status) && this.answering()) {
       return content + '<span class="thinking-placeholder"></span>'
     }
     return content
   })
 
-  readonly role = this.chatService.role
+  readonly contents = computed(() => {
+    const contents = this.message()?.content
+    if (Array.isArray(contents)) {
+      return contents
+    }
+    return null
+  })
+
+  readonly role = this.chatService.xpert
   readonly answering = this.chatService.answering
 
   readonly messageGroup = computed(() => {
     const message = this.message()
-    return isMessageGroup<ICopilotChatMessage>(message) ? message : null
+    return isMessageGroup(message) ? message : null
   })
+
+  constructor() {
+    effect(() => {
+      console.log(this.contents())
+    })
+  }
 
   onCopy(copyButton) {
     copyButton.copied = true

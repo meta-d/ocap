@@ -4,7 +4,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { isEntitySet } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { SemanticModelEntityService, ToastrService } from 'apps/cloud/src/app/@core'
@@ -30,7 +30,7 @@ import { ModelComponent } from '../model.component'
 export class ModelMembersComponent {
   readonly modelService = inject(SemanticModelService)
   readonly modelEntityService = inject(SemanticModelEntityService)
-  readonly modelsService = inject(ModelsService)
+  readonly modelsService = inject(SemanticModelServerService)
   readonly toastrService = inject(ToastrService)
   readonly #model = inject(ModelComponent)
 

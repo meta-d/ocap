@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core'
-import { API_PREFIX, ModelsService } from '@metad/cloud/state'
+import { API_PREFIX, SemanticModelServerService } from '@metad/cloud/state'
 import { IModelQuery } from '@metad/contracts'
 import { AIOptions, CopilotChatConversation } from '@metad/copilot'
 import { omit, pick } from '@metad/ocap-core'
@@ -20,7 +20,7 @@ export interface ModelQuery extends IModelQuery {
 @Injectable({ providedIn: 'root' })
 export class ModelQueryService {
   private httpClient = inject(HttpClient)
-  private modelsService = inject(ModelsService)
+  private modelsService = inject(SemanticModelServerService)
 
 
   create(input: Partial<ModelQuery>) {

@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild, computed, effect, inject, signal } from '
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { IndicatorsService, ModelsService, Store, StoriesService } from '@metad/cloud/state'
+import { IndicatorsService, SemanticModelServerService, Store, StoriesService } from '@metad/cloud/state'
 import { getErrorMessage } from '@metad/core'
 import { NgmConfirmOptionsComponent } from '@metad/ocap-angular/common'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -80,7 +80,7 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
 
   private store = inject(Store)
   private feedsService = inject(FeedsService)
-  private modelsService = inject(ModelsService)
+  private modelsService = inject(SemanticModelServerService)
   private storiesService = inject(StoriesService)
   private indicatorsService = inject(IndicatorsService)
   private organizationsService = inject(OrganizationsService)

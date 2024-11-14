@@ -225,6 +225,21 @@ export enum ChatMessageEventTypeEnum {
   ON_RETRIEVER_ERROR = 'on_retriever_error'
 }
 
+export type TChatRequest = {
+  input: {
+    input?: string
+    [key: string]: unknown
+  }
+  xpertId: string
+  conversationId?: string
+  id?: string
+}
+
+export type TChatOptions = {
+  knowledgebases?: string[]
+  toolsets?: string[]
+}
+
 // Helpers
 export function omitXpertRelations(xpert: Partial<IXpert>) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

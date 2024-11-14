@@ -5,7 +5,7 @@ import { EventSourceMessage, fetchEventSource } from '@microsoft/fetch-event-sou
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable, tap } from 'rxjs'
 import { API_XPERT_ROLE } from '../constants/app.constants'
-import { IXpert, IXpertAgentExecution, OrderTypeEnum, TXpertTeamDraft, XpertTypeEnum } from '../types'
+import { IXpert, IXpertAgentExecution, OrderTypeEnum, TChatRequest, TXpertTeamDraft, XpertTypeEnum } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 
 @Injectable({ providedIn: 'root' })
@@ -65,7 +65,7 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpert> {
     return this.httpClient.get<{items: IXpertAgentExecution[]}>(this.apiBaseUrl + `/${id}/executions`, { params: toHttpParams(options) })
   }
 
-  chat(id: string, options: { input: {input: string;}; draft: boolean; conversationId?: string }): Observable<EventSourceMessage> {
+  chat(id: string, request: TChatRequest, options: { isDraft: boolean; }): Observable<EventSourceMessage> {
     const token = this.#store.token
     const organization = this.store.selectedOrganization ?? { id: null }
     return new Observable((subscriber) => {
@@ -77,7 +77,7 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpert> {
           Authorization: `Bearer ${token}`,
           'Organization-Id': `${organization.id}`
         },
-        body: JSON.stringify(options),
+        body: JSON.stringify({request, options}),
         signal: ctrl.signal,
         onmessage(msg) {
           subscriber.next(msg)

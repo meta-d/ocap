@@ -54,6 +54,7 @@ export class XpertAgentChatHandler implements ICommandHandler<XpertAgentChatComm
 			from(
 				this.commandBus.execute<XpertAgentExecuteCommand, Observable<MessageContent>>(
 					new XpertAgentExecuteCommand(input, agentKey, xpert, {
+						...(options ?? {}),
 						isDraft: true,
 						rootExecutionId: execution.id,
 						thread_id,

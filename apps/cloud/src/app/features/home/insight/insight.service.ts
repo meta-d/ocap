@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, model, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
+import { convertNewSemanticModelResult, SemanticModelServerService, NgmSemanticModel } from '@metad/cloud/state'
 import { calcEntityTypePrompt, nonNullable } from '@metad/core'
 import { NgmCopilotEngineService, NgmCopilotService } from '@metad/copilot-angular'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -16,7 +16,7 @@ import { registerModel } from '../../../@core'
 
 @Injectable()
 export class InsightService {
-  readonly #modelsService = inject(ModelsService)
+  readonly #modelsService = inject(SemanticModelServerService)
   readonly #copilotService = inject(NgmCopilotService)
   readonly #copilotEngine = inject(NgmCopilotEngineService)
   readonly #dsCoreService = inject(NgmDSCoreService)

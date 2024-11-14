@@ -5,7 +5,7 @@ import { Component, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { ISemanticModel } from '../../@core'
 import { MaterialModule } from '../../@shared'
@@ -60,7 +60,7 @@ import { MaterialModule } from '../../@shared'
 })
 export class SelectModelDialog {
   private data = inject<{models: ISemanticModel[]}>(DIALOG_DATA)
-  private modelsService = inject(ModelsService)
+  private modelsService = inject(SemanticModelServerService)
   public models = []
   public readonly models$ = toSignal(this.modelsService.getMy())
 

@@ -10,7 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatSelectModule } from '@angular/material/select'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ModelsService } from '@metad/cloud/state'
+import { SemanticModelServerService } from '@metad/cloud/state'
 import { firstValueFrom } from 'rxjs'
 import { ModelQueryService, uuid } from '../../@core'
 
@@ -95,7 +95,7 @@ export class QueryCreationDialogComponent implements OnInit {
   public readonly models$ = this.modelsService.getMy()
   constructor(
     public dialogRef: MatDialogRef<QueryCreationDialogComponent>,
-    private modelsService: ModelsService,
+    private modelsService: SemanticModelServerService,
     private modelQueryService: ModelQueryService
   ) {}
 

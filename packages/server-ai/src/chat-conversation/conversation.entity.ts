@@ -1,4 +1,4 @@
-import { IChatConversation, IXpert, IXpertAgentExecution } from '@metad/contracts'
+import { CopilotBaseMessage, IChatConversation, IXpert, IXpertAgentExecution, TChatConversationOptions } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsOptional, IsString } from 'class-validator'
@@ -23,13 +23,13 @@ export class ChatConversation extends TenantOrganizationBaseEntity implements IC
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	options?: IChatConversation['options']
+	options?: TChatConversationOptions
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	messages?: any[]
+	messages?: CopilotBaseMessage[] | null
 
 	/*
     |--------------------------------------------------------------------------

@@ -70,7 +70,7 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		)
 
 		const toolsets = await this.commandBus.execute<ToolsetGetToolsCommand, BaseToolset[]>(
-			new ToolsetGetToolsCommand(agent.toolsetIds)
+			new ToolsetGetToolsCommand(options?.toolsets ?? agent.toolsetIds)
 		)
 		const tools = []
 		toolsets.forEach((toolset) => tools.push(...toolset.getTools()))
@@ -78,8 +78,9 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		this.#logger.debug(`Use tools:\n ${tools.map((_) => _.name + ': ' + _.description)}`)
 
 		// Knowledgebases
-		if (agent.knowledgebaseIds?.length) {
-			const retrievers = agent.knowledgebaseIds.map((id) => createKnowledgeRetriever(this.queryBus, id))
+		const knowledgebaseIds = options?.knowledgebases ?? agent.knowledgebaseIds
+		if (knowledgebaseIds?.length) {
+			const retrievers = knowledgebaseIds.map((id) => createKnowledgeRetriever(this.queryBus, id))
 			const retriever = new EnsembleRetriever({
 				retrievers: retrievers,
 				weights: retrievers.map(() => 0.5),
@@ -300,6 +301,7 @@ ${agent.prompt}
 								event: ChatMessageEventTypeEnum.ON_TOOL_END,
 								data: {
 									data,
+									tags,
 									...rest,
 								}
 							}
@@ -314,6 +316,7 @@ ${agent.prompt}
 								event: ChatMessageEventTypeEnum.ON_RETRIEVER_START,
 								data: {
 									data,
+									tags,
 									...rest,
 								}
 							}
@@ -328,6 +331,7 @@ ${agent.prompt}
 								event: ChatMessageEventTypeEnum.ON_RETRIEVER_END,
 								data: {
 									data,
+									tags,
 									...rest,
 								}
 							}

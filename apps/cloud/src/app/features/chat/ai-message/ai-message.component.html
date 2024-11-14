@@ -3,6 +3,10 @@
 </div>
 
 <div class="flex-1 flex flex-col gap-2 mt-2 overflow-x-hidden">
+  @if (message()?.event) {
+    <div class="px-2 rounded-md text-token-text-secondary hover:bg-gray-50">{{message().event}}</div>
+  }
+
   @if (messageGroup(); as group) {
     @for (message of group.messages; track message) {
       @switch (message.role) {
@@ -104,13 +108,31 @@
       }
     }
   }
+
+  @if (contents(); as messages) {
+    @for (message of messages; track message) {
+      @switch (message.type) {
+        @case ('text') {
+          <markdown clipboard class="ngm-copilot-markdown flex-1"
+            [clipboardButtonTemplate]="buttonTemplate"
+            lineNumbers
+            [start]="5"
+            [data]="message.text"
+          />
+        }
+        @case ('component') {
+          <pac-chat-component-message [message]="message" class="w-full p-4 rounded-xl hover:bg-hover-bg"/>
+        }
+      }
+    }
+  }
   
-  @if (content()) {
+  @if (contentStr()) {
     <markdown clipboard class="ngm-copilot-markdown flex-1"
       [clipboardButtonTemplate]="buttonTemplate"
       lineNumbers
       [start]="5"
-      [data]="content()"
+      [data]="contentStr()"
     />
   }
 

@@ -2,7 +2,7 @@ import { CdkDropList, DropListRef, moveItemInArray } from '@angular/cdk/drag-dro
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { ModelsService, NgmSemanticModel, convertNewSemanticModelResult } from '@metad/cloud/state'
+import { SemanticModelServerService as SemanticModelsService, NgmSemanticModel, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { NgmDSCoreService, effectAction } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
@@ -221,7 +221,7 @@ export class SemanticModelService {
   readonly isDirty = this.dirtyCheckResult.dirty
 
   constructor(
-    private modelsService: ModelsService,
+    private modelsService: SemanticModelsService,
     private dsCoreService: NgmDSCoreService,
     private wasmAgent: WasmAgentService,
     private _router: Router,

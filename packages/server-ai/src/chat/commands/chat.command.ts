@@ -1,12 +1,15 @@
-import { ChatGatewayMessage, IUser } from '@metad/contracts'
+import { IUser, TChatOptions, TChatRequest } from '@metad/contracts'
 import { ICommand } from '@nestjs/cqrs'
 
 export class ChatCommand implements ICommand {
 	static readonly type = '[Chat] Message'
 
 	constructor(
-		public readonly input: ChatGatewayMessage & {
+		public readonly request: TChatRequest,
+		public readonly options: TChatOptions & {
+			isDraft?: boolean
 			tenantId: string
+			organizationId: string
 			user: IUser
 		}
 	) {}
