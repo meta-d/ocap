@@ -10,7 +10,7 @@
         (click)="item.expanded=!isActive(item)"
       >
         @if (isCollapsed) {
-          <button type="button" class="menu-button w-12 h-12 flex justify-center items-center p-2 leading-4 rounded-xl opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-200 hover:bg-hover-bg"
+          <button type="button" class="menu-button w-12 h-12 flex justify-center items-center p-2 leading-4 rounded-xl opacity-80 hover:opacity-100 hover:scale-110 transition-all duration-200 hover:bg-hover-bg"
             [matTooltip]="item.title"
             matTooltipPosition="right"
             [cdkMenuTriggerFor]="isCollapsed && item.children ? subMenus : null"

@@ -2,7 +2,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, viewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, viewChild } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
@@ -11,7 +11,7 @@ import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
-import { isNil, omitBy, result } from 'lodash-es'
+import { isNil, omitBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, EMPTY } from 'rxjs'
@@ -29,16 +29,17 @@ import {
   XpertToolsetService,
   XpertTypeEnum,
   XpertWorkspaceService
-} from '../../../@core'
-import { AvatarComponent, CardCreateComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, UserPipe } from '../../../@shared'
-import { AppService } from '../../../app.service'
-import { XpertNewBlankComponent } from '../xpert/index'
-import { XpertHomeComponent } from '../home.component'
-import { XpertStudioCreateToolComponent } from '../tools/create/create.component'
-import { EmojiAvatarComponent } from '../../../@shared/avatar'
-import { TagComponent } from '../../../@shared/'
-import { MatBottomSheet } from '@angular/material/bottom-sheet'
-import { XpertToolConfigureBuiltinComponent } from '../tools'
+} from '../../../../@core'
+import { CardCreateComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, UserPipe } from '../../../../@shared'
+import { AppService } from '../../../../app.service'
+import { XpertNewBlankComponent } from '../../xpert/index'
+import { XpertStudioCreateToolComponent } from '../../tools/create/create.component'
+import { EmojiAvatarComponent } from '../../../../@shared/avatar'
+import { TagComponent } from '../../../../@shared'
+import { XpertToolConfigureBuiltinComponent } from '../../tools'
+import { XpertWorkspaceHomeComponent } from '../home/home.component'
+import { injectParams } from 'ngxtension/inject-params'
+
 
 @Component({
   standalone: true,
@@ -79,32 +80,37 @@ export class XpertStudioXpertsComponent {
   readonly route = inject(ActivatedRoute)
   readonly logger = inject(NGXLogger)
   readonly #dialog = inject(MatDialog)
-  readonly #bottomSheet = inject(MatBottomSheet)
   readonly #toastr = inject(ToastrService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
   readonly toolsetService = inject(XpertToolsetService)
-  readonly homeComponent = inject(XpertHomeComponent)
+  readonly homeComponent = inject(XpertWorkspaceHomeComponent)
+  readonly workspaceId = injectParams('id')
 
   readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
 
   readonly isMobile = this.appService.isMobile
   readonly lang = this.appService.lang
 
-  readonly workspace = this.homeComponent.workspace
+  readonly selectedWorkspaces = this.homeComponent.selectedWorkspaces
+  // readonly workspace = this.homeComponent.workspace
   readonly type = this.homeComponent.type
   readonly tags = this.homeComponent.tags
 
   readonly refresh$ = new BehaviorSubject<void>(null)
+
+  readonly workspace = derivedAsync(() => {
+    return this.workspaceId() ? this.workspaceService.getOneById(this.workspaceId()) : null
+  })
   readonly xperts = derivedAsync(() => {
     const where = {
       type: this.type(),
       latest: true
     }
-    const workspace = this.workspace()
+    const workspaceId = this.workspaceId()
     return this.refresh$.pipe(
       switchMap(() =>
-        this.xpertService.getAllByWorkspace(workspace, {
+        this.xpertService.getAllByWorkspace(workspaceId, {
           where: omitBy(where, isNil),
           order: {updatedAt: OrderTypeEnum.DESC},
           relations: ['createdBy', 'tags']
@@ -119,10 +125,10 @@ export class XpertStudioXpertsComponent {
       category: this.type(),
       // type: 'openapi'
     }
-    const workspace = this.workspace()
+    const workspaceId = this.workspaceId()
     return this.refresh$.pipe(
       switchMap(() =>
-        this.toolsetService.getAllByWorkspace(workspace, {
+        this.toolsetService.getAllByWorkspace(workspaceId, {
           where: omitBy(where, isNil),
           relations: ['createdBy', 'tags']
         })
@@ -148,6 +154,15 @@ export class XpertStudioXpertsComponent {
   readonly builtinToolsets = computed(() => this.toolsets()?.filter((_) => _.category === XpertToolsetCategoryEnum.BUILTIN))
   readonly apiToolsets = computed(() => this.toolsets()?.filter((_) => _.category === XpertToolsetCategoryEnum.API))
 
+
+  constructor() {
+    effect(() => {
+      if (this.workspaceId()) {
+        this.homeComponent.selectedWorkspaces.set([this.workspaceId()])
+      }
+    }, { allowSignalWrites: true })
+  }
+
   refresh() {
     this.refresh$.next()
   }
@@ -163,7 +178,7 @@ export class XpertStudioXpertsComponent {
       .afterClosed()
       .subscribe((xpert) => {
         if (xpert) {
-          this.router.navigate([xpert.id], { relativeTo: this.route })
+          this.router.navigate(['/xpert/', xpert.id])
         }
       })
   }

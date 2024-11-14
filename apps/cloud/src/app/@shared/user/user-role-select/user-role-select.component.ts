@@ -1,5 +1,5 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes'
-import { Component, ElementRef, Inject, Input, OnInit, ViewChild } from '@angular/core'
+import { Component, ElementRef, Inject, Input, ViewChild } from '@angular/core'
 import { FormControl } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
@@ -51,7 +51,7 @@ import { userLabel } from '../../pipes'
   templateUrl: 'user-role-select.component.html',
   styleUrls: ['user-role-select.component.scss']
 })
-export class UserRoleSelectComponent implements OnInit {
+export class UserRoleSelectComponent {
   separatorKeysCodes: number[] = [ENTER, COMMA]
   userLabel = userLabel
 
@@ -90,8 +90,6 @@ export class UserRoleSelectComponent implements OnInit {
     this.role = data?.role
     this.single = this.data?.single
   }
-
-  ngOnInit() {}
 
   displayWith(user: IUser) {
     if (user === null) {

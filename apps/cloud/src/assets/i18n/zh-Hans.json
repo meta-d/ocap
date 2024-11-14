@@ -248,7 +248,8 @@
       "And": "和",
       "Browse": "浏览",
       "DropImageHereOr": "将图片拖至此处，或者",
-      "ChooseStyle": "选择样式"
+      "ChooseStyle": "选择样式",
+      "Workspace": "工作空间"
     },
     "MENU": {
       "Certification": "认证",
@@ -1855,7 +1856,18 @@
       "APIAccess": "访问 API",
       "Logs": "日志",
       "Monitoring": "监测",
-      "Preview": "预览"
+      "Preview": "预览",
+      "Default": "默认",
+      "NewWorkspace": "新建工作空间",
+      "ModelProviders": "模型提供商",
+      "Members": "成员",
+      "CreateWorkspaceStart": "创建一个工作空间来开始吧！",
+      "WelcomeBack": "欢迎回来！",
+      "RecentWorkspaces": "以下是您最近访问的工作区：",
+      "Open": "打开",
+      "SelectWorkspace": "选择一个工作空间",
+      "YouAreOwner": "你是所有者",
+      "Owner": "所有者"
     },
     "title": {
       "short": "Xpert AI"

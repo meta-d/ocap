@@ -7,8 +7,8 @@
       class="group flex-0 flex cursor-poin ter items-center gap-1 rounded-lg py-1.5 px-3 text-lg font-semibold overflow-hidden whitespace-nowrap bg-white text-token-text-secondary hover:bg-token-main-surface-secondary"
       [cdkMenuTriggerFor]="workspaceMenu"
     >
-      <div class="text-token-text-secondary">
-        {{ workspace()?.name || '空白项目' }} <span class="text-token-text-secondary"></span>
+      <div class="max-w-[160px] truncate text-token-text-secondary">
+        {{ workspace()?.name || ('PAC.Xpert.Default' | translate: {Default: 'Default'} ) }}
       </div>
       <svg
         width="24"
@@ -38,12 +38,12 @@
           width="24"
           height="24"
           fill="currentColor"
-          class="remixicon w-[14px] h-[14px] mr-1"
+          class="w-[14px] h-[14px] mr-1"
         >
           <path
             d="M7 11.5C4.51472 11.5 2.5 9.48528 2.5 7C2.5 4.51472 4.51472 2.5 7 2.5C9.48528 2.5 11.5 4.51472 11.5 7C11.5 9.48528 9.48528 11.5 7 11.5ZM7 21.5C4.51472 21.5 2.5 19.4853 2.5 17C2.5 14.5147 4.51472 12.5 7 12.5C9.48528 12.5 11.5 14.5147 11.5 17C11.5 19.4853 9.48528 21.5 7 21.5ZM17 11.5C14.5147 11.5 12.5 9.48528 12.5 7C12.5 4.51472 14.5147 2.5 17 2.5C19.4853 2.5 21.5 4.51472 21.5 7C21.5 9.48528 19.4853 11.5 17 11.5ZM17 21.5C14.5147 21.5 12.5 19.4853 12.5 17C12.5 14.5147 14.5147 12.5 17 12.5C19.4853 12.5 21.5 14.5147 21.5 17C21.5 19.4853 19.4853 21.5 17 21.5ZM7 9.5C8.38071 9.5 9.5 8.38071 9.5 7C9.5 5.61929 8.38071 4.5 7 4.5C5.61929 4.5 4.5 5.61929 4.5 7C4.5 8.38071 5.61929 9.5 7 9.5ZM7 19.5C8.38071 19.5 9.5 18.3807 9.5 17C9.5 15.6193 8.38071 14.5 7 14.5C5.61929 14.5 4.5 15.6193 4.5 17C4.5 18.3807 5.61929 19.5 7 19.5ZM17 9.5C18.3807 9.5 19.5 8.38071 19.5 7C19.5 5.61929 18.3807 4.5 17 4.5C15.6193 4.5 14.5 5.61929 14.5 7C14.5 8.38071 15.6193 9.5 17 9.5ZM17 19.5C18.3807 19.5 19.5 18.3807 19.5 17C19.5 15.6193 18.3807 14.5 17 14.5C15.6193 14.5 14.5 15.6193 14.5 17C14.5 18.3807 15.6193 19.5 17 19.5Z"
           ></path></svg
-        >全部
+        >{{ 'PAC.KEY_WORDS.All' | translate: {Default: 'All'} }}
       </li>
       <li
         [cdkOption]="XpertRoleTypeEnum.Agent"
@@ -55,7 +55,7 @@
           width="24"
           height="24"
           fill="currentColor"
-          class="remixicon w-[14px] h-[14px] mr-1"
+          class="w-[14px] h-[14px] mr-1"
         >
           <path
             d="M2 8.99374C2 5.68349 4.67654 3 8.00066 3H15.9993C19.3134 3 22 5.69478 22 8.99374V21H8.00066C4.68659 21 2 18.3052 2 15.0063V8.99374ZM20 19V8.99374C20 6.79539 18.2049 5 15.9993 5H8.00066C5.78458 5 4 6.78458 4 8.99374V15.0063C4 17.2046 5.79512 19 8.00066 19H20ZM14 11H16V13H14V11ZM8 11H10V13H8V11Z"
@@ -73,7 +73,7 @@
           width="24"
           height="24"
           fill="currentColor"
-          class="remixicon w-[14px] h-[14px] mr-1"
+          class="w-[14px] h-[14px] mr-1"
         >
           <path
             d="M11 1V2H7C5.34315 2 4 3.34315 4 5V8C4 10.7614 6.23858 13 9 13H15C17.7614 13 20 10.7614 20 8V5C20 3.34315 18.6569 2 17 2H13V1H11ZM6 5C6 4.44772 6.44772 4 7 4H17C17.5523 4 18 4.44772 18 5V8C18 9.65685 16.6569 11 15 11H9C7.34315 11 6 9.65685 6 8V5ZM9.5 9C10.3284 9 11 8.32843 11 7.5C11 6.67157 10.3284 6 9.5 6C8.67157 6 8 6.67157 8 7.5C8 8.32843 8.67157 9 9.5 9ZM14.5 9C15.3284 9 16 8.32843 16 7.5C16 6.67157 15.3284 6 14.5 6C13.6716 6 13 6.67157 13 7.5C13 8.32843 13.6716 9 14.5 9ZM6 22C6 18.6863 8.68629 16 12 16C15.3137 16 18 18.6863 18 22H20C20 17.5817 16.4183 14 12 14C7.58172 14 4 17.5817 4 22H6Z"
@@ -161,6 +161,7 @@
   </div>
 </div>
 
+
 <router-outlet></router-outlet>
 
 <ng-template #workspaceMenu>
@@ -168,9 +169,6 @@
     <label class="px-2 pb-2 font-semibold">{{ 'PAC.KEY_WORDS.Workspaces' | translate: { Default: 'Workspaces' } }}</label>
     <div class="max-h-64 w-56 overflow-y-auto" (click)="$event.stopPropagation()">
       <ul class="ngm-cdk-listbox" cdkListbox [(ngModel)]="selectedWorkspaces">
-        <li [cdkOption]="null" class="ngm-cdk-option p-2 flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10">
-          {{ 'PAC.KEY_WORDS.Default' | translate: { Default: 'Default' } }}
-        </li>
         @for (item of workspaces(); track item.name) {
           <li [cdkOption]="item.id" #option="cdkOption" class="ngm-cdk-option p-2 flex items-center cursor-pointer rounded-md active:scale-95 transition-transform hover:bg-black/5 dark:hover:bg-white/10">
             <div class="flex-1">{{ item.name }}</div>
@@ -203,7 +201,7 @@
       </div>
       
       <div class="grow text-left font-normal ml-2 text-[14px] text-gray-700" role="none">{{ 'PAC.ACTIONS.New' | translate: { Default: 'New' } }}</div>
-      <!-- <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="remixicon shrink-0 w-3.5 h-3.5  text-gray-500" role="none">
+      <!-- <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="shrink-0 w-3.5 h-3.5  text-gray-500" role="none">
         <path d="M13.1717 12.0007L8.22192 7.05093L9.63614 5.63672L16.0001 12.0007L9.63614 18.3646L8.22192 16.9504L13.1717 12.0007Z" role="none"></path>
       </svg> -->
     </button>

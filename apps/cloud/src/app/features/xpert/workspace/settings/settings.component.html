@@ -2,14 +2,15 @@
   <div
     class="w-[44px] sm:w-[200px] px-[1px] py-4 sm:p-4 border border-gray-100 shrink-0 sm:shrink-1 flex flex-col items-center sm:items-start"
   >
-    <div class="mb-8 ml-0 sm:ml-2 text-sm sm:text-base font-medium leading-6 text-gray-900">设置</div>
+    <div class="mb-8 ml-0 sm:ml-2 text-sm sm:text-base font-medium leading-6 text-gray-900">{{ 'PAC.KEY_WORDS.Settings' | translate: {Default: 'Settings'} }}</div>
     <div class="w-full">
       <div class="mb-4">
-        <div class="px-2 mb-[6px] text-[10px] sm:text-xs font-medium text-gray-500">工作空间</div>
-        <div>
-          <div
-            class="flex items-center h-[37px] mb-[2px] text-sm cursor-pointer rounded-lg font-light text-gray-700"
-            title="模型供应商"
+        <div class="px-2 mb-[6px] text-[10px] sm:text-sm font-medium uppercase text-gray-500">{{ 'PAC.KEY_WORDS.Workspace' | translate: {Default: 'Workspace'} }}</div>
+        <ul cdkListbox [(ngModel)]="selectedMenus">
+          <li
+            class="menu-item"
+            [title]="'PAC.Xpert.ModelProviders' | translate: {Default: 'Model Providers'}"
+            [cdkOption]="'models'"
           >
             <svg
               viewBox="0 0 24 24"
@@ -23,11 +24,13 @@
                 d="M12 1L21.5 6.5V17.5L12 23L2.5 17.5V6.5L12 1ZM5.49388 7.0777L12.0001 10.8444L18.5062 7.07774L12 3.311L5.49388 7.0777ZM4.5 8.81329V16.3469L11.0001 20.1101V12.5765L4.5 8.81329ZM13.0001 20.11L19.5 16.3469V8.81337L13.0001 12.5765V20.11Z"
               ></path>
             </svg>
-            <div class="truncate">模型供应商</div>
-          </div>
-          <div
-            class="flex items-center h-[37px] mb-[2px] text-sm cursor-pointer rounded-lg font-semibold text-primary-600 bg-primary-50"
-            title="成员"
+            <div class="truncate">{{ 'PAC.Xpert.ModelProviders' | translate: {Default: 'Model Providers'} }}</div>
+          </li>
+
+          <li
+            class="menu-item"
+            [title]="'PAC.Xpert.Members' | translate: {Default: 'Members'}"
+            [cdkOption]="'members'"
           >
             <svg
               viewBox="0 0 24 24"
@@ -41,184 +44,23 @@
                 d="M10 19.748V16.4C10 15.1174 10.9948 14.1076 12.4667 13.5321C11.5431 13.188 10.5435 13 9.5 13C7.61013 13 5.86432 13.6168 4.45286 14.66C5.33199 17.1544 7.41273 19.082 10 19.748ZM18.8794 16.0859C18.4862 15.5526 17.1708 15 15.5 15C13.4939 15 12 15.7967 12 16.4V20C14.9255 20 17.4843 18.4296 18.8794 16.0859ZM9.55 11.5C10.7926 11.5 11.8 10.4926 11.8 9.25C11.8 8.00736 10.7926 7 9.55 7C8.30736 7 7.3 8.00736 7.3 9.25C7.3 10.4926 8.30736 11.5 9.55 11.5ZM15.5 12.5C16.6046 12.5 17.5 11.6046 17.5 10.5C17.5 9.39543 16.6046 8.5 15.5 8.5C14.3954 8.5 13.5 9.39543 13.5 10.5C13.5 11.6046 14.3954 12.5 15.5 12.5ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22Z"
               ></path>
             </svg>
-            <div class="truncate">成员</div>
-          </div>
-          <div
-            class="flex items-center h-[37px] mb-[2px] text-sm cursor-pointer rounded-lg font-light text-gray-700"
-            title="数据来源"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="remixicon w-4 h-4 ml-3 mr-2"
-            >
-              <path
-                d="M5 12.5C5 12.8134 5.46101 13.3584 6.53047 13.8931C7.91405 14.5849 9.87677 15 12 15C14.1232 15 16.0859 14.5849 17.4695 13.8931C18.539 13.3584 19 12.8134 19 12.5V10.3287C17.35 11.3482 14.8273 12 12 12C9.17273 12 6.64996 11.3482 5 10.3287V12.5ZM19 15.3287C17.35 16.3482 14.8273 17 12 17C9.17273 17 6.64996 16.3482 5 15.3287V17.5C5 17.8134 5.46101 18.3584 6.53047 18.8931C7.91405 19.5849 9.87677 20 12 20C14.1232 20 16.0859 19.5849 17.4695 18.8931C18.539 18.3584 19 17.8134 19 17.5V15.3287ZM3 17.5V7.5C3 5.01472 7.02944 3 12 3C16.9706 3 21 5.01472 21 7.5V17.5C21 19.9853 16.9706 22 12 22C7.02944 22 3 19.9853 3 17.5ZM12 10C14.1232 10 16.0859 9.58492 17.4695 8.89313C18.539 8.3584 19 7.81342 19 7.5C19 7.18658 18.539 6.6416 17.4695 6.10687C16.0859 5.41508 14.1232 5 12 5C9.87677 5 7.91405 5.41508 6.53047 6.10687C5.46101 6.6416 5 7.18658 5 7.5C5 7.81342 5.46101 8.3584 6.53047 8.89313C7.91405 9.58492 9.87677 10 12 10Z"
-              ></path>
-            </svg>
-            <div class="truncate">数据来源</div>
-          </div>
-          <div
-            class="flex items-center h-[37px] mb-[2px] text-sm cursor-pointer rounded-lg font-light text-gray-700"
-            title="API 扩展"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="remixicon w-4 h-4 ml-3 mr-2"
-            >
-              <path
-                d="M7 5C7 2.79086 8.79086 1 11 1C13.2091 1 15 2.79086 15 5H20C20.5523 5 21 5.44772 21 6V10.1707C21 10.4953 20.8424 10.7997 20.5774 10.9872C20.3123 11.1746 19.9728 11.2217 19.6668 11.1135C19.4595 11.0403 19.2355 11 19 11C17.8954 11 17 11.8954 17 13C17 14.1046 17.8954 15 19 15C19.2355 15 19.4595 14.9597 19.6668 14.8865C19.9728 14.7783 20.3123 14.8254 20.5774 15.0128C20.8424 15.2003 21 15.5047 21 15.8293V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V6C3 5.44772 3.44772 5 4 5H7ZM11 3C9.89543 3 9 3.89543 9 5C9 5.23554 9.0403 5.45952 9.11355 5.66675C9.22172 5.97282 9.17461 6.31235 8.98718 6.57739C8.79974 6.84243 8.49532 7 8.17071 7H5V19H19V17C16.7909 17 15 15.2091 15 13C15 10.7909 16.7909 9 19 9V7H13.8293C13.5047 7 13.2003 6.84243 13.0128 6.57739C12.8254 6.31235 12.7783 5.97282 12.8865 5.66675C12.9597 5.45952 13 5.23555 13 5C13 3.89543 12.1046 3 11 3Z"
-              ></path>
-            </svg>
-            <div class="truncate">API 扩展</div>
-          </div>
-        </div>
+            <div class="truncate">{{ 'PAC.Xpert.Members' | translate: {Default: 'Members'} }}</div>
+          </li>
+          
+        </ul>
       </div>
-      <div class="mb-4">
-        <div class="px-2 mb-[6px] text-[10px] sm:text-xs font-medium text-gray-500">账户</div>
-        <div>
-          <div
-            class="flex items-center h-[37px] mb-[2px] text-sm cursor-pointer rounded-lg font-light text-gray-700"
-            title="我的账户"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="remixicon w-4 h-4 ml-3 mr-2"
-            >
-              <path
-                d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12.1597 16C10.1243 16 8.29182 16.8687 7.01276 18.2556C8.38039 19.3474 10.114 20 12 20C13.9695 20 15.7727 19.2883 17.1666 18.1081C15.8956 16.8074 14.1219 16 12.1597 16ZM12 4C7.58172 4 4 7.58172 4 12C4 13.8106 4.6015 15.4807 5.61557 16.8214C7.25639 15.0841 9.58144 14 12.1597 14C14.6441 14 16.8933 15.0066 18.5218 16.6342C19.4526 15.3267 20 13.7273 20 12C20 7.58172 16.4183 4 12 4ZM12 5C14.2091 5 16 6.79086 16 9C16 11.2091 14.2091 13 12 13C9.79086 13 8 11.2091 8 9C8 6.79086 9.79086 5 12 5ZM12 7C10.8954 7 10 7.89543 10 9C10 10.1046 10.8954 11 12 11C13.1046 11 14 10.1046 14 9C14 7.89543 13.1046 7 12 7Z"
-              ></path>
-            </svg>
-            <div class="truncate">我的账户</div>
-          </div>
-          <div
-            class="flex items-center h-[37px] mb-[2px] text-sm cursor-pointer rounded-lg font-light text-gray-700"
-            title="集成"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="remixicon w-4 h-4 ml-3 mr-2"
-            >
-              <path
-                d="M2.5 7C2.5 9.48528 4.51472 11.5 7 11.5C9.48528 11.5 11.5 9.48528 11.5 7C11.5 4.51472 9.48528 2.5 7 2.5C4.51472 2.5 2.5 4.51472 2.5 7ZM2.5 17C2.5 19.4853 4.51472 21.5 7 21.5C9.48528 21.5 11.5 19.4853 11.5 17C11.5 14.5147 9.48528 12.5 7 12.5C4.51472 12.5 2.5 14.5147 2.5 17ZM12.5 17C12.5 19.4853 14.5147 21.5 17 21.5C19.4853 21.5 21.5 19.4853 21.5 17C21.5 14.5147 19.4853 12.5 17 12.5C14.5147 12.5 12.5 14.5147 12.5 17ZM9.5 7C9.5 8.38071 8.38071 9.5 7 9.5C5.61929 9.5 4.5 8.38071 4.5 7C4.5 5.61929 5.61929 4.5 7 4.5C8.38071 4.5 9.5 5.61929 9.5 7ZM9.5 17C9.5 18.3807 8.38071 19.5 7 19.5C5.61929 19.5 4.5 18.3807 4.5 17C4.5 15.6193 5.61929 14.5 7 14.5C8.38071 14.5 9.5 15.6193 9.5 17ZM19.5 17C19.5 18.3807 18.3807 19.5 17 19.5C15.6193 19.5 14.5 18.3807 14.5 17C14.5 15.6193 15.6193 14.5 17 14.5C18.3807 14.5 19.5 15.6193 19.5 17ZM16 11V8H13V6H16V3H18V6H21V8H18V11H16Z"
-              ></path>
-            </svg>
-            <div class="truncate">集成</div>
-          </div>
-          <div
-            class="flex items-center h-[37px] mb-[2px] text-sm cursor-pointer rounded-lg font-light text-gray-700"
-            title="语言"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="remixicon w-4 h-4 ml-3 mr-2"
-            >
-              <path
-                d="M18.5 10L22.9 21H20.745L19.544 18H15.454L14.255 21H12.101L16.5 10H18.5ZM10 2V4H16V6L14.0322 6.0006C13.2425 8.36616 11.9988 10.5057 10.4115 12.301C11.1344 12.9457 11.917 13.5176 12.7475 14.0079L11.9969 15.8855C10.9237 15.2781 9.91944 14.5524 8.99961 13.7249C7.21403 15.332 5.10914 16.5553 2.79891 17.2734L2.26257 15.3442C4.2385 14.7203 6.04543 13.6737 7.59042 12.3021C6.46277 11.0281 5.50873 9.57985 4.76742 8.00028L7.00684 8.00037C7.57018 9.03885 8.23979 10.0033 8.99967 10.877C10.2283 9.46508 11.2205 7.81616 11.9095 6.00101L2 6V4H8V2H10ZM17.5 12.8852L16.253 16H18.745L17.5 12.8852Z"
-              ></path>
-            </svg>
-            <div class="truncate">语言</div>
-          </div>
-        </div>
-      </div>
+      
     </div>
   </div>
+
   <div class="relative w-[824px] h-[720px] pb-4 overflow-y-auto">
-    <div class="sticky top-0 px-6 py-4 flex items-center h-14 mb-4 bg-white text-base font-medium text-gray-900 z-20">
-      <div class="shrink-0">成员</div>
-      <div class="grow flex justify-end">
-        <div class="flex items-center justify-center -mr-4 w-6 h-6 cursor-pointer">
-          <svg
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="currentColor"
-            class="remixicon w-4 h-4 text-gray-400"
-          >
-            <path
-              d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"
-            ></path>
-          </svg>
-        </div>
-      </div>
-    </div>
-    <div class="px-4 sm:px-8 pt-2">
-      <div class="flex flex-col">
-        <div class="flex items-center mb-4 p-3 bg-gray-50 rounded-2xl">
-          <img src="/logo/logo-embedded-chat-header.png" class="block w-auto h-6 !w-10 !h-10" alt="logo" />
-          <div class="grow mx-2"><div class="text-sm font-medium text-gray-900">tiven.wang's Workspace</div></div>
-          <div
-            class="shrink-0 flex items-center py-[7px] px-3 border-[0.5px] border-gray-200 text-[13px] font-medium text-primary-600 bg-white shadow-xs rounded-lg cursor-pointer"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              class="remixicon w-4 h-4 mr-2"
-            >
-              <path
-                d="M14 14.252V16.3414C13.3744 16.1203 12.7013 16 12 16C8.68629 16 6 18.6863 6 22H4C4 17.5817 7.58172 14 12 14C12.6906 14 13.3608 14.0875 14 14.252ZM12 13C8.685 13 6 10.315 6 7C6 3.685 8.685 1 12 1C15.315 1 18 3.685 18 7C18 10.315 15.315 13 12 13ZM12 11C14.21 11 16 9.21 16 7C16 4.79 14.21 3 12 3C9.79 3 8 4.79 8 7C8 9.21 9.79 11 12 11ZM18 17V14H20V17H23V19H20V22H18V19H15V17H18Z"
-              ></path></svg
-            >添加
-          </div>
-        </div>
-        <div class="overflow-visible lg:overflow-visible">
-          <div class="flex items-center py-[7px] border-b border-gray-200 min-w-[480px]">
-            <div class="grow px-3 text-xs font-medium text-gray-500">姓名</div>
-            <div class="shrink-0 w-[104px] text-xs font-medium text-gray-500">上次活动时间</div>
-            <div class="shrink-0 w-[96px] px-3 text-xs font-medium text-gray-500">角色</div>
-          </div>
-          <div class="min-w-[480px] relative">
-            <div class="flex border-b border-gray-100">
-              <div class="grow flex items-center py-2 px-3">
-                <div
-                  class="shrink-0 flex items-center rounded-full bg-primary-600 mr-2"
-                  style="width: 24px; height: 24px; font-size: 24px; line-height: 24px"
-                >
-                  <div
-                    class="text-center text-white scale-[0.4]"
-                    style="width: 24px; height: 24px; font-size: 24px; line-height: 24px"
-                  >
-                    T
-                  </div>
-                </div>
-                <div class="">
-                  <div class="text-[13px] font-medium text-gray-700 leading-[18px]">
-                    tiven.wang<span class="text-xs text-gray-500">（你）</span>
-                  </div>
-                  <div class="text-xs text-gray-500 leading-[18px]">xxxx</div>
-                </div>
-              </div>
-              <div class="shrink-0 flex items-center w-[104px] py-2 text-[13px] text-gray-700">9 分钟前</div>
-              <div class="shrink-0 w-[96px] flex items-center">
-                <div class="px-3 text-[13px] text-gray-700">所有者</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    @switch(menu()) {
+      @case('models') {
+        <xpert-workspace-models @ifAnimationTrigger [workspace]="workspace()" />
+      }
+      @case('members') {
+        <xpert-workspace-members @ifAnimationTrigger [workspace]="workspace()" />
+      }
+    }
   </div>
 </div>

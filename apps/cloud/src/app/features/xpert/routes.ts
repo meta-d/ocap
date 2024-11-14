@@ -1,18 +1,31 @@
 import { Routes } from '@angular/router'
-import { XpertHomeComponent } from './home.component'
 import { XpertStudioComponent } from './studio/studio.component'
-import { XpertStudioXpertsComponent } from './xperts/xperts.component'
+import { XpertStudioXpertsComponent } from './workspace/xperts/xperts.component'
 import { XpertStudioAPIToolComponent } from './tools'
 import { XpertDevelopComponent, XpertComponent } from './xpert'
 import { XpertBasicComponent } from './xpert/basic/basic.component'
+import { XpertLogsComponent } from './xpert/logs/logs.component'
+import { XpertMonitorComponent } from './xpert/monitor/monitor.component'
+import { XpertTemplatesComponent } from './templates/templates.component'
+import { XpertWorkspaceWelcomeComponent } from './workspace/welcome/welcome.component'
+import { XpertWorkspaceHomeComponent } from './workspace/home/home.component'
 
 export const routes: Routes = [
   {
     path: '',
-    component: XpertHomeComponent,
+    redirectTo: 'w',
+    pathMatch: 'full'
+  },
+  {
+    path: 'w',
+    component: XpertWorkspaceHomeComponent,
     children: [
       {
         path: '',
+        component: XpertWorkspaceWelcomeComponent
+      },
+      {
+        path: ':id',
         component: XpertStudioXpertsComponent
       },
       // {
@@ -20,6 +33,10 @@ export const routes: Routes = [
       //   component: XpertStudioToolsComponent
       // }
     ]
+  },
+  {
+    path: 'e',
+    component: XpertTemplatesComponent
   },
   {
     path: 'tool/:id',
@@ -31,7 +48,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'agents',
+        redirectTo: 'basic',
         pathMatch: 'full'
       },
       {
@@ -46,10 +63,18 @@ export const routes: Routes = [
         path: 'develop',
         component: XpertDevelopComponent
       },
+      {
+        path: 'logs',
+        component: XpertLogsComponent
+      },
+      {
+        path: 'monitor',
+        component: XpertMonitorComponent
+      },
     ]
   },
-  {
-    path: '**',
-    component: XpertHomeComponent,
-  },
+  // {
+  //   path: '**',
+  //   component: XpertHomeComponent,
+  // },
 ]

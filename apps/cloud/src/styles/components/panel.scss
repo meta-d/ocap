@@ -55,3 +55,9 @@
   --mat-dialog-container-min-width: 40vw;
   min-height: 40vh;
 }
+
+.mat-mdc-autocomplete-panel {
+  .mdc-list-item__primary-text {
+    width: 100%;
+  }
+}

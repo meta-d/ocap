@@ -69,7 +69,7 @@ export class XpertToolsetService extends XpertWorkspaceBaseCrudService<IXpertToo
   }
 
   getBuiltinToolInstances(workspace: IXpertWorkspace, provider: string) {
-    return this.getAllByWorkspace(workspace, { where: { type: provider }, order: { updatedAt: OrderTypeEnum.DESC } })
+    return this.getAllByWorkspace(workspace.id, { where: { type: provider }, order: { updatedAt: OrderTypeEnum.DESC } })
   }
 
   getOpenAPIRemoteSchema(url: string, credentials: Record<string, string>) {

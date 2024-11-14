@@ -14,7 +14,7 @@ import { MaterialModule } from '../../../@shared'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
 import { AppService } from '../../../app.service'
 import { injectGetXpertTeam } from '../utils'
-import { XpertBasicComponent } from './basic/basic.component'
+import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 
 
 @Component({
@@ -26,9 +26,9 @@ import { XpertBasicComponent } from './basic/basic.component'
     TranslateModule,
     MaterialModule,
     RouterModule,
+    NgxFloatUiModule,
 
     NgmCommonModule,
-    XpertBasicComponent,
     EmojiAvatarComponent
   ],
   selector: 'xpert-xpert',
@@ -40,6 +40,8 @@ import { XpertBasicComponent } from './basic/basic.component'
 })
 export class XpertComponent {
   eXpertTypeEnum = XpertTypeEnum
+  eNgxFloatUiPlacements = NgxFloatUiPlacements
+  eNgxFloatUiTriggers = NgxFloatUiTriggers
 
   readonly appService = inject(AppService)
   readonly paramId = injectParams('id')

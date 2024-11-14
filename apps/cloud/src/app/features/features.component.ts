@@ -397,9 +397,34 @@ export class FeaturesComponent implements OnInit {
 
   getMenuItems(): PacMenuItem[] {
     return [
+      // Xpert AI Features
+      {
+        title: 'Chat',
+        matIcon: 'robot_2',
+        link: '/chat',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'Chat',
+          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
+          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
+        }
+      },
+      {
+        title: 'Xpert Agent',
+        matIcon: 'engineering',
+        link: '/xpert',
+        pathMatch: 'prefix',
+        data: {
+          translationKey: 'Xpert Agent',
+          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
+          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
+        }
+      },
+
+      // BI Features
       {
         title: 'Home',
-        matIcon: 'home',
+        matIcon: 'leaderboard',
         link: '/home',
         pathMatch: 'prefix',
         home: true,
@@ -437,30 +462,6 @@ export class FeaturesComponent implements OnInit {
           },
         ]
       },
-      // Xpert AI Features
-      {
-        title: 'Chat',
-        matIcon: 'robot_2',
-        link: '/chat',
-        pathMatch: 'prefix',
-        data: {
-          translationKey: 'Chat',
-          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
-          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
-        }
-      },
-      {
-        title: 'Xpert Agent',
-        matIcon: 'engineering',
-        link: '/xpert',
-        pathMatch: 'prefix',
-        data: {
-          translationKey: 'Xpert Agent',
-          featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
-          permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
-        }
-      },
-      // BI Features
       {
         title: 'Chat BI',
         matIcon: 'mms',
