@@ -249,7 +249,11 @@
       "Browse": "浏览",
       "DropImageHereOr": "将图片拖至此处，或者",
       "ChooseStyle": "选择样式",
-      "Workspace": "工作空间"
+      "Workspace": "工作空间",
+      "Categories": "类别",
+      "Category": "类别",
+      "Color": "颜色",
+      "Tag": "标签"
     },
     "MENU": {
       "Certification": "认证",
@@ -1916,7 +1920,9 @@
       "SelectOptions": "可选项",
       "AddOptions": "添加选项",
       "MaxLength": "最大长度",
-      "StartDebuggingDigitalExpert": "在下面的框中输入内容开始调试数字专家"
+      "StartDebuggingDigitalExpert": "在下面的框中输入内容开始调试数字专家",
+      "Restart": "重新开始",
+      "Component": "组件"
     },
     "title": {
       "short": "Xpert AI"

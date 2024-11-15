@@ -103,7 +103,7 @@ export class ChatBIToolHandler implements ICommandHandler<ChatBIToolCommand> {
 		const parentRunId = runManager?.parentRunId
 		const context = parentConfig.configurable as XpertToolChatBIContext
 
-		this.logger.verbose(`parentRunId=${parentRunId}, tool_call_id=${context.tool_call_id}`,)
+		this.logger.debug(`parentRunId=${parentRunId}, tool_call_id=${context.tool_call_id}, models: [${context.models?.join(', ')}], copilot: ${JSON.stringify(context.copilotModel)}`,)
 
 		const controller = new AbortController()
 		const abortEventListener = () => { controller.abort() }

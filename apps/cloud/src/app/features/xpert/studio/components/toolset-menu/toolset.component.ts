@@ -5,7 +5,6 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, model
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
-import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { IXpertTool, IXpertToolset, XpertToolsetCategoryEnum } from 'apps/cloud/src/app/@core'
 import { debounceTime, map, startWith } from 'rxjs'
@@ -29,7 +28,6 @@ import { ToolsetCardComponent } from 'apps/cloud/src/app/@shared'
     CdkMenuModule,
     CdkListboxModule,
     OverlayModule,
-    NgmI18nPipe,
     NgmSearchComponent,
     
     EmojiAvatarComponent,

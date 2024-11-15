@@ -1,4 +1,4 @@
-import { BaseMessage, FunctionCall, OpenAIToolCall } from '@langchain/core/messages'
+import { BaseMessage, FunctionCall, MessageContent, OpenAIToolCall } from '@langchain/core/messages'
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
@@ -60,6 +60,9 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
+/**
+ * @deprecated use types in server
+ */
 export interface CopilotBaseMessage {
   id: string
   createdAt?: Date
@@ -76,7 +79,7 @@ export interface CopilotBaseMessage {
    */
   status?: 'thinking' | 'answering' | 'pending' | 'done' | 'aborted' | 'error'
 
-  content?: string
+  content?: string | MessageContent | any
 }
 
 /**

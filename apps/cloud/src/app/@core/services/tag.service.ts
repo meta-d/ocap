@@ -14,7 +14,8 @@ export class TagService extends OrganizationBaseCrudService<ITag> {
    * All categories
    */
   readonly #categories$ = this.refresh$.pipe(
-    switchMap(() => this.httpClient.get<{ category: string }[]>(this.apiBaseUrl + `/categories`))
+    switchMap(() => this.httpClient.get<{ category: string }[]>(this.apiBaseUrl + `/categories`)),
+    shareReplay(1)
   )
 
   /**

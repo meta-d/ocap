@@ -1,4 +1,5 @@
-import { ChatMessageTypeEnum, CopilotChatMessage, IChatConversation, IXpert, XpertAgentExecutionEnum } from '@metad/contracts'
+import { MessageContent } from '@langchain/core/messages'
+import { ChatMessageEventTypeEnum, ChatMessageTypeEnum, CopilotChatMessage, IChatConversation, IXpert, XpertAgentExecutionEnum } from '@metad/contracts'
 import { getErrorMessage, shortuuid } from '@metad/server-common'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
@@ -11,7 +12,6 @@ import { ChatConversationUpsertCommand } from '../../../chat-conversation/comman
 import {
 	XpertAgentExecutionUpsertCommand
 } from '../../../xpert-agent-execution/commands'
-import { MessageContent } from '@langchain/core/messages'
 
 @CommandHandler(XpertChatCommand)
 export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
@@ -42,8 +42,11 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 				new FindChatConversationQuery({id: conversationId}, ['execution'])
 			)
 			conversation.messages.push(userMessage)
-			conversation = await this.commandBus.execute(
-				new ChatConversationUpsertCommand(conversation)
+			await this.commandBus.execute(
+				new ChatConversationUpsertCommand({
+					id: conversation.id,
+					messages: conversation.messages
+				})
 			)
 		} else {
 			const execution = await this.commandBus.execute(
@@ -78,57 +81,77 @@ export class XpertChatHandler implements ICommandHandler<XpertChatCommand> {
 		let error = null
 		let result = ''
 
-		return (
-			await this.commandBus.execute<XpertAgentChatCommand, Promise<Observable<MessageEvent>>>(
-				new XpertAgentChatCommand(input, xpert.agent.key, xpert, {
-					...(options ?? {}),
-					isDraft: options?.isDraft,
-					execution: conversation.execution
-				})
-			)
-		).pipe(
-			tap({
-				next: (event) => {
-					if (event.data.type === ChatMessageTypeEnum.MESSAGE) {
-						appendMessageContent(aiMessage, event.data.data)
-						if (typeof event.data.data === 'string') {
-						  result += event.data.data
-						}
-					}
-				},
-				error: (err) => {
-					status = XpertAgentExecutionEnum.FAILED
-					error = getErrorMessage(err)
-				},
-				finalize: async () => {
-					try {
-						const timeEnd = Date.now()
-
-						// Record End time
-						await this.commandBus.execute(
-							new ChatConversationUpsertCommand({
-								...conversation,
-								messages: [
-									...conversation.messages,
-									aiMessage
-								],
-								execution: {
-									...conversation.execution,
-									elapsedTime: timeEnd - timeStart,
-									status,
-									error,
-									outputs: {
-										output: result
-									}
-								},
-							})
-						)
-					} catch (err) {
-						//
-					}
-				}
+		const agentObservable = await this.commandBus.execute<XpertAgentChatCommand, Promise<Observable<MessageEvent>>>(
+			new XpertAgentChatCommand(input, xpert.agent.key, xpert, {
+				...(options ?? {}),
+				isDraft: options?.isDraft,
+				execution: conversation.execution
 			})
 		)
+
+		return new Observable<MessageEvent>((subscriber) => {
+			// New conversation
+			subscriber.next({
+				data: {
+					type: ChatMessageTypeEnum.EVENT,
+					event: ChatMessageEventTypeEnum.ON_CONVERSATION_START,
+					data: {
+						id: conversation.id,
+						title: conversation.title
+					}
+				}
+			} as MessageEvent)
+
+			agentObservable.pipe(
+				tap({
+					next: (event) => {
+						if (event.data.type === ChatMessageTypeEnum.MESSAGE) {
+							appendMessageContent(aiMessage, event.data.data)
+							if (typeof event.data.data === 'string') {
+							  result += event.data.data
+							}
+						}
+					},
+					error: (err) => {
+						status = XpertAgentExecutionEnum.FAILED
+						error = getErrorMessage(err)
+					},
+					finalize: async () => {
+						try {
+							const timeEnd = Date.now()
+	
+							// Record End time
+							await this.commandBus.execute(
+								new ChatConversationUpsertCommand({
+									...conversation,
+									messages: [
+										...conversation.messages,
+										aiMessage
+									],
+									execution: {
+										...conversation.execution,
+										elapsedTime: timeEnd - timeStart,
+										status,
+										error,
+										outputs: {
+											output: result
+										}
+									},
+								})
+							)
+						} catch (err) {
+							//
+						}
+					}
+				})
+			).subscribe(subscriber)
+
+			return () => {
+				//
+			}
+		})
+
+		 
 	}
 }
 

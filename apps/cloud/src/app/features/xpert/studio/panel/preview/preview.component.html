@@ -3,6 +3,7 @@
       <div class="h-8">{{'PAC.Xpert.Preview' | translate: {Default: 'Preview'} }}</div>
       <div class="flex items-center gap-1">
         <button type="button" class="action-btn action-btn-sm primary"
+          [matTooltip]="'PAC.Xpert.Restart' | translate: {Default: 'Restart'}"
           (click)="restart()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4">
             <path d="M2 10C2 10 4.00498 7.26822 5.63384 5.63824C7.26269 4.00827 9.5136 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.89691 21 4.43511 18.2543 3.35177 14.5M2 10V4M2 10H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -83,18 +84,16 @@
                         <path id="Rectangle 1" d="M1.03647 1.5547C0.59343 0.890144 1.06982 0 1.86852 0H8V12L1.03647 1.5547Z" fill="currentColor"></path>
                       </svg>
                       <div class="relative inline-block px-4 py-3 max-w-full bg-gray-100 rounded-b-2xl rounded-tr-2xl text-base text-gray-900">
-                        <markdown class="ngm-copilot-markdown text-sm"
-                          lineNumbers
-                          [start]="5"
-                          [data]="$any(message.content)"
-                        />
+                        <xpert-preview-ai-message [message]="message" class="w-full" />
                       </div>
 
                       <div class="absolute flex justify-end gap-1 right-0 -top-4">
 
                         <div class="hidden group-hover:block h-[28px] p-0.5 rounded-lg bg-white border-[0.5px] border-gray-100 shadow-sm shrink-0">
                           <div class="shrink-0 p-1 flex items-center justify-center rounded-[6px] font-medium
-                            bg-components-card-bg text-gray-500 hover:bg-gray-50 cursor-pointer hover:text-gray-700">
+                            bg-components-card-bg text-gray-500 hover:bg-gray-50 cursor-pointer hover:text-gray-700"
+                            (click)="copy(message)"
+                          >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <path d="M10.6665 2.66634H11.9998C12.3535 2.66634 12.6926 2.80682 12.9426 3.05687C13.1927 3.30691 13.3332 3.64605 13.3332 3.99967V13.333C13.3332 13.6866 13.1927 14.0258 12.9426 14.2758C12.6926 14.5259 12.3535 14.6663 11.9998 14.6663H3.99984C3.64622 14.6663 3.30708 14.5259 3.05703 14.2758C2.80698 14.0258 2.6665 13.6866 2.6665 13.333V3.99967C2.6665 3.64605 2.80698 3.30691 3.05703 3.05687C3.30708 2.80682 3.64622 2.66634 3.99984 2.66634H5.33317M5.99984 1.33301H9.99984C10.368 1.33301 10.6665 1.63148 10.6665 1.99967V3.33301C10.6665 3.7012 10.368 3.99967 9.99984 3.99967H5.99984C5.63165 3.99967 5.33317 3.7012 5.33317 3.33301V1.99967C5.33317 1.63148 5.63165 1.33301 5.99984 1.33301Z" stroke="#667085" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
@@ -158,7 +157,7 @@
                   cdkAutosizeMinRows="1"
                   cdkAutosizeMaxRows="5"></textarea>
                 <div class="absolute bottom-[7px] flex items-center h-8 right-2">
-                  <div class="flex items-center px-1 h-5 rounded-md bg-gray-100 text-xs font-medium text-gray-500">0</div>
+                  <div class="flex items-center px-1 h-5 rounded-md bg-gray-100 text-xs font-medium text-gray-500">{{inputLength()}}</div>
                   <div class="mx-2 w-[1px] h-4 bg-black opacity-5"></div>
 
                   <button class="group action-btn action-btn-md primary"

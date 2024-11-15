@@ -4,7 +4,6 @@ import {
   Component,
   computed,
   DestroyRef,
-  effect,
   inject,
   input,
   model,
@@ -187,6 +186,13 @@ export class XpertStudioPanelAgentExecutionComponent {
 
 export function processEvents(event, executionService: XpertExecutionService) {
   switch(event.event) {
+    case ChatMessageEventTypeEnum.ON_CONVERSATION_START: {
+      executionService.conversation.update((state) => ({
+        ...(state ?? {}),
+        ...event.data
+      }))
+      break;
+    }
     case ChatMessageEventTypeEnum.ON_TOOL_START: {
       executionService.setToolExecution(event.data.name, {status: XpertAgentExecutionEnum.RUNNING})
       break;

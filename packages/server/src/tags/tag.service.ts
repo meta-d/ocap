@@ -33,7 +33,13 @@ export class TagService extends TenantOrganizationAwareCrudService<Tag> {
 	}
 
 	async findAllCategories(): Promise<{ category: string }[]> {
-		const categories = this.tagRepository.createQueryBuilder('tag').select('DISTINCT tag.category').getRawMany()
+		const organizationId = RequestContext.getOrganizationId();
+		const tenantId = RequestContext.currentTenantId()
+		const categories = this.tagRepository.createQueryBuilder('tag')
+			.select('DISTINCT tag.category')
+			.where('tag.tenantId = :tenantId', { tenantId })
+			.where('tag.organizationId = :organizationId OR tag.organizationId IS NULL', { organizationId })
+			.getRawMany();
 		return categories
 	}
 

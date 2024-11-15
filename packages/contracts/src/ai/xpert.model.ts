@@ -215,6 +215,7 @@ export enum ChatMessageTypeEnum {
  * https://js.langchain.com/docs/how_to/streaming/#event-reference
  */
 export enum ChatMessageEventTypeEnum {
+  ON_CONVERSATION_START = 'on_conversation_start',
   ON_TOOL_START = 'on_tool_start',
   ON_TOOL_END = 'on_tool_end',
   ON_TOOL_ERROR = 'on_tool_error',

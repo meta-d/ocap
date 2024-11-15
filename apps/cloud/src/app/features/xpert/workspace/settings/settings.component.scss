@@ -4,3 +4,7 @@
         @apply font-semibold text-primary-600 bg-primary-50;
     }
 }
+
+.btn-close.btn {
+  @apply rounded-md;
+}

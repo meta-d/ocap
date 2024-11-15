@@ -52,6 +52,7 @@ import { ExpandTeamRequest } from './xpert/expand/expand.request'
 import { injectGetXpertsByWorkspace, injectGetXpertTeam } from '../../utils'
 import { XpertComponent } from '../../xpert'
 import { FCanvasChangeEvent } from '@foblex/flow'
+import { nonBlank } from '@metad/copilot'
 
 
 @Injectable()
@@ -94,6 +95,7 @@ export class XpertStudioApiService {
       switchMap((id) => this.xpertRoleService.getVersions(id))
     )
   )
+  readonly workspaceId = computed(() => this.team()?.workspaceId)
 
   /**
    * pristine draft
@@ -122,10 +124,14 @@ export class XpertStudioApiService {
     map(({ items }) => items),
     shareReplay(1)
   )
-  readonly toolsets$ = this.toolsetService.getAllInOrg({relations: ['createdBy'], order: {updatedAt: OrderTypeEnum.DESC}}).pipe(
+  readonly toolsets$ = toObservable(this.workspaceId).pipe(
+    filter(nonBlank),
+    distinctUntilChanged(),
+    switchMap((id) => this.toolsetService.getAllByWorkspace(id, {relations: ['createdBy'], order: {updatedAt: OrderTypeEnum.DESC}})),
     map(({ items }) => items),
     shareReplay(1)
   )
+  
   readonly workspace = computed(() => this.team()?.workspace, { equal: (a, b) => a?.id === b?.id })
 
   readonly collaborators$ = toObservable(this.team).pipe(

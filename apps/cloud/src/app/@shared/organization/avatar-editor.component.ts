@@ -6,7 +6,6 @@ import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { firstValueFrom } from 'rxjs'
 import { IOrganization, OrganizationsService, ScreenshotService, Store } from '../../@core'
-import { UserPipe } from '../pipes'
 
 @Component({
   standalone: true,
@@ -18,7 +17,6 @@ import { UserPipe } from '../pipes'
     MatIconModule,
     CdkMenuModule,
     TranslateModule,
-    UserPipe,
     DensityDirective,
     AppearanceDirective
   ]

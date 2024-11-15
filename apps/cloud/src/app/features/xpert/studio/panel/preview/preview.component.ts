@@ -1,6 +1,7 @@
 import { TextFieldModule } from '@angular/cdk/text-field'
+import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard'
 import { CommonModule } from '@angular/common'
-import { Component, computed, DestroyRef, effect, inject, model, signal } from '@angular/core'
+import { Component, computed, DestroyRef, inject, model, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import {
   ChatConversationService,
@@ -18,6 +19,9 @@ import { XpertExecutionService } from '../../services/execution.service'
 import { XpertStudioComponent } from '../../studio.component'
 import { processEvents } from '../agent-execution/execution.component'
 import { TranslateModule } from '@ngx-translate/core'
+import { MatSnackBar } from '@angular/material/snack-bar'
+import { appendMessageContent, stringifyMessageContent } from '@metad/copilot'
+import { XpertPreviewAiMessageComponent } from './ai-message/message.component'
 
 @Component({
   standalone: true,
@@ -29,7 +33,8 @@ import { TranslateModule } from '@ngx-translate/core'
     TextFieldModule,
     MarkdownModule,
     EmojiAvatarComponent,
-    XpertParametersCardComponent
+    XpertParametersCardComponent,
+    XpertPreviewAiMessageComponent
   ],
   selector: 'xpert-studio-panel-preview',
   templateUrl: 'preview.component.html',
@@ -43,6 +48,8 @@ export class XpertStudioPreviewComponent {
   readonly studioComponent = inject(XpertStudioComponent)
   readonly #toastr = inject(ToastrService)
   readonly #destroyRef = inject(DestroyRef)
+  readonly #clipboard = inject(Clipboard)
+  readonly #snackBar = inject(MatSnackBar)
 
   readonly envriments = signal(false)
 
@@ -50,6 +57,7 @@ export class XpertStudioPreviewComponent {
   readonly parameters = computed(() => this.apiService.primaryAgent()?.parameters)
   readonly avatar = computed(() => this.xpert()?.avatar)
   readonly input = model<string>()
+  readonly inputLength = computed(() => this.input()?.length)
   readonly loading = signal(false)
 
   readonly output = signal('')
@@ -75,14 +83,14 @@ export class XpertStudioPreviewComponent {
 
     // Add to user message
     this.executionService.appendMessage({
-      role: 'user',
+      role: 'human',
       content: input,
       id: uuid()
     })
     this.input.set('')
     this.lastMessage.set({
       id: uuid(),
-      role: 'assistant',
+      role: 'ai',
       content: '',
       status: 'thinking'
     })
@@ -104,15 +112,15 @@ export class XpertStudioPreviewComponent {
             if (msg.data) {
               const event = JSON.parse(msg.data)
               if (event.type === ChatMessageTypeEnum.MESSAGE) {
+                this.lastMessage.update((message) => {
+                  appendMessageContent(message as any, event.data)
+                  return message
+                })
                 if (typeof event.data === 'string') {
                   // Update last AI message
                   this.output.update((state) => state + event.data)
-                  this.lastMessage.update((message) => ({
-                    ...message,
-                    content: message.content + event.data
-                  }))
                 } else {
-                  console.log(`未处理的消息：`, event)
+                  // console.log(`未处理的消息：`, event)
                 }
               } else if (event.type === ChatMessageTypeEnum.EVENT) {
                 processEvents(event, this.executionService)
@@ -140,5 +148,10 @@ export class XpertStudioPreviewComponent {
 
   close() {
     this.studioComponent.preview.set(false)
+  }
+
+  copy(message: CopilotChatMessage) {
+    this.#clipboard.copy(stringifyMessageContent(message.content))
+    this.#toastr.info({code: 'PAC.Xpert.Copied', default: 'Copied'})
   }
 }

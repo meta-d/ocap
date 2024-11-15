@@ -1,8 +1,9 @@
-import { AIMessage } from '@langchain/core/messages'
+import { AIMessage, MessageContent, MessageContentComplex } from '@langchain/core/messages'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { nanoid as _nanoid } from 'nanoid'
 import { ZodType, ZodTypeDef } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
+import { CopilotChatMessage } from './types'
 
 export function zodToAnnotations(obj: ZodType<any, ZodTypeDef, any>) {
   return (<{ properties: any }>zodToJsonSchema(obj)).properties
@@ -64,4 +65,60 @@ export function sumTokenUsage(output) {
     })
   })
   return tokenUsed
+}
+
+// stringify MessageContent
+export function stringifyMessageContent(content: MessageContent | MessageContentComplex) {
+  if (typeof content === 'string') {
+    return content
+  } else if (Array.isArray(content)) {
+    return content.map(stringifyMessageContent).join('\n\n')
+  } else if (content) {
+    if (content.type === 'text') {
+      return content.text
+    } else if (content.type === 'component') {
+      return JSON.stringify(content['data'])
+    } else {
+      return JSON.stringify(content)
+    }
+  }
+  return ''
+}
+
+
+export function appendMessageContent(aiMessage: CopilotChatMessage, content: MessageContent) {
+	const _content = aiMessage.content
+	if (typeof content === 'string') {
+		if (typeof _content === 'string') {
+			aiMessage.content = _content + content
+		} else if (Array.isArray(_content)) {
+			const lastContent = _content[_content.length - 1]
+			if (lastContent.type === 'text') {
+				lastContent.text = lastContent.text + content
+			} else {
+				_content.push({
+					type: 'text',
+					text: content
+				})
+			}
+		} else {
+			aiMessage.content = content
+		}
+	} else {
+		if (Array.isArray(_content)) {
+			_content.push(content)
+		} else if(_content) {
+			aiMessage.content = [
+				{
+					type: 'text',
+					text: _content
+				},
+				content
+			]
+		} else {
+			aiMessage.content = [
+				content
+			]
+		}
+	}
 }

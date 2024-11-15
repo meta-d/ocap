@@ -1,4 +1,5 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import {
   ChatConversationService,
   CopilotChatMessage,
@@ -6,26 +7,21 @@ import {
   IXpertAgentExecution,
   XpertAgentExecutionEnum,
 } from 'apps/cloud/src/app/@core'
-import { derivedAsync } from 'ngxtension/derived-async'
+import { of, switchMap } from 'rxjs'
 
 @Injectable()
 export class XpertExecutionService {
   readonly conversationService = inject(ChatConversationService)
 
   readonly conversationId = signal<string>(null)
-  readonly #conversation = derivedAsync(() => {
-    return this.conversationId()
-      ? this.conversationService.getById(this.conversationId(), { relations: ['execution', 'execution.subExecutions'] })
-      : null
-  })
 
-  readonly conversation = computed(() => this.#conversation())
+  readonly conversation = signal<IChatConversation>(null)
 
   readonly #messages = signal<CopilotChatMessage[]>([])
 
   readonly messages = computed(() => {
-    if (this.#conversation()) {
-        return [...this.#conversation().messages, ...this.#messages()]
+    if (this.conversation()?.messages) {
+        return [...this.conversation().messages, ...this.#messages()]
     }
     return this.#messages()
   })
@@ -55,9 +51,16 @@ export class XpertExecutionService {
   readonly toolExecutions = signal<Record<string, {status: XpertAgentExecutionEnum}>>({})
   readonly knowledgeExecutions = signal<Record<string, {status: XpertAgentExecutionEnum}>>({})
 
+  // Subsribe conversation
+  private conversationSub = toObservable(this.conversationId).pipe(
+    switchMap((id) => id ? this.conversationService.getById(this.conversationId(), { relations: ['execution', 'execution.subExecutions'] }) : of(null))
+  ).subscribe((conv) => {
+    this.conversation.set(conv)
+  })
+
   constructor() {
     effect(() => {
-      const execution = this.#conversation()?.execution
+      const execution = this.conversation()?.execution
       if (execution) {
         this.#agentExecutions.set({[execution.agentKey]: execution})
       }

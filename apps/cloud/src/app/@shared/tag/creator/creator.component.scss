@@ -1,9 +1,9 @@
 :host {
-  @apply flex flex-col p-4;
+  @apply flex flex-col;
 }
 
 label {
-  @apply block mb-2 text-sm font-medium text-gray-900 dark:text-white;
+  @apply block mb-2 text-base font-medium text-gray-900 dark:text-white;
 }
 
 select, input, textarea {

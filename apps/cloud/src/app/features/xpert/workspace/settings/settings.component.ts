@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, model, signal } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { IfAnimation, XpertWorkspaceService } from 'apps/cloud/src/app/@core';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { XpertWorkspaceMembersComponent } from '../members/members.component';
@@ -21,6 +21,7 @@ export class XpertWorkspaceSettingsComponent {
   readonly workspaceService = inject(XpertWorkspaceService)
 
   readonly #data = inject<{id: string;}>(MAT_DIALOG_DATA)
+  readonly #dialogRef = inject(MatDialogRef)
 
   readonly workspaceId = signal(this.#data.id)
 
@@ -32,4 +33,8 @@ export class XpertWorkspaceSettingsComponent {
 
   readonly selectedMenus = model<Array<'models' | 'members'>>(['members'])
   readonly menu = computed(() => this.selectedMenus()[0])
+
+  close() {
+    this.#dialogRef.close()
+  }
 }
