@@ -1,11 +1,10 @@
-import { computed, inject, Injectable, signal } from '@angular/core'
+import { computed, effect, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { IPoint, IRect } from '@foblex/2d'
-import { nonNullable } from '@metad/core'
+import { nonNullable, debounceUntilChanged } from '@metad/core'
 import { createStore, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { KnowledgebaseService, PACCopilotService, ToastrService, XpertService, XpertToolsetService } from 'apps/cloud/src/app/@core'
-import * as CryptoJS from 'crypto-js'
 import { isEqual, negate } from 'lodash-es'
 import {
   BehaviorSubject,
@@ -47,11 +46,12 @@ import {
   UpdateNodeRequest
 } from './node'
 import { CreateTeamHandler, CreateTeamRequest, UpdateXpertHandler, UpdateXpertRequest } from './xpert'
-import { EReloadReason, IStudioStore, TStateHistory } from './types'
+import { calculateHash, EReloadReason, IStudioStore, TStateHistory } from './types'
 import { ExpandTeamHandler } from './xpert/expand/expand.handler'
 import { ExpandTeamRequest } from './xpert/expand/expand.request'
 import { injectGetXpertsByWorkspace, injectGetXpertTeam } from '../../utils'
 import { XpertComponent } from '../../xpert'
+import { FCanvasChangeEvent } from '@foblex/flow'
 
 
 @Injectable()
@@ -69,6 +69,8 @@ export class XpertStudioApiService {
   readonly #stateHistory = stateHistory<Store, IStudioStore>(this.store, {
     comparatorFn: negate(isEqual)
   })
+  readonly historyHasPast = toSignal(this.#stateHistory.hasPast$)
+  readonly historyHasFuture = toSignal(this.#stateHistory.hasFuture$)
   /**
    * @deprecated
    */
@@ -76,7 +78,7 @@ export class XpertStudioApiService {
     return this.store.getValue().draft
   }
 
-  readonly #reload: Subject<EReloadReason> = new Subject<EReloadReason>()
+  readonly #reload: Subject<EReloadReason | null> = new Subject<EReloadReason>()
 
   public get reload$(): Observable<EReloadReason> {
     return this.#reload.asObservable().pipe(filter((value) => value !== EReloadReason.MOVED))
@@ -98,7 +100,13 @@ export class XpertStudioApiService {
    */
   readonly draft = signal<TXpertTeamDraft>(null)
   readonly unsaved = signal(false)
-  readonly stateHistories = signal<TStateHistory[]>([])
+  /**
+   * Operate histories
+   */
+  readonly stateHistories = signal<{past: TStateHistory[]; future: TStateHistory[]}>({
+    past: [],
+    future: []
+  })
   readonly viewModel = toSignal(this.store.pipe(map((state) => state.draft)))
   readonly collaboratorDetails = signal<Record<string, IXpert>>({})
   readonly primaryAgent = computed<IXpertAgent>(() => {
@@ -114,7 +122,7 @@ export class XpertStudioApiService {
     map(({ items }) => items),
     shareReplay(1)
   )
-  readonly toolsets$ = this.toolsetService.getAllInOrg({order: {updatedAt: OrderTypeEnum.DESC}}).pipe(
+  readonly toolsets$ = this.toolsetService.getAllInOrg({relations: ['createdBy'], order: {updatedAt: OrderTypeEnum.DESC}}).pipe(
     map(({ items }) => items),
     shareReplay(1)
   )
@@ -140,19 +148,36 @@ export class XpertStudioApiService {
               this.#stateHistory.clear()
               this.draft.set(role.draft)
               this.initRole(role)
-              this.stateHistories.update(() => [
-                { reason: EReloadReason.INIT, cursor: this.#stateHistory.getPast().length }
-              ])
+              this.stateHistories.update(() => ({
+                past: [
+                  {
+                    reason: EReloadReason.INIT,
+                    cursor: this.#stateHistory.getPast().length,
+                    createdAt: new Date()
+                  }
+                ],
+                future: []
+              }))
             })
           ),
           this.#reload.pipe(
             filter((event) => event !== EReloadReason.INIT),
-            tap((event) =>
-              this.stateHistories.update((state) => [
-                ...state,
-                { reason: event, cursor: this.#stateHistory.getPast().length }
-              ])
-            )
+            debounceUntilChanged(2000),
+            tap((event) => {
+              if (event) {
+                this.stateHistories.update((state) => ({
+                  past: [
+                    ...state.past,
+                    {
+                      reason: event,
+                      cursor: this.#stateHistory.getPast().length,
+                      createdAt: new Date()
+                    }
+                  ],
+                  future: []
+                }))
+              }
+            })
           )
         ])
       ),
@@ -168,6 +193,11 @@ export class XpertStudioApiService {
       this.draft.set(draft)
     })
 
+  constructor() {
+    effect(() => {
+      // console.log('API service:', this.viewModel())
+    })
+  }
   
 
   public initRole(xpert: IXpert) {
@@ -213,24 +243,83 @@ export class XpertStudioApiService {
     return this.#stateHistory.getPast().length
   }
 
-  gotoHistoryCursor(index: number) {
-    if (index > this.getHistoryCursor()) {
-      this.#stateHistory.jumpToFuture(index)
+  gotoHistoryIndex(index: number) {
+    // 更新历史记录，根据给定的索引调整过去和未来的状态
+    this.stateHistories.update((state) => {
+      let past: TStateHistory[]
+      let future: TStateHistory[]
+      // 如果索引在过去的长度范围内，调整过去和未来的状态
+      if (index <= state.past.length) {
+        past = state.past.slice(0, index)
+        future = [...state.past.slice(index), ...state.future]
+      } else {
+        past = [...state.past, ...state.future.slice(0, index - state.past.length)]
+        future = state.future.slice(index - state.past.length)
+      }
+      return {
+        past,
+        future
+      }
+    })
+
+    // Operate on history of stateHistory
+    // curor on the last history of path
+    const cursor = this.stateHistories().past[index - 1].cursor
+    if (cursor > this.getHistoryCursor()) {
+      this.#stateHistory.jumpToFuture(cursor - this.getHistoryCursor() - 1)
     } else {
-      this.#stateHistory.jumpToPast(index)
+      this.#stateHistory.jumpToPast(cursor)
     }
+
+    // Reload event
+    this.#reload.next(null)
   }
 
   undo() {
-    this.#stateHistory.undo()
+    const cursor = this.stateHistories().past[this.stateHistories().past.length - 2]?.cursor ?? 0
+    this.stateHistories.update((state) => {
+      return {
+        past: state.past.slice(0, state.past.length - 1),
+        future: [...state.past.slice(state.past.length -1), ...state.future]
+      }
+    })
+    this.#stateHistory.jumpToPast(cursor)
   }
 
   redo() {
-    this.#stateHistory.redo()
+    if (this.stateHistories().future[0]) {
+      const cursor = this.stateHistories().future[0].cursor
+      this.stateHistories.update((state) => {
+        return {
+          past: [...state.past, ...state.future.slice(0, 1)],
+          future: state.future.slice(1)
+        }
+      })
+      this.#stateHistory.jumpToFuture(cursor - this.getHistoryCursor() - 1)
+    }
   }
 
+  /**
+   * Clear the histories, but keep current state as the init step
+   */
   clearHistory() {
-    this.#stateHistory.clear()
+    this.#stateHistory.clear((history) => {
+      return {
+        past: [history.present],
+        present: history.present,
+        future: []
+      };
+    })
+    this.stateHistories.set({
+      past: [
+        {
+          reason: EReloadReason.INIT,
+          cursor: this.#stateHistory.getPast().length,
+          createdAt: new Date()
+        }
+      ],
+      future: []
+    })
   }
 
   // Connections
@@ -250,6 +339,7 @@ export class XpertStudioApiService {
     new MoveNodeHandler(this.store).handle(new MoveNodeRequest(key, position))
     this.#reload.next(EReloadReason.MOVED)
   }
+
   public resizeNode(key: string, size: IRect) {
     this.store.update((state) => {
       const draft = structuredClone(state.draft)
@@ -305,7 +395,7 @@ export class XpertStudioApiService {
     new UpdateXpertHandler(this.store).handle(new UpdateXpertRequest(xpert))
     this.#reload.next(EReloadReason.XPERT_UPDATED)
   }
-  public updateXpertOptions(options: Partial<TXpertOptions>) {
+  public updateXpertOptions(options: Partial<TXpertOptions>, reason: EReloadReason) {
     this.store.update((state) => {
       const draft = structuredClone(state.draft)
       draft.team = {
@@ -320,15 +410,15 @@ export class XpertStudioApiService {
         draft
       }
     })
-    this.#reload.next(EReloadReason.XPERT_UPDATED)
+    this.#reload.next(reason) // EReloadReason.XPERT_UPDATED)
+  }
+
+  updateCanvas(event: FCanvasChangeEvent) {
+    this.updateXpertOptions({ position: event.position, scale: event.scale }, EReloadReason.CANVAS_CHANGED)
   }
 
   public autoLayout() {
     new LayoutHandler(this.store).handle(new LayoutRequest('TB'))
     // this.#reload.next(EReloadReason.AUTO_LAYOUT)
   }
-}
-
-function calculateHash(jsonString: string): string {
-  return CryptoJS.SHA256(jsonString).toString(CryptoJS.enc.Hex)
 }

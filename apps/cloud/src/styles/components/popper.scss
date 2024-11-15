@@ -1,25 +1,19 @@
-.float-ui-container.float-ui-animation {
-  @apply p-0 shadow-none border-none z-10;
+// .float-ui-container.float-ui-animation {
+//   .ngxp__arrow::before {
+//     @apply shadow-md;
+//     background-color: var(--ngm-card-bg-color);
+//   }
 
-  .ngxp__inner {
-    @apply shadow-lg overflow-hidden rounded-2xl dark:shadow-neutral-800;
-  }
-
-  .ngxp__arrow::before {
-    @apply shadow-md;
-    background-color: var(--ngm-card-bg-color);
-  }
-
-  &[data-popper-placement='bottom-end'] {
-    .ngxp__arrow {
-      right: 12px;
-    }
-  }
-}
+//   &[data-popper-placement='bottom-end'] {
+//     .ngxp__arrow {
+//       right: 12px;
+//     }
+//   }
+// }
 
 float-ui-content {
   .float-ui-container {
-    @apply bg-components-card-bg border-divider-regular shadow-lg rounded-xl;
+    @apply bg-components-card-bg border-divider-regular shadow-lg rounded-xl p-0 border-light z-10;
   }
 }
 

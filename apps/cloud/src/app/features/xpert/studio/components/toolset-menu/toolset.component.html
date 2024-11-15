@@ -1,4 +1,4 @@
-<ng-content></ng-content>
+<ngm-search [formControl]="searchControl" class="w-full" />
 
 <ul class="w-full flex items-center px-3 py-2 space-x-1 bg-gray-25 border-b-[0.5px] border-black/[0.08]"
   cdkListbox
@@ -9,14 +9,19 @@
       [ngClass]="{'bg-gray-200': option.isSelected()}"
       [cdkOption]="type.value"
     >
-      {{type.label | i18n }}
+      {{ ('PAC.Xpert.ToolsetType_' + type.label) | translate: {Default: type.label} }}
     </div>
   }
 </ul>
 
 @for (toolset of toolsets(); track toolset.id) {
   <div cdkMenuItem class="ngm-cdk-menu-item shrink-0 w-full flex justify-start items-center py-0.5 overflow-hidden"
-    (click)="createToolset(toolset)">
+    (click)="createToolset(toolset)"
+    (mouseover)="openToolsetTip(toolset, overlayTrigger)"
+    (mouseout)="toolDetailOpen.set(false)"
+    cdkOverlayOrigin
+    #overlayTrigger="cdkOverlayOrigin"
+    >
     <emoji-avatar [avatar]="toolset.avatar" xs class="shrink-0 mr-2 overflow-hidden rounded-full"  />
     <div class="flex flex-col truncate">
       <span>{{toolset.name}}</span>
@@ -27,3 +32,21 @@
     {{ 'PAC.Xpert.NoToolset' | translate: {Default: 'No toolset'} }}
   </div>
 }
+
+<ng-template
+  cdkConnectedOverlay
+  cdkConnectedOverlayGrowAfterOpen
+  [cdkConnectedOverlayOrigin]="toolDetailTrigger()"
+  [cdkConnectedOverlayOpen]="toolDetailOpen()"
+  [cdkConnectedOverlayOffsetX]="10"
+  [cdkConnectedOverlayPositions]="[
+    {
+      originX: 'end',
+      originY: 'top',
+      overlayX: 'start',
+      overlayY: 'top'
+    },
+  ]"
+>
+  <xpert-toolset-card [toolset]="toolset()" class="toolset-tip-card w-96 bg-components-card-bg " />
+</ng-template>

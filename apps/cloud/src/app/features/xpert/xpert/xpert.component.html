@@ -73,11 +73,16 @@
         #rla3="routerLinkActive"
         [class.active]="rla3.isActive"
 
-        [floatUi]="inDevelopmentPopper"
-        [showTrigger]="eNgxFloatUiTriggers.hover"
-        [hideOnClickOutside]="true"
-        [hideOnScroll]="true"
-        [placement]="eNgxFloatUiPlacements.BOTTOMEND"
+        [ngmTooltip]="developInDevelopment"
+        [ngmTooltipPositions]="[
+          {
+            originX: 'end',
+            originY: 'bottom',
+            overlayX: 'start',
+            overlayY: 'top',
+            offsetX: 8
+          }
+        ]"
       >
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="h-5 w-5 flex-shrink-0 mr-2">
           <path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3ZM4 5V19H20V5H4ZM12 15H18V17H12V15ZM8.66685 12L5.83842 9.17157L7.25264 7.75736L11.4953 12L7.25264 16.2426L5.83842 14.8284L8.66685 12Z"></path>
@@ -92,11 +97,16 @@
         #rla4="routerLinkActive"
         [class.active]="rla4.isActive"
 
-        [floatUi]="inDevelopmentPopper"
-        [showTrigger]="eNgxFloatUiTriggers.hover"
-        [hideOnClickOutside]="true"
-        [hideOnScroll]="true"
-        [placement]="eNgxFloatUiPlacements.BOTTOMEND"
+        [ngmTooltip]="logsInDevelopment"
+        [ngmTooltipPositions]="[
+          {
+            originX: 'end',
+            originY: 'bottom',
+            overlayX: 'start',
+            overlayY: 'top',
+            offsetX: 8
+          }
+        ]"
         >
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="h-5 w-5 flex-shrink-0 mr-2">
           <path d="M19 22H5C3.34315 22 2 20.6569 2 19V3C2 2.44772 2.44772 2 3 2H17C17.5523 2 18 2.44772 18 3V15H22V19C22 20.6569 20.6569 22 19 22ZM18 17V19C18 19.5523 18.4477 20 19 20C19.5523 20 20 19.5523 20 19V17H18ZM16 20V4H4V19C4 19.5523 4.44772 20 5 20H16ZM6 7H14V9H6V7ZM6 11H14V13H6V11ZM6 15H11V17H6V15Z"></path>
@@ -110,11 +120,16 @@
         #rla5="routerLinkActive"
         [class.active]="rla5.isActive"
 
-        [floatUi]="inDevelopmentPopper"
-        [showTrigger]="eNgxFloatUiTriggers.hover"
-        [hideOnClickOutside]="true"
-        [hideOnScroll]="true"
-        [placement]="eNgxFloatUiPlacements.BOTTOMEND"
+        [ngmTooltip]="monitorInDevelopment"
+        [ngmTooltipPositions]="[
+          {
+            originX: 'end',
+            originY: 'bottom',
+            overlayX: 'start',
+            overlayY: 'top',
+            offsetX: 8
+          }
+        ]"
       >
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="h-5 w-5 flex-shrink-0 mr-2">
           <path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 5C8.13401 5 5 8.13401 5 12C5 13.8525 5.71957 15.5368 6.89445 16.7889L7.05025 16.9497L8.46447 15.5355C7.55964 14.6307 7 13.3807 7 12C7 9.23858 9.23858 7 12 7C12.448 7 12.8822 7.05892 13.2954 7.16944L14.8579 5.60806C13.9852 5.21731 13.018 5 12 5ZM18.3924 9.14312L16.8306 10.7046C16.9411 11.1178 17 11.552 17 12C17 13.3807 16.4404 14.6307 15.5355 15.5355L16.9497 16.9497C18.2165 15.683 19 13.933 19 12C19 10.9824 18.7829 10.0155 18.3924 9.14312ZM16.2426 6.34315L12.517 10.0675C12.3521 10.0235 12.1788 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14C13.1046 14 14 13.1046 14 12C14 11.8212 13.9765 11.6479 13.9325 11.483L17.6569 7.75736L16.2426 6.34315Z"></path>
@@ -135,11 +150,15 @@
 </mat-sidenav-container>
 
 
-<float-ui-content #inDevelopmentPopper class="">
-  <div class="flex items-center justify-center m-1 p-2 rounded-xl shadow-2xl bg-white border border-yellow-400">
-    <ngm-spin small></ngm-spin>
-    <span class="ml-2 text-sm font-semibold text-zinc-700">
-      {{ 'PAC.Xpert.InDevelopment' | translate: { Default: 'This feature is in development' } }}...
-    </span>
-  </div>
-</float-ui-content>
+<ng-template #developInDevelopment >
+  <pac-in-development @overlayAnimation1 feature="API access for development" class="w-80" />
+</ng-template>
+
+<ng-template #logsInDevelopment >
+  <pac-in-development @overlayAnimation1 feature="Xpert access logs" class="w-80" />
+</ng-template>
+
+
+<ng-template #monitorInDevelopment >
+  <pac-in-development @overlayAnimation1 feature="Xpert's monitor" class="w-80" />
+</ng-template>

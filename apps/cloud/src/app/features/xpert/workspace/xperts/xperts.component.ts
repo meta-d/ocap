@@ -10,7 +10,7 @@ import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/
 import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isNil, omitBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
@@ -81,6 +81,7 @@ export class XpertStudioXpertsComponent {
   readonly logger = inject(NGXLogger)
   readonly #dialog = inject(MatDialog)
   readonly #toastr = inject(ToastrService)
+  readonly #translate = inject(TranslateService)
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
   readonly toolsetService = inject(XpertToolsetService)
@@ -187,9 +188,8 @@ export class XpertStudioXpertsComponent {
     this.#dialog
       .open(NgmConfirmDeleteComponent, {
         data: {
-          // title: xpert.title,
-          value: xpert.name,
-          information: `Delete all data of xpert ${xpert.title}?`
+          value: xpert.title,
+          information: this.#translate.instant('PAC.Xpert.DeleteAllDataXpert', {value: xpert.name, Default: `Delete all data of xpert '${xpert.name}'?`})
         }
       })
       .afterClosed()
@@ -210,6 +210,7 @@ export class XpertStudioXpertsComponent {
     .open(XpertStudioCreateToolComponent, {
       disableClose: true,
       data: {
+        workspace: this.workspace()
       }
     })
     .afterClosed()

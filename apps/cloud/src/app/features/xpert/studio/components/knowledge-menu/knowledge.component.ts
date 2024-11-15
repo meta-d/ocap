@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
-import { MatIcon } from '@angular/material/icon'
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal } from '@angular/core'
 import { FFlowModule } from '@foblex/flow'
 import { XpertStudioApiService } from '../../domain'
 import { toSignal } from '@angular/core/rxjs-interop'
@@ -8,6 +7,8 @@ import { XpertStudioComponent } from '../../studio.component'
 import { IKnowledgebase } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { TranslateModule } from '@ngx-translate/core'
+import { KnowledgebaseCardComponent } from 'apps/cloud/src/app/@shared'
+import { CdkOverlayOrigin, OverlayModule } from '@angular/cdk/overlay'
 
 @Component({
   selector: 'xpert-studio-knowledge-menu',
@@ -15,7 +16,7 @@ import { TranslateModule } from '@ngx-translate/core'
   styleUrls: ['./knowledge.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FFlowModule, TranslateModule, CdkMenuModule, EmojiAvatarComponent],
+  imports: [TranslateModule, CdkMenuModule, OverlayModule, EmojiAvatarComponent, KnowledgebaseCardComponent],
   host: {
     tabindex: '-1',
     '[class.selected]': 'isSelected',
@@ -34,14 +35,23 @@ export class XpertStudioKnowledgeMenuComponent {
     return this.elementRef.nativeElement
   }
 
+  readonly detailTrigger = signal<CdkOverlayOrigin>(null)
+  readonly detailOpen = signal(false)
+  readonly knowledgebase = signal<IKnowledgebase>(null)
+
   protected emitSelectionChangeEvent(event: MouseEvent): void {
     this.hostElement.focus()
     event.preventDefault()
-    // this.selectionService.setColumn(this.tableId, this.column.id);
   }
 
   public createKnowledge(knowledge: IKnowledgebase): void {
     this.cdkMenu.menuStack.closeAll()
     this.apiService.createKnowledge(this.root.contextMenuPosition, knowledge)
+  }
+
+  openTooltip(item: IKnowledgebase, overlayTrigger: CdkOverlayOrigin) {
+    this.detailOpen.set(true)
+    this.detailTrigger.set(overlayTrigger)
+    this.knowledgebase.set(item)
   }
 }

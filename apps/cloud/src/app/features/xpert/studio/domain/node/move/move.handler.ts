@@ -1,7 +1,8 @@
 import { IHandler } from '@foblex/mediator'
 import { Store, StoreDef } from '@ngneat/elf'
-import { IStudioStore } from '../../types'
+import { calculateHash, IStudioStore } from '../../types'
 import { MoveNodeRequest } from './move.request'
+import { omit } from 'lodash-es'
 
 export class MoveNodeHandler implements IHandler<MoveNodeRequest> {
   constructor(private store: Store<StoreDef, IStudioStore>) {}
@@ -38,6 +39,8 @@ export class MoveNodeHandler implements IHandler<MoveNodeRequest> {
       } else {
         // throw new Error(`Team node with key ${request.key} not found`)
       }
+
+      _node.hash = calculateHash(JSON.stringify(omit(_node, 'hash')))
       
       return { draft }
     })

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, model, signal } f
 import { toObservable } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
-import { nonBlank } from '@metad/ocap-angular/core'
+import { NgmTooltipDirective, nonBlank } from '@metad/ocap-angular/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { injectParams } from 'ngxtension/inject-params'
@@ -14,7 +14,8 @@ import { MaterialModule } from '../../../@shared'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
 import { AppService } from '../../../app.service'
 import { injectGetXpertTeam } from '../utils'
-import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
+import { OverlayAnimations } from '@metad/core'
+import { InDevelopmentComponent } from '../../../@theme'
 
 
 @Component({
@@ -26,22 +27,21 @@ import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-
     TranslateModule,
     MaterialModule,
     RouterModule,
-    NgxFloatUiModule,
 
     NgmCommonModule,
-    EmojiAvatarComponent
+    EmojiAvatarComponent,
+    NgmTooltipDirective,
+    InDevelopmentComponent
   ],
   selector: 'xpert-xpert',
   templateUrl: './xpert.component.html',
   styleUrl: 'xpert.component.scss',
-  animations: [routeAnimations],
+  animations: [routeAnimations, ...OverlayAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: []
 })
 export class XpertComponent {
   eXpertTypeEnum = XpertTypeEnum
-  eNgxFloatUiPlacements = NgxFloatUiPlacements
-  eNgxFloatUiTriggers = NgxFloatUiTriggers
 
   readonly appService = inject(AppService)
   readonly paramId = injectParams('id')

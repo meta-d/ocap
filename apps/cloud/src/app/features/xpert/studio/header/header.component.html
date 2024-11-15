@@ -6,10 +6,10 @@
       </span>
     }
     @if (draftSavedDate()) {
-      <span>自动保存 {{draftSavedDate()}}</span>
+      <span>{{ 'PAC.Xpert.AutoSave' | translate: {Default: 'Auto save'} }} {{draftSavedDate()}}</span>
     }
     @if (latestPublishDate()) {
-      <span class="flex items-center mx-1">·</span>已发布 {{latestPublishDate()}}
+      <span class="flex items-center mx-1">·</span>{{ 'PAC.Xpert.Published' | translate: {Default: 'Published'} }} {{latestPublishDate()}}
     }
   </div>
 </div>
@@ -17,34 +17,10 @@
 <div class="flex-1"></div>
 
 <div class="flex items-center gap-2">
-  <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium p-2">
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      class="w-4 h-4 text-components-button-secondary-text"
-    >
-      <g id="Icon L">
-        <g id="Vector">
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M3.33463 3.33333C2.96643 3.33333 2.66796 3.63181 2.66796 4V10.6667C2.66796 11.0349 2.96643 11.3333 3.33463 11.3333H4.66796C5.03615 11.3333 5.33463 11.6318 5.33463 12V12.8225L7.65833 11.4283C7.76194 11.3662 7.8805 11.3333 8.00132 11.3333H12.0013C12.3695 11.3333 12.668 11.0349 12.668 10.6667C12.668 10.2985 12.9665 10 13.3347 10C13.7028 10 14.0013 10.2985 14.0013 10.6667C14.0013 11.7713 13.1058 12.6667 12.0013 12.6667H8.18598L5.01095 14.5717C4.805 14.6952 4.5485 14.6985 4.33949 14.5801C4.13049 14.4618 4.00129 14.2402 4.00129 14V12.6667H3.33463C2.23006 12.6667 1.33463 11.7713 1.33463 10.6667V4C1.33463 2.89543 2.23006 2 3.33463 2H6.66798C7.03617 2 7.33464 2.29848 7.33464 2.66667C7.33464 3.03486 7.03617 3.33333 6.66798 3.33333H3.33463Z"
-            fill="currentColor"
-          ></path>
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M8.74113 2.66667C8.74113 2.29848 9.03961 2 9.4078 2H10.331C10.9721 2 11.5177 2.43571 11.6859 3.04075L11.933 3.93004L12.8986 2.77189C13.3045 2.28508 13.9018 2 14.536 2H14.5954C14.9636 2 15.2621 2.29848 15.2621 2.66667C15.2621 3.03486 14.9636 3.33333 14.5954 3.33333H14.536C14.3048 3.33333 14.08 3.43702 13.9227 3.6257L12.367 5.49165L12.8609 7.2689C12.8746 7.31803 12.9105 7.33333 12.9312 7.33333H13.8543C14.2225 7.33333 14.521 7.63181 14.521 8C14.521 8.36819 14.2225 8.66667 13.8543 8.66667H12.9312C12.29 8.66667 11.7444 8.23095 11.5763 7.62591L11.3291 6.73654L10.3634 7.89478C9.95758 8.38159 9.36022 8.66667 8.72604 8.66667H8.66666C8.29847 8.66667 7.99999 8.36819 7.99999 8C7.99999 7.63181 8.29847 7.33333 8.66666 7.33333H8.72604C8.95723 7.33333 9.18204 7.22965 9.33935 7.04096L10.8951 5.17493L10.4012 3.39777C10.3876 3.34863 10.3516 3.33333 10.331 3.33333H9.4078C9.03961 3.33333 8.74113 3.03486 8.74113 2.66667Z"
-            fill="currentColor"
-          ></path>
-        </g>
-      </g>
-    </svg>
-  </button>
-  <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium p-2">
+  <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium h-8 p-0 justify-center"
+    [ngmTooltip]="envInDevelopment"
+    [hideDelay]="100"
+  >
     <svg
       width="16"
       height="16"
@@ -112,7 +88,8 @@
         <path
           d="M8 18.3915V5.60846L18.2264 12L8 18.3915ZM6 3.80421V20.1957C6 20.9812 6.86395 21.46 7.53 21.0437L20.6432 12.848C21.2699 12.4563 21.2699 11.5436 20.6432 11.152L7.53 2.95621C6.86395 2.53993 6 3.01878 6 3.80421Z"
         ></path>
-      </svg>预览
+      </svg>
+      {{ 'PAC.Xpert.Preview' | translate: {Default: 'Preview'} }}
     </div>
     <div class="mx-0.5 w-[1px] h-3.5 bg-divider-regular"></div>
     <div class="inline-block">
@@ -151,6 +128,8 @@
         <div
           class="group flex items-center justify-center w-full h-full rounded-md cursor-pointer
               text-text-tertiary hover:bg-primary-50 hover:text-primary-500"
+          [ngmTooltip]="checklistInDevelopment"
+          [hideDelay]="100"
         >
           <svg
             viewBox="0 0 24 24"
@@ -172,6 +151,8 @@
   <button
     type="button"
     class="btn disabled:btn-disabled btn-medium"
+    [ngmTooltip]="featuresInDevelopment"
+    [hideDelay]="100"
   >
     <svg
       viewBox="0 0 24 24"
@@ -184,7 +165,7 @@
       <path
         d="M2.5 7C2.5 9.48528 4.51472 11.5 7 11.5C9.48528 11.5 11.5 9.48528 11.5 7C11.5 4.51472 9.48528 2.5 7 2.5C4.51472 2.5 2.5 4.51472 2.5 7ZM2.5 17C2.5 19.4853 4.51472 21.5 7 21.5C9.48528 21.5 11.5 19.4853 11.5 17C11.5 14.5147 9.48528 12.5 7 12.5C4.51472 12.5 2.5 14.5147 2.5 17ZM12.5 17C12.5 19.4853 14.5147 21.5 17 21.5C19.4853 21.5 21.5 19.4853 21.5 17C21.5 14.5147 19.4853 12.5 17 12.5C14.5147 12.5 12.5 14.5147 12.5 17ZM9.5 7C9.5 8.38071 8.38071 9.5 7 9.5C5.61929 9.5 4.5 8.38071 4.5 7C4.5 5.61929 5.61929 4.5 7 4.5C8.38071 4.5 9.5 5.61929 9.5 7ZM9.5 17C9.5 18.3807 8.38071 19.5 7 19.5C5.61929 19.5 4.5 18.3807 4.5 17C4.5 15.6193 5.61929 14.5 7 14.5C8.38071 14.5 9.5 15.6193 9.5 17ZM19.5 17C19.5 18.3807 18.3807 19.5 17 19.5C15.6193 19.5 14.5 18.3807 14.5 17C14.5 15.6193 15.6193 14.5 17 14.5C18.3807 14.5 19.5 15.6193 19.5 17ZM16 11V8H13V6H16V3H18V6H21V8H18V11H16Z"
       ></path></svg
-    >功能
+    >{{ 'PAC.Xpert.Features' | translate: {Default: 'Features'} }}
   </button>
 
   <button class="no-underline group cursor-pointer relative shadow-2xl rounded-lg px-2 py-1 text-sm font-semibold leading-6 inline-block
@@ -192,9 +173,7 @@
     [disabled]="publishing()"
     [cdkMenuTriggerFor]="publishMenu"
   >
-    <span>
-      发布
-    </span>
+    <span>{{ 'PAC.Xpert.Publish' | translate: {Default: 'Publish'} }}</span>
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="inline-block w-4 h-4 ml-0.5">
       <path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"></path>
     </svg>
@@ -203,27 +182,42 @@
 </div>
 
 <ng-template #publishMenu>
-  <div class="ngm-cdk-menu w-80" cdkMenu>
-    <div class="flex flex-col p-4 text-gray-500">
-      <div class="flex items-center h-6 font-medium uppercase mb-2">最新发布</div>
-      <div cdkMenuItem [cdkMenuTriggerFor]="versionMenu" class="ngm-cdk-menu-item flex justify-between items-center py-2">
+  <div class="ngm-cdk-menu w-80" cdkMenu @overlayAnimation1>
+    <div class="flex flex-col px-2 pt-2 pb-4 text-gray-500">
+      <div class="flex items-center h-6 font-medium uppercase mb-2 text-sm">
+        {{ 'PAC.Xpert.LatestPublish' | translate: {Default: 'Latest Publish'} }}
+      </div>
+      <div cdkMenuItem class="ngm-cdk-menu-item flex justify-between items-center p-2"
+        [cdkMenuTriggerFor]="versionMenu"
+        [cdkMenuPosition]="[
+          {
+            originX: 'start',
+            originY: 'top',
+            overlayX: 'end',
+            overlayY: 'top',
+            offsetX: -12,
+          }
+        ]"  
+      >
         <div class="flex items-center mt-[3px] mb-[3px] font-medium text-sm">
           @if (version()) {
             {{ 'PAC.KEY_WORDS.Version' | translate: {Default: 'Version'} }}: {{version()}}
             @if (latest()) {
-              <div class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-green-200 text-green-700 rounded-lg">
-                latest
+              <div class="ml-1 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-green-200 text-green-700 rounded-lg">
+                {{ 'PAC.Xpert.Latest' | translate: {Default: 'latest'} }}
               </div>
             }
           } @else {
-            <span class="ml-4 text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-orange-200 text-orange-700 rounded-lg">
-              draft
+            <span class="text-xs inline-flex items-center font-bold leading-sm uppercase px-3 py-1 bg-orange-200 text-orange-700 rounded-lg">
+              {{ 'PAC.Xpert.Draft' | translate: {Default: 'draft'} }}
             </span>
           }
         </div>
         @if (draft()) {
           <button type="button" class="self-center px-2 py-1 rounded-lg border border-token-border-medium text-sm transition duration-200
-            text-primary-600 hover:bg-primary-50 active:bg-primary-100" (click)="resume()">恢复</button>
+            text-primary-600 hover:bg-primary-50 active:bg-primary-100" (click)="resume()">
+            {{ 'PAC.Xpert.Reset' | translate: {Default: 'Reset'} }}
+          </button>
         }
       </div>
 
@@ -233,9 +227,7 @@
         [disabled]="publishing() || !draft()"
         (click)="publish()"
       >
-        <span>
-          发布为新版本
-        </span>
+        <span>{{ 'PAC.Xpert.ReleaseNewVersion' | translate: {Default: 'Release as new version'} }}</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="inline-block w-4 h-4 ml-0.5">
           <path d="M21.7267 2.95694L16.2734 22.0432C16.1225 22.5716 15.7979 22.5956 15.5563 22.1126L11 13L1.9229 9.36919C1.41322 9.16532 1.41953 8.86022 1.95695 8.68108L21.0432 2.31901C21.5716 2.14285 21.8747 2.43866 21.7267 2.95694ZM19.0353 5.09647L6.81221 9.17085L12.4488 11.4255L15.4895 17.5068L19.0353 5.09647Z"></path>
         </svg>
@@ -245,12 +237,17 @@
 </ng-template>
 
 <ng-template #versionMenu>
-  <div class="ngm-cdk-menu p-2" cdkMenu>
+  <div class="ngm-cdk-menu p-2" cdkMenu @overlayAnimation1>
     @for (item of versions(); track item.version) {
-      <button class="ngm-cdk-menu-item p-2" cdkMenuItem (click)="selectVersion(item.id)">v{{item.version}}
+      <button class="ngm-cdk-menu-item p-2" cdkMenuItem (click)="selectVersion(item.id)">
+        @if (item.version) {
+          v{{item.version}}
+        } @else {
+          {{ 'PAC.Xpert.Draft' | translate: {Default: 'Draft'} }}
+        }
         @if (item.version === version()) {
-            <div class="ml-4 text-xs inline-flex items-center px-2 py-1 font-bold leading-sm uppercase bg-blue-200 text-blue-700 rounded-lg">
-                current
+            <div class="ml-4 text-xs inline-flex items-center px-2 py-1 font-bold leading-sm uppercase bg-primary-100 text-primary-600 rounded-lg">
+              current
             </div>
         }
       </button>
@@ -267,7 +264,22 @@
         <div class="text-start text-xs max-w-full text-text-tertiary">{{item.createdAt | date: 'medium'}}</div>
       </button>
     } @empty {
-      <div class="w-32 h-8 flex justify-center items-center">暂无聊天记录</div>
+      <div class="w-32 h-8 flex justify-center items-center">
+        {{ 'PAC.Xpert.NoChatHistory' | translate: {Default: 'No chat history'} }}
+      </div>
     }
   </div>
 </float-ui-content>
+
+
+<ng-template #envInDevelopment>
+  <pac-in-development @overlayAnimation1 feature="Enviroments for variable and parameter" class="w-96" />
+</ng-template>
+
+<ng-template #checklistInDevelopment >
+  <pac-in-development @overlayAnimation1 feature="Checklist" class="w-80" />
+</ng-template>
+
+<ng-template #featuresInDevelopment >
+  <pac-in-development @overlayAnimation1 feature="Features" class="w-80" />
+</ng-template>

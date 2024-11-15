@@ -9,19 +9,19 @@
       </button>
     </div>
   } @else {
-    <div class="p-4 mt-10">
+    <div class="p-4 mt-10 w-96">
       <h2 class="text-xl font-semibold mb-4">
         {{ 'PAC.Xpert.WelcomeBack' | translate: { Default: 'Welcome Back!' } }}
       </h2>
       <p class="mb-4">
         {{ 'PAC.Xpert.RecentWorkspaces' | translate: { Default: 'Here are your recently accessed workspaces:' } }}
       </p>
-      <div class="grid grid-cols-1 gap-2">
+      <div class="grid grid-cols-1">
         @for (workspace of workspaces(); track workspace.id) {
           <div class="group rounded-xl py-2 pl-4 pr-2 flex items-center justify-between hover:bg-hover-bg">
             <div class="text-gray-800 font-medium">
               @if (me().id === workspace.ownerId) {
-                <i class="ri-user-2-fill" [matTooltip]="'PAC.Xpert.YouAreOwner' | translate: {Default: 'You are owner'}"></i>
+                <i class="ri-user-2-fill text-text-secondary" [matTooltip]="'PAC.Xpert.YouAreOwner' | translate: {Default: 'You are owner'}"></i>
               }
               {{ workspace.name }}
             </div>

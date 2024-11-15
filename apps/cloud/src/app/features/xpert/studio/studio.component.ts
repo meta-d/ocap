@@ -32,12 +32,13 @@ import {
 } from '@foblex/flow'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
+import { effectAction } from '@metad/ocap-angular/core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
 import { NGXLogger } from 'ngx-logger'
-import { Subscription } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { Observable, of, Subscription, timer } from 'rxjs'
+import { debounce, debounceTime, delay, map, pairwise, tap } from 'rxjs/operators'
 import {
   ModelType,
   ToastrService,
@@ -49,11 +50,9 @@ import {
 } from '../../../@core'
 import {
   MaterialModule,
-  ToolsetCardComponent,
   XpertAgentExecutionComponent,
   XpertAgentExecutionLogComponent
 } from '../../../@shared'
-import { EmojiAvatarComponent } from '../../../@shared/avatar'
 import {
   XpertStudioContextMenuComponent,
   XpertStudioNodeAgentComponent,
@@ -65,6 +64,7 @@ import { XpertStudioHeaderComponent } from './header/header.component'
 import { XpertStudioPanelComponent } from './panel/panel.component'
 import { XpertExecutionService } from './services/execution.service'
 import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
+
 
 @Component({
   standalone: true,
@@ -84,9 +84,7 @@ import { XpertStudioToolbarComponent } from './toolbar/toolbar.component'
     NgxFloatUiModule,
 
     NgmCommonModule,
-    EmojiAvatarComponent,
 
-    ToolsetCardComponent,
     XpertStudioToolbarComponent,
     XpertStudioContextMenuComponent,
     XpertStudioNodeAgentComponent,
@@ -185,7 +183,7 @@ export class XpertStudioComponent {
 
   constructor() {
     effect(() => {
-      // console.log(this.xperts(), this.nodes())
+      // console.log('Studio:', this.viewModel())
     })
   }
 
@@ -195,9 +193,7 @@ export class XpertStudioComponent {
 
   private subscribeOnReloadData(): Subscription {
     return this.apiService.reload$
-      .pipe
-      // startWith(null), delay(1000)
-      ()
+      .pipe(delay(100))
       .subscribe((reason: EReloadReason | null) => {
         if (reason === EReloadReason.INIT) {
           if (this.xpert().options?.position) {
@@ -210,6 +206,7 @@ export class XpertStudioComponent {
         if (reason === EReloadReason.CONNECTION_CHANGED) {
           this.fFlowComponent().clearSelection()
         }
+
         this.#cdr.detectChanges()
       })
   }
@@ -236,12 +233,13 @@ export class XpertStudioComponent {
     this.apiService.createConnection(event.fOutputId, event.newFInputId, event.oldFInputId)
   }
 
-  public moveNode(point: IPoint, key: string): void {
+  public moveNode({key, point}: {point: IPoint; key: string}) {
     this.apiService.moveNode(key, point)
   }
 
   public moveXpertGroup(point: IPoint, key: string): void {
     this.apiService.moveNode(key, point)
+
   }
   public resizeXpertGroup(point: IRect, key: string): void {
     this.apiService.resizeNode(key, point)
@@ -279,9 +277,15 @@ export class XpertStudioComponent {
     }
   }
 
-  onCanvasChange(event: FCanvasChangeEvent) {
-    this.apiService.updateXpertOptions({ position: event.position, scale: event.scale })
-  }
+  onCanvasChange = effectAction((origin$: Observable<FCanvasChangeEvent>) => {
+    return origin$.pipe(
+      debounceTime(1000),
+      tap((event) => {
+        this.apiService.updateCanvas(event)
+      })
+    )
+  })
+  
 }
 
 function extractXpertNodes(nodes: TXpertTeamNode[], xpertNode: TXpertTeamNode & { type: 'xpert' }) {

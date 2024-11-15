@@ -1,18 +1,23 @@
+import { CdkListboxModule } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, inject, model, signal, viewChild } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { routeAnimations } from '@metad/core'
-import { ButtonGroupDirective, omitBlank } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { MatDialogRef } from '@angular/material/dialog'
-import { CdkListboxModule } from '@angular/cdk/listbox'
+import {
+  getErrorMessage,
+  IXpertToolset,
+  IXpertWorkspace,
+  ToastrService,
+  XpertToolsetService
+} from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { getErrorMessage, IXpertToolset, ToastrService, XpertToolsetService } from 'apps/cloud/src/app/@core'
-import { XpertStudioConfigureToolComponent } from '../openapi/'
-import { XpertStudioConfigureODataComponent } from '../odata/'
-import { XpertConfigureToolComponent } from '../api-tool/types'
 import { isNil, omitBy } from 'lodash-es'
-
+import { XpertConfigureToolComponent } from '../api-tool/types'
+import { XpertStudioConfigureODataComponent } from '../odata/'
+import { XpertStudioConfigureToolComponent } from '../openapi/'
 
 @Component({
   standalone: true,
@@ -37,8 +42,11 @@ export class XpertStudioCreateToolComponent {
   private readonly xpertToolsetService = inject(XpertToolsetService)
   readonly #toastr = inject(ToastrService)
   readonly #dialogRef = inject(MatDialogRef)
+  readonly #data = inject<{ workspace: IXpertWorkspace }>(MAT_DIALOG_DATA)
 
   readonly configure = viewChild('configure', { read: XpertConfigureToolComponent })
+
+  readonly workspace = signal(this.#data.workspace)
 
   readonly loading = signal(false)
 
@@ -51,14 +59,19 @@ export class XpertStudioCreateToolComponent {
   }
 
   createTool() {
-    this.xpertToolsetService.create(omitBy(this.toolset(), isNil)).subscribe({
-      next: (result) => {
-        this.#toastr.success('PAC.Messages.CreatedSuccessfully', {Default: 'Created Successfully!'}, result.name)
-        this.#dialogRef.close(result)
-      },
-      error: (error) => {
-        this.#toastr.error(getErrorMessage(error))
-      }
-    })
+    this.xpertToolsetService
+      .create({
+        ...omitBy(this.toolset(), isNil),
+        workspaceId: this.workspace()?.id
+      })
+      .subscribe({
+        next: (result) => {
+          this.#toastr.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created Successfully!' }, result.name)
+          this.#dialogRef.close(result)
+        },
+        error: (error) => {
+          this.#toastr.error(getErrorMessage(error))
+        }
+      })
   }
 }

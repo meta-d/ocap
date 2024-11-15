@@ -2,9 +2,9 @@ import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { Component, computed, inject, model, signal } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
-import { nonBlank } from '@metad/ocap-angular/core'
+import { NgmTooltipDirective, nonBlank } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { ChatConversationService, getErrorMessage, IChatConversation, IXpertAgentExecution, OrderTypeEnum, ToastrService, XpertService } from 'apps/cloud/src/app/@core'
+import { ChatConversationService, getErrorMessage, IChatConversation, OrderTypeEnum, ToastrService, XpertService } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { formatRelative } from 'date-fns'
 import { sortBy } from 'lodash-es'
@@ -15,13 +15,16 @@ import { toObservable } from '@angular/core/rxjs-interop'
 import { distinctUntilChanged, filter, map, shareReplay, switchMap } from 'rxjs'
 import { XpertExecutionService } from '../services/execution.service'
 import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
+import { InDevelopmentComponent } from 'apps/cloud/src/app/@theme'
+import { OverlayAnimations } from '@metad/core'
 
 @Component({
   selector: 'xpert-studio-header',
   standalone: true,
-  imports: [CommonModule, CdkMenuModule, MaterialModule, TranslateModule, NgxFloatUiModule],
+  imports: [CommonModule, CdkMenuModule, MaterialModule, TranslateModule, NgxFloatUiModule, NgmTooltipDirective, InDevelopmentComponent],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
+  animations: [...OverlayAnimations]
 })
 export class XpertStudioHeaderComponent {
   eNgxFloatUiPlacements = NgxFloatUiPlacements

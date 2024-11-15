@@ -26,10 +26,10 @@
       <div class="flex gap-2 items-center">
         <div>
           <div class="inline-block">
-            <div class="flex items-center rounded-md h-7 px-3 space-x-1 text-text-secondary cursor-pointer hover:bg-gray-200 select-none"
+            <div class="flex items-center rounded-md h-7 px-3 space-x-1 cursor-pointer select-none"
               [cdkMenuTriggerFor]="parameterTypeMenu">
               <div>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="w-3.5 h-3.5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
                   <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"></path>
                 </svg>
               </div>
@@ -47,10 +47,10 @@
       <table class="min-w-[440px] w-full max-w-full border-collapse border-0 rounded-lg text-sm">
         <thead class="border-b  border-gray-200 text-gray-500 text-sm font-medium dark:border-neutral-600">
           <tr class="uppercase">
-            <td>参数名</td>
-            <td>显示名称</td>
-            <td>可选</td>
-            <td class="sticky right-0">操作</td>
+            <td>{{ 'PAC.Xpert.Name' | translate: {Default: 'Name'} }} </td>
+            <td>{{ 'PAC.Xpert.Title' | translate: {Default: 'Title'} }}</td>
+            <td>{{ 'PAC.Xpert.Optional' | translate: {Default: 'Optional'} }}</td>
+            <td class="sticky right-0">{{ 'PAC.Xpert.Actions' | translate: {Default: 'Actions'} }}</td>
           </tr>
         </thead>
         <tbody class="text-gray-700">
@@ -256,7 +256,8 @@
         <div>
           <div class="leading-8 text-[13px] font-medium">{{ 'PAC.Xpert.ParameterName' | translate: {Default: 'Parameter name'} }}</div>
           <div>
-            <input matInput class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200" placeholder="请输入" type="text"
+            <input matInput class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200"
+              placeholder="{{'PAC.Xpert.PleaseEnter' | translate: {Default: 'Please enter'} }}" type="text"
               formControlName="name"
             >
           </div>
@@ -264,7 +265,8 @@
         <div>
           <div class="leading-8 text-[13px] font-medium text-gray-700">{{ 'PAC.Xpert.ParameterTitle' | translate: {Default: 'Parameter title'} }}</div>
           <div>
-            <input matInput class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200" placeholder="请输入" type="text"
+            <input matInput class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200"
+              placeholder="{{'PAC.Xpert.PleaseEnter' | translate: {Default: 'Please enter'} }}" type="text"
               formControlName="title"
             >
           </div>
@@ -272,7 +274,8 @@
         <div>
           <div class="leading-8 text-[13px] font-medium text-gray-700">{{ 'PAC.Xpert.ParameterDescription' | translate: {Default: 'Parameter description'} }}</div>
           <div>
-            <textarea matInput class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200" placeholder="请输入" type="text"
+            <textarea matInput class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200"
+              placeholder="{{'PAC.Xpert.PleaseEnter' | translate: {Default: 'Please enter'} }}" type="text"
               formControlName="description"
             ></textarea>
           </div>
@@ -280,7 +283,7 @@
 
         @if (control.value.type === eXpertParameterTypeEnum.SELECT) {
           <div>
-            <div class="leading-8 text-[13px] font-medium text-gray-700">选项</div>
+            <div class="leading-8 text-[13px] font-medium text-gray-700">{{'PAC.Xpert.SelectOptions' | translate: {Default: 'Select options'} }}</div>
             <div>
               <div>
                 <div class="mb-1">
@@ -314,14 +317,14 @@
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" width="16" height="16">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
                   </svg>
-                  <div class="text-gray-500 text-[13px]">添加选项</div>
+                  <div class="text-gray-500 text-[13px]">{{'PAC.Xpert.AddOptions' | translate: {Default: 'Add option'} }}</div>
                 </div>
               </div>
             </div>
           </div>
         } @else {
           <div>
-            <div class="leading-8 text-[13px] font-medium text-gray-700">最大长度</div>
+            <div class="leading-8 text-[13px] font-medium text-gray-700"> {{ 'PAC.Xpert.MaxLength' | translate: {Default: 'Max length'} }}</div>
             <div>
               <div>
                 <input matInput max="256" min="1" class="w-full px-3 text-sm leading-9 text-gray-900 border-0 rounded-lg grow h-9 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-gray-200" type="number"
@@ -332,7 +335,7 @@
           </div>
         }
         <div>
-          <div class="leading-8 text-[13px] font-medium text-gray-700">必填</div>
+          <div class="leading-8 text-[13px] font-medium text-gray-700"> {{ 'PAC.Xpert.Required' | translate: {Default: 'Required'} }}</div>
           <div>
             <mat-slide-toggle ngm-density="xs" formControlName="optional">
             </mat-slide-toggle>

@@ -1,3 +1,4 @@
+import * as CryptoJS from 'crypto-js'
 import { IXpert, TXpertTeamDraft } from 'apps/cloud/src/app/@core'
 
 export interface IStudioStore {
@@ -19,14 +20,22 @@ export enum EReloadReason {
   TOOLSET_CREATED = 'toolset_created',
   TOOLSET_REMOVED = 'toolset_removed',
   AUTO_LAYOUT = 'auto_layout',
-  RESIZE = 'resize'
+  RESIZE = 'resize', // Node resize
+  CANVAS_CHANGED = 'canvas_changed'
 }
+
+
 
 export type TStateHistory = {
   reason: EReloadReason
   cursor: number
+  createdAt: Date
 }
 
 export function getXpertRoleKey(role: IXpert) {
   return role.id
+}
+
+export function calculateHash(jsonString: string): string {
+  return CryptoJS.SHA256(jsonString).toString(CryptoJS.enc.Hex)
 }

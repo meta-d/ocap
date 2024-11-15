@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { XpertStudioComponent } from '../studio.component'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { XpertStudioApiService } from '../domain'
-import { TStateHistory } from '../domain/types'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
+import { TranslateModule } from '@ngx-translate/core'
+import { OverlayAnimations } from '@metad/core'
+import { XpertStudioComponent } from '../studio.component'
+import { XpertStudioApiService } from '../domain'
+import { XpertStudioContextMenuComponent } from '../components'
 
 @Component({
   selector: 'xpert-studio-toolbar',
@@ -13,12 +15,16 @@ import { AppearanceDirective } from '@metad/ocap-angular/core'
   imports: [
     CommonModule,
     CdkMenuModule,
+    TranslateModule,
     MaterialModule,
-    AppearanceDirective
+    AppearanceDirective,
+
+    XpertStudioContextMenuComponent
   ],
   templateUrl: './toolbar.component.html',
   styleUrl: './toolbar.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [OverlayAnimations]
 })
 export class XpertStudioToolbarComponent {
   readonly xpertStudioComponent = inject(XpertStudioComponent)
@@ -29,7 +35,14 @@ export class XpertStudioToolbarComponent {
     return Number((this.xpertStudioComponent.fZoom().getScale() * 100).toFixed(0))
   }
 
-  readonly histories = computed(() => this.apiService.stateHistories().reverse())
+  readonly historyHasPast = this.apiService.historyHasPast
+  readonly historyHasFuture = this.apiService.historyHasFuture
+
+  readonly histories = computed(() => {
+    const history = this.apiService.stateHistories()
+    const histories = [...history.past, ...history.future]
+    return histories.reverse()
+  })
   get historyCursor() {
     return this.apiService.getHistoryCursor()
   }
@@ -59,8 +72,17 @@ export class XpertStudioToolbarComponent {
     this.xpertStudioComponent.fCanvasComponent().resetScaleAndCenter()
   }
 
-  onGoToHistory(event: TStateHistory) {
-    this.apiService.gotoHistoryCursor(event.cursor)
+  undo() {
+    this.apiService.undo()
+  }
+
+  redo() {
+    this.apiService.redo()
+  }
+
+  onGoToHistory(index: number) {
+    // goto the index (reversed)
+    this.apiService.gotoHistoryIndex(this.histories().length - index)
   }
 
   clearHistory() {

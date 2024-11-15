@@ -11,16 +11,15 @@ import { TagComponent } from '../../tag'
   imports: [CommonModule, EmojiAvatarComponent, NgmI18nPipe, TagComponent, UserPipe],
   selector: 'xpert-toolset-card',
   templateUrl: 'toolset.component.html',
-  styleUrls: ['toolset.component.scss']
+  styleUrls: ['toolset.component.scss'],
 })
 export class ToolsetCardComponent {
   readonly helpWebsite = injectHelpWebsite()
 
+  readonly toolset = input<IXpertToolset>()
   readonly inline = input<boolean, boolean | string>(false, {
     transform: booleanAttribute
   })
-
-  readonly toolset = input<IXpertToolset>()
 
   readonly tags = computed(() => this.toolset()?.tags)
   readonly tagsTitle = computed(() =>

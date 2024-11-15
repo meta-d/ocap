@@ -3,18 +3,54 @@
     <div cdkMenuItem class="ngm-cdk-menu-item" (click)="createAgent(menu)">
       <span>{{ 'PAC.Xpert.NewAgent' | translate: {Default: 'New Agent'} }}</span>
     </div>
-    <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="teamsMenu">
+    <div cdkMenuItem class="ngm-cdk-menu-item"
+      [cdkMenuTriggerFor]="teamsMenu"
+      [cdkMenuPosition]="[
+        {
+          originX: 'end',
+          originY: 'top',
+          overlayX: 'start',
+          overlayY: 'top',
+          offsetX: 10,
+        }
+      ]"
+    >
       <span>{{ 'PAC.Xpert.AddExternalExpert' | translate: {Default: 'Add External Expert'} }}</span>
     </div>
-    <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="knowledgeMenu">
+    <div cdkMenuItem class="ngm-cdk-menu-item"
+      [cdkMenuTriggerFor]="knowledgeMenu"
+      [cdkMenuPosition]="[
+        {
+          originX: 'end',
+          originY: 'top',
+          overlayX: 'start',
+          overlayY: 'top',
+          offsetX: 10,
+        }
+      ]"
+    >
       <span>{{ 'PAC.Xpert.AddKnowledgebase' | translate: {Default: 'Add Knowledgebase'} }}</span>
     </div>
-    <div cdkMenuItem class="ngm-cdk-menu-item" [cdkMenuTriggerFor]="toolsetMenu">
+    <div cdkMenuItem class="ngm-cdk-menu-item"
+      [cdkMenuTriggerFor]="toolsetMenu"
+      [cdkMenuPosition]="[
+        {
+          originX: 'end',
+          originY: 'top',
+          overlayX: 'start',
+          overlayY: 'top',
+          offsetX: 10,
+        }
+      ]"
+    >
       <span>{{ 'PAC.Xpert.AddToolset' | translate: {Default: 'Add Toolset'} }}</span>
     </div>
-    <div cdkMenuItem class="ngm-cdk-menu-item danger" (click)="deleteNode(menu, node)">
-      <span>{{ 'PAC.Xpert.Remove' | translate: {Default: 'Remove'} }}</span>
-    </div>
+
+    @if (node) {
+      <div cdkMenuItem class="ngm-cdk-menu-item danger" (click)="deleteNode(menu, node)">
+        <span>{{ 'PAC.Xpert.Remove' | translate: {Default: 'Remove'} }}</span>
+      </div>
+    }
   </div>
 </ng-template>
 
@@ -37,6 +73,10 @@
         [xpert]="xpert"
         (click)="addCollaborator(xpert)"
       />
+    } @empty {
+      <div class="p-2">
+        {{ 'PAC.Xpert.NoExternalExpert' | translate: {Default: 'No external expert'} }}
+      </div>
     }
   </div>
 </ng-template>

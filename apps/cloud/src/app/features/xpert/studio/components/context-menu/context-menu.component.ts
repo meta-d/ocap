@@ -51,6 +51,8 @@ export class XpertStudioContextMenuComponent {
     return this.selectionService.selection$.subscribe((selection) => {
       if (this.root.fFlowComponent().getSelection().nodes.length === 1) {
         this.node = this.root.fFlowComponent().getSelection().nodes[0]
+      } else {
+        this.node = null
       }
 
       this.#cdr.detectChanges()
