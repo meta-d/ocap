@@ -49,7 +49,7 @@ export interface IAiModel extends IBasePerTenantAndOrganizationEntityModel {
   deprecated: boolean
 }
 
-export enum ModelType {
+export enum AiModelTypeEnum {
   LLM = "llm",
   TEXT_EMBEDDING = "text-embedding",
   RERANK = "rerank",
@@ -65,10 +65,10 @@ export enum ProviderType {
 }
 
 export interface ICopilotWithProvider extends ICopilot {
-  providerWithModels: Partial<IProviderEntity>
+  providerWithModels: Partial<IAiProviderEntity>
 }
 
-export interface IProviderEntity {
+export interface IAiProviderEntity {
   provider: string;
   label: I18nObject;
   description: I18nObject;
@@ -76,7 +76,7 @@ export interface IProviderEntity {
   icon_large: I18nObject;
   background: string;
   help: ProviderHelpInfo;
-  supported_model_types: ModelType[];
+  supported_model_types: AiModelTypeEnum[];
   configurate_methods: ConfigurateMethod[];
   model_credential_schema: ProviderCredentialSchema;
   provider_credential_schema: ProviderCredentialSchema;
@@ -91,7 +91,7 @@ export interface ProviderHelpInfo {
 export interface ProviderModel {
   model: string;
   label: I18nObject;
-  model_type: ModelType;
+  model_type: AiModelTypeEnum;
   features?: ModelFeature[];
   fetchFrom: FetchFrom;
   modelProperties: Record<ModelPropertyKey, any>;

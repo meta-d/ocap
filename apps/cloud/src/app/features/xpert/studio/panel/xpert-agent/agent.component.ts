@@ -20,7 +20,7 @@ import {
   injectHelpWebsite,
   IXpertAgent,
   IXpertAgentExecution,
-  ModelType,
+  AiModelTypeEnum,
   OrderTypeEnum,
   TAvatar,
   TXpertParameter,
@@ -67,7 +67,7 @@ import { XpertStudioPanelKnowledgeSectionComponent } from './knowledge-section/k
   animations: [IfAnimation]
 })
 export class XpertStudioPanelAgentComponent {
-  eModelType = ModelType
+  eModelType = AiModelTypeEnum
 
   readonly regex = `{{(.*?)}}`
   readonly elementRef = inject(ElementRef)

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { CloseSvgComponent } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
-import { IKnowledgebase, TXpertTeamNode, KnowledgebaseService, ModelType } from 'apps/cloud/src/app/@core'
+import { IKnowledgebase, TXpertTeamNode, KnowledgebaseService, AiModelTypeEnum } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { XpertStudioPanelComponent } from '../panel.component'
 import { XpertKnowledgeTestComponent } from './test/test.component'
@@ -31,7 +31,7 @@ import { CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
   }
 })
 export class XpertStudioPanelKnowledgeComponent {
-  eModelType = ModelType
+  eModelType = AiModelTypeEnum
   readonly elementRef = inject(ElementRef)
   readonly panelComponent = inject(XpertStudioPanelComponent)
   readonly knowledgebaseService = inject(KnowledgebaseService)

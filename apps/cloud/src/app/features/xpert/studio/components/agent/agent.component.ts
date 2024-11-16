@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input } from '@angular/core'
 import { FFlowModule } from '@foblex/flow'
 import { XpertStudioRoleToolsetComponent } from './toolset/toolset.component'
-import { ModelType, TXpertTeamNode } from 'apps/cloud/src/app/@core'
+import { AiModelTypeEnum, TXpertTeamNode } from 'apps/cloud/src/app/@core'
 import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 import { PlusSvgComponent } from '@metad/ocap-angular/common'
 import { CopilotModelSelectComponent } from 'apps/cloud/src/app/@shared'
@@ -21,7 +21,7 @@ import { XpertStudioApiService } from '../../domain'
   }
 })
 export class XpertStudioNodeAgentComponent {
-  eModelType = ModelType
+  eModelType = AiModelTypeEnum
   readonly elementRef = inject(ElementRef)
   readonly apiService = inject(XpertStudioApiService)
 

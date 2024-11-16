@@ -1,5 +1,5 @@
 import { OpenAIEmbeddings } from '@langchain/openai'
-import { ICopilotModel, ModelType } from '@metad/contracts'
+import { ICopilotModel, AiModelTypeEnum } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
 import { Injectable } from '@nestjs/common'
 import { ModelProvider } from '../../../ai-provider'
@@ -9,7 +9,7 @@ import { CredentialsValidateFailedError } from '../../errors'
 @Injectable()
 export class OpenAITextEmbeddingModel extends TextEmbeddingModelManager {
 	constructor(readonly modelProvider: ModelProvider) {
-		super(modelProvider, ModelType.TEXT_EMBEDDING)
+		super(modelProvider, AiModelTypeEnum.TEXT_EMBEDDING)
 	}
 
 	getEmbeddingInstance(copilotModel: ICopilotModel): OpenAIEmbeddings {

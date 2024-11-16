@@ -14,7 +14,7 @@ import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { debounceTime } from 'rxjs'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } from '../../../@core'
+import { ICopilot, ICopilotModel, ModelFeature, AiModelTypeEnum, PACCopilotService } from '../../../@core'
 
 @Component({
   standalone: true,
@@ -41,13 +41,13 @@ import { ICopilot, ICopilotModel, ModelFeature, ModelType, PACCopilotService } f
 })
 export class CopilotModelSelectComponent {
   eModelFeature = ModelFeature
-  eModelType = ModelType
+  eModelType = AiModelTypeEnum
 
   protected cva = inject<NgxControlValueAccessor<Partial<ICopilotModel> | null>>(NgxControlValueAccessor)
   readonly copilotService = inject(PACCopilotService)
 
   // Inputs
-  readonly modelType = input<ModelType>()
+  readonly modelType = input<AiModelTypeEnum>()
   readonly inheritModel = input<ICopilotModel>()
   readonly copilotModel = model<ICopilotModel>()
 

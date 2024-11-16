@@ -1,4 +1,4 @@
-import { ModelType } from '@metad/contracts'
+import { AiModelTypeEnum } from '@metad/contracts'
 import { ConfigModule } from '@metad/server-config'
 import { Injectable, Module } from '@nestjs/common'
 import { ModelProvider } from '../../ai-provider'
@@ -15,7 +15,7 @@ export class OpenAIProvider extends ModelProvider {
 
 	async validateProviderCredentials(credentials: Record<string, any>): Promise<void> {
 		try {
-			const modelInstance = this.getModelManager(ModelType.LLM)
+			const modelInstance = this.getModelManager(AiModelTypeEnum.LLM)
 
 			// 使用 `gpt-3.5-turbo` 模型进行验证，
 			// 无论您传入什么模型，文本补全模型或聊天模型

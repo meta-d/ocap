@@ -4,6 +4,14 @@
 
 <form [formGroup]="formGroup" class="w-full flex flex-col items-start py-4 overflow-hidden"
     (ngSubmit)="onSubmit()">
+
+    <div class="w-full flex items-center px-3 py-2 rounded-lg text-base text-gray-900 bg-gray-100 cursor-pointer hover:bg-gray-200"
+      (click)="openAiProviders()"
+    >
+      <div class="grow mr-2 leading-5">选择 AI 模型提供商</div>
+      <i class="ri-folder-open-line"></i>
+    </div>
+  
     <mat-form-field appearance="fill">
         <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
         <mat-select formControlName="provider">

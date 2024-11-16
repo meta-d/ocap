@@ -40,7 +40,7 @@ import { NGXLogger } from 'ngx-logger'
 import { Observable, of, Subscription, timer } from 'rxjs'
 import { debounce, debounceTime, delay, map, pairwise, tap } from 'rxjs/operators'
 import {
-  ModelType,
+  AiModelTypeEnum,
   ToastrService,
   TXpertTeamNode,
   XpertAgentExecutionEnum,
@@ -107,7 +107,7 @@ export class XpertStudioComponent {
   eNgxFloatUiPlacements = NgxFloatUiPlacements
   DisplayBehaviour = DisplayBehaviour
   EFConnectionType = EFConnectionType
-  eModelType = ModelType
+  eModelType = AiModelTypeEnum
   eXpertTypeEnum = XpertTypeEnum
   public eResizeHandleType = EFResizeHandleType
 

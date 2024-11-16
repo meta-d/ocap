@@ -12,7 +12,7 @@ import {
   IKnowledgebase,
   KnowledgebasePermission,
   KnowledgebaseService,
-  ModelType,
+  AiModelTypeEnum,
   PACCopilotService,
   Store,
   ToastrService,
@@ -42,7 +42,7 @@ import { EmojiAvatarComponent } from "../../../../../@shared/avatar/emoji-avatar
 export class KnowledgeConfigurationComponent extends TranslationBaseComponent {
   KnowledgebasePermission = KnowledgebasePermission
   DisplayBehaviour = DisplayBehaviour
-  eModelType = ModelType
+  eModelType = AiModelTypeEnum
 
   readonly knowledgebaseService = inject(KnowledgebaseService)
   readonly _toastrService = inject(ToastrService)

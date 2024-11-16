@@ -10,7 +10,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import {
   getErrorMessage,
   IfAnimation,
-  ModelType,
+  AiModelTypeEnum,
   omitXpertRelations,
   TagCategoryEnum,
   ToastrService,
@@ -50,7 +50,7 @@ import { derivedAsync } from 'ngxtension/derived-async'
 })
 export class XpertBasicComponent {
   eXpertTypeEnum = XpertTypeEnum
-  eModelType = ModelType
+  eModelType = AiModelTypeEnum
   eTagCategoryEnum = TagCategoryEnum
   eXpertParameterTypeEnum = XpertParameterTypeEnum
 

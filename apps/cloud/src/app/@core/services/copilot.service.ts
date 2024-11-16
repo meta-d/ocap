@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { effect, inject, Injectable, signal } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { Router } from '@angular/router'
 import { API_PREFIX, AuthService } from '@metad/cloud/state'
 import { AiProviderRole, BusinessRoleType, ICopilot } from '@metad/copilot'
@@ -22,7 +22,7 @@ import {
   switchMap
 } from 'rxjs'
 import { API_COPILOT } from '../constants/app.constants'
-import { ICopilotWithProvider, ICopilot as IServerCopilot, ModelType, ParameterRule } from '../types'
+import { ICopilotWithProvider, ICopilot as IServerCopilot, AiModelTypeEnum, ParameterRule, IAiProviderEntity } from '../types'
 import { AgentService } from './agent.service'
 import { Store } from './store.service'
 import { XpertService } from './xpert.service'
@@ -186,9 +186,13 @@ export class PACCopilotService extends NgmCopilotService {
     this.router.navigate(['settings', 'copilot'])
   }
 
-  private readonly modelsByType = new Map<ModelType, Observable<ICopilotWithProvider[]>>()
+  private readonly modelsByType = new Map<AiModelTypeEnum, Observable<ICopilotWithProvider[]>>()
+  private readonly aiProviders$ = this.httpClient.get<IAiProviderEntity[]>(API_COPILOT + `/providers`).pipe(shareReplay(1))
+  getAiProviders() {
+    return this.aiProviders$
+  }
 
-  getCopilotModels(type: ModelType) {
+  getCopilotModels(type: AiModelTypeEnum) {
     if (!this.modelsByType.get(type)) {
       this.modelsByType.set(
         type,
@@ -220,4 +224,9 @@ function constructUrl(url: string) {
   }
 
   return url ? `${protocol}${url}` : ''
+}
+
+export function injectAiProviders() {
+  const service = inject(PACCopilotService)
+  return toSignal(service.getAiProviders())
 }

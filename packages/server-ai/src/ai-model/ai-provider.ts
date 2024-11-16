@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIModelEntity, ICopilotModel, IProviderEntity, ModelType, ProviderModel } from '@metad/contracts'
+import { AIModelEntity, ICopilotModel, IAiProviderEntity, AiModelTypeEnum, ProviderModel } from '@metad/contracts'
 import { ConfigService } from '@metad/server-config'
 import { loadYamlFile } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -19,9 +19,9 @@ export abstract class ModelProvider {
 	@Inject(ConfigService)
 	protected readonly configService: ConfigService
 
-	protected providerSchema: IProviderEntity | null = null
+	protected providerSchema: IAiProviderEntity | null = null
 
-	protected modelManagers: Map<ModelType, AIModel> = new Map()
+	protected modelManagers: Map<AiModelTypeEnum, AIModel> = new Map()
 
 	constructor(public name: string) {
 		AIProviderRegistry.getInstance().registerProvider(this)
@@ -33,7 +33,7 @@ export abstract class ModelProvider {
 		return path.join(this.configService.assetOptions.serverRoot, this.MyFolderPath, this.name)
 	}
 
-	getProviderSchema(): IProviderEntity {
+	getProviderSchema(): IAiProviderEntity {
 		if (this.providerSchema) {
 			return this.providerSchema
 		}
@@ -43,7 +43,7 @@ export abstract class ModelProvider {
 		const yamlData = loadYamlFile(yamlPath, this.logger) as Record<string, any>
 
 		try {
-			this.providerSchema = yamlData as IProviderEntity
+			this.providerSchema = yamlData as IAiProviderEntity
 		} catch (e) {
 			throw new Error(`Invalid provider schema for ${this.name}: ${e.message}`)
 		}
@@ -51,7 +51,7 @@ export abstract class ModelProvider {
 		return this.providerSchema
 	}
 
-	async getModels(modelType: ModelType): Promise<AIModelEntity[]> {
+	async getModels(modelType: AiModelTypeEnum): Promise<AIModelEntity[]> {
 		const providerSchema = this.getProviderSchema()
 		if (!providerSchema.supported_model_types.includes(modelType)) {
 			return []
@@ -61,11 +61,11 @@ export abstract class ModelProvider {
 		return modelInstance.predefinedModels()
 	}
 
-	registerAIModelInstance(modelType: ModelType, modelInstance: AIModel): void {
+	registerAIModelInstance(modelType: AiModelTypeEnum, modelInstance: AIModel): void {
 		this.modelManagers.set(modelType, modelInstance)
 	}
 
-	getModelManager<T extends AIModel>(modelType: ModelType): T {
+	getModelManager<T extends AIModel>(modelType: AiModelTypeEnum): T {
 		const modelInstance = this.modelManagers.get(modelType)
 
 		if (!modelInstance) {
@@ -81,8 +81,8 @@ export abstract class ModelProvider {
 	 * @param onlyActive - only active models
 	 * @return provider models
 	 */
-	getProviderModels(modelType?: ModelType, onlyActive = false): ProviderModel[] {
-		let modelTypes: ModelType[] = []
+	getProviderModels(modelType?: AiModelTypeEnum, onlyActive = false): ProviderModel[] {
+		let modelTypes: AiModelTypeEnum[] = []
 		if (modelType) {
 			modelTypes.push(modelType)
 		} else {
@@ -99,7 +99,7 @@ export abstract class ModelProvider {
 		return providerModels.sort((a, b) => a.model_type.localeCompare(b.model_type))
 	}
 
-	getSystemProviderModels(modelTypes: ModelType[]) {
+	getSystemProviderModels(modelTypes: AiModelTypeEnum[]) {
 		const models = []
 		modelTypes?.forEach((modelType) => {
 			const modelManager = this.modelManagers.get(modelType)
@@ -111,17 +111,17 @@ export abstract class ModelProvider {
 	}
 
 	getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions) {
-		return this.getModelManager(ModelType.LLM)?.getChatModel(copilotModel, options)
+		return this.getModelManager(AiModelTypeEnum.LLM)?.getChatModel(copilotModel, options)
 	}
 
 	getModelInstance(
-		type: ModelType,
+		type: AiModelTypeEnum,
 		copilotModel: ICopilotModel,
 		options?: TChatModelOptions
 	): BaseLanguageModel | BaseChatModel | Embeddings {
-		if (type === ModelType.LLM) {
+		if (type === AiModelTypeEnum.LLM) {
 			return this.getModelManager(type)?.getChatModel(copilotModel, options)
-		} else if (type === ModelType.TEXT_EMBEDDING) {
+		} else if (type === AiModelTypeEnum.TEXT_EMBEDDING) {
 			return this.getModelManager<TextEmbeddingModelManager>(type)?.getEmbeddingInstance(copilotModel)
 		}
 		return null

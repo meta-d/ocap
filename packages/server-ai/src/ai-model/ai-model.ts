@@ -1,6 +1,5 @@
-import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIModelEntity, FetchFrom, ICopilotModel, ModelType, ParameterRule } from '@metad/contracts'
+import { AIModelEntity, FetchFrom, ICopilotModel, AiModelTypeEnum, ParameterRule } from '@metad/contracts'
 import { Injectable, Logger } from '@nestjs/common'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
@@ -16,7 +15,7 @@ export abstract class AIModel {
 
 	constructor(
 		protected readonly modelProvider: ModelProvider,
-		public modelType: ModelType
+		public modelType: AiModelTypeEnum
 	) {
 		this.modelProvider.registerAIModelInstance(this.modelType, this)
 	}

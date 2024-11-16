@@ -1,4 +1,4 @@
-import { AIPermissionsEnum, IPagination, ModelType } from '@metad/contracts'
+import { AiModelTypeEnum, AIPermissionsEnum, IPagination, IAiProviderEntity } from '@metad/contracts'
 import {
 	CrudController,
 	PaginationParams,
@@ -25,11 +25,11 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { DeepPartial } from 'typeorm'
-import { AIModelGetIconQuery } from '../ai-model'
+import { AIModelGetIconQuery, ListModelProvidersQuery } from '../ai-model'
 import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
 import { FindCopilotModelsQuery, ModelParameterRulesQuery } from './queries'
-import { CopilotWithProviderDto } from './dto'
+import { AiProviderDto, CopilotWithProviderDto, ProviderWithModelsDto } from './dto'
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
@@ -55,7 +55,7 @@ export class CopilotController extends CrudController<Copilot> {
 	}
 
 	@Get('model-select-options')
-	async getCopilotModelSelectOptions(@Query('type') type: ModelType) {
+	async getCopilotModelSelectOptions(@Query('type') type: AiModelTypeEnum) {
 		const copilots = await this.queryBus.execute<FindCopilotModelsQuery, CopilotWithProviderDto[]>(new FindCopilotModelsQuery(type))
 		const items = []
 		copilots.forEach((copilot) => {
@@ -94,12 +94,23 @@ export class CopilotController extends CrudController<Copilot> {
 	}
 
 	/**
+	 * get model providers
+	 * 
+	 * @returns
+	 */
+	@Get('providers')
+	async getModelProviders(@Query('type') type: AiModelTypeEnum) {
+		const providers = await this.queryBus.execute<ListModelProvidersQuery, IAiProviderEntity[]>(new ListModelProvidersQuery())
+		return providers.map((_) => new AiProviderDto(_))
+	}
+
+	/**
 	 * get models by model type
 	 * @param type ModelType
 	 * @returns
 	 */
 	@Get('models')
-	async getModels(@Query('type') type: ModelType) {
+	async getModels(@Query('type') type: AiModelTypeEnum) {
 		return this.queryBus.execute<FindCopilotModelsQuery, CopilotWithProviderDto[]>(new FindCopilotModelsQuery(type))
 	}
 
@@ -108,7 +119,7 @@ export class CopilotController extends CrudController<Copilot> {
 		@Param('name') provider: string,
 		@Query('model') model: string
 	) {
-		return this.queryBus.execute(new ModelParameterRulesQuery(provider, ModelType.LLM, model))
+		return this.queryBus.execute(new ModelParameterRulesQuery(provider, AiModelTypeEnum.LLM, model))
 	}
 
 	@Public()

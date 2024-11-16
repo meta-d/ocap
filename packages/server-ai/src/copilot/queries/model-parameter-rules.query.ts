@@ -1,4 +1,4 @@
-import { ModelType } from '@metad/contracts'
+import { AiModelTypeEnum } from '@metad/contracts'
 import { IQuery } from '@nestjs/cqrs'
 
 export class ModelParameterRulesQuery implements IQuery {
@@ -6,7 +6,7 @@ export class ModelParameterRulesQuery implements IQuery {
 
 	constructor(
 		public readonly provider: string,
-		public readonly modelType: ModelType,
+		public readonly modelType: AiModelTypeEnum,
 		public readonly model: string,
 	) {}
 }

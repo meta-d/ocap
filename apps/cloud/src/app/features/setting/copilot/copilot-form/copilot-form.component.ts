@@ -7,7 +7,9 @@ import { AI_PROVIDERS, AiModelCapability, AiProvider, isNil } from '@metad/copil
 import { TranslateModule } from '@ngx-translate/core'
 import { startWith } from 'rxjs/operators'
 import { getErrorMessage, PACCopilotService, Store, ToastrService } from '../../../../@core'
-import { MaterialModule } from '../../../../@shared'
+import { CopilotAiProvidersComponent, MaterialModule } from '../../../../@shared'
+import { MatDialog } from '@angular/material/dialog'
+import {Dialog, DialogRef, DIALOG_DATA, DialogModule} from '@angular/cdk/dialog';
 
 const PROVIDERS = [
   {
@@ -103,6 +105,7 @@ export class CopilotFormComponent {
   readonly #store = inject(Store)
   readonly copilotService = inject(PACCopilotService)
   readonly #toastrService = inject(ToastrService)
+  readonly #dialog = inject(Dialog)
 
   readonly role = input<AiProviderRole>()
 
@@ -226,5 +229,15 @@ export class CopilotFormComponent {
       this.formGroup.reset()
     }
     this.formGroup.markAsPristine()
+  }
+
+  openAiProviders() {
+    const dialogRef = this.#dialog.open<string>(CopilotAiProvidersComponent, {
+      data: {},
+    });
+
+    dialogRef.closed.subscribe(result => {
+      console.log('The dialog was closed');
+    });
   }
 }

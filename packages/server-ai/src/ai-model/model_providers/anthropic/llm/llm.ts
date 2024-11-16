@@ -1,5 +1,5 @@
 import { ChatAnthropic } from '@langchain/anthropic'
-import { AIModelEntity, ICopilotModel, ModelType } from '@metad/contracts'
+import { AIModelEntity, ICopilotModel, AiModelTypeEnum } from '@metad/contracts'
 import { sumTokenUsage } from '@metad/copilot'
 import { Injectable } from '@nestjs/common'
 import { AIModel } from '../../../ai-model'
@@ -9,7 +9,7 @@ import { TChatModelOptions } from '../../../types/types'
 @Injectable()
 export class AnthropicLargeLanguageModel extends AIModel {
 	constructor(readonly modelProvider: ModelProvider) {
-		super(modelProvider, ModelType.LLM)
+		super(modelProvider, AiModelTypeEnum.LLM)
 	}
 
 	validateCredentials(model: string, credentials: Record<string, any>): Promise<void> {
