@@ -1,7 +1,7 @@
 import { RequestContext } from '@metad/server-core'
 import { CommandBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { CopilotCheckLimitCommand, CopilotTokenRecordCommand } from '../../../copilot-user'
-import { AIProvidersService } from '../../providers.service'
+import { AIProvidersService } from '../../ai-model.service'
 import { AIModelGetOneQuery } from '../get-one.query'
 
 @QueryHandler(AIModelGetOneQuery)

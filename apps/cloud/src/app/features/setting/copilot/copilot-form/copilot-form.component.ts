@@ -5,11 +5,13 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { AiProviderRole } from '@metad/contracts'
 import { AI_PROVIDERS, AiModelCapability, AiProvider, isNil } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
-import { startWith } from 'rxjs/operators'
-import { getErrorMessage, PACCopilotService, Store, ToastrService } from '../../../../@core'
-import { CopilotAiProvidersComponent, MaterialModule } from '../../../../@shared'
+import { startWith, switchMap } from 'rxjs/operators'
+import { CopilotServerService, getErrorMessage, PACCopilotService, Store, ToastrService } from '../../../../@core'
+import { CopilotAiProvidersComponent, CopilotProviderComponent, MaterialModule } from '../../../../@shared'
 import { MatDialog } from '@angular/material/dialog'
 import {Dialog, DialogRef, DIALOG_DATA, DialogModule} from '@angular/cdk/dialog';
+import { derivedAsync } from 'ngxtension/derived-async'
+import { BehaviorSubject } from 'rxjs'
 
 const PROVIDERS = [
   {
@@ -97,13 +99,14 @@ const PROVIDERS = [
   selector: 'pac-copilot-form',
   templateUrl: './copilot-form.component.html',
   styleUrls: ['./copilot-form.component.scss'],
-  imports: [DecimalPipe, TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule]
+  imports: [DecimalPipe, TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule, CopilotProviderComponent]
 })
 export class CopilotFormComponent {
   AiProvider = AiProvider
 
   readonly #store = inject(Store)
   readonly copilotService = inject(PACCopilotService)
+  readonly copilotServer = inject(CopilotServerService)
   readonly #toastrService = inject(ToastrService)
   readonly #dialog = inject(Dialog)
 
@@ -148,11 +151,19 @@ export class CopilotFormComponent {
   readonly saving = signal(false)
 
   readonly organizationId = toSignal(this.#store.selectOrganizationId())
-  readonly copilot = computed(() =>
+  readonly copilotId = computed(() =>
     this.copilotService
       .copilots()
-      ?.find((item) => item.organizationId === this.organizationId() && item.role === this.role())
+      ?.find((item) => item.organizationId === this.organizationId() && item.role === this.role())?.id
   )
+
+  readonly refresh$ = new BehaviorSubject<void>(null)
+  readonly copilot = derivedAsync(() => {
+    return this.copilotId() ? 
+      this.refresh$.pipe(switchMap(() => this.copilotServer.getOneById(this.copilotId(), { relations: ['modelProvider'] }))) : null
+  })
+
+  readonly modelProvider = computed(() => this.copilot()?.modelProvider)
 
   constructor() {
     effect(() => {
@@ -233,11 +244,17 @@ export class CopilotFormComponent {
 
   openAiProviders() {
     const dialogRef = this.#dialog.open<string>(CopilotAiProvidersComponent, {
-      data: {},
+      data: {
+        copilot: this.formGroup.value
+      },
     });
 
-    dialogRef.closed.subscribe(result => {
-      console.log('The dialog was closed');
-    });
+    dialogRef.closed.subscribe((copilotProvider) => {
+      this.refresh$.next()
+    })
+  }
+
+  removedModelProvider() {
+    this.refresh$.next()
   }
 }

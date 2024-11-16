@@ -12,24 +12,21 @@ import {
 	Controller,
 	Get,
 	HttpCode,
-	HttpException,
 	HttpStatus,
 	Param,
 	Post,
 	Query,
-	Res,
 	UseGuards,
 	UseInterceptors
 } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { ServerResponse } from 'http'
 import { DeepPartial } from 'typeorm'
-import { AIModelGetIconQuery, ListModelProvidersQuery } from '../ai-model'
+import { AiProviderDto, ListModelProvidersQuery } from '../ai-model'
 import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
 import { FindCopilotModelsQuery, ModelParameterRulesQuery } from './queries'
-import { AiProviderDto, CopilotWithProviderDto, ProviderWithModelsDto } from './dto'
+import { CopilotWithProviderDto } from './dto'
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
@@ -122,21 +119,21 @@ export class CopilotController extends CrudController<Copilot> {
 		return this.queryBus.execute(new ModelParameterRulesQuery(provider, AiModelTypeEnum.LLM, model))
 	}
 
-	@Public()
-	@Get('provider/:name/:iconType/:lang')
-	async getModelIcon(
-		@Param('name') provider: string,
-		@Param('iconType') iconType: string,
-		@Param('lang') lang: string,
-		@Res() res: ServerResponse
-	) {
-		const [icon, mimetype] = await this.queryBus.execute(new AIModelGetIconQuery(provider, iconType, lang))
+	// @Public()
+	// @Get('provider/:name/:iconType/:lang')
+	// async getModelIcon(
+	// 	@Param('name') provider: string,
+	// 	@Param('iconType') iconType: string,
+	// 	@Param('lang') lang: string,
+	// 	@Res() res: ServerResponse
+	// ) {
+	// 	const [icon, mimetype] = await this.queryBus.execute(new AIModelGetIconQuery(provider, iconType, lang))
 
-		if (!icon) {
-			throw new HttpException('Icon not found', HttpStatus.NOT_FOUND)
-		}
+	// 	if (!icon) {
+	// 		throw new HttpException('Icon not found', HttpStatus.NOT_FOUND)
+	// 	}
 
-		res.setHeader('Content-Type', mimetype)
-		res.end(icon)
-	}
+	// 	res.setHeader('Content-Type', mimetype)
+	// 	res.end(icon)
+	// }
 }

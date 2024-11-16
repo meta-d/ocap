@@ -1,11 +1,18 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { AiProvider } from './ai.model'
+import { ICopilotProvider } from './copilot-provider.model'
 
 export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
   role: AiProviderRole
   enabled?: boolean
   provider?: AiProvider
+  /**
+   * @deprecated
+   */
   apiKey?: string
+  /**
+   * @deprecated
+   */
   apiHost?: string
   defaultModel?: string
 
@@ -19,6 +26,8 @@ export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
    * Details config for openai api
    */
   options?: any
+
+  modelProvider?: ICopilotProvider
 }
 
 /**

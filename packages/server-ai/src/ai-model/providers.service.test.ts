@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { AIProvidersModule } from './providers.module'
-import { AIProvidersService } from './providers.service'
+import { AIModelModule } from './ai-model.module'
+import { AIProvidersService } from './ai-model.service'
 import { OpenAIProvider } from './model_providers/openai/openai'
 import { ModelType } from './entities'
 import { OpenAILargeLanguageModel } from './model_providers/openai/llm/llm'
@@ -10,7 +10,7 @@ describe('AIProviderModule', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-			imports: [AIProvidersModule],
+			imports: [AIModelModule],
 			providers: []
 		}).compile()
 

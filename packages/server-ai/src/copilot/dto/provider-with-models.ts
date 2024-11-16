@@ -1,7 +1,7 @@
 import { ProviderCredentialSchema, ProviderModel } from '@metad/contracts'
 import { Exclude, Expose, Transform } from 'class-transformer'
-import { AiProviderDto } from './provider.dto'
 import { PublicAIModelDto } from './public-ai-model'
+import { AiProviderDto } from '../../ai-model'
 
 @Expose()
 export class ProviderWithModelsDto extends AiProviderDto {

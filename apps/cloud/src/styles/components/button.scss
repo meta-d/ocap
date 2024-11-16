@@ -41,6 +41,17 @@
 .btn-primary {
   @apply shadow-md text-components-button-primary-text bg-components-button-primary-bg border-components-button-primary-border;
 }
+
+.btn-large {
+  height: 2.25rem;
+  border-radius: 10px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 1rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+}
+
 .btn-medium {
   height: 2rem;
   border-radius: .5rem;

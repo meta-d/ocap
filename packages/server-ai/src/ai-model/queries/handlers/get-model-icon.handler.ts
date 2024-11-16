@@ -3,7 +3,7 @@ import { CommandBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { existsSync, readFileSync } from 'fs'
 import * as mime from 'mime-types'
 import * as path from 'path'
-import { AIProvidersService } from '../../providers.service'
+import { AIProvidersService } from '../../ai-model.service'
 import { AIModelGetIconQuery } from '../get-model-icon.query'
 
 @QueryHandler(AIModelGetIconQuery)

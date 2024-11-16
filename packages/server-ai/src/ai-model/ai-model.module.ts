@@ -1,15 +1,25 @@
 import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
+import { RouterModule } from 'nest-router'
+import { AIProvidersService } from './ai-model.service'
 import { AnthropicProviderModule } from './model_providers/anthropic/anthropic'
 import { DeepseekProviderModule } from './model_providers/deepseek/deepseek'
 import { OllamaProviderModule } from './model_providers/ollama/ollama'
 import { OpenAIProviderModule } from './model_providers/openai/openai'
-import { AIProvidersService } from './providers.service'
 import { QueryHandlers } from './queries/handlers'
+import { AIModelController } from './ai-model.controller'
 
 @Module({
-	imports: [CqrsModule, OpenAIProviderModule, OllamaProviderModule, DeepseekProviderModule, AnthropicProviderModule],
+	imports: [
+		RouterModule.forRoutes([{ path: '/ai-model', module: AIModelModule }]),
+		CqrsModule,
+		OpenAIProviderModule,
+		OllamaProviderModule,
+		DeepseekProviderModule,
+		AnthropicProviderModule
+	],
+	controllers: [ AIModelController ],
 	providers: [AIProvidersService, ...QueryHandlers],
 	exports: [AIProvidersService]
 })
-export class AIProvidersModule {}
+export class AIModelModule {}

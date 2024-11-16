@@ -1,5 +1,5 @@
 import { CommandBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs'
-import { AIProvidersService } from '../../providers.service'
+import { AIProvidersService } from '../../ai-model.service'
 import { ListModelProvidersQuery } from '../list-providers.query'
 
 @QueryHandler(ListModelProvidersQuery)
@@ -10,6 +10,9 @@ export class ListModelProvidersHandler implements IQueryHandler<ListModelProvide
 	) {}
 
 	public async execute(command: ListModelProvidersQuery) {
-		return this.service.getAllProviders().map((p) => p.getProviderSchema())
+		const names = command.names
+		return this.service.getAllProviders()
+			.filter((provider) => names ? names.includes(provider.name) : true)
+			.map((p) => p.getProviderSchema())
 	}
 }

@@ -1,5 +1,8 @@
-<div class="text-lg p-4">模型提供商</div>
-<div class="w-[800px] flex flex-wrap p-4">
+<div class="px-8 pt-6 pb-4 cursor-move flex justify-start items-center" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+  <div class="text-lg font-semibold">模型提供商</div>
+</div>
+<div class="px-8 text-base text-text-secondary">选择 AI 模型提供商，并为 Copilot 配置授权信息或手动添加 AI 模型。</div>
+<div class="w-[820px] flex flex-wrap px-8 py-2">
   <div class="grid grid-cols-3 gap-2">
     @for (provider of aiProviders(); track provider.provider) {
       <div class="group relative flex flex-col px-4 py-3 h-[148px] border-[0.5px] border-black/5 rounded-xl shadow-sm hover:shadow-lg"
@@ -22,7 +25,8 @@
 
           <div class="hidden group-hover:flex gap-1">
           @if (provider.provider_credential_schema) {
-            <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm shrink-0">
+            <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm shrink-0"
+              (click)="openSetup(provider)">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-[5px] w-3.5 h-3.5 undefined" data-icon="Settings01" aria-hidden="true">
                 <g id="Left Icon" clip-path="url(#clip0_11961_30603)"><g id="Icon">
                   <path d="M6.99935 8.74984C7.96585 8.74984 8.74935 7.96634 8.74935 6.99984C8.74935 6.03334 7.96585 5.24984 6.99935 5.24984C6.03285 5.24984 5.24935 6.03334 5.24935 6.99984C5.24935 7.96634 6.03285 8.74984 6.99935 8.74984Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -32,18 +36,19 @@
             </button>
           }
           @if (provider.model_credential_schema) {
-            <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium px-0 h-7 text-xs">
-                <svg
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  class="remixicon mr-[5px] w-3.5 h-3.5"
-                >
-                  <path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z"></path>
-                </svg>
-                Add Model
+            <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium px-0 h-7 text-xs"
+              (click)="addProvider(provider)">
+              <svg
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="currentColor"
+                class="remixicon mr-[5px] w-3.5 h-3.5"
+              >
+                <path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z"></path>
+              </svg>
+              Add
             </button>
           }
           </div>

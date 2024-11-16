@@ -1,0 +1,10 @@
+<div class="flex justify-between items-center mb-2">
+    <div class="text-xl font-semibold text-gray-900">Add {{label() | i18n}}</div>
+    <img
+      alt="provider-icon"
+      [src]="icon() | i18n"
+      class="w-auto h-6 undefined"
+    />
+</div>
+
+<copilot-credential-form [credentialFormSchemas]="credential_form_schemas()" />

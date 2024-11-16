@@ -1,5 +1,5 @@
 import { I18nObject } from '@metad/contracts'
-import { Exclude, Expose, Transform, TransformFnParams } from 'class-transformer'
+import { Exclude, Expose, Transform } from 'class-transformer'
 import { IsOptional, IsString, ValidateNested } from 'class-validator'
 
 @Expose()
@@ -39,6 +39,6 @@ export class AiProviderDto {
 	constructor(partial: Partial<AiProviderDto>) {
 		Object.assign(this, partial)
 
-		this.urlPrefix = `/api/copilot/provider/${partial.provider}`
+		this.urlPrefix = `/api/ai-model/provider/${partial.provider}`
 	}
 }

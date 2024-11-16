@@ -20,6 +20,7 @@ import { XpertWorkspaceModule } from './xpert-workspace'
 import { XpertModule } from './xpert'
 import { CopilotModelModule } from './copilot-model'
 import { XpertAgentExecutionModule } from './xpert-agent-execution'
+import { CopilotProviderModule } from './copilot-provider'
 
 @Module({
 	imports: [
@@ -36,6 +37,7 @@ import { XpertAgentExecutionModule } from './xpert-agent-execution'
 		CopilotKnowledgeModule,
 		CopilotUserModule,
 		CopilotOrganizationModule,
+		CopilotProviderModule,
 		GraphragModule,
 		XpertModule,
 		XpertAgentModule,

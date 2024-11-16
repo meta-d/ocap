@@ -7,6 +7,8 @@ import {
 	CopilotKnowledge,
 	CopilotOrganization,
 	CopilotUser,
+	CopilotProvider,
+	CopilotProviderModel,
 	Knowledgebase,
 	KnowledgeDocument,
 	Xpert,
@@ -14,7 +16,7 @@ import {
 	XpertTool,
 	XpertToolset,
 	XpertWorkspace,
-	XpertAgentExecution
+	XpertAgentExecution,
 } from './internal'
 
 export const ALL_AI_ENTITIES = [
@@ -25,6 +27,8 @@ export const ALL_AI_ENTITIES = [
 	CopilotUser,
 	CopilotCheckpoint,
 	CopilotCheckpointWrites,
+	CopilotProvider,
+	CopilotProviderModel,
 	Knowledgebase,
 	KnowledgeDocument,
 	ChatConversation,

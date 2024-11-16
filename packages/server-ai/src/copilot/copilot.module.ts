@@ -8,7 +8,7 @@ import { CopilotController } from './copilot.controller'
 import { Copilot } from './copilot.entity'
 import { QueryHandlers } from './queries/handlers/index'
 import { CopilotService } from './copilot.service'
-import { AIProvidersModule } from '../ai-model'
+import { AIModelModule } from '../ai-model'
 
 @Module({
 	imports: [
@@ -17,7 +17,7 @@ import { AIProvidersModule } from '../ai-model'
 		TenantModule,
 		CqrsModule,
 		UserModule,
-		AIProvidersModule
+		AIModelModule
 	],
 	controllers: [CopilotController],
 	providers: [CopilotService, ...QueryHandlers],

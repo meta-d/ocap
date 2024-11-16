@@ -1,9 +1,10 @@
-import { AiProvider, AiProviderRole, ICopilot } from '@metad/contracts'
+import { AiProvider, AiProviderRole, ICopilot, ICopilotProvider } from '@metad/contracts'
 import { IsSecret, TenantOrganizationBaseEntity, WrapSecrets } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Exclude, Expose } from 'class-transformer'
 import { IsBoolean, IsJSON, IsNumber, IsOptional, IsString } from 'class-validator'
-import { AfterLoad, Column, Entity } from 'typeorm'
+import { AfterLoad, Column, Entity, OneToOne } from 'typeorm'
+import { CopilotProvider } from '../core/entities/internal'
 
 @Entity('copilot')
 export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
@@ -66,6 +67,16 @@ export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
 	@IsOptional()
 	@Column({ nullable: true })
 	tokenBalance?: number
+
+	/*
+    |--------------------------------------------------------------------------
+    | @OneToOne 
+    |--------------------------------------------------------------------------
+    */
+	@ApiProperty({ type: () => CopilotProvider })
+	@OneToOne(() => CopilotProvider, provider => provider.copilot) 
+	@IsOptional()
+	modelProvider?: ICopilotProvider
 
 	@AfterLoad()
 	afterLoadEntity?() {

@@ -1,17 +1,21 @@
-<mat-slide-toggle class="my-8" [(ngModel)]="enabled">
+<mat-slide-toggle class="my-4" [(ngModel)]="enabled">
   {{ 'PAC.Copilot.EnableCopilot' | translate: {Default: 'Enable Copilot'} }}
 </mat-slide-toggle>
 
-<form [formGroup]="formGroup" class="w-full flex flex-col items-start py-4 overflow-hidden"
-    (ngSubmit)="onSubmit()">
+@if (modelProvider()) {
+  <copilot-provider [providerId]="modelProvider().id" class="shadow-sm mb-2 rounded-xl border-[0.5px] border-black/5"
+    (deleted)="removedModelProvider()" />
+} @else {
+  <div class="w-full flex items-center px-3 py-2 rounded-lg text-base text-gray-900 bg-gray-100 cursor-pointer hover:bg-gray-200"
+    (click)="openAiProviders()"
+  >
+    <div class="grow mr-2 leading-5">选择 AI 模型提供商</div>
+    <i class="ri-folder-open-line"></i>
+  </div>
+}
 
-    <div class="w-full flex items-center px-3 py-2 rounded-lg text-base text-gray-900 bg-gray-100 cursor-pointer hover:bg-gray-200"
-      (click)="openAiProviders()"
-    >
-      <div class="grow mr-2 leading-5">选择 AI 模型提供商</div>
-      <i class="ri-folder-open-line"></i>
-    </div>
-  
+<form [formGroup]="formGroup" class="w-full flex flex-col items-start py-2 overflow-hidden"
+    (ngSubmit)="onSubmit()">
     <mat-form-field appearance="fill">
         <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
         <mat-select formControlName="provider">

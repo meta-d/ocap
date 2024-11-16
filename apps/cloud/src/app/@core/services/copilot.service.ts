@@ -185,35 +185,7 @@ export class PACCopilotService extends NgmCopilotService {
   enableCopilot(): void {
     this.router.navigate(['settings', 'copilot'])
   }
-
-  private readonly modelsByType = new Map<AiModelTypeEnum, Observable<ICopilotWithProvider[]>>()
-  private readonly aiProviders$ = this.httpClient.get<IAiProviderEntity[]>(API_COPILOT + `/providers`).pipe(shareReplay(1))
-  getAiProviders() {
-    return this.aiProviders$
-  }
-
-  getCopilotModels(type: AiModelTypeEnum) {
-    if (!this.modelsByType.get(type)) {
-      this.modelsByType.set(
-        type,
-        this.refresh$.pipe(
-          switchMap(() =>
-            this.httpClient.get<ICopilotWithProvider[]>(API_COPILOT + '/models', { params: toParams({ type }) })
-          ),
-          shareReplay(1)
-        )
-      )
-    }
-    return this.modelsByType.get(type)
-  }
-
-  getModelParameterRules(provider: string, model: string) {
-    return this.httpClient.get<ParameterRule[]>(API_COPILOT + `/provider/${provider}/model-parameter-rules`, {
-      params: {
-        model
-      }
-    })
-  }
+  
 }
 
 function constructUrl(url: string) {
@@ -224,9 +196,4 @@ function constructUrl(url: string) {
   }
 
   return url ? `${protocol}${url}` : ''
-}
-
-export function injectAiProviders() {
-  const service = inject(PACCopilotService)
-  return toSignal(service.getAiProviders())
 }

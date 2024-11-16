@@ -14,7 +14,7 @@ import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { debounceTime } from 'rxjs'
 import { TranslateModule } from '@ngx-translate/core'
-import { ICopilot, ICopilotModel, ModelFeature, AiModelTypeEnum, PACCopilotService } from '../../../@core'
+import { ICopilot, ICopilotModel, ModelFeature, AiModelTypeEnum, PACCopilotService, CopilotServerService } from '../../../@core'
 
 @Component({
   standalone: true,
@@ -45,6 +45,7 @@ export class CopilotModelSelectComponent {
 
   protected cva = inject<NgxControlValueAccessor<Partial<ICopilotModel> | null>>(NgxControlValueAccessor)
   readonly copilotService = inject(PACCopilotService)
+  readonly copilotServer = inject(CopilotServerService)
 
   // Inputs
   readonly modelType = input<AiModelTypeEnum>()
@@ -62,7 +63,7 @@ export class CopilotModelSelectComponent {
   // States
   readonly _copilotModel = computed(() => this.copilotModel() ?? this.inheritModel())
 
-  readonly copilotWithModels = derivedAsync(() => this.copilotService.getCopilotModels(this.modelType()))
+  readonly copilotWithModels = derivedAsync(() => this.copilotServer.getCopilotModels(this.modelType()))
   readonly copilotWithModels$ = toObservable(this.copilotWithModels)
 
   readonly searchControl = new FormControl()
@@ -103,7 +104,7 @@ export class CopilotModelSelectComponent {
     const provider = this.provider()
     const model = this.model()
     if (provider && model) {
-      return this.copilotService.getModelParameterRules(this.provider(), this.model())
+      return this.copilotServer.getModelParameterRules(this.provider(), this.model())
     }
     return null
   })
