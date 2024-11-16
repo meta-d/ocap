@@ -76,7 +76,7 @@ export class ChatService {
     pipe(
       map(([roles, lang]) => {
         if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {
-          return roles?.map((role) => ({ ...role, title: role.titleCN }))
+          return roles?.map((role) => ({ ...role, title: role.titleCN || role.title }))
         } else {
           return roles
         }

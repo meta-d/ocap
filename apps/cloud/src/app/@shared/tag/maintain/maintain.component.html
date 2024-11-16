@@ -12,35 +12,48 @@
   </ul>
 </div>
 
-<div class="tag-list flex-1 flex flex-col">
+<div class="tag-list flex-1 flex flex-col overflow-hidden">
   <div class="px-4 pt-4">
     <button type="button" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
       (click)="createTag()">{{'PAC.ACTIONS.Add' | translate: {Default: 'Add'} }}</button>
   </div>
   
-  <div class="m-4 border border-solid border-divider-regular rounded-xl">
-    <table class="table-auto w-full">
+  <div class="m-4 border border-solid border-divider-regular rounded-xl overflow-auto">
+    <table class="table-fixed">
       <thead>
         <tr>
-          <th>{{ 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'} }}</th>
+          <th class="w-40 shrink-0">{{ 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'} }}</th>
           <th>{{ 'PAC.KEY_WORDS.Category' | translate: {Default: 'Category'} }}</th>
-          <th>{{ 'PAC.KEY_WORDS.Description' | translate: {Default: 'Description'} }}</th>
-          <th>{{ 'PAC.KEY_WORDS.Color' | translate: {Default: 'Color'} }}</th>
+          <th class="w-40 shrink-0">{{ 'PAC.KEY_WORDS.Label' | translate: {Default: 'Label'} }}</th>
+          <th class="w-40 shrink-0">{{ 'PAC.KEY_WORDS.Description' | translate: {Default: 'Description'} }}</th>
+          <th class="w-40 shrink-0">{{ 'PAC.KEY_WORDS.Icon' | translate: {Default: 'Icon'} }}</th>
+          <th class="w-40 shrink-0">{{ 'PAC.KEY_WORDS.Color' | translate: {Default: 'Color'} }}</th>
           <th>{{ 'PAC.KEY_WORDS.Actions' | translate: {Default: 'Actions'} }}</th>
         </tr>
       </thead>
       <tbody>
         @for (tag of tags(); track tag.id) {
           <tr>
-            <td>
-                <tag [tag]="tag"></tag>
+            <td class="w-40 shrink-0">
+              <tag [tag]="tag" ></tag>
             </td>
             <td>{{tag.category}}</td>
-            <td>
+            <td class="w-40 shrink-0">
+              <input class="p-1" matInput
+                [(ngModel)]="tag.label"
+                (blur)="onLabel(tag)">
+            </td>
+            <td class="w-40 shrink-0">
               <input class="p-1" matInput
                 [(ngModel)]="tag.description"
-                (blur)="onDescripton(tag)"></td>
-            <td>
+                (blur)="onDescripton(tag)">
+            </td>
+            <td class="w-40 shrink-0">
+              <input matInput class="p-1"
+                [(ngModel)]="tag.icon"
+                (blur)="onIcon(tag)">
+            </td>
+            <td class="w-40 shrink-0">
               <input matInput class="p-1"
                 [(ngModel)]="tag.color"
                 (blur)="onColor(tag)"></td>

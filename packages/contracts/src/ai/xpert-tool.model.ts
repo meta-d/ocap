@@ -1,5 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { I18nObject } from './ai-model.model'
+import { I18nObject } from '../types'
 import { AiProviderRole } from './copilot.model'
 import { TAvatar } from './types'
 import { IXpertToolset } from './xpert-toolset.model'

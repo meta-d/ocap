@@ -8,8 +8,8 @@ import { NxCoreService } from './services'
  * @deprecated Migrate to `@metad/ocap-angular/core`
  */
 @NgModule({
-  declarations: [KeysPipe, PropertyPipe, SafePipe],
-  imports: [NgmTransformScaleDirective, ResizeObserverDirective, NgmShortNumberPipe, EntriesPipe],
+  declarations: [],
+  imports: [NgmTransformScaleDirective, ResizeObserverDirective, NgmShortNumberPipe, EntriesPipe, SafePipe, KeysPipe, PropertyPipe],
   exports: [
     KeysPipe,
     EntriesPipe,

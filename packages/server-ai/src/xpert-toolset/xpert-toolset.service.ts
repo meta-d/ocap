@@ -5,10 +5,10 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { FindConditions, IsNull, Not, Repository } from 'typeorm'
 import { XpertToolset } from './xpert-toolset.entity'
 import { CopilotService } from '../copilot'
-import { AiProviderRole, IUser, IXpertToolset, XpertToolsetCategoryEnum } from '@metad/contracts'
+import { AiProviderRole, ITag, IUser, IXpertToolset, TagCategoryEnum, XpertToolsetCategoryEnum } from '@metad/contracts'
 import { assign } from 'lodash'
 import { GetXpertWorkspaceQuery } from '../xpert-workspace'
-import { defaultToolTags } from './utils/tags'
+import { DEFAULT_TOOL_TAG_MAP, defaultToolTags } from './utils/tags'
 import { ListBuiltinToolProvidersQuery } from './queries'
 import { ToolProviderNotFoundError } from './errors'
 import { TToolsetProviderSchema } from './types'
@@ -131,4 +131,30 @@ export class XpertToolsetService extends TenantOrganizationAwareCrudService<Xper
 		})
 	}
 
+	/**
+	 * Load the builtin provider tags for toolset
+	 * @param toolsets 
+	 * @returns 
+	 */
+	async afterLoad(toolsets: IXpertToolset[],) {
+		const builtinNames = toolsets.filter((item) => item.category === XpertToolsetCategoryEnum.BUILTIN).map((item) => item.type)
+		if (builtinNames.length) {
+		//   const builtinTags = await this.getAllTags()
+		  const providers = await this.queryBus.execute<ListBuiltinToolProvidersQuery, TToolsetProviderSchema[]>(new ListBuiltinToolProvidersQuery(builtinNames))
+		  toolsets.filter((item) => item.category === XpertToolsetCategoryEnum.BUILTIN).forEach((toolset) => {
+			const provider = providers.find((_) => _.identity.name === toolset.type)
+			if (provider) {
+				toolset.tags = provider.identity.tags?.map((name) => ({
+					id: TagCategoryEnum.TOOLSET + '/' + name,
+					category: TagCategoryEnum.TOOLSET,
+					name,
+					label: DEFAULT_TOOL_TAG_MAP[name]?.label,
+					icon: DEFAULT_TOOL_TAG_MAP[name]?.icon
+				} as ITag))
+			}
+		  })
+		}
+
+		return toolsets
+	}
 }

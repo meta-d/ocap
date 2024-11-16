@@ -60,9 +60,10 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 		@Query('published') published?: boolean
 	) {
 		const result = await this.service.getAllByWorkspace(workspaceId, data, published, RequestContext.currentUser())
+		const items = await this.service.afterLoad(result.items)
 		return {
 			...result,
-			items: result.items.map((item) => new ToolsetPublicDTO(item))
+			items: items.map((item) => new ToolsetPublicDTO(item))
 		}
 	}
 
@@ -76,8 +77,9 @@ export class XpertToolsetController extends CrudController<XpertToolset> {
 		@Query('data', ParseJsonPipe) options?: PaginationParams<XpertToolset>
 	): Promise<IPagination<ToolsetPublicDTO>> {
 		const { items, ...rest } = await this.service.findAll(options)
+		const _items = await this.service.afterLoad(items)
 		return {
-			items: items.map((item) => new ToolsetPublicDTO(item)),
+			items: _items.map((item) => new ToolsetPublicDTO(item)),
 			...rest
 		}
 	}

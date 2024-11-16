@@ -9,8 +9,7 @@ identity:
     zh_Hans: 与数据库对话
   icon: icon.jpg
   tags:
-    - search
-    - db
+    - analysis
 credentials_for_provider:
   dataSource:
     type: remote-select

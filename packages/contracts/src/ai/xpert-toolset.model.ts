@@ -1,4 +1,3 @@
-import { I18nObject } from './ai-model.model'
 import { AiProviderRole } from './copilot.model'
 import { TAvatar } from './types'
 import { IXpertTool, XpertToolType } from './xpert-tool.model'
@@ -6,6 +5,7 @@ import { IBasePerWorkspaceEntityModel } from './xpert-workspace.model'
 import { ITag } from '../tag-entity.model'
 import { TCopilotModel } from './copilot-model.model'
 import { Subscriber } from 'rxjs'
+import { I18nObject } from '../types'
 
 
 export enum XpertToolsetCategoryEnum {
@@ -343,6 +343,7 @@ export enum ToolTagEnum {
 	BUSINESS = 'business',
 	ENTERTAINMENT = 'entertainment',
 	UTILITIES = 'utilities',
+	ANALYSIS = 'analysis',
 	OTHER = 'other'
 }
 

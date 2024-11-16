@@ -135,8 +135,8 @@ export class XpertStudioApiService {
   readonly workspace = computed(() => this.team()?.workspace, { equal: (a, b) => a?.id === b?.id })
 
   readonly collaborators$ = toObservable(this.team).pipe(
-    filter(nonNullable),
     map((team) => team?.workspace),
+    filter(nonNullable),
     distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
     switchMap((workspace) => this.getXpertsByWorkspace(workspace)),
     map(({ items }) => items.filter((_) => _.id !== this.team().id)),

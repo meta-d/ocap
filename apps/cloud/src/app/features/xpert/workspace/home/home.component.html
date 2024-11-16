@@ -155,9 +155,9 @@
   </div>
 
   <div class="flex items-center gap-2">
-    <tag-filter [allTags]="toolTags()" [(tags)]="tags"/>
+    <tag-filter [allTags]="allTags()" [(tags)]="tags"/>
 
-    <ngm-search class="rounded-xl overflow-hidden" />
+    <ngm-search class="rounded-xl overflow-hidden" [formControl]="searchControl"/>
   </div>
 </div>
 

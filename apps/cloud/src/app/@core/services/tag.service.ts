@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core'
+import { inject, Injectable } from '@angular/core'
 import { OrganizationBaseCrudService } from '@metad/cloud/state'
-import { ITag } from '@metad/contracts'
+import { ITag, TagCategoryEnum } from '@metad/contracts'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { map, shareReplay, switchMap } from 'rxjs/operators'
 import { API_TAG } from '../constants/app.constants'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @Injectable({
   providedIn: 'root'
@@ -79,4 +80,10 @@ export class TagService extends OrganizationBaseCrudService<ITag> {
   // delete(id: string) {
   //   return this.httpClient.delete(`${C_API_TAG}/${id}`)
   // }
+}
+
+export function injectTags(category: TagCategoryEnum) {
+  const tagService = inject(TagService)
+
+  return toSignal(tagService.getAllByCategory(category))
 }

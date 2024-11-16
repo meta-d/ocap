@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
-import { AppearanceDirective } from '@metad/ocap-angular/core'
+import { AppearanceDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -30,12 +30,10 @@ import {
   XpertTypeEnum,
   XpertWorkspaceService
 } from '../../../../@core'
-import { CardCreateComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, UserPipe } from '../../../../@shared'
+import { CardCreateComponent, MaterialModule, ToolProviderCardComponent, ToolsetCardComponent, XpertCardComponent } from '../../../../@shared'
 import { AppService } from '../../../../app.service'
 import { XpertNewBlankComponent } from '../../xpert/index'
 import { XpertStudioCreateToolComponent } from '../../tools/create/create.component'
-import { EmojiAvatarComponent } from '../../../../@shared/avatar'
-import { TagComponent } from '../../../../@shared'
 import { XpertToolConfigureBuiltinComponent } from '../../tools'
 import { XpertWorkspaceHomeComponent } from '../home/home.component'
 import { injectParams } from 'ngxtension/inject-params'
@@ -57,13 +55,11 @@ import { injectParams } from 'ngxtension/inject-params'
     MaterialModule,
 
     NgmCommonModule,
-    EmojiAvatarComponent,
-    UserPipe,
     AppearanceDirective,
-    TagComponent,
     CardCreateComponent,
     ToolsetCardComponent,
-    ToolProviderCardComponent
+    ToolProviderCardComponent,
+    XpertCardComponent
   ],
   selector: 'pac-xpert-xperts',
   templateUrl: './xperts.component.html',
@@ -86,6 +82,7 @@ export class XpertStudioXpertsComponent {
   readonly xpertService = inject(XpertService)
   readonly toolsetService = inject(XpertToolsetService)
   readonly homeComponent = inject(XpertWorkspaceHomeComponent)
+  readonly i18n = new NgmI18nPipe()
   readonly workspaceId = injectParams('id')
 
   readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
@@ -94,16 +91,17 @@ export class XpertStudioXpertsComponent {
   readonly lang = this.appService.lang
 
   readonly selectedWorkspaces = this.homeComponent.selectedWorkspaces
-  // readonly workspace = this.homeComponent.workspace
   readonly type = this.homeComponent.type
   readonly tags = this.homeComponent.tags
+  readonly builtinTags = this.homeComponent.toolTags
+  readonly searchText = this.homeComponent.searchText
 
   readonly refresh$ = new BehaviorSubject<void>(null)
 
   readonly workspace = derivedAsync(() => {
     return this.workspaceId() ? this.workspaceService.getOneById(this.workspaceId()) : null
   })
-  readonly xperts = derivedAsync(() => {
+  readonly #xperts = derivedAsync(() => {
     const where = {
       type: this.type(),
       latest: true
@@ -138,19 +136,46 @@ export class XpertStudioXpertsComponent {
     )
   })
 
-  readonly builtinToolProviders = derivedAsync(() => {
-    return this.toolsetService.getProviders()
+  readonly #builtinToolProviders = derivedAsync(() => this.toolsetService.getProviders())
+
+  readonly builtinToolProviders = computed(() => {
+    const searchText = this.searchText()?.toLowerCase()
+    if (this.isAll() || this.isBuiltinTools()) {
+      return this.#builtinToolProviders()?.filter((provider) => {
+        if (this.tags()?.length) {
+          return this.tags().some((tag) => provider.tags?.some((_) => _ === tag.name))
+        }
+        return true
+      })
+      .filter((provider) => searchText ? (
+        provider.name.toLowerCase().includes(searchText) ||
+        this.i18n.transform(provider.description)?.toLowerCase().includes(searchText)
+      ) : true)
+    }
+    return this.#builtinToolProviders()
+  })
+
+  readonly xperts = computed(() => {
+    const searchText = this.searchText()?.toLowerCase()
+    const tags = this.tags()
+    return this.#xperts()?.filter((item) => tags?.length ? tags.some((t) => item.tags.some((tt) => tt.name === t.name)) : true)
+      .filter((item) => searchText ? (
+        item.title?.toLowerCase().includes(searchText) ||
+        item.name.toLowerCase().includes(searchText) ||
+        item.description?.toLowerCase().includes(searchText)) : true )
   })
 
   readonly toolsets = computed(() => {
+    const searchText = this.searchText()?.toLowerCase()
     const tags = this.tags()
     return this.#toolsets()?.filter((toolset) => tags?.length ? tags.some((t) => toolset.tags.some((tt) => tt.name === t.name)) : true)
+      .filter((toolset) => searchText ? (toolset.name.toLowerCase().includes(searchText) || toolset.description?.toLowerCase().includes(searchText)) : true )
   })
 
-  readonly isAll = computed(() => !this.type())
-  readonly isXperts = computed(() => !this.type() || Object.values(XpertTypeEnum).includes(this.type() as XpertTypeEnum))
-  readonly isTools = computed(() => this.type() === XpertToolsetCategoryEnum.API )
-  readonly isBuiltinTools = computed(() => this.type() === XpertToolsetCategoryEnum.BUILTIN )
+  readonly isAll = this.homeComponent.isAll
+  readonly isXperts = this.homeComponent.isXperts
+  readonly isTools = this.homeComponent.isTools
+  readonly isBuiltinTools = this.homeComponent.isBuiltinTools
 
   readonly builtinToolsets = computed(() => this.toolsets()?.filter((_) => _.category === XpertToolsetCategoryEnum.BUILTIN))
   readonly apiToolsets = computed(() => this.toolsets()?.filter((_) => _.category === XpertToolsetCategoryEnum.API))

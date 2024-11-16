@@ -1,21 +1,21 @@
+import { CdkListboxModule, ListboxValueChangeEvent } from '@angular/cdk/listbox'
 import { CommonModule } from '@angular/common'
 import { booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core'
-import { TranslateModule } from '@ngx-translate/core'
-import { NgxFloatUiModule, NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
-import { derivedAsync } from 'ngxtension/derived-async'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { CdkListboxModule, ListboxValueChangeEvent } from '@angular/cdk/listbox'
+import { FormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
+import { MatInputModule } from '@angular/material/input'
+import { TranslateModule } from '@ngx-translate/core'
+import { NgxFloatUiPlacements, NgxFloatUiTriggers } from 'ngx-float-ui'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { getErrorMessage, ITag, TagService, ToastrService } from '../../../@core'
 import { TagCreatorComponent } from '../creator/creator.component'
 import { TagComponent } from '../tag/tag.component'
-import { getErrorMessage, ITag, TagService, ToastrService } from '../../../@core'
-import { FormsModule } from '@angular/forms'
-import { MatInputModule } from '@angular/material/input'
 
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule,  CdkListboxModule, MatInputModule, TagComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, CdkListboxModule, MatInputModule, TagComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'tag-maintain',
   templateUrl: './maintain.component.html',
@@ -51,9 +51,9 @@ export class TagMaintainComponent {
   createTag() {
     const dialogRef = this.#dialog.open(TagCreatorComponent, {
       data: { category: this.category() }
-    });
+    })
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.tagService.refresh()
       }
@@ -71,12 +71,12 @@ export class TagMaintainComponent {
     })
   }
 
-  onDescripton(tag: ITag) {
-    if (tag.description !== this.#tags().find((_) => _.id === tag.id)?.description) {
-      this.tagService.update(tag.id, {description: tag.description}).subscribe({
+  updateTag(tag: ITag, attrName: string) {
+    if (tag[attrName] !== this.#tags().find((_) => _.id === tag.id)?.[attrName]) {
+      this.tagService.update(tag.id, { [attrName]: tag[attrName] }).subscribe({
         next: () => {
           this.tagService.refresh()
-          this.#toastr.success('PAC.Messages.UpdatedSuccessfully', {Default: 'Updated successfully'})
+          this.#toastr.success('PAC.Messages.UpdatedSuccessfully', { Default: 'Updated successfully' })
         },
         error: (err) => {
           this.#toastr.error(getErrorMessage(err))
@@ -85,17 +85,19 @@ export class TagMaintainComponent {
     }
   }
 
+  onLabel(tag: ITag) {
+    this.updateTag(tag, 'label')
+  }
+
+  onDescripton(tag: ITag) {
+    this.updateTag(tag, 'desciption')
+  }
+
   onColor(tag: ITag) {
-    if (tag.color !== this.#tags().find((_) => _.id === tag.id)?.color) {
-      this.tagService.update(tag.id, {color: tag.color}).subscribe({
-        next: () => {
-          this.tagService.refresh()
-          this.#toastr.success('PAC.Messages.UpdatedSuccessfully', {Default: 'Updated successfully'})
-        },
-        error: (err) => {
-          this.#toastr.error(getErrorMessage(err))
-        }
-      })
-    }
+    this.updateTag(tag, 'color')
+  }
+
+  onIcon(tag: ITag) {
+    this.updateTag(tag, 'icon')
   }
 }

@@ -253,7 +253,10 @@
       "Categories": "类别",
       "Category": "类别",
       "Color": "颜色",
-      "Tag": "标签"
+      "Tag": "标签",
+      "AllTags": "所有标签",
+      "Label": "标签",
+      "Icon": "图标"
     },
     "MENU": {
       "Certification": "认证",

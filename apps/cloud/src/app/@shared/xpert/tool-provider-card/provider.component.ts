@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common'
-import { booleanAttribute, Component, computed, input, output } from '@angular/core'
+import { Component, computed, input, output } from '@angular/core'
 import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { upperFirst } from 'lodash-es'
-import { injectHelpWebsite, IToolProvider, ToolTagEnum } from '../../../@core'
+import { injectHelpWebsite, ITag, IToolProvider, TagCategoryEnum } from '../../../@core'
 import { EmojiAvatarComponent } from '../../avatar'
 
 @Component({
@@ -15,10 +15,15 @@ import { EmojiAvatarComponent } from '../../avatar'
 export class ToolProviderCardComponent {
   readonly helpWebsite = injectHelpWebsite()
 
+  // Inputs
   readonly provider = input<IToolProvider>()
+  readonly builtinTags = input<ITag[]>()
 
+  // States
   readonly tags = computed(() => {
-    return this.provider()?.tags?.map((tag) => upperFirst(tag))
+    return this.provider()?.tags?.map((tag) => 
+      this.builtinTags()?.find((_) => _.name === tag) ?? {id: TagCategoryEnum.TOOLSET + '/' + tag, name: tag, description: upperFirst(tag)}
+    )
   })
 
   readonly title = input<string>(null)

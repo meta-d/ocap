@@ -62,4 +62,8 @@ export class NgmSearchComponent implements ControlValueAccessor {
     this.formControl?.setValue(value)
     this.onChange?.(value)
   }
+
+  clear() {
+    this.onValueChange('')
+  }
 }

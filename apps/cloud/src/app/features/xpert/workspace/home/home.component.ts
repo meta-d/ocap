@@ -15,7 +15,7 @@ import {
   viewChild
 } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import {
@@ -27,12 +27,14 @@ import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, EMPTY } from 'rxjs'
-import { map, switchMap } from 'rxjs/operators'
+import { debounceTime, map, startWith, switchMap } from 'rxjs/operators'
 import {
   getErrorMessage,
+  injectTags,
   injectUser,
   ITag,
   routeAnimations,
+  TagCategoryEnum,
   ToastrService,
   XpertService,
   XpertToolsetCategoryEnum,
@@ -43,6 +45,7 @@ import {
 import { MaterialModule, TagFilterComponent } from '../../../../@shared'
 import { AppService } from '../../../../app.service'
 import { XpertWorkspaceSettingsComponent } from '../settings/settings.component';
+import { concat } from 'lodash-es';
 
 export type XpertFilterEnum = XpertToolsetCategoryEnum | XpertTypeEnum
 
@@ -87,6 +90,8 @@ export class XpertWorkspaceHomeComponent {
   readonly workspaceService = inject(XpertWorkspaceService)
   readonly xpertService = inject(XpertService)
   readonly toolsetService = inject(XpertToolsetService)
+  // Xpert's tags
+  readonly xpertTags = injectTags(TagCategoryEnum.XPERT)
   readonly me = injectUser()
 
   readonly contentContainer = viewChild('contentContainer', { read: ElementRef })
@@ -102,17 +107,42 @@ export class XpertWorkspaceHomeComponent {
 
   readonly refresh$ = new BehaviorSubject<void>(null)
 
+  // Xpert or tool type filter
   readonly types = model<XpertTypeEnum>(null)
   readonly type = computed(() => this.types()?.[0])
 
+  // TagFilter's state
   readonly tags = model<ITag[]>([])
 
+  // Builtin tool's tags
   readonly toolTags = toSignal(this.toolsetService.getAllTags().pipe(
     map((toolTags) => toolTags.map((_) => ({
-      id: _.name,
-      name: _.label
+      ..._,
+      id: `toolset/${_.name}`,
+      category: 'toolset',
     } as unknown as ITag)))
   ))
+
+  readonly isAll = computed(() => !this.type())
+  readonly isXperts = computed(() => !this.type() || Object.values(XpertTypeEnum).includes(this.type() as XpertTypeEnum))
+  readonly isTools = computed(() => this.type() === XpertToolsetCategoryEnum.API )
+  readonly isBuiltinTools = computed(() => this.type() === XpertToolsetCategoryEnum.BUILTIN)
+
+  readonly allTags = computed(() => {
+    if (this.isAll()) {
+      return concat(this.xpertTags(), this.toolTags())
+    } else if (this.isXperts()) {
+      return this.xpertTags()
+    } else if (this.isBuiltinTools()) {
+      this.toolTags()
+    } else if (this.isTools()) {
+      return []
+    }
+    return []
+  })
+
+  readonly searchControl = new FormControl()
+  readonly searchText = toSignal(this.searchControl.valueChanges.pipe(debounceTime(300), startWith('')))
 
   readonly inDevelopmentOpen = signal(false)
 

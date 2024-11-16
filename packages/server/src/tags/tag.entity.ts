@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToMany, JoinTable, Index } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
 	IEmployee,
 	IOrganization,
@@ -8,6 +8,7 @@ import {
 	IUser,
 	IOrganizationProject,
 	TagCategoryEnum,
+	I18nObject,
 } from '@metad/contracts';
 import {
 	Employee,
@@ -17,7 +18,7 @@ import {
 	OrganizationDepartment,
 	OrganizationProject
 } from '../core/entities/internal';
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsJSON, IsOptional } from 'class-validator';
 
 @Entity('tag')
 @Index('category_name', ['tenantId', 'organizationId', 'name', 'category'], {unique: true})
@@ -31,6 +32,12 @@ export class Tag extends TenantOrganizationBaseEntity implements ITag {
 	@Column({ nullable: true })
 	category?: TagCategoryEnum;
 
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	label?: I18nObject
+
 	@ApiProperty({ type: () => String })
 	@Column({ nullable: true })
 	description?: string;
@@ -38,6 +45,10 @@ export class Tag extends TenantOrganizationBaseEntity implements ITag {
 	@ApiProperty({ type: () => String })
 	@Column({ nullable: true })
 	color?: string;
+
+	@ApiProperty({ type: () => String })
+	@Column({ nullable: true })
+	icon?: string;
 
 	@ManyToMany(() => Employee, (employee) => employee.tags)
 	employee?: IEmployee[];

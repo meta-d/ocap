@@ -10,6 +10,7 @@ import { derivedAsync } from 'ngxtension/derived-async'
 import { combineLatestWith, debounceTime, map, startWith, switchMap } from 'rxjs'
 import { ITag, TagService } from '../../../@core'
 import { TagComponent } from '../tag/tag.component'
+import { NgmI18nPipe } from '@metad/ocap-angular/core'
 
 @Component({
   standalone: true,
@@ -21,7 +22,8 @@ import { TagComponent } from '../tag/tag.component'
     FormsModule,
     ReactiveFormsModule,
     NgmHighlightDirective,
-    TagComponent
+    NgmI18nPipe,
+    TagComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'tag-select',

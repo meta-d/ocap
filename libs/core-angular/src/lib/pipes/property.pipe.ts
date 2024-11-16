@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core'
 import { get } from 'lodash-es'
 
 @Pipe({
+  standalone: true,
   name: 'property',
 })
 export class PropertyPipe implements PipeTransform {

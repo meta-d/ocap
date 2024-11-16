@@ -48,8 +48,8 @@
             checked
             [ngClass]="{'opacity-100': checkedWith(tag)}"
             >
-          <div [title]="tag.name" class="grow text-sm text-gray-700 leading-5 truncate">
-            <span [ngmHighlight]="searchControl.value" [content]="tag.name">{{tag.name}}</span>
+          <div [title]="tag.description | i18n" class="grow text-sm text-gray-700 leading-5 truncate">
+            <span [ngmHighlight]="searchControl.value" [content]="(tag.label | i18n) || tag.name"></span>
           </div>
         </li>
       }

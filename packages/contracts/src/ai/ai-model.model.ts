@@ -1,4 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
+import { I18nObject } from '../types'
 import { ICopilot } from './copilot.model'
 
 export interface IAiModel extends IBasePerTenantAndOrganizationEntityModel {
@@ -85,11 +86,6 @@ export interface IProviderEntity {
 export interface ProviderHelpInfo {
   title: I18nObject;
   url: I18nObject;
-}
-
-export interface I18nObject {
-  en_US: string;
-  zh_Hans?: string;
 }
 
 export interface ProviderModel {

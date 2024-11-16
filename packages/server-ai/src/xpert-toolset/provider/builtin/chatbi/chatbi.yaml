@@ -9,8 +9,7 @@ identity:
     zh_Hans: 对话式 BI
   icon: icon.jpg
   tags:
-    - search
-    - bi
+    - analysis
 credentials_for_provider:
   copilotModel:
     type: remote-select

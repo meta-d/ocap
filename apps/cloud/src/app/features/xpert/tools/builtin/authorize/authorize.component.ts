@@ -35,6 +35,8 @@ import { derivedAsync } from 'ngxtension/derived-async'
 import { of } from 'rxjs'
 import { XpertToolBuiltinCredentialComponent } from './credential/credential.component'
 import { isNil } from 'lodash-es'
+import { MatInputModule } from '@angular/material/input'
+import { TextFieldModule } from '@angular/cdk/text-field'
 
 @Component({
   standalone: true,
@@ -48,6 +50,8 @@ import { isNil } from 'lodash-es'
     MatSlideToggleModule,
     NgmI18nPipe,
     NgmSpinComponent,
+    MatInputModule,
+    TextFieldModule,
 
     XpertToolBuiltinCredentialComponent
   ],
@@ -87,6 +91,7 @@ export class XpertToolBuiltinAuthorizeComponent {
   })
 
   readonly toolsetName = model<string>()
+  readonly toolsetDescription = model<string>()
   readonly #credentials = signal<TToolCredentials>(null)
   readonly credentialsValue = computed(() => this.#credentials())
 
@@ -114,6 +119,7 @@ export class XpertToolBuiltinAuthorizeComponent {
     effect(() => {
       if (this.toolset()) {
         this.toolsetName.set(this.toolset().name)
+        this.toolsetDescription.set(this.toolset().description)
       }
     }, { allowSignalWrites: true })
   }
@@ -155,6 +161,7 @@ export class XpertToolBuiltinAuthorizeComponent {
     const entity: Partial<IXpertToolset> = {
       workspaceId: this.workspace()?.id,
       name: this.toolsetName(),
+      description: this.toolsetDescription(),
       credentials: this.#credentials()
     }
     if (this.toolsetId()) {

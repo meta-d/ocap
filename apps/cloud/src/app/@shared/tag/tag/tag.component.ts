@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common'
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, effect, input } from '@angular/core'
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, input } from '@angular/core'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { SafePipe } from '@metad/core'
+import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { ITag } from '../../../@core'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, TranslateModule, MatTooltipModule],
+  imports: [CommonModule, TranslateModule, MatTooltipModule, NgmI18nPipe, SafePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'tag',
   templateUrl: './tag.component.html',
@@ -14,8 +16,8 @@ import { ITag } from '../../../@core'
   host: {
     '[class.xs]': 'xs()',
     '[class.sm]': 'sm()',
-    '[class.lg]': 'lg()',
-  },
+    '[class.lg]': 'lg()'
+  }
 })
 export class TagComponent {
   readonly tag = input<ITag>()
@@ -50,6 +52,4 @@ export class TagComponent {
 
     return cssJson
   })
-
-
 }

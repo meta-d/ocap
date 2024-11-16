@@ -1,6 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core'
 
 @Pipe({
+  standalone: true,
   name: 'keys',
 })
 export class KeysPipe implements PipeTransform {
