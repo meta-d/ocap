@@ -10,20 +10,17 @@
       <div class="py-2 leading-5 text-sm font-medium">
         {{ 'PAC.Xpert.AuthorizationType' | translate: { Default: 'Authorization type' } }}
       </div>
-      <ul class="flex space-x-3" cdkListbox formControlName="auth_type">
-        <li class="ngm-cdk-option"
-          [cdkOption]="eApiProviderAuthType.NONE">
-          <div class="indicator"></div>
+      <ul class="ngm-radio-select flex space-x-3" cdkListbox formControlName="auth_type">
+        <li [cdkOption]="eApiProviderAuthType.NONE" class="w-40">
+          <div class="radio-indicator"></div>
           <div class="text-sm font-normal">None</div>
         </li>
-        <li class="ngm-cdk-option"
-          [cdkOption]="eApiProviderAuthType.BASIC">
-          <div class="indicator"></div>
+        <li [cdkOption]="eApiProviderAuthType.BASIC" class="w-40">
+          <div class="radio-indicator"></div>
           <div class="text-sm font-normal">Basic</div>
         </li>
-        <li class="ngm-cdk-option"
-          [cdkOption]="eApiProviderAuthType.API_KEY">
-          <div class="indicator"></div>
+        <li [cdkOption]="eApiProviderAuthType.API_KEY" class="w-40">
+          <div class="radio-indicator"></div>
           <div class="text-sm font-normal">API Key</div>
         </li>
       </ul>
@@ -49,17 +46,17 @@
       <div class="py-2 leading-5 text-sm font-medium">
         {{'PAC.Xpert.AuthType' | translate: {Default: 'Auth Type'} }}
       </div>
-      <ul class="flex space-x-3" cdkListbox formControlName="api_key_header_prefix">
-        <li class="ngm-cdk-option" cdkOption="">
-          <div class="indicator"></div>
+      <ul class="ngm-radio-select flex space-x-3" cdkListbox formControlName="api_key_header_prefix">
+        <li class="w-40" cdkOption="">
+          <div class="radio-indicator"></div>
           <div class="text-sm font-normal">Basic</div>
         </li>
-        <li class="ngm-cdk-option" cdkOption="bearar">
-          <div class="indicator"></div>
+        <li class="w-40" cdkOption="bearar">
+          <div class="radio-indicator"></div>
           <div class="text-sm font-normal">Bearer</div>
         </li>
-        <li class="ngm-cdk-option" cdkOption="custom">
-          <div class="indicator"></div>
+        <li class="w-40" cdkOption="custom">
+          <div class="radio-indicator"></div>
           <div class="text-sm font-normal">Custom</div>
         </li>
       </ul>

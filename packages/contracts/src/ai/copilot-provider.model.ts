@@ -1,5 +1,5 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
-import { IAiProviderEntity } from './ai-model.model'
+import { AiModelTypeEnum, IAiProviderEntity } from './ai-model.model'
 import { ICopilot } from './copilot.model'
 
 export interface ICopilotProvider extends IBasePerTenantAndOrganizationEntityModel {
@@ -29,7 +29,7 @@ export interface ICopilotProvider extends IBasePerTenantAndOrganizationEntityMod
 export interface ICopilotProviderModel extends IBasePerTenantAndOrganizationEntityModel {
   providerName?: string
   modelName?: string
-  modelType?: string
+  modelType?: AiModelTypeEnum
   encryptedConfig?: Record<string, any>
   isValid?: boolean
 

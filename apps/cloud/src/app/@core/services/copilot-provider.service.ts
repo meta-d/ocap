@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core'
 import { OrganizationBaseCrudService } from '@metad/cloud/state'
 import { NGXLogger } from 'ngx-logger'
 import { API_COPILOT_PROVIDER } from '../constants/app.constants'
-import { ICopilotProvider, ICopilotProviderModel } from '../types'
+import { ICopilotProvider, ICopilotProviderModel, ProviderModel } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class CopilotProviderService extends OrganizationBaseCrudService<ICopilotProvider> {
@@ -12,8 +12,24 @@ export class CopilotProviderService extends OrganizationBaseCrudService<ICopilot
     super(API_COPILOT_PROVIDER)
   }
 
+  getModels(providerId: string,) {
+    return this.httpClient.get<{custom: ICopilotProviderModel[]; builtin: ProviderModel[]}>(this.apiBaseUrl + `/${providerId}/model`)
+  }
+
   getModel(providerId: string, modelId: string) {
     return this.httpClient.get<ICopilotProviderModel>(this.apiBaseUrl + `/${providerId}/model/${modelId}`)
+  }
+
+  createModel(providerId: string, model: Partial<ICopilotProviderModel>) {
+    return this.httpClient.post<ICopilotProviderModel>(this.apiBaseUrl + `/${providerId}/model`, model)
+  }
+
+  updateModel(providerId: string, modelId: string, model: Partial<ICopilotProviderModel>) {
+    return this.httpClient.put<void>(this.apiBaseUrl + `/${providerId}/model/${modelId}`, model)
+  }
+
+  deleteModel(providerId: string, modelId: string) {
+    return this.httpClient.delete<void>(this.apiBaseUrl + `/${providerId}/model/${modelId}`)
   }
 }
 

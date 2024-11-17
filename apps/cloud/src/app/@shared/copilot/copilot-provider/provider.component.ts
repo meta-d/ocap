@@ -5,12 +5,14 @@ import { FormsModule } from '@angular/forms'
 import { MatInputModule } from '@angular/material/input'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
-import { NgmI18nPipe } from '@metad/ocap-angular/core'
+import { NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { getErrorMessage, ICopilotProvider, injectAiProviders, injectCopilotProviderService, ToastrService } from '../../../@core'
+import { getErrorMessage, ICopilotProviderModel, injectAiProviders, injectCopilotProviderService, ToastrService } from '../../../@core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { Dialog } from '@angular/cdk/dialog'
 import { CopilotProviderModelComponent } from '../copilot-provider-model/model.component'
+import { BehaviorSubject, switchMap } from 'rxjs'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 
 @Component({
   standalone: true,
@@ -25,6 +27,8 @@ import { CopilotProviderModelComponent } from '../copilot-provider-model/model.c
     DragDropModule,
     MatTooltipModule,
     MatInputModule,
+    MatSlideToggleModule,
+    NgmDensityDirective,
     NgmI18nPipe,
     NgmSpinComponent
   ],
@@ -45,20 +49,44 @@ export class CopilotProviderComponent {
   // Outputs
   readonly deleted = output<void>()
 
+  readonly refresh$ = new BehaviorSubject<void>(null)
+  readonly showModels = signal(false)
   readonly copilotProvider = derivedAsync(() => {
-    return this.providerId() ? this.#copilotProviderService.getOneById(this.providerId(), { relations: ['models']}) : null
+    return this.providerId() ? 
+      this.refresh$.pipe(switchMap(() => this.#copilotProviderService.getOneById(this.providerId())))
+      : null
   })
 
-  readonly background = computed(() => this.copilotProvider()?.provider?.background ?? 'red')
+  readonly background = computed(() => this.copilotProvider()?.provider?.background ?? 'transparent')
   readonly icon = computed(() => this.copilotProvider()?.provider?.icon_large)
-  readonly models = computed(() => this.copilotProvider()?.models ?? [])
+  readonly smallIcon = computed(() => this.copilotProvider()?.provider?.icon_small)
+
+  // readonly models = computed(() => this.copilotProvider()?.models ?? [])
+  readonly #models = derivedAsync(() => {
+    return this.showModels() ? 
+      this.refresh$.pipe(switchMap(() => this.#copilotProviderService.getModels(this.providerId()))) : null
+  })
+
+  readonly customModels = computed(() => this.#models()?.custom)
+  readonly builtinModels = computed(() => this.#models()?.builtin)
+
+  readonly modelCount = computed(() => (this.customModels()?.length ?? 0) + (this.builtinModels()?.length ?? 0))
 
   readonly loading = signal(false)
 
+  readonly isShowModels = signal(false)
+
   constructor() {
     effect(() => {
-      console.log(this.copilotProvider())
+      console.log(this.#models())
     })
+  }
+
+  toggleShowModels() {
+    this.isShowModels.update((state) => !state)
+    if (this.isShowModels()) {
+      this.showModels.set(true)
+    }
   }
 
   delete() {
@@ -83,7 +111,27 @@ export class CopilotProviderComponent {
         modelId: null
       }
     }).closed.subscribe({
-      
+      next: (result) => {
+        if (result) {
+          this.refresh$.next()
+        }
+      }
     })
   }
+
+  editModel(model: ICopilotProviderModel) {
+    this.#dialog.open(CopilotProviderModelComponent, {
+      data: {
+        provider: this.copilotProvider(),
+        modelId: model.id
+      }
+    }).closed.subscribe({
+      next: (result) => {
+        if (result) {
+          this.refresh$.next()
+        }
+      }
+    })
+  }
+  
 }

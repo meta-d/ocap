@@ -1,22 +1,6 @@
 <div class="group flex pl-3 py-2 pr-2 rounded-t-xl">
   <div class="grow px-1 pt-1 pb-0.5">
     <div class="flex items-center">
-      <button class="btn btn-large btn-danger items-center justify-center cursor-pointer z-20 hidden group-hover:flex"
-        (click)="delete()">
-        <svg
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="currentColor"
-          class="shrink-0 w-4 h-4 text-gray-400"
-        >
-          <path
-            d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"
-          ></path>
-        </svg>
-      </button>
-
       <img
         alt="provider-icon"
         [src]="icon() | i18n"
@@ -53,8 +37,14 @@
     </div>
   </div>
 
+  <div class="flex items-start">
+    <button class="btn btn-small btn-danger h8 rounded-md items-center justify-center cursor-pointer z-20 hidden group-hover:flex"
+      (click)="delete()">
+      <i class="ri-delete-bin-line"></i>
+    </button>
+  </div>
   <div class="shrink-0 relative ml-1 p-1 w-[112px] rounded-lg bg-white/[0.3] border-[0.5px] border-black/5">
-    <div class="relative flex items-center justify-between mb-1 pt-1 pl-2 pr-[7px] h-5 text-xs font-medium text-gray-500">
+    <div class="relative flex items-center justify-between mb-1 pt-1 pl-2 pr-[7px] h-5 text-sm font-medium text-gray-500">
       API-KEY
       <div
         class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)]"
@@ -63,90 +53,127 @@
 
     <div class="flex items-center gap-0.5">
       <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small grow">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          class="mr-1 w-3 h-3"
-          data-icon="Settings01"
-          aria-hidden="true"
-        >
-          <g id="Left Icon" clip-path="url(#clip0_11961_30603)">
-            <g id="Icon">
-              <path
-                d="M6.99935 8.74984C7.96585 8.74984 8.74935 7.96634 8.74935 6.99984C8.74935 6.03334 7.96585 5.24984 6.99935 5.24984C6.03285 5.24984 5.24935 6.03334 5.24935 6.99984C5.24935 7.96634 6.03285 8.74984 6.99935 8.74984Z"
-                stroke="currentColor"
-                stroke-width="1.25"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-              <path
-                d="M10.9236 8.59075C10.853 8.75069 10.8319 8.92812 10.8631 9.10015C10.8943 9.27218 10.9763 9.43092 11.0986 9.5559L11.1304 9.58772C11.229 9.68622 11.3073 9.80319 11.3606 9.93195C11.414 10.0607 11.4415 10.1987 11.4415 10.3381C11.4415 10.4775 11.414 10.6155 11.3606 10.7442C11.3073 10.873 11.229 10.99 11.1304 11.0885C11.0319 11.1871 10.9149 11.2653 10.7862 11.3187C10.6574 11.3721 10.5194 11.3995 10.38 11.3995C10.2407 11.3995 10.1026 11.3721 9.97388 11.3187C9.84513 11.2653 9.72815 11.1871 9.62965 11.0885L9.59783 11.0567C9.47285 10.9344 9.31411 10.8524 9.14209 10.8212C8.97006 10.79 8.79263 10.8111 8.63268 10.8817C8.47583 10.9489 8.34207 11.0605 8.24785 11.2028C8.15362 11.345 8.10306 11.5118 8.10238 11.6824V11.7726C8.10238 12.0539 7.99064 12.3236 7.79173 12.5225C7.59283 12.7214 7.32306 12.8332 7.04177 12.8332C6.76048 12.8332 6.49071 12.7214 6.29181 12.5225C6.09291 12.3236 5.98117 12.0539 5.98117 11.7726V11.7248C5.97706 11.5493 5.92025 11.3791 5.8181 11.2363C5.71596 11.0935 5.57322 10.9847 5.40844 10.9241C5.24849 10.8535 5.07106 10.8324 4.89904 10.8636C4.72701 10.8948 4.56827 10.9768 4.44329 11.0991L4.41147 11.1309C4.31297 11.2295 4.196 11.3077 4.06724 11.3611C3.93848 11.4145 3.80047 11.442 3.66109 11.442C3.52171 11.442 3.3837 11.4145 3.25494 11.3611C3.12619 11.3077 3.00921 11.2295 2.91071 11.1309C2.8121 11.0324 2.73387 10.9154 2.6805 10.7867C2.62712 10.6579 2.59965 10.5199 2.59965 10.3805C2.59965 10.2411 2.62712 10.1031 2.6805 9.97437C2.73387 9.84561 2.8121 9.72864 2.91071 9.63014L2.94253 9.59832C3.06479 9.47334 3.1468 9.3146 3.17799 9.14257C3.20918 8.97055 3.18812 8.79312 3.11753 8.63317C3.05031 8.47632 2.93869 8.34256 2.79641 8.24833C2.65414 8.15411 2.48742 8.10355 2.31677 8.10287H2.22662C1.94533 8.10287 1.67556 7.99112 1.47666 7.79222C1.27776 7.59332 1.16602 7.32355 1.16602 7.04226C1.16602 6.76097 1.27776 6.4912 1.47666 6.2923C1.67556 6.0934 1.94533 5.98166 2.22662 5.98166H2.27435C2.44988 5.97755 2.62011 5.92073 2.76292 5.81859C2.90572 5.71645 3.0145 5.57371 3.07511 5.40893C3.1457 5.24898 3.16676 5.07155 3.13556 4.89953C3.10437 4.7275 3.02236 4.56876 2.90011 4.44378L2.86829 4.41196C2.76968 4.31346 2.69145 4.19648 2.63807 4.06773C2.5847 3.93897 2.55723 3.80096 2.55723 3.66158C2.55723 3.5222 2.5847 3.38419 2.63807 3.25543C2.69145 3.12668 2.76968 3.0097 2.86829 2.9112C2.96679 2.81259 3.08376 2.73436 3.21252 2.68099C3.34127 2.62761 3.47929 2.60014 3.61867 2.60014C3.75805 2.60014 3.89606 2.62761 4.02482 2.68099C4.15357 2.73436 4.27054 2.81259 4.36905 2.9112L4.40086 2.94302C4.52585 3.06527 4.68458 3.14728 4.85661 3.17848C5.02864 3.20967 5.20607 3.18861 5.36602 3.11802H5.40844C5.56529 3.0508 5.69906 2.93918 5.79328 2.7969C5.8875 2.65463 5.93806 2.48791 5.93874 2.31726V2.22711C5.93874 1.94582 6.05049 1.67605 6.24939 1.47715C6.44829 1.27825 6.71806 1.1665 6.99935 1.1665C7.28064 1.1665 7.55041 1.27825 7.74931 1.47715C7.94821 1.67605 8.05995 1.94582 8.05995 2.22711V2.27484C8.06064 2.44548 8.1112 2.6122 8.20542 2.75448C8.29964 2.89675 8.43341 3.00837 8.59026 3.07559C8.75021 3.14619 8.92763 3.16724 9.09966 3.13605C9.27169 3.10486 9.43043 3.02285 9.55541 2.90059L9.58723 2.86878C9.68573 2.77017 9.8027 2.69194 9.93146 2.63856C10.0602 2.58519 10.1982 2.55772 10.3376 2.55772C10.477 2.55772 10.615 2.58519 10.7438 2.63856C10.8725 2.69194 10.9895 2.77017 11.088 2.86878C11.1866 2.96728 11.2648 3.08425 11.3182 3.21301C11.3716 3.34176 11.399 3.47978 11.399 3.61916C11.399 3.75854 11.3716 3.89655 11.3182 4.0253C11.2648 4.15406 11.1866 4.27103 11.088 4.36953L11.0562 4.40135C10.9339 4.52633 10.8519 4.68507 10.8207 4.8571C10.7895 5.02913 10.8106 5.20656 10.8812 5.3665V5.40893C10.9484 5.56578 11.06 5.69954 11.2023 5.79377C11.3446 5.88799 11.5113 5.93855 11.6819 5.93923H11.7721C12.0534 5.93923 12.3231 6.05097 12.522 6.24988C12.7209 6.44878 12.8327 6.71855 12.8327 6.99984C12.8327 7.28113 12.7209 7.5509 12.522 7.7498C12.3231 7.9487 12.0534 8.06044 11.7721 8.06044H11.7243C11.5537 8.06112 11.387 8.11169 11.2447 8.20591C11.1024 8.30013 10.9908 8.4339 10.9236 8.59075Z"
-                stroke="currentColor"
-                stroke-width="1.25"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </g>
-          </g>
-          <defs>
-            <clipPath id="clip0_11961_30603"><rect width="14" height="14" fill="white"></rect></clipPath>
-          </defs></svg
-        >Setup
+        <i class="ri-settings-5-line"></i>
+        Setup
       </button>
     </div>
   </div>
 </div>
 
-<div
-  class="group flex items-center justify-between pl-2 py-1.5 pr-[11px] border-t border-t-black/5 bg-white/30 text-xs font-medium text-gray-500"
->
-  <div class="group-hover:hidden pl-1 pr-1.5 h-6 leading-6">{{models().length}} Models</div>
-  <div class="hidden group-hover:flex items-center pl-1 pr-1.5 h-6 rounded-lg hover:bg-white cursor-pointer">
-    <svg
-      width="12"
-      height="13"
-      viewBox="0 0 12 13"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      class="mr-0.5 w-3 h-3"
-      data-icon="ChevronDownDouble"
-      aria-hidden="true"
-    >
-      <g id="chevron-down-double">
-        <path
-          id="Icon"
-          d="M3.5 7L6 9.5L8.5 7M3.5 3.5L6 6L8.5 3.5"
-          stroke="currentColor"
-          stroke-width="1.25"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        ></path>
-      </g></svg
-    >Show {{models().length}} Models
+@if (isShowModels()) {
+  <div class="px-2 pb-2 rounded-b-xl">
+    <div class="py-1 bg-white rounded-lg">
+      <div class="flex items-center pl-1 pr-[3px]">
+        <span class="group shrink-0 flex items-center mr-2">
+          <span class="group-hover:hidden pl-1 pr-1.5 h-6 leading-6 text-sm font-medium text-gray-500">{{modelCount()}} 个模型</span>
+          <span class="hidden group-hover:inline-flex items-center pl-1 pr-1.5 h-6 text-sm font-medium text-gray-500 bg-gray-50 cursor-pointer rounded-lg"
+            (click)="toggleShowModels()"
+          >
+          <i class="ri-arrow-up-double-line"></i>
+          收起</span>
+        </span>
+        <div class="grow flex justify-end">
+          <span class="shrink-0 flex items-center px-1.5 h-6 text-sm font-medium text-gray-500 cursor-pointer hover:bg-primary-50 hover:text-primary-600 rounded-md undefined"
+            (click)="addModel()"
+          >
+          <i class="ri-add-circle-line"></i>
+          添加模型</span>
+        </div>
+      </div>
+
+      @for (model of customModels(); track model.id) {
+        <div class="group flex items-center pl-2 pr-2.5 h-8 rounded-lg hover:bg-gray-50">
+          <img
+            alt="model-icon"
+            [src]="smallIcon() | i18n"
+            class="w-4 h-4 shrink-0 mr-2"
+          />
+
+          <div
+            class="flex items-center truncate text-[13px] grow text-sm font-normal text-gray-900"
+          >
+            <div class="truncate" [title]="model.modelName">{{model.modelName}}</div>
+            <div
+              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+            >
+              LLM
+            </div>
+            <div
+              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+            >
+              CHAT
+            </div>
+            <div
+              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+            >
+              4K
+            </div>
+          </div>
+          <div class="shrink-0 flex items-center">
+            <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small hidden group-hover:flex h-7 mr-2"
+              (click)="editModel(model)">
+              <i class="ri-settings-5-line"></i>
+              配置
+            </button>
+          </div>
+        </div>
+      }
+
+      @for (model of builtinModels(); track model.model) {
+        <div class="group flex items-center pl-2 pr-2.5 h-8 rounded-lg hover:bg-gray-50">
+          <img
+            alt="model-icon"
+            [src]="smallIcon() | i18n"
+            class="w-4 h-4 shrink-0 mr-2"
+          />
+
+          <div
+            class="flex items-center truncate text-[13px] grow text-sm font-normal text-gray-900"
+          >
+            <div class="truncate" [title]="model.model">{{model.model}}</div>
+            <div
+              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+            >
+              LLM
+            </div>
+            <div
+              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+            >
+              CHAT
+            </div>
+            <div
+              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+            >
+              4K
+            </div>
+          </div>
+          <!-- <div class="shrink-0 flex items-center">
+            <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small hidden group-hover:flex h-7 mr-2">
+              <i class="ri-settings-5-line"></i>
+              配置
+            </button>
+
+            <mat-slide-toggle ngm-density="xs" ></mat-slide-toggle>
+          </div> -->
+        </div>
+      }
+      
+    </div>
   </div>
-  <span class="shrink-0 flex items-center px-1.5 h-6 text-xs font-medium text-gray-500 cursor-pointer hover:bg-primary-50 hover:text-primary-600 rounded-md hidden group-hover:flex group-hover:text-primary-600"
-    (click)="addModel()"
-    ><svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      class="mr-1 w-3 h-3"
-      data-icon="PlusCircle"
-      aria-hidden="true"
+} @else {
+  <div class="group flex items-center justify-between pl-2 py-1.5 pr-[11px] border-t border-t-black/5 bg-white/30 text-sm font-medium text-gray-500">
+    <div class="group-hover:hidden pl-1 pr-1.5 h-6 leading-6">Show Models</div>
+    <div class="hidden group-hover:flex items-center pl-1 pr-1.5 h-6 rounded-lg hover:bg-white cursor-pointer"
+      (click)="toggleShowModels()"
     >
-      <g id="plus-circle">
-        <path
-          id="Solid"
-          fill-rule="evenodd"
-          clip-rule="evenodd"
-          d="M12 1C5.92487 1 1 5.92487 1 12C1 18.0751 5.92487 23 12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1ZM12 7C12.5523 7 13 7.44772 13 8V11H16C16.5523 11 17 11.4477 17 12C17 12.5523 16.5523 13 16 13H13V16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16V13H8C7.44772 13 7 12.5523 7 12C7 11.4477 7.44772 11 8 11H11V8C11 7.44772 11.4477 7 12 7Z"
-          fill="currentColor"
-        ></path>
-      </g>
-    </svg>Add Model</span>
-</div>
+      <i class="ri-arrow-down-double-line"></i>
+      Show {{modelCount() || ''}} Models
+    </div>
+    <span class="shrink-0 items-center px-1.5 h-6 text-sm font-medium text-gray-500 cursor-pointer hover:bg-primary-50 hover:text-primary-600 rounded-md hidden group-hover:flex group-hover:text-primary-600"
+      (click)="addModel()"
+    >
+      <i class="ri-add-circle-line"></i>
+      Add Model
+    </span>
+  </div>
+}

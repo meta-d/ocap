@@ -1,4 +1,4 @@
-import { ICopilotProvider, ICopilotProviderModel } from '@metad/contracts'
+import { AiModelTypeEnum, ICopilotProvider, ICopilotProviderModel } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsBoolean, IsJSON, IsOptional, IsString } from 'class-validator'
@@ -23,7 +23,7 @@ export class CopilotProviderModel extends TenantOrganizationBaseEntity implement
 	@IsString()
 	@IsOptional()
 	@Column({ nullable: true })
-	modelType?: string
+	modelType?: AiModelTypeEnum
 
 	@ApiPropertyOptional({ type: () => Object })
 	@IsJSON()

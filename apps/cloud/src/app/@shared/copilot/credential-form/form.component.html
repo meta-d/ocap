@@ -1,7 +1,5 @@
-
 <form [formGroup]="formGroup">
   @for (credential of credentials(); track credential) {
-
     <div class="py-3">
       <div class="flex items-center py-2 text-sm text-gray-900">
         {{credential.label | i18n}}
@@ -31,48 +29,17 @@
           </div>
         }
         @case ('select') {
-          <div class="relative h-9">
-            <button
-              class="w-full h-full rounded-lg border-0 bg-gray-100 py-1.5 pl-3 pr-10 sm:text-sm sm:leading-6 focus-visible:outline-none focus-visible:bg-gray-200 group-hover:bg-gray-200 cursor-pointer"
-              id="headlessui-listbox-button-:r47:"
-              type="button"
-              aria-haspopup="listbox"
-              aria-expanded="false"
-              data-headlessui-state=""
-              data-tabindex=""
-              tabindex="-1"
-            >
-              <span class="block truncate text-left">Chat</span
-              ><span class="absolute inset-y-0 right-0 flex items-center pr-2"
-                ><svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="false"
-                  class="h-5 w-5 text-gray-400 cursor-pointer"
-                >
-                  <path
-                    d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
-                  ></path></svg
-              ></span>
-            </button>
-          </div>
+          <ngm-select class=""
+            [placeholder]="credential.placeholder | i18n"
+            [selectOptions]="credential.options"
+            [formControlName]="credential.variable" />
         }
         @case ('radio') {
-          <div class="grid grid-cols-2 gap-3">
-            <div class="flex items-center px-3 py-2 rounded-lg border border-gray-100 bg-gray-25 cursor-pointer false false">
-              <div class="flex justify-center items-center mr-2 w-4 h-4 border border-gray-300 rounded-full false"></div>
-              <div class="text-sm text-gray-900">Yes</div>
-            </div>
-            <div
-              class="flex items-center px-3 py-2 rounded-lg border border-gray-100 bg-gray-25 cursor-pointer bg-white border-[1.5px] border-primary-400 shadow-sm false"
-            >
-              <div
-                class="flex justify-center items-center mr-2 w-4 h-4 border border-gray-300 rounded-full border-[5px] border-primary-600"
-              ></div>
-              <div class="text-sm text-gray-900">No</div>
-            </div>
-          </div>
+          <mat-radio-group [formControlName]="credential.variable">
+            @for (option of credential.options; track option) {
+              <mat-radio-button [value]="option.value">{{option.label | i18n}}</mat-radio-button>
+            }
+          </mat-radio-group>
         }
       }
     </div>

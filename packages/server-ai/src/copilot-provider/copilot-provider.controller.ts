@@ -1,4 +1,4 @@
-import { IAiProviderEntity } from '@metad/contracts'
+import { IAiProviderEntity, ICopilotProviderModel, ProviderModel } from '@metad/contracts'
 import {
 	CrudController,
 	PaginationParams,
@@ -6,10 +6,11 @@ import {
 	TransformInterceptor,
 	UUIDValidationPipe
 } from '@metad/server-core'
-import { Controller, Get, Param, Query, UseInterceptors, ForbiddenException } from '@nestjs/common'
+import { Body, Controller, ForbiddenException, Get, Param, Post, Put, Delete, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { ListModelProvidersQuery } from '../ai-model'
+import { DeleteResult, UpdateResult } from 'typeorm'
+import { ListBuiltinModelsQuery, ListModelProvidersQuery } from '../ai-model'
 import { CopilotProvider } from './copilot-provider.entity'
 import { CopilotProviderService } from './copilot-provider.service'
 import { CopilotProviderDto } from './dto'
@@ -48,6 +49,29 @@ export class CopilotProviderController extends CrudController<CopilotProvider> {
 		return new CopilotProviderDto(one)
 	}
 
+	@Get(':providerId/model')
+	async getProviderModels(
+		@Param('providerId', UUIDValidationPipe) providerId: string,
+	): Promise<{custom: ICopilotProviderModel[]; builtin: ProviderModel[]}> {
+		const provider = await this.service.findOne(providerId, { relations: ['models']})
+		const models = await this.queryBus.execute(new ListBuiltinModelsQuery(provider.providerName))
+		return {
+			builtin: models,
+			custom: provider.models
+		}
+	}
+
+	@Post(':providerId/model')
+	async createProviderModel(
+		@Param('providerId', UUIDValidationPipe) providerId: string,
+		@Body() entity?: Partial<ICopilotProviderModel>
+	): Promise<CopilotProviderModel> {
+		return this.modelService.create({
+			...entity,
+			providerId
+		})
+	}
+
 	@Get(':providerId/model/:id')
 	async findOneModelById(
 		@Param('providerId', UUIDValidationPipe) providerId: string,
@@ -60,5 +84,25 @@ export class CopilotProviderController extends CrudController<CopilotProvider> {
 			throw new ForbiddenException(`Provider model not match`)
 		}
 		return model
+	}
+
+	@Put(':providerId/model/:id')
+	async updateProviderModel(
+		@Param('providerId', UUIDValidationPipe) providerId: string,
+		@Param('id', UUIDValidationPipe) id: string,
+		@Body() entity?: Partial<ICopilotProviderModel>
+	): Promise<CopilotProviderModel | UpdateResult> {
+		return this.modelService.update(id, {
+			...entity,
+			providerId
+		})
+	}
+
+	@Delete(':providerId/model/:id')
+	async deleteProviderModel(
+		@Param('providerId', UUIDValidationPipe) providerId: string,
+		@Param('id', UUIDValidationPipe) id: string,
+	): Promise<DeleteResult> {
+		return this.modelService.delete(id)
 	}
 }

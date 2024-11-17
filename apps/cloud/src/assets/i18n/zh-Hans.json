@@ -1398,6 +1398,8 @@
       "Inherited": "继承的",
       "PrefixPrompt": "前缀提示词",
       "Generate": "生成",
+      "ModelType": "模型类型",
+      "ModelName": "模型名称",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",

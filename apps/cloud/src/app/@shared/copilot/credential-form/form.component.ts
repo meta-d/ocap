@@ -2,12 +2,16 @@ import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core'
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatInputModule } from '@angular/material/input'
+import { MatRadioModule } from '@angular/material/radio'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { isNil } from '@metad/copilot'
 import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 import { CredentialFormSchema } from '../../../@core'
+import { NgmSelectComponent } from '../../common'
 
 @Component({
   standalone: true,
@@ -24,19 +28,31 @@ import { CredentialFormSchema } from '../../../@core'
     DragDropModule,
     MatTooltipModule,
     MatInputModule,
+    MatRadioModule,
     NgmI18nPipe,
-  ]
+    NgmSelectComponent
+  ],
+  hostDirectives: [NgxControlValueAccessor]
 })
 export class CopilotCredentialFormComponent {
   readonly #translate = inject(TranslateService)
   readonly #fb = inject(FormBuilder)
   readonly #i18n = new NgmI18nPipe()
+  protected cva = inject<NgxControlValueAccessor<Partial<Record<string, any>> | null>>(NgxControlValueAccessor)
 
   readonly credentialFormSchemas = input<CredentialFormSchema[]>()
 
   readonly formGroup = this.#fb.group({})
 
   readonly credentials = signal<CredentialFormSchema[]>([])
+
+  private valueSub = this.formGroup.valueChanges.subscribe((value) => {
+    this.cva.writeValue(value)
+  })
+
+  get invalid() {
+    return this.formGroup.invalid
+  }
 
   constructor() {
     effect(
@@ -46,13 +62,32 @@ export class CopilotCredentialFormComponent {
           Object.keys(this.formGroup.controls).forEach((key) => this.formGroup.removeControl(key))
 
           this.credentialFormSchemas().forEach((credential) => {
-            this.formGroup.addControl(credential.variable, this.#fb.control(null))
+            if (credential.required) {
+              this.formGroup.addControl(credential.variable, this.#fb.control(null, [Validators.required]))
+            } else {
+              this.formGroup.addControl(credential.variable, this.#fb.control(null))
+            }
           })
 
+          const defaultValue = this.credentialFormSchemas().reduce((acc, credential) => {
+            if (!isNil(credential.default)) {
+              acc[credential.variable] = credential.default
+            }
+            return acc
+          }, {})
+
+          this.formGroup.patchValue(defaultValue)
           this.formGroup.markAsPristine()
 
           this.credentials.set(this.credentialFormSchemas())
         }
+      },
+      { allowSignalWrites: true }
+    )
+
+    effect(
+      () => {
+        this.formGroup.setValue(this.cva.value$(), { emitEvent: false })
       },
       { allowSignalWrites: true }
     )

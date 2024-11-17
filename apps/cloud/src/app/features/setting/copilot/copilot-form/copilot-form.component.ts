@@ -6,7 +6,7 @@ import { AiProviderRole } from '@metad/contracts'
 import { AI_PROVIDERS, AiModelCapability, AiProvider, isNil } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { startWith, switchMap } from 'rxjs/operators'
-import { CopilotServerService, getErrorMessage, PACCopilotService, Store, ToastrService } from '../../../../@core'
+import { CopilotServerService, getErrorMessage, injectCopilots, PACCopilotService, Store, ToastrService } from '../../../../@core'
 import { CopilotAiProvidersComponent, CopilotProviderComponent, MaterialModule } from '../../../../@shared'
 import { MatDialog } from '@angular/material/dialog'
 import {Dialog, DialogRef, DIALOG_DATA, DialogModule} from '@angular/cdk/dialog';
@@ -109,6 +109,7 @@ export class CopilotFormComponent {
   readonly copilotServer = inject(CopilotServerService)
   readonly #toastrService = inject(ToastrService)
   readonly #dialog = inject(Dialog)
+  readonly copilots = injectCopilots()
 
   readonly role = input<AiProviderRole>()
 
@@ -152,8 +153,7 @@ export class CopilotFormComponent {
 
   readonly organizationId = toSignal(this.#store.selectOrganizationId())
   readonly copilotId = computed(() =>
-    this.copilotService
-      .copilots()
+    this.copilots()
       ?.find((item) => item.organizationId === this.organizationId() && item.role === this.role())?.id
   )
 

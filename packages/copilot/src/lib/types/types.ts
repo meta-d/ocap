@@ -9,7 +9,8 @@ export const DefaultBusinessRole = 'default'
  */
 export enum AiProviderRole {
   Primary = 'primary',
-  Secondary = 'secondary'
+  Secondary = 'secondary',
+  Embedding = 'embedding'
 }
 
 export interface ICopilot {

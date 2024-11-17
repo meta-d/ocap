@@ -24,7 +24,7 @@ import {
   switchMap
 } from 'rxjs'
 import { API_COPILOT } from '../constants/app.constants'
-import { ICopilotWithProvider, ICopilot as IServerCopilot, AiModelTypeEnum, ParameterRule, IAiProviderEntity, ICopilot } from '../types'
+import { ICopilotWithProvider, ICopilot as IServerCopilot, AiModelTypeEnum, ParameterRule, IAiProviderEntity, ICopilot, AiProviderRole } from '../types'
 
 
 @Injectable({ providedIn: 'root' })
@@ -36,8 +36,23 @@ export class CopilotServerService extends OrganizationBaseCrudService<ICopilot> 
   private readonly modelsByType = new Map<AiModelTypeEnum, Observable<ICopilotWithProvider[]>>()
   private readonly aiProviders$ = this.httpClient.get<IAiProviderEntity[]>(API_COPILOT + `/providers`).pipe(shareReplay(1))
 
+  private readonly copilots$ = this.refresh$.pipe(
+    switchMap(() => this.selectOrganizationId()),
+    switchMap(() => this.httpClient.get<{ total: number; items: ICopilot[] }>(API_COPILOT)),
+    map(({items}) => items),
+    shareReplay(1)
+  )
+
   constructor() {
     super(API_COPILOT)
+  }
+
+  refresh() {
+    this.refresh$.next(true)
+  }
+
+  getCopilots() {
+    return this.copilots$
   }
 
   getAiProviders() {
@@ -67,10 +82,25 @@ export class CopilotServerService extends OrganizationBaseCrudService<ICopilot> 
     })
   }
 
-}
+  enableCopilot(role: AiProviderRole) {
+    return this.httpClient.post(this.apiBaseUrl + `/enable/${role}`, {})
+  }
 
+  disableCopilot(role: AiProviderRole) {
+    return this.httpClient.post(this.apiBaseUrl + `/disable/${role}`, {})
+  }
+}
 
 export function injectAiProviders() {
     const service = inject(CopilotServerService)
     return toSignal(service.getAiProviders())
+}
+
+export function injectCopilotServer() {
+  return inject(CopilotServerService)
+}
+
+export function injectCopilots() {
+  const server = injectCopilotServer()
+  return toSignal(server.getCopilots())
 }

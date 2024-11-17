@@ -112,7 +112,12 @@ export interface CredentialFormSchema {
   label: I18nObject;
   type: string;
   required: boolean;
+  default?: number | string | boolean
   placeholder: I18nObject;
+  options?: {
+    label: I18nObject
+    value: number | string | boolean
+  }[]
 }
 
 export enum FetchFrom {

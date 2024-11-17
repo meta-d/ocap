@@ -1,10 +1,9 @@
-import { AiModelTypeEnum, AIPermissionsEnum, IPagination, IAiProviderEntity } from '@metad/contracts'
+import { AiModelTypeEnum, AIPermissionsEnum, IPagination, IAiProviderEntity, AiProviderRole } from '@metad/contracts'
 import {
 	CrudController,
 	PaginationParams,
 	PermissionGuard,
 	Permissions,
-	Public,
 	TransformInterceptor
 } from '@metad/server-core'
 import {
@@ -90,6 +89,22 @@ export class CopilotController extends CrudController<Copilot> {
 		return this.service.upsert(entity)
 	}
 
+	@Post('enable/:role')
+	async enableCopilotRole(@Param('role') role: AiProviderRole) {
+		const copilot = await this.service.findOneOrFail({ where: {role} })
+		if (copilot.success) {
+			await this.service.update(copilot.record.id, { enabled: true })
+		} else {
+			await this.service.create({ role, enabled: true })
+		}
+	}
+
+	@Post('disable/:role')
+	async disableCopilotRole(@Param('role') role: AiProviderRole) {
+		const copilot = await this.service.findOne({ where: {role} })
+		await this.service.update(copilot.id, { enabled: false })
+	}
+
 	/**
 	 * get model providers
 	 * 
@@ -103,6 +118,7 @@ export class CopilotController extends CrudController<Copilot> {
 
 	/**
 	 * get models by model type
+	 * 
 	 * @param type ModelType
 	 * @returns
 	 */
@@ -119,21 +135,4 @@ export class CopilotController extends CrudController<Copilot> {
 		return this.queryBus.execute(new ModelParameterRulesQuery(provider, AiModelTypeEnum.LLM, model))
 	}
 
-	// @Public()
-	// @Get('provider/:name/:iconType/:lang')
-	// async getModelIcon(
-	// 	@Param('name') provider: string,
-	// 	@Param('iconType') iconType: string,
-	// 	@Param('lang') lang: string,
-	// 	@Res() res: ServerResponse
-	// ) {
-	// 	const [icon, mimetype] = await this.queryBus.execute(new AIModelGetIconQuery(provider, iconType, lang))
-
-	// 	if (!icon) {
-	// 		throw new HttpException('Icon not found', HttpStatus.NOT_FOUND)
-	// 	}
-
-	// 	res.setHeader('Content-Type', mimetype)
-	// 	res.end(icon)
-	// }
 }

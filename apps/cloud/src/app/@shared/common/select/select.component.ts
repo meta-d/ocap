@@ -1,8 +1,8 @@
-import { CdkListboxModule } from '@angular/cdk/listbox'
+import { CdkListboxModule, ListboxValueChangeEvent } from '@angular/cdk/listbox'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { HttpClient } from '@angular/common/http'
-import { Component, inject, input } from '@angular/core'
+import { booleanAttribute, Component, computed, inject, input } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import { NgmHighlightDirective } from '@metad/ocap-angular/common'
 import { NgmI18nPipe, TSelectOption } from '@metad/ocap-angular/core'
@@ -29,9 +29,32 @@ import { NgxControlValueAccessor } from 'ngxtension/control-value-accessor'
 })
 export class NgmSelectComponent {
   readonly httpClient = inject(HttpClient)
-  protected cva = inject<NgxControlValueAccessor<TSelectOption[] | null>>(NgxControlValueAccessor)
+  protected cva = inject<NgxControlValueAccessor<any>>(NgxControlValueAccessor)
   readonly i18n = new NgmI18nPipe()
 
+  readonly placeholder = input<string>()
   readonly selectOptions = input<TSelectOption[]>()
+  readonly multiple = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
+  readonly selectedOptions = computed(() => {
+    return this.values()?.map((value) => this.selectOptions()?.find((_) => _.value === value))
+  })
+
+  readonly values = computed(() => {
+    if (this.multiple()) {
+      return this.cva.value$()
+    } else {
+      return this.cva.value$() ? [this.cva.value$()] : []
+    }
+  })
+
+  selectValues(event: ListboxValueChangeEvent<unknown>) {
+    if (this.multiple()) {
+      this.cva.value$.set([...event.value])
+    } else {
+      this.cva.value$.set(event.value[0] ?? null)
+    }
+  }
 }

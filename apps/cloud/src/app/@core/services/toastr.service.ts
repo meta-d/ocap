@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar'
 import { TranslateService } from '@ngx-translate/core'
 import { catchError, EMPTY, map, merge, Observable, take, takeUntil, tap } from 'rxjs'
@@ -120,4 +120,8 @@ export class ToastrService {
 
     return merge(_snackBarRef.afterDismissed().pipe(map(() => false)), _snackBarRef.onAction().pipe(map(() => true))).pipe(take(1))
   }
+}
+
+export function injectToastr() {
+  return inject(ToastrService)
 }
