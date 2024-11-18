@@ -8,7 +8,6 @@ import { TranslateModule } from '@ngx-translate/core'
 import { startWith, switchMap } from 'rxjs/operators'
 import { CopilotServerService, getErrorMessage, injectCopilots, PACCopilotService, Store, ToastrService } from '../../../../@core'
 import { CopilotAiProvidersComponent, CopilotProviderComponent, MaterialModule } from '../../../../@shared'
-import { MatDialog } from '@angular/material/dialog'
 import {Dialog, DialogRef, DIALOG_DATA, DialogModule} from '@angular/cdk/dialog';
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject } from 'rxjs'

@@ -4,36 +4,16 @@
       <img
         alt="provider-icon"
         [src]="icon() | i18n"
-        class="w-auto h-6 mb-2"
+        class="w-auto h-8 mb-2"
       />
     </div>
     
     <div class="flex gap-0.5">
-      <div
-        class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default"
-      >
-        LLM
-      </div>
-      <div
-        class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default"
-      >
-        TEXT EMBEDDING
-      </div>
-      <div
-        class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default"
-      >
-        SPEECH2TEXT
-      </div>
-      <div
-        class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default"
-      >
-        MODERATION
-      </div>
-      <div
-        class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default"
-      >
-        TTS
-      </div>
+      @for (modelType of supported_model_types(); track modelType) {
+        <div class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium uppercase text-gray-500 cursor-default">
+          {{modelType}}
+        </div>
+      }
     </div>
   </div>
 
@@ -43,18 +23,18 @@
       <i class="ri-delete-bin-line"></i>
     </button>
   </div>
-  <div class="shrink-0 relative ml-1 p-1 w-[112px] rounded-lg bg-white/[0.3] border-[0.5px] border-black/5">
+  <div class="shrink-0 relative flex flex-col justify-between ml-1 p-1 w-[112px] rounded-lg bg-white/[0.3] border-[0.5px] border-black/5">
     <div class="relative flex items-center justify-between mb-1 pt-1 pl-2 pr-[7px] h-5 text-sm font-medium text-gray-500">
       API-KEY
-      <div
-        class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)]"
-      ></div>
+      <div class="w-2 h-2 border border-solid rounded-[3px] bg-[#31C48D] border-[#0E9F6E] shadow-[0_0_5px_-3px_rgba(14,159,110,0.1),0.5px_0.5px_3px_rgba(14,159,110,0.3),inset_1.5px_1.5px_0px_rgba(255,255,255,0.2)]"></div>
     </div>
 
     <div class="flex items-center gap-0.5">
-      <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small grow">
+      <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small grow"
+        (click)="openSetup()"
+      >
         <i class="ri-settings-5-line"></i>
-        Setup
+        {{'PAC.Copilot.Setup' | translate: {Default: 'Setup'} }}
       </button>
     </div>
   </div>
@@ -69,16 +49,20 @@
           <span class="hidden group-hover:inline-flex items-center pl-1 pr-1.5 h-6 text-sm font-medium text-gray-500 bg-gray-50 cursor-pointer rounded-lg"
             (click)="toggleShowModels()"
           >
-          <i class="ri-arrow-up-double-line"></i>
-          收起</span>
+            <i class="ri-arrow-up-double-line"></i>
+            {{'PAC.Copilot.Collapse' | translate: {Default: 'Collapse'} }}
+          </span>
         </span>
-        <div class="grow flex justify-end">
-          <span class="shrink-0 flex items-center px-1.5 h-6 text-sm font-medium text-gray-500 cursor-pointer hover:bg-primary-50 hover:text-primary-600 rounded-md undefined"
-            (click)="addModel()"
-          >
-          <i class="ri-add-circle-line"></i>
-          添加模型</span>
-        </div>
+        @if (canCustomizableModel()) {
+          <div class="grow flex justify-end">
+            <span class="shrink-0 flex items-center px-1.5 h-6 text-sm font-medium text-gray-500 cursor-pointer hover:bg-primary-50 hover:text-primary-600 rounded-md undefined"
+              (click)="addModel()"
+            >
+              <i class="ri-add-circle-line"></i>
+              {{'PAC.Copilot.AddModel' | translate: {Default: 'Add model'} }}
+            </span>
+          </div>
+        }
       </div>
 
       @for (model of customModels(); track model.id) {
@@ -89,9 +73,7 @@
             class="w-4 h-4 shrink-0 mr-2"
           />
 
-          <div
-            class="flex items-center truncate text-[13px] grow text-sm font-normal text-gray-900"
-          >
+          <div class="flex items-center truncate text-[13px] grow text-sm font-normal text-gray-900">
             <div class="truncate" [title]="model.modelName">{{model.modelName}}</div>
             <div
               class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
@@ -113,7 +95,7 @@
             <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small hidden group-hover:flex h-7 mr-2"
               (click)="editModel(model)">
               <i class="ri-settings-5-line"></i>
-              配置
+              {{'PAC.Copilot.Configure' | translate: {Default: 'Configure'} }}
             </button>
           </div>
         </div>
@@ -131,30 +113,23 @@
             class="flex items-center truncate text-[13px] grow text-sm font-normal text-gray-900"
           >
             <div class="truncate" [title]="model.model">{{model.model}}</div>
-            <div
-              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
-            >
-              LLM
+            
+            <div class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium uppercase text-gray-500 cursor-default ml-1">
+              {{model.model_type}}
             </div>
-            <div
-              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
-            >
-              CHAT
-            </div>
-            <div
-              class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
-            >
-              4K
-            </div>
+            @if (model.model_properties?.mode) {
+              <div class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium uppercase text-gray-500 cursor-default ml-1">
+                {{model.model_properties?.mode}}
+              </div>
+            }
+            @if (model.model_properties?.context_size) {
+              <div
+                class="flex items-center px-1 h-[18px] rounded-[5px] border border-black/8 bg-white/[0.48] text-[10px] font-medium text-gray-500 cursor-default ml-1"
+              >
+                {{(model.model_properties.context_size / 1000) | number: '0.0-0'}}K
+              </div>
+            }
           </div>
-          <!-- <div class="shrink-0 flex items-center">
-            <button type="button" class="btn disabled:btn-disabled btn-secondary btn-small hidden group-hover:flex h-7 mr-2">
-              <i class="ri-settings-5-line"></i>
-              配置
-            </button>
-
-            <mat-slide-toggle ngm-density="xs" ></mat-slide-toggle>
-          </div> -->
         </div>
       }
       
@@ -162,18 +137,18 @@
   </div>
 } @else {
   <div class="group flex items-center justify-between pl-2 py-1.5 pr-[11px] border-t border-t-black/5 bg-white/30 text-sm font-medium text-gray-500">
-    <div class="group-hover:hidden pl-1 pr-1.5 h-6 leading-6">Show Models</div>
+    <div class="group-hover:hidden pl-1 pr-1.5 h-6 leading-6">{{'PAC.Copilot.ShowNModels' | translate: {value: (modelCount() || ''), Default: 'Show ' + (modelCount() || '') + ' Models'} }}</div>
     <div class="hidden group-hover:flex items-center pl-1 pr-1.5 h-6 rounded-lg hover:bg-white cursor-pointer"
       (click)="toggleShowModels()"
     >
       <i class="ri-arrow-down-double-line"></i>
-      Show {{modelCount() || ''}} Models
+      {{'PAC.Copilot.ShowNModels' | translate: {value: (modelCount() || ''), Default: 'Show ' + (modelCount() || '') + ' Models'} }}
     </div>
     <span class="shrink-0 items-center px-1.5 h-6 text-sm font-medium text-gray-500 cursor-pointer hover:bg-primary-50 hover:text-primary-600 rounded-md hidden group-hover:flex group-hover:text-primary-600"
       (click)="addModel()"
     >
       <i class="ri-add-circle-line"></i>
-      Add Model
+      {{'PAC.Copilot.AddModel' | translate: {Default: 'Add model'} }}
     </span>
   </div>
 }

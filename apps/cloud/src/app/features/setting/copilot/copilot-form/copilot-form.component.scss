@@ -1,3 +1,7 @@
+:host {
+  @apply overflow-hidden;
+}
+
 .mat-mdc-select-disabled {
   mat-select-trigger {
     img {

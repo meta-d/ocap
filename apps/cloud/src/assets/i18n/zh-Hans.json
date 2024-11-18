@@ -1400,6 +1400,11 @@
       "Generate": "生成",
       "ModelType": "模型类型",
       "ModelName": "模型名称",
+      "Setup": "设置",
+      "AddModel": "添加模型",
+      "Collapse": "收起",
+      "Configure": "配置",
+      "ShowNModels": "显示{{value}}模型",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",

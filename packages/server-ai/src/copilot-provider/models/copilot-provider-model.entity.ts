@@ -44,7 +44,10 @@ export class CopilotProviderModel extends TenantOrganizationBaseEntity implement
     */
 	@ApiProperty({ type: () => CopilotProvider })
 	@IsOptional()
-	@ManyToOne(() => CopilotProvider)
+	@ManyToOne(() => CopilotProvider, (provider) => provider.models, {
+		nullable: true,
+		onDelete: 'CASCADE'
+	})
 	@JoinColumn()
 	provider?: ICopilotProvider
 

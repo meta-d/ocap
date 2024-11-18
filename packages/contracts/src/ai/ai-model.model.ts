@@ -93,8 +93,8 @@ export interface ProviderModel {
   label: I18nObject;
   model_type: AiModelTypeEnum;
   features?: ModelFeature[];
-  fetchFrom: FetchFrom;
-  modelProperties: Record<ModelPropertyKey, any>;
+  fetch_from: FetchFrom;
+  model_properties: Record<ModelPropertyKey, any>;
   deprecated?: boolean;
   modelConfig?: any;
 }

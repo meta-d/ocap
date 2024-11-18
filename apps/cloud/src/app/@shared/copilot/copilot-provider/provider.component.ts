@@ -7,12 +7,13 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmSpinComponent } from '@metad/ocap-angular/common'
 import { NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { getErrorMessage, ICopilotProviderModel, injectAiProviders, injectCopilotProviderService, ToastrService } from '../../../@core'
+import { ConfigurateMethod, getErrorMessage, ICopilotProviderModel, injectAiProviders, injectCopilotProviderService, ToastrService } from '../../../@core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { Dialog } from '@angular/cdk/dialog'
 import { CopilotProviderModelComponent } from '../copilot-provider-model/model.component'
 import { BehaviorSubject, switchMap } from 'rxjs'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
+import { CopilotAiProviderAuthComponent } from '../provider-authorization/authorization.component'
 
 @Component({
   standalone: true,
@@ -28,7 +29,6 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle'
     MatTooltipModule,
     MatInputModule,
     MatSlideToggleModule,
-    NgmDensityDirective,
     NgmI18nPipe,
     NgmSpinComponent
   ],
@@ -37,6 +37,8 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle'
   }
 })
 export class CopilotProviderComponent {
+  eConfigurateMethod = ConfigurateMethod
+  
   readonly #dialog = inject(Dialog)
   readonly #translate = inject(TranslateService)
   readonly #toastr = inject(ToastrService)
@@ -53,15 +55,17 @@ export class CopilotProviderComponent {
   readonly showModels = signal(false)
   readonly copilotProvider = derivedAsync(() => {
     return this.providerId() ? 
-      this.refresh$.pipe(switchMap(() => this.#copilotProviderService.getOneById(this.providerId())))
+      this.refresh$.pipe(switchMap(() => this.#copilotProviderService.getOneById(this.providerId(), { relations: ['copilot']})))
       : null
   })
 
   readonly background = computed(() => this.copilotProvider()?.provider?.background ?? 'transparent')
   readonly icon = computed(() => this.copilotProvider()?.provider?.icon_large)
   readonly smallIcon = computed(() => this.copilotProvider()?.provider?.icon_small)
+  readonly supported_model_types = computed(() => this.copilotProvider()?.provider?.supported_model_types)
+  readonly configurate_methods = computed(() => this.copilotProvider()?.provider?.configurate_methods)
+  readonly canCustomizableModel = computed(() => this.configurate_methods()?.includes(ConfigurateMethod.CUSTOMIZABLE_MODEL))
 
-  // readonly models = computed(() => this.copilotProvider()?.models ?? [])
   readonly #models = derivedAsync(() => {
     return this.showModels() ? 
       this.refresh$.pipe(switchMap(() => this.#copilotProviderService.getModels(this.providerId()))) : null
@@ -130,6 +134,26 @@ export class CopilotProviderComponent {
         if (result) {
           this.refresh$.next()
         }
+      }
+    })
+  }
+
+  openSetup() {
+    const provider = this.copilotProvider().provider
+    const copilot = this.copilotProvider().copilot
+    this.#dialog.open(CopilotAiProviderAuthComponent, {
+      data: {
+        providerId: this.copilotProvider().id,
+        provider,
+        copilot,
+      }
+    }).closed.subscribe({
+      next: (copilotProvider) => {
+        if (copilotProvider) {
+          this.refresh$.next()
+        }
+      },
+      error: (err) => {
       }
     })
   }
