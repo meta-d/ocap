@@ -1,7 +1,8 @@
-<div class="px-8 pt-6 pb-4 cursor-move flex justify-start items-center" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
-  <div class="text-lg font-semibold">模型提供商</div>
+<div class="px-4 pt-2 pb-4 cursor-move flex justify-start items-center" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+  <div class="text-lg font-semibold">{{'PAC.Copilot.ModelProviders' | translate: {Default: 'Model Providers'} }}</div>
 </div>
-<div class="px-8 text-base text-text-secondary">选择 AI 模型提供商，并为 Copilot 配置授权信息或直接添加后手动添加 AI 模型。</div>
+
+<div class="px-8 text-base text-text-secondary">{{'PAC.Copilot.ModelProvidersDesc' | translate: {Default: 'Select an AI model provider and configure authorization information for Copilot or add an AI model manually after added provider.'} }}</div>
 <div class="w-[820px] flex flex-wrap px-8 py-2">
   <div class="grid grid-cols-3 gap-2">
     @for (provider of aiProviders(); track provider.provider) {
@@ -28,13 +29,17 @@
               <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm shrink-0"
                 (click)="openSetup(provider)">
                 <i class="ri-settings-5-line mr-[5px]"></i>
-                <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">Setup</span>
+                <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">
+                  {{'PAC.Copilot.Setup' | translate: {Default: 'Setup'} }}
+                </span>
               </button>
             } @else {
               <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm"
                 (click)="addProvider(provider)">
                 <i class="ri-add-circle-line mr-[5px]"></i>
-                <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">Add</span>
+                <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">
+                  {{'PAC.Copilot.Add' | translate: {Default: 'Add'} }}
+                </span>
               </button>
             }
           </div>

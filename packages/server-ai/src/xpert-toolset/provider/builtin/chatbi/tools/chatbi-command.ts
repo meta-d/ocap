@@ -2,11 +2,11 @@ import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { ICopilot, TCopilotModel } from '@metad/contracts'
-import { AIModelGetOneQuery } from '../../../../../ai-model'
+import { randomUUID } from 'crypto'
 import { CopilotGetOneQuery } from '../../../../../copilot/'
 import { ToolProviderCredentialValidationError } from '../../../../errors'
 import { BaseCommandTool } from '../../command'
-import { randomUUID } from 'crypto'
+import { CopilotModelGetChatModelQuery } from '../../../../../copilot-model/queries'
 
 /**
  * Command tool for ChatBI
@@ -28,11 +28,11 @@ export class ChatBICommandTool extends BaseCommandTool {
 			throw new ToolProviderCredentialValidationError(``)
 		}
 		const copilot = await this.queryBus.execute<CopilotGetOneQuery, ICopilot>(
-			new CopilotGetOneQuery(copilotModel.copilotId)
+			new CopilotGetOneQuery(copilotModel.copilotId, ['modelProvider'])
 		)
 		const abortController = new AbortController()
-		const chatModel = await this.queryBus.execute<AIModelGetOneQuery, BaseChatModel>(
-			new AIModelGetOneQuery(copilot, copilotModel, {
+		const chatModel = await this.queryBus.execute<CopilotModelGetChatModelQuery, BaseChatModel>(
+			new CopilotModelGetChatModelQuery(copilot, copilotModel, {
 				abortController,
 				tokenCallback: (token) => {
 					// execution.tokens += (token ?? 0)

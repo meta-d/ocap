@@ -12,7 +12,7 @@ export class AIModelGetOneHandler implements IQueryHandler<AIModelGetOneQuery> {
 	) {}
 
 	public async execute(command: AIModelGetOneQuery) {
-		const { abortController, tokenCallback } = command.options ?? {}
+		const { abortController, tokenCallback, modelProperties } = command.options ?? {}
 		const copilot = command.copilot
 		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
@@ -35,6 +35,7 @@ export class AIModelGetOneHandler implements IQueryHandler<AIModelGetOneQuery> {
 				copilot
 			},
 			{
+				modelProperties: modelProperties,
 				handleLLMTokens: async (input) => {
 					if (tokenCallback) {
 						tokenCallback(input.tokenUsed)

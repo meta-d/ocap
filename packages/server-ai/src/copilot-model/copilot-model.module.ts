@@ -6,6 +6,7 @@ import { RouterModule } from 'nest-router'
 import { CopilotModelController } from './copilot-model.controller'
 import { CopilotModel } from './copilot-model.entity'
 import { CopilotModelService } from './copilot-model.service'
+import { QueryHandlers } from './queries/handlers'
 
 @Module({
 	imports: [
@@ -15,8 +16,8 @@ import { CopilotModelService } from './copilot-model.service'
 		CqrsModule,
 		UserModule
 	],
-	controllers: [CopilotModelController],
-	providers: [CopilotModelService],
+	controllers: [CopilotModelController,],
+	providers: [CopilotModelService, ...QueryHandlers],
 	exports: [CopilotModelService]
 })
 export class CopilotModelModule {}

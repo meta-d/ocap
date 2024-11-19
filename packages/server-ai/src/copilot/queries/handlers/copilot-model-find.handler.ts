@@ -1,5 +1,7 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
+import { FetchFrom, ICopilotProviderModel, ProviderModel } from '@metad/contracts'
+import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs'
 import { AIProvidersService } from '../../../ai-model/index'
+import { GetCopilotProviderModelQuery } from '../../../copilot-provider'
 import { CopilotService } from '../../copilot.service'
 import { CopilotWithProviderDto, ProviderWithModelsDto } from '../../dto'
 import { FindCopilotModelsQuery } from '../copilot-model-find.query'
@@ -7,6 +9,7 @@ import { FindCopilotModelsQuery } from '../copilot-model-find.query'
 @QueryHandler(FindCopilotModelsQuery)
 export class FindCopilotModelsHandler implements IQueryHandler<FindCopilotModelsQuery> {
 	constructor(
+		private readonly queryBus: QueryBus,
 		private readonly service: CopilotService,
 		private readonly providersService: AIProvidersService
 	) {}
@@ -15,20 +18,49 @@ export class FindCopilotModelsHandler implements IQueryHandler<FindCopilotModels
 		const copilots = await this.service.findAllCopilots(null, null)
 		const copilotSchemas: CopilotWithProviderDto[] = []
 		for (const copilot of copilots) {
-			const provider = this.providersService.getProvider(copilot.provider)
-			if (provider) {
-				const models = provider.getProviderModels(command.type)
-				if (models.length) {
-					const providerSchema = provider.getProviderSchema()
-					copilotSchemas.push(
-						new CopilotWithProviderDto({
-							...copilot,
-							providerWithModels: new ProviderWithModelsDto({
-								...providerSchema,
-								models
+			if (copilot.modelProvider) {
+				const provider = this.providersService.getProvider(copilot.modelProvider.providerName)
+				if (provider) {
+					// Predefined models
+					const predefinedModels = provider.getProviderModels(command.type)
+					// Custom models
+					const customModels = await this.queryBus.execute<
+						GetCopilotProviderModelQuery,
+						ICopilotProviderModel[]
+					>(new GetCopilotProviderModelQuery(copilot.modelProvider.id))
+					const models = []
+					if (customModels?.length) {
+						models.push(
+							...customModels.map(
+								(model) =>
+									({
+										model: model.modelName,
+										model_type: model.modelType,
+										fetch_from: FetchFrom.CUSTOMIZABLE_MODEL,
+										model_properties: model.modelProperties
+									}) as ProviderModel
+							)
+						)
+					}
+
+					predefinedModels?.forEach((model) => {
+						if (!models.some((_) => _.model === model.model)) {
+							models.push(model)
+						}
+					})
+
+					if (models.length) {
+						const providerSchema = provider.getProviderSchema()
+						copilotSchemas.push(
+							new CopilotWithProviderDto({
+								...copilot,
+								providerWithModels: new ProviderWithModelsDto({
+									...providerSchema,
+									models
+								})
 							})
-						})
-					)
+						)
+					}
 				}
 			}
 			// else {

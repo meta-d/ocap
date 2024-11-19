@@ -1,20 +1,37 @@
 import { ChatOpenAI } from '@langchain/openai'
-import { AIModelEntity, ICopilotModel, AiModelTypeEnum } from '@metad/contracts'
+import { AIModelEntity, AiModelTypeEnum, ICopilotModel } from '@metad/contracts'
 import { sumTokenUsage } from '@metad/copilot'
+import { getErrorMessage } from '@metad/server-common'
 import { Injectable } from '@nestjs/common'
-import { AIModel } from '../../../ai-model'
 import { ModelProvider } from '../../../ai-provider'
 import { TChatModelOptions } from '../../../types/types'
+import { CredentialsValidateFailedError } from '../../errors'
+import { CommonOpenAI } from '../common'
+import { OpenAICredentials } from '../types'
 
 @Injectable()
-export class OpenAILargeLanguageModel extends AIModel {
+export class OpenAILargeLanguageModel extends CommonOpenAI {
 	constructor(readonly modelProvider: ModelProvider) {
 		super(modelProvider, AiModelTypeEnum.LLM)
 	}
 
-	validateCredentials(model: string, credentials: Record<string, any>): Promise<void> {
-		throw new Error('Method not implemented.')
+	async validateCredentials(model: string, credentials: OpenAICredentials): Promise<void> {
+		console.log(model, credentials)
+		const params = this.toCredentialKwargs(credentials)
+
+		const chatModel = new ChatOpenAI(params)
+		try {
+			await chatModel.invoke([
+				{
+					role: 'human',
+					content: `Hi`
+				}
+			])
+		} catch (err) {
+			throw new CredentialsValidateFailedError(getErrorMessage(err))
+		}
 	}
+
 	protected getCustomizableModelSchemaFromCredentials(
 		model: string,
 		credentials: Record<string, any>
@@ -24,14 +41,13 @@ export class OpenAILargeLanguageModel extends AIModel {
 
 	override getChatModel(copilotModel: ICopilotModel, options?: TChatModelOptions) {
 		const { copilot } = copilotModel
+		const { modelProvider } = copilot
+		const params = this.toCredentialKwargs(modelProvider.credentials as OpenAICredentials)
 
 		const { handleLLMTokens } = options ?? {}
 		return new ChatOpenAI({
-			apiKey: copilot.apiKey,
-			configuration: {
-				baseURL: copilot.apiHost || null
-			},
-			model: copilot.defaultModel,
+			...params,
+			model: copilotModel.model || copilot.defaultModel,
 			temperature: 0,
 			callbacks: [
 				{

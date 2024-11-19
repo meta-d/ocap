@@ -8,6 +8,8 @@ import { CopilotProvider } from './copilot-provider.entity'
 import { CopilotProviderService } from './copilot-provider.service'
 import { CopilotProviderModel } from '../core'
 import { CopilotProviderModelService } from './models/copilot-provider-model.service'
+import { CommandHandlers } from './commands/handlers'
+import { QueryHandlers } from './queries/handlers'
 
 @Module({
 	imports: [
@@ -17,7 +19,7 @@ import { CopilotProviderModelService } from './models/copilot-provider-model.ser
 		CqrsModule
 	],
 	controllers: [CopilotProviderController],
-	providers: [CopilotProviderService, CopilotProviderModelService],
+	providers: [CopilotProviderService, CopilotProviderModelService, ...CommandHandlers, ...QueryHandlers],
 	exports: [CopilotProviderService]
 })
 export class CopilotProviderModule {}

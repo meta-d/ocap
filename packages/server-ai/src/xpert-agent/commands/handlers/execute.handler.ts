@@ -9,7 +9,6 @@ import { RequestContext } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs'
 import { filter, from, map, Observable, tap } from 'rxjs'
-import { AIModelGetOneQuery } from '../../../ai-model'
 import { AgentState, CopilotGetOneQuery, createCopilotAgentState, createReactAgent } from '../../../copilot'
 import { CopilotCheckpointSaver } from '../../../copilot-checkpoint'
 import { BaseToolset, ToolsetGetToolsCommand } from '../../../xpert-toolset'
@@ -21,6 +20,7 @@ import { XpertAgentExecutionUpsertCommand } from '../../../xpert-agent-execution
 import { createKnowledgeRetriever } from '../../../knowledgebase/retriever'
 import { EnsembleRetriever } from "langchain/retrievers/ensemble"
 import z from 'zod'
+import { CopilotModelGetChatModelQuery } from '../../../copilot-model/queries'
 
 
 
@@ -58,13 +58,13 @@ export class XpertAgentExecuteHandler implements ICommandHandler<XpertAgentExecu
 		const copilotId = agent.copilotModel?.copilotId ?? team.copilotModel?.copilotId
 		const copilotModel = agent.copilotModel ?? team.copilotModel
 		if (copilotId) {
-			copilot = await this.queryBus.execute(new CopilotGetOneQuery(copilotId))
+			copilot = await this.queryBus.execute(new CopilotGetOneQuery(copilotId, ['modelProvider']))
 		} else {
 			throw new XpertCopilotNotFoundException(`Xpert copilot not found for '${xpert.name}'`)
 		}
 
-		const chatModel = await this.queryBus.execute<AIModelGetOneQuery, BaseChatModel>(
-			new AIModelGetOneQuery(copilot, copilotModel, {abortController, tokenCallback: (token) => {
+		const chatModel = await this.queryBus.execute<CopilotModelGetChatModelQuery, BaseChatModel>(
+			new CopilotModelGetChatModelQuery(copilot, copilotModel, {abortController, tokenCallback: (token) => {
 				execution.tokens += (token ?? 0)
 			}})
 		)

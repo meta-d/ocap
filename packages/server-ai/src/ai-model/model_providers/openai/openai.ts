@@ -6,6 +6,8 @@ import { PROVIDE_AI_MODEL_LLM, PROVIDE_AI_MODEL_TEXT_EMBEDDING } from '../../typ
 import { CredentialsValidateFailedError } from '../errors'
 import { OpenAILargeLanguageModel } from './llm/llm'
 import { OpenAITextEmbeddingModel } from './text-embedding/text-embedding'
+import { OpenAICredentials } from './types'
+
 
 @Injectable()
 export class OpenAIProvider extends ModelProvider {
@@ -13,7 +15,7 @@ export class OpenAIProvider extends ModelProvider {
 		super('openai')
 	}
 
-	async validateProviderCredentials(credentials: Record<string, any>): Promise<void> {
+	async validateProviderCredentials(credentials: OpenAICredentials): Promise<void> {
 		try {
 			const modelInstance = this.getModelManager(AiModelTypeEnum.LLM)
 

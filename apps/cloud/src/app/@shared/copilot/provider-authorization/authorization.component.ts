@@ -55,12 +55,12 @@ export class CopilotAiProviderAuthComponent {
   readonly help = computed(() => this.provider()?.help)
 
   readonly loading = signal(false)
-  readonly dirty = computed(() => !isEqual(this.copilotProvider()?.encryptedConfig, this.credentials()))
+  readonly dirty = computed(() => !isEqual(this.copilotProvider()?.credentials, this.credentials()))
 
   constructor() {
     effect(() => {
       if (this.copilotProvider()) {
-        this.credentials.set(this.copilotProvider().encryptedConfig)
+        this.credentials.set(this.copilotProvider().credentials)
       }
     }, { allowSignalWrites: true })
   }
@@ -73,13 +73,13 @@ export class CopilotAiProviderAuthComponent {
     if (this.providerId()) {
       return this.update()
     }
-    
+
     this.loading.set(true)
     this.#copilotProviderService
       .create({
         copilotId: this.copilot().id,
         providerName: this.provider().provider,
-        encryptedConfig: {
+        credentials: {
           ...this.credentials()
         }
       })
@@ -102,7 +102,7 @@ export class CopilotAiProviderAuthComponent {
       .update(this.providerId(), {
         copilotId: this.copilot().id,
         providerName: this.provider().provider,
-        encryptedConfig: {
+        credentials: {
           ...this.credentials()
         }
       })

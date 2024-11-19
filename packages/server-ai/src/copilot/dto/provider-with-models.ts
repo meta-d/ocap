@@ -1,4 +1,4 @@
-import { ProviderCredentialSchema, ProviderModel } from '@metad/contracts'
+import { ModelCredentialSchema, ProviderCredentialSchema, ProviderModel } from '@metad/contracts'
 import { Exclude, Expose, Transform } from 'class-transformer'
 import { PublicAIModelDto } from './public-ai-model'
 import { AiProviderDto } from '../../ai-model'
@@ -7,7 +7,7 @@ import { AiProviderDto } from '../../ai-model'
 export class ProviderWithModelsDto extends AiProviderDto {
 
 	@Exclude()
-	model_credential_schema: ProviderCredentialSchema
+	model_credential_schema: ModelCredentialSchema
 
 	@Exclude()
 	provider_credential_schema: ProviderCredentialSchema
@@ -17,5 +17,6 @@ export class ProviderWithModelsDto extends AiProviderDto {
 
 	constructor(partial: Partial<ProviderWithModelsDto>) {
 		super(partial)
+		Object.assign(this, partial)
 	}
 }

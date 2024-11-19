@@ -12,3 +12,7 @@
     min-height: 80vh;
   }
 }
+
+.cdk-dialog-container {
+  @apply bg-components-card-bg rounded-2xl p-4;
+}

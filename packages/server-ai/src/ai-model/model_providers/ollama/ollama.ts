@@ -1,9 +1,10 @@
 import { Injectable, Module } from '@nestjs/common'
 import { ModelProvider } from '../../ai-provider'
+import { OllamaLargeLanguageModel } from './llm/llm'
+import { OllamaTextEmbeddingModel } from './text-embedding/text-embedding'
 
 @Injectable()
 export class OllamaProvider extends ModelProvider {
-
 	constructor() {
 		super('ollama')
 	}
@@ -15,11 +16,13 @@ export class OllamaProvider extends ModelProvider {
 
 @Module({
 	providers: [
-        OllamaProvider,
+		OllamaProvider,
 		{
 			provide: ModelProvider,
 			useExisting: OllamaProvider
-		}
+		},
+		OllamaLargeLanguageModel,
+		OllamaTextEmbeddingModel
 	],
 	exports: [ModelProvider]
 })

@@ -18,13 +18,15 @@ import {
 	Post,
 	Query,
 	UseGuards,
-	UseInterceptors
+	UseInterceptors,
+	InternalServerErrorException
 } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { In, Not } from 'typeorm'
 import { Knowledgebase } from './knowledgebase.entity'
 import { KnowledgebaseService } from './knowledgebase.service'
+import { getErrorMessage } from '@metad/server-common'
 
 @ApiTags('Knowledgebase')
 @ApiBearerAuth()
@@ -108,6 +110,10 @@ export class KnowledgebaseController extends CrudController<Knowledgebase> {
 
 	@Post(':id/test')
 	async test(@Param('id') id: string, @Body() body: { query: string; k: number; score: number; filter: Metadata }) {
-		return this.service.test(id, body)
+		try {
+			return await this.service.test(id, body)
+		} catch(err) {
+			throw new InternalServerErrorException(getErrorMessage(err))
+		}
 	}
 }

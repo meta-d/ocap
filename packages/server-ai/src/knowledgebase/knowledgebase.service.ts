@@ -11,9 +11,9 @@ import { CopilotService } from '../copilot'
 import { Knowledgebase } from './knowledgebase.entity'
 import { KnowledgeSearchQuery } from './queries'
 import { KnowledgeDocumentVectorStore } from './vector-store'
-import { AIModelGetOneQuery } from '../ai-model'
 import { AiModelNotFoundException, CopilotModelNotFoundException, CopilotNotFoundException } from '../core/errors'
 import { Embeddings } from '@langchain/core/embeddings'
+import { CopilotModelGetEmbeddingsQuery } from '../copilot-model/queries/index'
 
 @Injectable()
 export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Knowledgebase> {
@@ -68,7 +68,7 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 		// }
 		let knowledgebase: IKnowledgebase
 		if (typeof knowledgebaseId === 'string') {
-			knowledgebase = await this.findOne(knowledgebaseId, { relations: ['copilotModel', 'copilotModel.copilot']})
+			knowledgebase = await this.findOne(knowledgebaseId, { relations: ['copilotModel', 'copilotModel.copilot', 'copilotModel.copilot.modelProvider']})
 		} else {
 			knowledgebase = knowledgebaseId
 		}
@@ -82,8 +82,8 @@ export class KnowledgebaseService extends TenantOrganizationAwareCrudService<Kno
 			throw new CopilotNotFoundException(`Copilot not set for knowledgebase '${knowledgebase.name}'`)
 		}
 
-		const embeddings = await this.queryBus.execute<AIModelGetOneQuery, Embeddings>(
-			new AIModelGetOneQuery(copilot, copilotModel, {tokenCallback: (token) => {
+		const embeddings = await this.queryBus.execute<CopilotModelGetEmbeddingsQuery, Embeddings>(
+			new CopilotModelGetEmbeddingsQuery(copilot, copilotModel, {tokenCallback: (token) => {
 				// execution.tokens += (token ?? 0)
 			}})
 		)

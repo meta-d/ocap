@@ -1,12 +1,14 @@
-import { IAiProviderEntity, ICopilotProviderModel, ProviderModel } from '@metad/contracts'
+import { IAiProviderEntity, ICopilotProvider, ICopilotProviderModel, ProviderModel, RolesEnum } from '@metad/contracts'
 import {
 	CrudController,
 	PaginationParams,
 	ParseJsonPipe,
+	RoleGuard,
+	Roles,
 	TransformInterceptor,
 	UUIDValidationPipe
 } from '@metad/server-core'
-import { Body, Controller, ForbiddenException, Get, Param, Post, Put, Delete, Query, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, ForbiddenException, Get, Param, Post, Put, Delete, Query, UseInterceptors, UseGuards } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { DeleteResult, UpdateResult } from 'typeorm'
@@ -16,6 +18,7 @@ import { CopilotProviderService } from './copilot-provider.service'
 import { CopilotProviderDto } from './dto'
 import { CopilotProviderModel } from './models/copilot-provider-model.entity'
 import { CopilotProviderModelService } from './models/copilot-provider-model.service'
+import { CopilotProviderUpsertCommand } from './commands'
 
 @ApiTags('CopilotProvider')
 @ApiBearerAuth()
@@ -29,6 +32,20 @@ export class CopilotProviderController extends CrudController<CopilotProvider> {
 		private readonly queryBus: QueryBus
 	) {
 		super(service)
+	}
+
+	@UseGuards(RoleGuard)
+	@Roles(RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN)
+	@Post()
+	async create(@Body() entity: Partial<ICopilotProvider>) {
+		return await this.commandBus.execute(new CopilotProviderUpsertCommand(entity))
+	}
+
+	@UseGuards(RoleGuard)
+	@Roles(RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN)
+	@Put(':id')
+	async update(@Param('id', UUIDValidationPipe) id: string, @Body() entity: Partial<ICopilotProvider>) {
+		return await this.commandBus.execute(new CopilotProviderUpsertCommand({...entity, id}))
 	}
 
 	@Get(':id')
@@ -66,7 +83,7 @@ export class CopilotProviderController extends CrudController<CopilotProvider> {
 		@Param('providerId', UUIDValidationPipe) providerId: string,
 		@Body() entity?: Partial<ICopilotProviderModel>
 	): Promise<CopilotProviderModel> {
-		return this.modelService.create({
+		return this.modelService.upsertModel({
 			...entity,
 			providerId
 		})
@@ -92,8 +109,9 @@ export class CopilotProviderController extends CrudController<CopilotProvider> {
 		@Param('id', UUIDValidationPipe) id: string,
 		@Body() entity?: Partial<ICopilotProviderModel>
 	): Promise<CopilotProviderModel | UpdateResult> {
-		return this.modelService.update(id, {
+		return this.modelService.upsertModel({
 			...entity,
+			id,
 			providerId
 		})
 	}

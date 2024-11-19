@@ -29,7 +29,7 @@ export class CopilotProviderModel extends TenantOrganizationBaseEntity implement
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	encryptedConfig?: Record<string, any>
+	modelProperties?: Record<string, any>
 
 	@ApiPropertyOptional({ type: () => Boolean })
 	@IsBoolean()

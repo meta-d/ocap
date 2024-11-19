@@ -4,14 +4,14 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, ou
 import { FormsModule } from '@angular/forms'
 import { MatInputModule } from '@angular/material/input'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { NgmSpinComponent } from '@metad/ocap-angular/common'
-import { NgmDensityDirective, NgmI18nPipe } from '@metad/ocap-angular/core'
+import { CdkConfirmDeleteComponent, NgmSpinComponent } from '@metad/ocap-angular/common'
+import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ConfigurateMethod, getErrorMessage, ICopilotProviderModel, injectAiProviders, injectCopilotProviderService, ToastrService } from '../../../@core'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { Dialog } from '@angular/cdk/dialog'
 import { CopilotProviderModelComponent } from '../copilot-provider-model/model.component'
-import { BehaviorSubject, switchMap } from 'rxjs'
+import { BehaviorSubject, EMPTY, switchMap } from 'rxjs'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { CopilotAiProviderAuthComponent } from '../provider-authorization/authorization.component'
 
@@ -42,6 +42,7 @@ export class CopilotProviderComponent {
   readonly #dialog = inject(Dialog)
   readonly #translate = inject(TranslateService)
   readonly #toastr = inject(ToastrService)
+  readonly #i18n = new NgmI18nPipe()
   readonly #copilotProviderService = injectCopilotProviderService()
   readonly aiProviders = injectAiProviders()
 
@@ -61,10 +62,12 @@ export class CopilotProviderComponent {
 
   readonly background = computed(() => this.copilotProvider()?.provider?.background ?? 'transparent')
   readonly icon = computed(() => this.copilotProvider()?.provider?.icon_large)
+  readonly label = computed(() => this.copilotProvider()?.provider?.label)
   readonly smallIcon = computed(() => this.copilotProvider()?.provider?.icon_small)
   readonly supported_model_types = computed(() => this.copilotProvider()?.provider?.supported_model_types)
   readonly configurate_methods = computed(() => this.copilotProvider()?.provider?.configurate_methods)
   readonly canCustomizableModel = computed(() => this.configurate_methods()?.includes(ConfigurateMethod.CUSTOMIZABLE_MODEL))
+  readonly provider_credential_schema = computed(() => this.copilotProvider()?.provider?.provider_credential_schema)
 
   readonly #models = derivedAsync(() => {
     return this.showModels() ? 
@@ -82,7 +85,7 @@ export class CopilotProviderComponent {
 
   constructor() {
     effect(() => {
-      console.log(this.#models())
+      // console.log(this.#models())
     })
   }
 
@@ -94,8 +97,21 @@ export class CopilotProviderComponent {
   }
 
   delete() {
-    this.loading.set(true)
-    this.#copilotProviderService.delete(this.providerId()).subscribe({
+    this.#dialog.open(CdkConfirmDeleteComponent, {
+      data: {
+        value: this.#i18n.transform(this.label()),
+        information: this.#translate.instant('PAC.Copilot.DeleteProviderAndModels', {Default: `Delete the ai model provider and it's custom models (if any)`})
+      }
+    }).closed.pipe(
+      switchMap((confirm) => {
+        if (confirm) {
+          this.loading.set(true)
+          return this.#copilotProviderService.delete(this.providerId())
+        }
+        return EMPTY
+      })
+    )
+    .subscribe({
       next: (copilotProvider) => {
         this.loading.set(false)
         this.#toastr.success('PAC.Messages.DeletedSuccessfully', { Default: 'Deleted successfully' })

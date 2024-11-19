@@ -76,11 +76,11 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 	async findAllCopilots(tenantId: string, organizationId: string) {
 		tenantId = tenantId || RequestContext.currentTenantId()
 		organizationId = organizationId || RequestContext.getOrganizationId()
-		const items = await this.repository.find({ where: { tenantId, organizationId } })
+		const items = await this.repository.find({ where: { tenantId, organizationId }, relations: ['modelProvider'] })
 		if (items.length) {
 			return items
 		}
-		return await this.repository.find({ where: { tenantId, organizationId: IsNull() } })
+		return await this.repository.find({ where: { tenantId, organizationId: IsNull() }, relations: ['modelProvider'] })
 	}
 
 	/**

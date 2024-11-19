@@ -10,7 +10,7 @@ import { CopilotServerService, getErrorMessage, injectCopilots, PACCopilotServic
 import { CopilotAiProvidersComponent, CopilotProviderComponent, MaterialModule } from '../../../../@shared'
 import {Dialog, DialogRef, DIALOG_DATA, DialogModule} from '@angular/cdk/dialog';
 import { derivedAsync } from 'ngxtension/derived-async'
-import { BehaviorSubject } from 'rxjs'
+import { BehaviorSubject, firstValueFrom } from 'rxjs'
 
 const PROVIDERS = [
   {
@@ -119,13 +119,13 @@ export class CopilotFormComponent {
 
   readonly formGroup = new FormGroup({
     id: new FormControl(null),
-    enabled: new FormControl(false),
-    provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
-    apiKey: new FormControl(null),
-    apiHost: new FormControl(null),
-    defaultModel: new FormControl<string | null>(null),
+    // enabled: new FormControl(false),
+    // provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
+    // apiKey: new FormControl(null),
+    // apiHost: new FormControl(null),
+    // defaultModel: new FormControl<string | null>(null),
 
-    showTokenizer: new FormControl(null),
+    // showTokenizer: new FormControl(null),
     tokenBalance: new FormControl(null)
   }, {})
 
@@ -133,20 +133,20 @@ export class CopilotFormComponent {
     return this.formGroup.get('tokenBalance').value
   }
 
-  readonly providers = computed(() =>
-    (this.embedding() ? PROVIDERS.filter((p) => p.embedding) : PROVIDERS).map((provider) => ({
-      ...provider,
-      caption: AI_PROVIDERS[provider.name].caption
-    }))
-  )
-  readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
-  readonly models = computed(() => {
-    const models = AI_PROVIDERS[this.provider()]?.models || []
-    return this.embedding() ? models.filter((_) => isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Embed)) 
-      : models.filter((_) => isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Chat))
-  })
-  readonly providerHomepage = computed(() => AI_PROVIDERS[this.provider()]?.homepage || '')
-  readonly providerInfo = computed(() => this.providers().find((item) => item.name === this.provider()))
+  // readonly providers = computed(() =>
+  //   (this.embedding() ? PROVIDERS.filter((p) => p.embedding) : PROVIDERS).map((provider) => ({
+  //     ...provider,
+  //     caption: AI_PROVIDERS[provider.name].caption
+  //   }))
+  // )
+  // readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
+  // readonly models = computed(() => {
+  //   const models = AI_PROVIDERS[this.provider()]?.models || []
+  //   return this.embedding() ? models.filter((_) => isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Embed)) 
+  //     : models.filter((_) => isNil(_.capabilities) || _.capabilities.includes(AiModelCapability.Chat))
+  // })
+  // readonly providerHomepage = computed(() => AI_PROVIDERS[this.provider()]?.homepage || '')
+  // readonly providerInfo = computed(() => this.providers().find((item) => item.name === this.provider()))
 
   readonly saving = signal(false)
 
@@ -165,18 +165,18 @@ export class CopilotFormComponent {
   readonly modelProvider = computed(() => this.copilot()?.modelProvider)
 
   constructor() {
-    effect(() => {
-      if (this.enabled()) {
-        this.formGroup.enable()
-      } else {
-        this.formGroup.disable()
-      }
-    })
+    // effect(() => {
+    //   if (this.enabled()) {
+    //     this.formGroup.enable()
+    //   } else {
+    //     this.formGroup.disable()
+    //   }
+    // })
 
     effect(
       () => {
         if (this.copilot()) {
-          this.enabled.set(this.copilot().enabled)
+          // this.enabled.set(this.copilot().enabled)
           this.formGroup.patchValue(this.copilot())
           this.formGroup.markAsPristine()
         }
@@ -186,19 +186,22 @@ export class CopilotFormComponent {
   }
 
   async onSubmit() {
-    if (!this.formGroup.value.id && !this.enabled()) {
-      return
-    }
+    // if (!this.formGroup.value.id && !this.enabled()) {
+    //   return
+    // }
     try {
       this.saving.set(true)
-      await this.copilotService.upsertItems([
-        this.enabled()
-          ? { ...this._getValue(this.formGroup), role: this.role(), enabled: true }
-          : {
-              id: this.formGroup.value.id,
-              enabled: false
-            }
-      ])
+      await firstValueFrom(this.copilotServer.update(this.copilotId(), {
+        ...this.formGroup.value
+      }))
+      // await this.copilotService.upsertItems([
+      //   this.enabled()
+      //     ? { ...this._getValue(this.formGroup), role: this.role(), enabled: true }
+      //     : {
+      //         id: this.formGroup.value.id,
+      //         enabled: false
+      //       }
+      // ])
       this.formGroup.markAsPristine()
       this.#toastrService.success('PAC.ACTIONS.Save', { Default: 'Save' })
     } catch (err) {
@@ -208,18 +211,18 @@ export class CopilotFormComponent {
     }
   }
 
-  _getValue(form: FormGroup) {
-    const { apiKey, secondary, ...rest } = form.value
+  // _getValue(form: FormGroup) {
+  //   const { apiKey, secondary, ...rest } = form.value
 
-    return form.get('apiKey').dirty
-      ? {
-          ...rest,
-          apiKey: apiKey.trim()
-        }
-      : {
-          ...rest
-        }
-  }
+  //   return form.get('apiKey').dirty
+  //     ? {
+  //         ...rest,
+  //         apiKey: apiKey.trim()
+  //       }
+  //     : {
+  //         ...rest
+  //       }
+  // }
 
   formatBalanceLabel(value: number): string {
     if (value >= 1000000) {

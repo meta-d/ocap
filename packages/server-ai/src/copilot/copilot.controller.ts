@@ -16,7 +16,9 @@ import {
 	Post,
 	Query,
 	UseGuards,
-	UseInterceptors
+	UseInterceptors,
+	HttpException,
+	InternalServerErrorException
 } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -26,6 +28,7 @@ import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
 import { FindCopilotModelsQuery, ModelParameterRulesQuery } from './queries'
 import { CopilotWithProviderDto } from './dto'
+import { getErrorMessage } from '@metad/server-common'
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
@@ -124,7 +127,15 @@ export class CopilotController extends CrudController<Copilot> {
 	 */
 	@Get('models')
 	async getModels(@Query('type') type: AiModelTypeEnum) {
-		return this.queryBus.execute<FindCopilotModelsQuery, CopilotWithProviderDto[]>(new FindCopilotModelsQuery(type))
+		try {
+			return await this.queryBus.execute<FindCopilotModelsQuery, CopilotWithProviderDto[]>(new FindCopilotModelsQuery(type))
+		} catch(err) {
+			if (err instanceof HttpException) {
+				throw err
+			} else {
+				throw new InternalServerErrorException(getErrorMessage(err))
+			}
+		}
 	}
 
 	@Get('provider/:name/model-parameter-rules')

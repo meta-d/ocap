@@ -26,7 +26,7 @@ export class CopilotProvider extends TenantOrganizationBaseEntity implements ICo
 	@IsJSON()
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
-	encryptedConfig?: Record<string, any>
+	credentials?: Record<string, any>
 
     @ApiPropertyOptional({ type: () => Boolean })
 	@IsBoolean()

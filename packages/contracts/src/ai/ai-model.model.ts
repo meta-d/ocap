@@ -78,7 +78,7 @@ export interface IAiProviderEntity {
   help: ProviderHelpInfo;
   supported_model_types: AiModelTypeEnum[];
   configurate_methods: ConfigurateMethod[];
-  model_credential_schema: ProviderCredentialSchema;
+  model_credential_schema: ModelCredentialSchema;
   provider_credential_schema: ProviderCredentialSchema;
   models: ProviderModel[]
 }
@@ -100,24 +100,36 @@ export interface ProviderModel {
 }
 
 export interface ProviderCredentialSchema {
-  model?: {
-    label: I18nObject;
-    placeholder: I18nObject;
-  };
   credential_form_schemas: CredentialFormSchema[];
+}
+
+export enum CredentialFormTypeEnum {
+  TEXT_INPUT = "text-input",
+  SECRET_INPUT = "secret-input",
+  SELECT = "select",
+  RADIO = "radio",
+  SWITCH = "switch",
 }
 
 export interface CredentialFormSchema {
   variable: string;
   label: I18nObject;
-  type: string;
+  type: CredentialFormTypeEnum;
   required: boolean;
   default?: number | string | boolean
-  placeholder: I18nObject;
   options?: {
     label: I18nObject
     value: number | string | boolean
   }[]
+  placeholder: I18nObject;
+
+  max_length?: number
+  show_on?: FormShowOnObject[]
+}
+
+export interface FormShowOnObject {
+  variable: string
+  value: string
 }
 
 export enum FetchFrom {
@@ -185,3 +197,16 @@ export interface AIModelEntity extends ProviderModel {
   parameter_rules?: ParameterRule[]
   pricing?: PriceConfig
 }
+
+export interface FieldModelSchema {
+  label: I18nObject
+  placeholder?: I18nObject
+}
+    
+
+export interface ModelCredentialSchema {
+  model: FieldModelSchema
+  credential_form_schemas: CredentialFormSchema[]
+}
+
+export const AI_MODEL_TYPE_VARIABLE = "__model_type"

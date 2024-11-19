@@ -87,7 +87,7 @@ export class CopilotCredentialFormComponent {
 
     effect(
       () => {
-        this.formGroup.setValue(this.cva.value$(), { emitEvent: false })
+        this.formGroup.patchValue(this.cva.value$(), { emitEvent: false })
       },
       { allowSignalWrites: true }
     )

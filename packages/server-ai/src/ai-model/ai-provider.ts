@@ -122,7 +122,7 @@ export abstract class ModelProvider {
 		if (type === AiModelTypeEnum.LLM) {
 			return this.getModelManager(type)?.getChatModel(copilotModel, options)
 		} else if (type === AiModelTypeEnum.TEXT_EMBEDDING) {
-			return this.getModelManager<TextEmbeddingModelManager>(type)?.getEmbeddingInstance(copilotModel)
+			return this.getModelManager<TextEmbeddingModelManager>(type)?.getEmbeddingInstance(copilotModel, options)
 		}
 		return null
 	}

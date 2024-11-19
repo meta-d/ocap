@@ -5,7 +5,8 @@ import { ICopilot } from './copilot.model'
 export interface ICopilotProvider extends IBasePerTenantAndOrganizationEntityModel {
   providerName?: string
   providerType?: string
-  encryptedConfig?: Record<string, any>
+  credentials?: Record<string, any>
+  // encryptedConfig?: Record<string, any>
   isValid?: boolean
   lastUsed?: Date
   quotaType?: string
@@ -30,7 +31,8 @@ export interface ICopilotProviderModel extends IBasePerTenantAndOrganizationEnti
   providerName?: string
   modelName?: string
   modelType?: AiModelTypeEnum
-  encryptedConfig?: Record<string, any>
+  // encryptedConfig?: Record<string, any>
+  modelProperties?: Record<string, any>
   isValid?: boolean
 
   // Many to one

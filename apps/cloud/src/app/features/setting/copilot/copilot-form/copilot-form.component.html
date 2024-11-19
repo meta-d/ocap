@@ -2,16 +2,46 @@
   <copilot-provider [providerId]="modelProvider().id" class="shadow-sm mb-2 rounded-xl border-[0.5px] border-black/5"
     (deleted)="removedModelProvider()" />
 } @else {
-  <div class="w-full flex items-center px-3 py-2 rounded-lg text-base text-gray-900 bg-gray-100 cursor-pointer hover:bg-gray-200"
+  <div class="w-full flex items-center px-3 py-2 rounded-lg text-base text-text-secondary bg-gray-200 cursor-pointer hover:bg-gray-300 hover:text-text-primary"
     (click)="openAiProviders()"
   >
-    <div class="grow mr-2 leading-5">选择 AI 模型提供商</div>
+    <div class="grow mr-2 leading-5">
+      {{'PAC.Copilot.SelectAiModelProvider' | translate: {Default: 'Select an AI model provider'} }}
+    </div>
     <i class="ri-folder-open-line"></i>
   </div>
 }
 
-<form [formGroup]="formGroup" class="w-full flex flex-col items-start py-2 overflow-hidden"
+<form [formGroup]="formGroup" class="w-full flex flex-col items-start p-4 overflow-hidden bg-gray-100 rounded-lg shadow-sm"
     (ngSubmit)="onSubmit()">
+
+    <div class="w-full flex flex-col justify-start items-stretch">
+      <label>{{ 'PAC.Copilot.TokenBalancePerUser' | translate: {Default: 'Token Balance/User'} }}: {{tokenBalance | number}}</label>
+      <mat-slider min="0" max="10000000" step="10000" discrete [displayWith]="formatBalanceLabel">
+        <input matSliderThumb formControlName="tokenBalance">
+      </mat-slider>
+    </div>
+
+    <div class="self-stretch flex justify-start items-center gap-2 mt-8">
+        <button mat-flat-button type="button" class="ngm-rounded-full" [disabled]="formGroup.pristine"
+            (click)="cancel()">
+            {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}
+        </button>
+        <button mat-raised-button color="primary" class="ngm-rounded-full"
+            [disabled]="formGroup.invalid || formGroup.pristine"
+        >
+            <div class="flex items-center">
+              @if (saving()) {
+                <mat-spinner diameter="20" class="mr-2" />
+              }
+              <span>{{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}</span>
+            </div>
+            
+        </button>
+    </div>
+</form>
+
+<!-- 
     <mat-form-field appearance="fill">
         <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
         <mat-select formControlName="provider">
@@ -29,7 +59,7 @@
           }
         </mat-select>
     </mat-form-field>
-<!-- 
+
     <input type="text" name="ai-username" aria-hidden="true" style="display: none;">
     <div class="w-[600px] max-w-full flex justify-start items-center gap-4">
         <mat-form-field appearance="fill" class="flex-1">
@@ -51,10 +81,9 @@
             </mat-label>
             <input name="copilot-apihost" matInput formControlName="apiHost" type="text">
         </mat-form-field>
-    </div> -->
+    </div> 
 
     <div class="flex items-center gap-4">
-
         <mat-form-field class="w-64 max-w-full flex-1">
             <mat-label>{{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}</mat-label>
             <input type="text"
@@ -74,29 +103,4 @@
             {{ 'PAC.Copilot.ShowTokenizer' | translate: {Default: 'Show Tokenizer'} }}
         </mat-checkbox>
     </div>
-
-    <div class="w-full flex flex-col justify-start items-stretch mt-4">
-      <label>{{ 'PAC.Copilot.TokenBalancePerUser' | translate: {Default: 'Token Balance/User'} }}: {{tokenBalance | number}}</label>
-      <mat-slider min="0" max="10000000" step="10000" discrete [displayWith]="formatBalanceLabel">
-        <input matSliderThumb formControlName="tokenBalance">
-      </mat-slider>
-    </div>
-
-    <div class="self-stretch flex justify-start items-center gap-2 mt-8">
-        <button mat-flat-button type="button" class="ngm-rounded-full" [disabled]="formGroup.pristine"
-            (click)="cancel()">
-            {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}
-        </button>
-        <button mat-raised-button color="primary" class="ngm-rounded-full"
-            [disabled]="(formGroup.invalid || formGroup.pristine) && enabled() === formGroup.value.enabled"
-        >
-            <div class="flex items-center">
-              @if (saving()) {
-                <mat-spinner diameter="20" class="mr-2" />
-              }
-              <span>{{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}</span>
-            </div>
-            
-        </button>
-    </div>
-</form>
+-->

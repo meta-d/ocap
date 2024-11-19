@@ -5,7 +5,6 @@ import { Router } from '@angular/router'
 import { API_PREFIX, AuthService } from '@metad/cloud/state'
 import { AiProviderRole, BusinessRoleType, ICopilot } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/copilot-angular'
-import { toParams } from '@metad/core'
 import { pick } from '@metad/ocap-core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
@@ -21,8 +20,7 @@ import {
   startWith,
   switchMap
 } from 'rxjs'
-import { API_COPILOT } from '../constants/app.constants'
-import { ICopilotWithProvider, ICopilot as IServerCopilot, AiModelTypeEnum, ParameterRule, IAiProviderEntity } from '../types'
+import { ICopilot as IServerCopilot } from '../types'
 import { AgentService } from './agent.service'
 import { Store } from './store.service'
 import { XpertService } from './xpert.service'
@@ -67,7 +65,6 @@ export class PACCopilotService extends NgmCopilotService {
       takeUntilDestroyed()
     )
     .subscribe((roles) => {
-      console.log(roles)
       this.roles.set(roles as BusinessRoleType[])
     })
 

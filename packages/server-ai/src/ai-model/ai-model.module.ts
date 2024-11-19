@@ -8,6 +8,7 @@ import { OllamaProviderModule } from './model_providers/ollama/ollama'
 import { OpenAIProviderModule } from './model_providers/openai/openai'
 import { QueryHandlers } from './queries/handlers'
 import { AIModelController } from './ai-model.controller'
+import { CommandHandlers } from './commands/handlers'
 
 @Module({
 	imports: [
@@ -19,7 +20,7 @@ import { AIModelController } from './ai-model.controller'
 		AnthropicProviderModule
 	],
 	controllers: [ AIModelController ],
-	providers: [AIProvidersService, ...QueryHandlers],
+	providers: [AIProvidersService, ...QueryHandlers, ...CommandHandlers],
 	exports: [AIProvidersService]
 })
 export class AIModelModule {}

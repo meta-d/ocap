@@ -8,6 +8,6 @@ export class CopilotGetOneHandler implements IQueryHandler<CopilotGetOneQuery> {
 	constructor(private readonly service: CopilotService) {}
 
 	public async execute(command: CopilotGetOneQuery): Promise<ICopilot> {
-		return await this.service.findOne(command.id)
+		return await this.service.findOne(command.id, { relations: command.relations})
 	}
 }

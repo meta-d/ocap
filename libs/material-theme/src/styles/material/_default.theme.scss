@@ -11,6 +11,8 @@
 
 @use 'packages/angular/theming' as ocap;
 
+@import '@angular/cdk/overlay-prebuilt.css';
+
 
 // Define a theme.
 $primary: mat.define-palette(mat.$blue-grey-palette, 600);

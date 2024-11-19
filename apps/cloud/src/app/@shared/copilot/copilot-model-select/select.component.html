@@ -153,7 +153,11 @@
           @for (copilot of searchedModels(); track copilot.id) {
             <div class="h-0.5 mx-2 my-2 rounded-full bg-neutral-100"></div>
             <div class="text-base px-2 my-2 font-semibold flex justify-start items-center">
-              <span class="uppercase">{{ ('PAC.Copilot.Role_' + copilot.role) | translate: {Default: copilot.role} }}</span> - <img [src]="(copilot.providerWithModels.icon_small | i18n)" class="w-4 h-4 inline-block mx-1"> {{copilot.providerWithModels?.label | i18n }}</div>
+              <span class="uppercase">{{ ('PAC.Copilot.Role_' + copilot.role) | translate: {Default: copilot.role} }}</span>
+              <span class="mx-1">•</span>
+              <img [src]="(copilot.providerWithModels.icon_small | i18n)" class="w-4 h-4 inline-block mx-1">
+              {{copilot.providerWithModels?.label | i18n }}
+            </div>
             @for (item of copilot.providerWithModels?.models; track item.model) {
               <li cdkMenuItem class="flex justify-start items-center gap-2 px-4 py-2 rounded-xl cursor-pointer hover:bg-primary-100/50 hover:text-primary-500"
                 [ngClass]="model() === item.model ? 'bg-primary-100 text-primary-600 font-semibold' : ''"
