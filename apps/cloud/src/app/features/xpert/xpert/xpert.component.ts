@@ -50,6 +50,7 @@ export class XpertComponent {
   readonly paramId$ = toObservable(this.paramId)
   readonly #refresh$ = new BehaviorSubject<void>(null)
 
+  readonly xpertId = this.paramId
   readonly isMobile = this.appService.isMobile
   readonly sideMenuOpened = model(!this.isMobile())
 

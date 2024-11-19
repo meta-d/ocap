@@ -1,14 +1,22 @@
 import { IUser, TXpertTeamDraft } from '@metad/contracts'
 import { convertToUrlPath } from '@metad/server-common'
-import { OptionParams, PaginationParams, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import {
+	OptionParams,
+	PaginationParams,
+	RequestContext,
+	TenantOrganizationAwareCrudService,
+	UserPublicDTO,
+	UserService
+} from '@metad/server-core'
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
-import { assign, uniq } from 'lodash'
-import { FindConditions, IsNull, Not, Repository } from 'typeorm'
-import { GetXpertWorkspaceQuery } from '../xpert-workspace'
+import { assign, uniq, uniqBy } from 'lodash'
+import { FindConditions, In, IsNull, Not, Repository } from 'typeorm'
+import { GetXpertWorkspaceQuery, MyXpertWorkspaceQuery } from '../xpert-workspace'
 import { XpertPublishCommand } from './commands'
 import { Xpert } from './xpert.entity'
+import { XpertPublicDTO } from './dto'
 
 @Injectable()
 export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
@@ -17,6 +25,7 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 	constructor(
 		@InjectRepository(Xpert)
 		repository: Repository<Xpert>,
+		private readonly userService: UserService,
 		private readonly commandBus: CommandBus,
 		private readonly queryBus: QueryBus
 	) {
@@ -75,6 +84,57 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 			order,
 			take
 		})
+	}
+
+	async getMyAll(params: PaginationParams<Xpert>) {
+		const userId = RequestContext.currentUserId();
+		const {items: userWorkspaces} = await this.queryBus.execute(new MyXpertWorkspaceQuery(userId, {}))
+
+		const { relations, order, take } = params ?? {};
+		let { where } = params ?? {};
+		where = where ?? {};
+
+		where = {
+			...(<FindConditions<Xpert>>where),
+			createdById: userId
+		};
+
+		const xpertsCreatedByUser = await this.findAll({
+			where,
+			relations,
+			order,
+			take
+		})
+		
+		const baseQuery = this.repository.createQueryBuilder('xpert')
+			.innerJoin('xpert.managers', 'manager', 'manager.id = :userId', { userId })
+		// add relations
+		relations.forEach((relation) => baseQuery.leftJoinAndSelect('xpert.' + relation, relation))
+		const xpertsManagedByUser = await baseQuery.where(params.where ?? {})
+			.orderBy(order)
+			.take(take)
+			.getMany();
+
+		const xpertsInUserWorkspaces = await this.repository.find({
+			where: {
+				...(params.where ?? {}),
+				workspaceId: In(userWorkspaces.map(workspace => workspace.id))
+			},
+			relations,
+			order,
+			take
+		});
+
+		const allXperts = uniqBy([
+			...xpertsCreatedByUser.items,
+			...xpertsManagedByUser,
+			...xpertsInUserWorkspaces
+		], 'id')
+
+		return {
+			items: allXperts.map((item) => new XpertPublicDTO(item)),
+			total: allXperts.length
+		};
 	}
 
 	async getTeam(id: string, options?: OptionParams<Xpert>) {
@@ -138,7 +198,7 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 			id: item.id,
 			version: item.version,
 			latest: item.latest,
-			publishAt: item.publishAt,
+			publishAt: item.publishAt
 		}))
 	}
 
@@ -154,4 +214,26 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 		}
 	}
 
+	async updateManagers(id: string, ids: string[]) {
+		const xpert = await this.findOne(id, { relations: ['managers'] })
+		const { items } = await this.userService.findAll({ where: { id: In(ids) } })
+		xpert.managers = items
+		await this.repository.save(xpert)
+		return xpert.managers.map((u) => new UserPublicDTO(u))
+	}
+
+	async removeManager(id: string, userId: string) {
+		const xpert = await this.findOne(id, { relations: ['managers'] })
+		if (!xpert) {
+			throw new NotFoundException(`Xpert with id ${id} not found`)
+		}
+
+		const managerIndex = xpert.managers.findIndex(manager => manager.id === userId)
+		if (managerIndex === -1) {
+			throw new NotFoundException(`Manager with id ${userId} not found in Xpert ${id}`)
+		}
+
+		xpert.managers.splice(managerIndex, 1)
+		await this.repository.save(xpert)
+	}
 }

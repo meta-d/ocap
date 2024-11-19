@@ -1,30 +1,41 @@
 import { TChatRequest, TXpertTeamDraft } from '@metad/contracts'
-import { CrudController, OptionParams, PaginationParams, ParseJsonPipe, RequestContext, TransformInterceptor, UUIDValidationPipe } from '@metad/server-core'
+import {
+	CrudController,
+	OptionParams,
+	PaginationParams,
+	ParseJsonPipe,
+	RequestContext,
+	TransformInterceptor,
+	UserPublicDTO,
+	UUIDValidationPipe
+} from '@metad/server-core'
 import {
 	Body,
 	Controller,
 	Delete,
 	Get,
-	Put,
+	Header,
 	HttpCode,
 	HttpStatus,
 	Logger,
 	Param,
 	Post,
+	Put,
 	Query,
+	Sse,
 	UseInterceptors,
-	Header,
-	Sse
+	UseGuards,
 } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { DeleteResult } from 'typeorm'
+import { XpertAgentExecution } from '../core/entities/internal'
+import { FindExecutionsByXpertQuery } from '../xpert-agent-execution/queries'
+import { XpertChatCommand } from './commands'
+import { XpertPublicDTO } from './dto'
 import { Xpert } from './xpert.entity'
 import { XpertService } from './xpert.service'
-import { XpertPublicDTO } from './dto'
-import { DeleteResult } from 'typeorm'
-import { XpertChatCommand } from './commands'
-import { FindExecutionsByXpertQuery } from '../xpert-agent-execution/queries'
-import { XpertAgentExecution } from '../core/entities/internal'
+import { WorkspaceGuard } from '../xpert-workspace/'
 
 @ApiTags('Xpert')
 @ApiBearerAuth()
@@ -40,9 +51,10 @@ export class XpertController extends CrudController<Xpert> {
 		super(service)
 	}
 
-	@Get('by-workspace/:id')
+	@UseGuards(WorkspaceGuard)
+	@Get('by-workspace/:workspaceId')
 	async getAllByWorkspace(
-		@Param('id') workspaceId: string,
+		@Param('workspaceId') workspaceId: string,
 		@Query('data', ParseJsonPipe) data: PaginationParams<Xpert>,
 		@Query('published') published?: boolean
 	) {
@@ -52,15 +64,16 @@ export class XpertController extends CrudController<Xpert> {
 			items: result.items.map((item) => new XpertPublicDTO(item))
 		}
 	}
-	
+
+	@Get('my')
+	async getMyAll(@Query('data', ParseJsonPipe) params: PaginationParams<Xpert>,) {
+		return this.service.getMyAll(params)
+	}
+
 	@Get('validate')
 	async validateTitle(@Query('title') title: string) {
 		return this.service.validateTitle(title).then((items) => items.map((item) => new XpertPublicDTO(item)))
 	}
-
-	// @Get('my')
-	// async getMyAll(@Query('data', ParseJsonPipe) data: PaginationParams<Xpert>,) {
-	// }
 
 	@Get(':id/team')
 	async getTeam(@Param('id') id: string, @Query('data', ParseJsonPipe) data: OptionParams<Xpert>) {
@@ -94,19 +107,26 @@ export class XpertController extends CrudController<Xpert> {
 	}
 
 	@Get(':id/executions')
-	async getExecutions(@Param('id') id: string, @Query('$order', ParseJsonPipe) order?: PaginationParams<XpertAgentExecution>['order'],) {
-		return this.queryBus.execute(new FindExecutionsByXpertQuery(id, {order}))
+	async getExecutions(
+		@Param('id') id: string,
+		@Query('$order', ParseJsonPipe) order?: PaginationParams<XpertAgentExecution>['order']
+	) {
+		return this.queryBus.execute(new FindExecutionsByXpertQuery(id, { order }))
 	}
 
 	@Header('content-type', 'text/event-stream')
 	@Post(':id/chat')
 	@Sse()
-	async chat(@Param('id') id: string, @Body() body: {
-		request: TChatRequest;
-		options: {
-			isDraft: boolean;
+	async chat(
+		@Param('id') id: string,
+		@Body()
+		body: {
+			request: TChatRequest
+			options: {
+				isDraft: boolean
+			}
 		}
-	}) {
+	) {
 		return await this.commandBus.execute(new XpertChatCommand(body.request, body.options))
 	}
 
@@ -121,9 +141,23 @@ export class XpertController extends CrudController<Xpert> {
 	})
 	@HttpCode(HttpStatus.ACCEPTED)
 	@Delete(':id')
-	async delete(@Param('id', UUIDValidationPipe) id: string, 
-		...options: any[]
-	): Promise<Xpert | DeleteResult> {
+	async delete(@Param('id', UUIDValidationPipe) id: string, ...options: any[]): Promise<Xpert | DeleteResult> {
 		return this.service.deleteXpert(id)
+	}
+
+	@Get(':id/managers')
+	async getManagers(@Param('id') id: string) {
+		const xpert = await this.service.findOne(id, { relations: ['managers'] })
+		return xpert.managers.map((u) => new UserPublicDTO(u))
+	}
+
+	@Put(':id/managers')
+	async updateManagers(@Param('id') id: string, @Body() ids: string[]) {
+		return this.service.updateManagers(id, ids)
+	}
+
+	@Delete(':id/managers/:userId')
+	async removeManager(@Param('id') id: string, @Param('userId') userId: string) {
+		await this.service.removeManager(id, userId)
 	}
 }

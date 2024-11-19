@@ -72,7 +72,11 @@ export class ChatService {
 
   readonly lang = this.appService.lang
   readonly xperts = derivedFrom(
-    [this.xpertService.getAllInOrg({ where: { type: XpertTypeEnum.Agent, latest: true }, relations: ['knowledgebases', 'toolsets'] }).pipe(map(({ items }) => items)), this.lang],
+    [
+      this.xpertService.getMyAll({ where: { type: XpertTypeEnum.Agent, latest: true }, relations: ['knowledgebases', 'toolsets'] })
+        .pipe(map(({ items }) => items)),
+      this.lang
+    ],
     pipe(
       map(([roles, lang]) => {
         if ([LanguagesEnum.SimplifiedChinese, LanguagesEnum.Chinese].includes(lang as LanguagesEnum)) {

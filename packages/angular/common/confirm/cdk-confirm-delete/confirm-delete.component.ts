@@ -11,7 +11,10 @@ import { TranslateModule } from '@ngx-translate/core'
   selector: 'cdk-confirm-delete',
   templateUrl: './confirm-delete.component.html',
   styleUrls: ['./confirm-delete.component.scss'],
-  imports: [TranslateModule, A11yModule, DragDropModule, MatButtonModule, ButtonGroupDirective]
+  imports: [TranslateModule, A11yModule, DragDropModule, MatButtonModule, ButtonGroupDirective],
+  host: {
+    'class': 'cdk-dialog-card'
+  }
 })
 export class CdkConfirmDeleteComponent {
   readonly #data = inject<{ title?: string; value: any; information: string }>(DIALOG_DATA)

@@ -15,8 +15,9 @@ export class MyXpertWorkspaceHandler implements IQueryHandler<MyXpertWorkspaceQu
 	) {}
 
 	async execute(query: MyXpertWorkspaceQuery) {
-		const { user, input } = query
+		const { userId, input } = query
 		const relations = input?.relations
+		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
 
 		const _baseQb = this.repository.createQueryBuilder('workspace')
@@ -39,9 +40,9 @@ export class MyXpertWorkspaceHandler implements IQueryHandler<MyXpertWorkspaceQu
 				qb.orWhere('user.id = :userId')
 			}))
 			.setParameters({
-				tenantId: user.tenantId,
+				tenantId,
 				organizationId,
-				userId: user.id
+				userId
 			})
 
 		const [items, total] = await qb.getManyAndCount()

@@ -255,9 +255,15 @@ export abstract class CrudService<T extends BaseEntity>
 		}
 	}
 
+	/**
+	 * Deletes a record based on the given criteria.
+	 * Criteria can be an ID (string or number) or a complex object with conditions.
+	 *
+	 * @param criteria - Identifier or condition to delete specific record(s).
+	 * @returns {Promise<DeleteResult>} - Result indicating the number of affected records.
+	 */
 	public async delete(
-		criteria: string | number | FindConditions<T>,
-		...options: any[]
+		criteria: string | number | FindOptionsWhere<T>
 	): Promise<DeleteResult> {
 		await this.checkUpdateAuthorization(criteria)
 		try {

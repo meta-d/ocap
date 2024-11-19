@@ -47,3 +47,7 @@ export class XpertWorkspaceBaseCrudService<T> extends OrganizationBaseCrudServic
     })
   }
 }
+
+export function injectWorkspaceService() {
+  return inject(XpertWorkspaceService)
+}

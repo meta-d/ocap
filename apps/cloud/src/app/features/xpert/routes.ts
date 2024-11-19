@@ -9,6 +9,7 @@ import { XpertMonitorComponent } from './xpert/monitor/monitor.component'
 import { XpertTemplatesComponent } from './templates/templates.component'
 import { XpertWorkspaceWelcomeComponent } from './workspace/welcome/welcome.component'
 import { XpertWorkspaceHomeComponent } from './workspace/home/home.component'
+import { XpertAuthorizationComponent } from './xpert/authorization/authorization.component'
 
 export const routes: Routes = [
   {
@@ -58,6 +59,10 @@ export const routes: Routes = [
       {
         path: 'agents',
         component: XpertStudioComponent
+      },
+      {
+        path: 'auth',
+        component: XpertAuthorizationComponent
       },
       {
         path: 'develop',

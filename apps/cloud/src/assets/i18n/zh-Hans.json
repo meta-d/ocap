@@ -1940,7 +1940,10 @@
       "StartDebuggingDigitalExpert": "在下面的框中输入内容开始调试数字专家",
       "Restart": "重新开始",
       "Component": "组件",
-      "PublishAt": "发布于"
+      "PublishAt": "发布于",
+      "Authorization": "授权",
+      "WorkspaceMember": "工作空间成员",
+      "XpertManagers": "数字专家负责人"
     },
     "title": {
       "short": "Xpert AI"

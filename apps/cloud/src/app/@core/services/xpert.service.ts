@@ -5,7 +5,7 @@ import { EventSourceMessage, fetchEventSource } from '@microsoft/fetch-event-sou
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable, tap } from 'rxjs'
 import { API_XPERT_ROLE } from '../constants/app.constants'
-import { IXpert, IXpertAgentExecution, OrderTypeEnum, TChatRequest, TXpertTeamDraft, XpertTypeEnum } from '../types'
+import { IUser, IXpert, IXpertAgentExecution, OrderTypeEnum, TChatRequest, TXpertTeamDraft, XpertTypeEnum } from '../types'
 import { XpertWorkspaceBaseCrudService } from './xpert-workspace.service'
 
 @Injectable({ providedIn: 'root' })
@@ -98,6 +98,26 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpert> {
   getCopilotXperts() {
     return this.getAllInOrg({ where: {latest: true, type: XpertTypeEnum.Copilot }, order: {updatedAt: OrderTypeEnum.DESC} })
   }
+
+  getXpertManagers(id: string) {
+    return this.httpClient.get<IUser[]>(this.apiBaseUrl + `/${id}/managers`)
+  }
+
+  updateXpertManagers(id: string, managers: string[]) {
+    return this.httpClient.put<IUser[]>(this.apiBaseUrl + `/${id}/managers`, managers)
+  }
+
+  removeXpertManager(id: string, userId: string) {
+    return this.httpClient.delete<void>(this.apiBaseUrl + `/${id}/managers/${userId}`)
+  }
+
+  getMyAll(params: PaginationParams<IXpert>) {
+    return this.httpClient.get<{items: IXpert[]}>(this.apiBaseUrl + `/my`, { params: toHttpParams(params) })
+  }
+}
+
+export function injectXpertService() {
+  return inject(XpertService)
 }
 
 export function convertToUrlPath(title: string) {
