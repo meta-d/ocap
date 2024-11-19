@@ -127,17 +127,18 @@ export class XpertService extends TenantOrganizationAwareCrudService<Xpert> {
 
 	async allVersions(id: string) {
 		const role = await this.findOne(id)
-		const { items: allVersionRoles } = await this.findAll({
+		const { items: allVersions } = await this.findAll({
 			where: {
 				workspaceId: role.workspaceId ?? IsNull(),
 				name: role.name
 			}
 		})
 
-		return allVersionRoles.map((role) => ({
-			id: role.id,
-			version: role.version,
-			latest: role.latest
+		return allVersions.map((item) => ({
+			id: item.id,
+			version: item.version,
+			latest: item.latest,
+			publishAt: item.publishAt,
 		}))
 	}
 

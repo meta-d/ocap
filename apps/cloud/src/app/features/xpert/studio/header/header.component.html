@@ -17,7 +17,7 @@
 <div class="flex-1"></div>
 
 <div class="flex items-center gap-2">
-  <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium h-8 p-0 justify-center"
+  <button type="button" class="btn disabled:btn-disabled btn-secondary btn-medium h-8 justify-center"
     [ngmTooltip]="envInDevelopment"
     [hideDelay]="100"
   >
@@ -239,7 +239,10 @@
 <ng-template #versionMenu>
   <div class="ngm-cdk-menu p-2" cdkMenu @overlayAnimation1>
     @for (item of versions(); track item.version) {
-      <button class="ngm-cdk-menu-item p-2" cdkMenuItem (click)="selectVersion(item.id)">
+      <button class="ngm-cdk-menu-item p-2" cdkMenuItem
+        [matTooltip]=" ('PAC.Xpert.PublishAt' | translate: {Default: 'Publish at'}) + ':' + (item.publishAt | date: 'short') "
+        matTooltipPosition="before"
+        (click)="selectVersion(item.id)">
         @if (item.version) {
           v{{item.version}}
         } @else {

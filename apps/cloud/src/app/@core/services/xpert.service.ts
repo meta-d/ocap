@@ -40,7 +40,7 @@ export class XpertService extends XpertWorkspaceBaseCrudService<IXpert> {
   }
 
   getVersions(id: string) {
-    return this.httpClient.get<{ id: string; version: string; latest: boolean }[]>(this.apiBaseUrl + `/${id}/version`)
+    return this.httpClient.get<{ id: string; version: string; latest: boolean; publishAt: Date; }[]>(this.apiBaseUrl + `/${id}/version`)
   }
 
   saveDraft(id: string, draft: TXpertTeamDraft) {
