@@ -1,20 +1,19 @@
+import { Embeddings } from '@langchain/core/embeddings'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIModelEntity, ICopilotModel, IAiProviderEntity, AiModelTypeEnum, ProviderModel } from '@metad/contracts'
+import { AIModelEntity, AiModelTypeEnum, IAiProviderEntity, ICopilotModel, ProviderModel } from '@metad/contracts'
 import { ConfigService } from '@metad/server-config'
 import { loadYamlFile } from '@metad/server-core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import * as path from 'path'
 import { AIModel } from './ai-model'
 import { AIProviderRegistry } from './registry'
-import { TChatModelOptions } from './types/types'
 import { TextEmbeddingModelManager } from './types/text-embedding-model'
-import { Embeddings } from '@langchain/core/embeddings'
+import { ModelProvidersFolderPath, TChatModelOptions } from './types/types'
 
 @Injectable()
 export abstract class ModelProvider {
 	protected logger = new Logger(this.constructor.name)
-	public readonly MyFolderPath = 'packages/server-ai/src/ai-model/model_providers'
 
 	@Inject(ConfigService)
 	protected readonly configService: ConfigService
@@ -30,7 +29,7 @@ export abstract class ModelProvider {
 	abstract validateProviderCredentials(credentials: Record<string, any>): Promise<void>
 
 	getProviderServerPath() {
-		return path.join(this.configService.assetOptions.serverRoot, this.MyFolderPath, this.name)
+		return path.join(this.configService.assetOptions.serverRoot, ModelProvidersFolderPath, this.name)
 	}
 
 	getProviderSchema(): IAiProviderEntity {

@@ -1,11 +1,20 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Inject } from '@nestjs/common'
 import { ModelProvider } from './ai-provider'
 import { AIProviderRegistry } from './registry'
 import { ProviderCredentialSchemaValidator } from './schema_validators/'
+import { ConfigService } from '@metad/server-config'
+import * as path from 'path'
+import { ModelProvidersFolderPath } from './types/types'
+import { getPositionMap } from './utils'
 
 @Injectable()
 export class AIProvidersService {
+	@Inject(ConfigService)
+	protected readonly configService: ConfigService
+
 	private registry = AIProviderRegistry.getInstance()
+
+	private positions: Record<string, number> = null
 
 	getProvider(name: string): ModelProvider | undefined {
 		return this.registry.getProvider(name)
@@ -13,6 +22,16 @@ export class AIProvidersService {
 
 	getAllProviders(): ModelProvider[] {
 		return this.registry.getAllProviders()
+	}
+
+	getPositionMap() {
+		if (this.positions) {
+			return this.positions
+		}
+
+		const positionFolder = path.join(this.configService.assetOptions.serverRoot, ModelProvidersFolderPath)
+
+		return getPositionMap(positionFolder)
 	}
 
 	async providerCredentialsValidate(provider: string, credentials: Record<string, any>): Promise<Record<string, any>> {

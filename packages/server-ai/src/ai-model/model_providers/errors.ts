@@ -51,3 +51,6 @@ export class ModelCurrentlyNotSupportError extends ModelRuntimeError {
 
 export class CredentialsValidateFailedError extends ForbiddenException {
 }
+
+export class NotImplementedError extends ForbiddenException {
+}

@@ -198,7 +198,7 @@ export function vectorColor(value: string) {
 
 export function loadYamlFile<T>(
 	filePath: string,
-	logger: Logger,
+	logger?: Logger,
 	ignoreError = true, 
 	defaultValue: T = {} as T
   ): T {

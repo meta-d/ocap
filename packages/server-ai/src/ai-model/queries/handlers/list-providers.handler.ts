@@ -11,8 +11,17 @@ export class ListModelProvidersHandler implements IQueryHandler<ListModelProvide
 
 	public async execute(command: ListModelProvidersQuery) {
 		const names = command.names
-		return this.service.getAllProviders()
-			.filter((provider) => names ? names.includes(provider.name) : true)
+		const positionMap = this.service.getPositionMap()
+
+		return this.service
+			.getAllProviders()
+			.filter((provider) => (names ? names.includes(provider.name) : true))
 			.map((p) => p.getProviderSchema())
+			.sort(
+				(a, b) =>
+					positionMap[a.provider] +
+					(a.not_implemented ? 999 : 0) -
+					(positionMap[b.provider] + (b.not_implemented ? 999 : 0))
+			)
 	}
 }

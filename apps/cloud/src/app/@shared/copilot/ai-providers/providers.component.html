@@ -25,22 +25,43 @@
           </div>
 
           <div class="hidden group-hover:flex gap-1">
-            @if (provider.provider_credential_schema) {
-              <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm shrink-0"
-                (click)="openSetup(provider)">
-                <i class="ri-settings-5-line mr-[5px]"></i>
+            @if (provider.not_implemented) {
+              <a type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm shrink-0"
+                [matTooltip]="'PAC.Copilot.HowToContribute' | translate: {Default: 'In just a few steps, contribute code and create a better future together'}"
+                matTooltipPosition="above"
+                href="https://github.com/xpert-ai/" target="_blank">
+                <i class="ri-code-ai-line text-lg mr-1"></i>
                 <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">
-                  {{'PAC.Copilot.Setup' | translate: {Default: 'Setup'} }}
+                  {{'PAC.Copilot.Contribute' | translate: {Default: 'Contribute'} }}
                 </span>
-              </button>
+              </a>
+              <a type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm shrink-0"
+                [matTooltip]="'PAC.Copilot.OurSupport' | translate: {Default: 'Contact us for priority support'}"
+                matTooltipPosition="above"
+                href="https://mtda.cloud/#connect" target="_blank">
+                <i class="ri-hand-heart-line text-lg mr-1"></i>
+                <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">
+                  {{'PAC.Copilot.Support' | translate: {Default: 'Support'} }}
+                </span>
+              </a>
             } @else {
-              <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm"
-                (click)="addProvider(provider)">
-                <i class="ri-add-circle-line mr-[5px]"></i>
-                <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">
-                  {{'PAC.Copilot.Add' | translate: {Default: 'Add'} }}
-                </span>
-              </button>
+              @if (provider.provider_credential_schema) {
+                <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm shrink-0"
+                  (click)="openSetup(provider)">
+                  <i class="ri-settings-5-line text-lg mr-1"></i>
+                  <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">
+                    {{'PAC.Copilot.Setup' | translate: {Default: 'Setup'} }}
+                  </span>
+                </button>
+              } @else {
+                <button type="button" class="flex-1 btn disabled:btn-disabled btn-secondary btn-medium h-7 text-sm"
+                  (click)="addProvider(provider)">
+                  <i class="ri-add-circle-line text-lg mr-1"></i>
+                  <span class="text-sm inline-flex items-center justify-center overflow-ellipsis shrink-0">
+                    {{'PAC.Copilot.Add' | translate: {Default: 'Add'} }}
+                  </span>
+                </button>
+              }
             }
           </div>
         </div>

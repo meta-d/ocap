@@ -9,3 +9,5 @@ export type TChatModelOptions = {
     modelProperties: Record<string, any>;
     handleLLMTokens: (input: {copilot: ICopilot, tokenUsed: number}) => void;
 }
+
+export const ModelProvidersFolderPath = 'packages/server-ai/src/ai-model/model_providers'

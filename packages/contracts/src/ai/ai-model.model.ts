@@ -81,6 +81,10 @@ export interface IAiProviderEntity {
   model_credential_schema: ModelCredentialSchema;
   provider_credential_schema: ProviderCredentialSchema;
   models: ProviderModel[]
+  /**
+   * Not yet implemented, your contribution is needed
+   */
+  not_implemented?: boolean
 }
 
 export interface ProviderHelpInfo {

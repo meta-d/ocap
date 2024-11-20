@@ -8,6 +8,7 @@ import { NgmI18nPipe } from '@metad/ocap-angular/core'
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { getErrorMessage, IAiProviderEntity, ICopilot, injectAiProviders, injectCopilotProviderService, ToastrService } from '../../../@core'
 import { CopilotAiProviderAuthComponent } from '../provider-authorization/authorization.component'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 
 @Component({
@@ -16,7 +17,7 @@ import { CopilotAiProviderAuthComponent } from '../provider-authorization/author
   templateUrl: './providers.component.html',
   styleUrls: ['./providers.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, TranslateModule, DragDropModule, MatInputModule, NgmI18nPipe]
+  imports: [CommonModule, FormsModule, TranslateModule, DragDropModule, MatInputModule, MatTooltipModule, NgmI18nPipe]
 })
 export class CopilotAiProvidersComponent {
   readonly #dialogRef = inject(DialogRef)
@@ -33,7 +34,7 @@ export class CopilotAiProvidersComponent {
 
   constructor() {
     effect(() => {
-        console.log(this.aiProviders())
+        // console.log(this.aiProviders())
     })
   }
 
