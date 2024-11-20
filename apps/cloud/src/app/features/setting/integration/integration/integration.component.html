@@ -2,7 +2,8 @@
 
 <div class="flex-1 overflow-auto">
   <form class="flex flex-col gap-2 p-4 max-w-full lg:max-w-lg" [formGroup]="formGroup">
-    <pac-avatar-editor formControlName="avatar" class="w-24 h-24 self-center" />
+    <!-- <pac-avatar-editor formControlName="avatar" class="w-24 h-24 self-center" /> -->
+    <emoji-avatar formControlName="avatar" large editable class="self-center rounded-xl overflow-hidden shadow-sm"/>
     
     <ngm-input class="flex-1" [label]="'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'}"
       formControlName="name"

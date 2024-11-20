@@ -410,12 +410,12 @@ export class FeaturesComponent implements OnInit {
         }
       },
       {
-        title: 'Xpert Agent',
+        title: 'Xpert',
         matIcon: 'engineering',
         link: '/xpert',
         pathMatch: 'prefix',
         data: {
-          translationKey: 'Xpert Agent',
+          translationKey: 'Xpert',
           featureKey: AiFeatureEnum.FEATURE_COPILOT_CHAT,
           permissionKeys: [AIPermissionsEnum.CHAT_VIEW]
         }
@@ -423,20 +423,20 @@ export class FeaturesComponent implements OnInit {
 
       // BI Features
       {
-        title: 'Home',
+        title: 'Dashboard',
         matIcon: 'leaderboard',
-        link: '/home',
+        link: '/dashboard',
         pathMatch: 'prefix',
-        home: true,
+        // home: true,
         data: {
-          translationKey: 'Home',
+          translationKey: 'Dashboard',
           featureKey: FeatureEnum.FEATURE_DASHBOARD
         },
         children: [
           {
             title: 'Today',
             matIcon: 'today',
-            link: '/home',
+            link: '/dashboard',
             data: {
               translationKey: 'Today',
               featureKey: FeatureEnum.FEATURE_DASHBOARD
@@ -445,7 +445,7 @@ export class FeaturesComponent implements OnInit {
           {
             title: 'Catalog',
             matIcon: 'subscriptions',
-            link: '/home/catalog',
+            link: '/dashboard/catalog',
             data: {
               translationKey: 'Catalog',
               featureKey: FeatureEnum.FEATURE_DASHBOARD
@@ -454,7 +454,7 @@ export class FeaturesComponent implements OnInit {
           {
             title: 'Trending',
             matIcon: 'timeline',
-            link: '/home/trending',
+            link: '/dashboard/trending',
             data: {
               translationKey: 'Trending',
               featureKey: FeatureEnum.FEATURE_DASHBOARD
@@ -586,16 +586,6 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'AI Copilot',
               permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
               featureKey: AiFeatureEnum.FEATURE_COPILOT
-            }
-          },
-          {
-            title: 'Digital Xpert',
-            matIcon: 'robot_2',
-            link: '/settings/xpert',
-            data: {
-              translationKey: 'Digital Xpert',
-              permissionKeys: [AIPermissionsEnum.COPILOT_EDIT],
-              featureKey: AiFeatureEnum.FEATURE_COPILOT_XPERT
             }
           },
           {

@@ -7,6 +7,7 @@ import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/oca
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, EMPTY, map, switchMap } from 'rxjs'
+import { CdkMenuModule } from '@angular/cdk/menu'
 import {
   getErrorMessage,
   IKnowledgebase,
@@ -18,7 +19,7 @@ import {
   Store,
   ToastrService
 } from '../../../@core'
-import { AvatarComponent, CardCreateComponent, MaterialModule, TranslationBaseComponent, UserProfileInlineComponent } from '../../../@shared'
+import { CardCreateComponent, MaterialModule, TranslationBaseComponent, UserProfileInlineComponent } from '../../../@shared'
 import { EmojiAvatarComponent } from '../../../@shared/avatar'
 
 @Component({
@@ -27,10 +28,10 @@ import { EmojiAvatarComponent } from '../../../@shared/avatar'
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   imports: [
-    AsyncPipe,
     RouterModule,
     TranslateModule,
     MaterialModule,
+    CdkMenuModule,
     AppearanceDirective,
     DensityDirective,
     EmojiAvatarComponent,

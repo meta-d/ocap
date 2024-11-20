@@ -1,80 +1,67 @@
 <h2 class="pac-page-title">{{ 'PAC.Integration.Integrations' | translate: {Default: 'Integrations' } }}</h2>
 
-<div class="filter-bar p-2 flex items-center gap-4">
-  <span class="flex-1"></span>
+<nav class="min-h-full grid content-start grid-cols-1 gap-4 px-4 pt-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grow shrink-0 pb-4 overflow-auto">
+  <ngm-card-create
+    [title]=" 'PAC.Integration.AddIntegration' | translate: {Default: 'Add Integration'} "
+    [helpTitle]="'PAC.Integration.AddIntegrationHelp' | translate: {Default: 'Learn more about custom integrations'}"
+    helpUrl="/docs/server/organization/integration"
+    (create)="newIntegration()"
+  />
 
-  <div ngmButtonGroup >
-    <button mat-mini-fab [matTooltip]=" 'PAC.Integration.AddIntegration' | translate: {Default: 'Add Integration' }"
-        (click)="newIntegration()">
-        <mat-icon fontSet="material-icons-outlined">add</mat-icon>
-    </button>
-  </div>
-</div>
-
-<div class="flex flex-wrap p-4 gap-4">
   @for (item of integrations(); track item.id) {
-    <div class="ngm-card flex-1 flex flex-col max-w-sm w-full lg:max-w-md lg:w-[360px] p-4 group">
-
-      <button mat-icon-button class="ngm-card__menu transition-opacity opacity-0 group-hover:opacity-100" displayDensity="cosy"
-        [matMenuTriggerFor]="menu"
-        [matMenuTriggerData]="{item: item}"
-        #mt="matMenuTrigger"
-        [class.active]="mt.menuOpen">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-
-      <div class="">
+    <div class="ngm-card w-full p-4 group bg-gray-50 dark:bg-neutral-700 hover:bg-white dark:hover:bg-neutral-600">
+      <div class="h-full flex flex-col cursor-pointer" (click)="open(item.id)">
         <div class="flex items-start gap-2">
-          <pac-avatar class="shrink-0 w-16 h-16 rounded-full overflow-hidden" [imageUrl]="item.avatar" />
+          <emoji-avatar [avatar]="item.avatar" class="rounded-lg overflow-hidden shadow-sm" />
           <div class="flex flex-col items-start">
             <p class="text-sm flex items-center gap-1 text-token-text-secondary opacity-80">
-              <ngm-tags [tags]="[{key: item.provider, caption: item.provider, color: 'green'}]" displayDensity="cosy" />
+              <ngm-tags [tags]="[{key: item.provider, caption: item.provider, color: 'green'}]" small />
               <span>{{item.updatedAt | date:'short'}}</span>
             </p>
-            <div class="font-bold text-xl my-2">{{item.name}}</div>
+            <div class="font-bold text-base">{{item.name}}</div>
           </div>
         </div>
         
-        <div class="w-full h-28 my-4 overflow-hidden hover:overflow-auto" >
-          <p>
-            {{item.description}}
-          </p>
+        <div class="w-full my-1 text-sm line-clamp-3" [title]="item.description">
+          {{item.description}}
+        </div>
+
+        <div class="flex-1"></div>
+
+        <div class="flex justify-between items-end">
+          <div class="text-sm text-text-secondary">{{'PAC.KEY_WORDS.By' | translate: {Default: 'By'} }} <span>{{item.createdBy | user}}</span></div>
         </div>
       </div>
 
-      <div class="flex justify-between items-end">
-        <pac-user-profile-inline [user]="item.createdBy" />
+      <div class="absolute left-0 bottom-0 w-full p-1 hidden group-hover:flex">
 
-        <a class="inline-block cursor-pointer" (click)="open(item.id)">
-          <button
-            class="flex items-center gap-2 px-4 py-2 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-lg select-none disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none hover:bg-gray-900/10 active:bg-gray-900/20
-              dark:text-zinc-200 dark:hover:bg-neutral-700 dark:active:bg-neutral-500"
-            type="button">
-            {{'PAC.KEY_WORDS.Open' | translate: {Default: 'Open'} }}
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-              stroke="currentColor" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"></path>
-            </svg>
-          </button>
-        </a>
+        <div class="flex-1"></div>
+
+        <button class="group flex items-center justify-center bg-gray-100 !bg-transparent h-8 w-8 !p-2 rounded-md border-none hover:!bg-black/5" type="button"
+          #mt="cdkMenuTriggerFor"
+          [cdkMenuTriggerFor]="menu"
+          [cdkMenuTriggerData]="{item: item}"
+          [class.active]="mt.isOpen()"
+        >
+          <i class="ri-more-line"></i>
+        </button>
       </div>
     </div>
   }
-</div>
+</nav>
 
-
-<mat-menu #menu="matMenu" class="ngm-density__compact">
-  <ng-template matMenuContent let-item="item">
-    <button mat-menu-item (click)="edit(item)">
-      <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+<ng-template #menu let-item="item">
+  <div class="ngm-cdk-menu p-2" cdkMenu>
+    <button cdkMenuItem class="ngm-cdk-menu-item p-1" (click)="edit(item)">
+      <i class="ri-pencil-line mr-1"></i>
       <span>
         {{ 'PAC.ACTIONS.Edit' | translate: {Default: "Edit"} }}
       </span>
     </button>
 
-    <button mat-menu-item ngmAppearance="danger" (click)="remove(item)">
-      <mat-icon fontSet="material-icons-outlined">delete_forever</mat-icon>
+    <button cdkMenuItem ngmAppearance="danger" class="ngm-cdk-menu-item p-1" (click)="remove(item)">
+      <i class="ri-delete-bin-line mr-1"></i>
       <span>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}</span>
     </button>
-  </ng-template>
-</mat-menu>
+  </div>
+</ng-template>

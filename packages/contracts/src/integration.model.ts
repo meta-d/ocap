@@ -1,9 +1,10 @@
 import {
 	IBasePerTenantAndOrganizationEntityModel
 } from './base-entity.model';
-import { IOrganizationUpdateInput } from './index';
 import { IOrganizationProjectsUpdateInput } from './organization-projects.model';
+import { IOrganizationUpdateInput } from './organization.model';
 import { ITag } from './tag-entity.model';
+import { TAvatar } from './types';
 
 export interface IIntegrationSetting
 	extends IBasePerTenantAndOrganizationEntityModel {
@@ -47,9 +48,9 @@ export interface IIntegration extends IBasePerTenantAndOrganizationEntityModel {
 	name: string
 	description?: string
 	/**
-     * avatar url
+     * avatar object
      */
-	avatar?: string
+	avatar?: TAvatar
 	slug: string;
 	provider: IntegrationEnum
 

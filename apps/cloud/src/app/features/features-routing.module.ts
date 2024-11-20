@@ -6,7 +6,7 @@ import { FeaturesComponent } from './features.component'
 import { NotFoundComponent } from '../@shared'
 
 export function redirectTo() {
-  return '/home'
+  return '/chat'
 }
 
 const routes: Routes = [
@@ -16,14 +16,33 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'home',
+        redirectTo: 'chat',
         pathMatch: 'full'
       },
+      // Xpert Routers
       {
-        path: 'home',
+        path: 'chat',
+        loadChildren: () => import('./chat/routes').then(m => m.routes),
         canActivate: [AuthGuard],
         data: {
-          title: 'Home',
+          title: 'Chat',
+        }
+      },
+      {
+        path: 'xpert',
+        loadChildren: () => import('./xpert/routes').then(m => m.routes),
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Xpert Agent',
+        }
+      },
+
+      // BI Routers
+      {
+        path: 'dashboard',
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Dashboard',
           permissions: {
             only: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT],
             redirectTo
@@ -43,7 +62,6 @@ const routes: Routes = [
           }
         }
       },
-
       {
         path: 'project',
         loadChildren: () => import('./project/project.module').then((m) => m.ProjectModule),
@@ -56,7 +74,6 @@ const routes: Routes = [
           }
         }
       },
-
       {
         path: 'story',
         loadChildren: () => import('./story/story.module').then((m) => m.PACStoryModule),
@@ -69,7 +86,6 @@ const routes: Routes = [
           }
         }
       },
-
       {
         path: 'indicator',
         loadChildren: () => import('./indicator/indicator.module').then((m) => m.PACIndicatorModule),
@@ -83,15 +99,6 @@ const routes: Routes = [
       //   loadChildren: () => import('./subscription/subscription.module').then((m) => m.PACSubscriptionModule),
       //   canActivate: [AuthGuard]
       // },
-
-      {
-        path: 'settings',
-        loadChildren: () => import('./setting/setting.module').then((m) => m.SettingModule),
-        canActivate: [AuthGuard],
-        data: {
-          title: 'Settings',
-        }
-      },
       {
         path: 'indicator-app',
         loadChildren: () => import('@metad/cloud/indicator-market').then((m) => m.IndicatorMarketModule),
@@ -120,27 +127,20 @@ const routes: Routes = [
         }
       },
       {
-        path: 'chat',
-        loadChildren: () => import('./chat/routes').then(m => m.routes),
-        canActivate: [AuthGuard],
-        data: {
-          title: 'Chat',
-        }
-      },
-      {
-        path: 'xpert',
-        loadChildren: () => import('./xpert/routes').then(m => m.routes),
-        canActivate: [AuthGuard],
-        data: {
-          title: 'Xpert Agent',
-        }
-      },
-      {
         path: 'data',
         loadChildren: () => import('./data-factory/routes').then(m => m.routes),
         canActivate: [AuthGuard],
         data: {
           title: 'Data-Factory',
+        }
+      },
+      // Settings Routers
+      {
+        path: 'settings',
+        loadChildren: () => import('./setting/setting.module').then((m) => m.SettingModule),
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Settings',
         }
       },
       {

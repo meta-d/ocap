@@ -1,7 +1,7 @@
 .ngm-card {
   --ngm-card-menu-edge: 5px;
 
-  @apply relative flex shadow-sm border border-gray-200 rounded-xl 
+  @apply relative flex shadow-sm border border-gray-100 rounded-xl 
     hover:shadow-lg dark:border-neutral-700 dark:bg-white/10 dark:hover:bg-white/20;
 
   .ngm-card__menu {

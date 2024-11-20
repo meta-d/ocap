@@ -3,7 +3,7 @@ import { SelectionModel } from '@angular/cdk/collections'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, HostBinding, Input, Output, forwardRef, signal } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
-import { ISelectOption } from '@metad/ocap-angular/core'
+import { ISelectOption, NgmDensityDirective } from '@metad/ocap-angular/core'
 import { map } from 'rxjs/operators'
 import { ITagOption } from './types'
 
@@ -14,6 +14,12 @@ import { ITagOption } from './types'
   selector: 'ngm-tags',
   templateUrl: './tag.component.html',
   styleUrls: ['./tag.component.scss'],
+  hostDirectives: [
+    {
+      directive: NgmDensityDirective,
+      inputs: [ 'small', 'large', 'ngm-density' ]
+    }
+  ],
   host: {
     class: 'ngm-tags'
   },

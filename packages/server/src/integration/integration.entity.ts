@@ -1,4 +1,4 @@
-import { IIntegration, IntegrationEnum, ITag } from '@metad/contracts'
+import { IIntegration, IntegrationEnum, ITag, TAvatar } from '@metad/contracts'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsJSON, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { Column, Entity, Index, ManyToMany } from 'typeorm'
@@ -20,11 +20,11 @@ export class Integration extends TenantOrganizationBaseEntity implements IIntegr
 	@Column({ nullable: true })
 	description?: string
 
-	@ApiPropertyOptional({ type: () => String })
+	@ApiPropertyOptional({ type: () => Object })
 	@IsString()
-	@Optional()
-	@Column({ nullable: true })
-	avatar?: string
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	avatar?: TAvatar
 
 	@ApiProperty({ type: () => String, minLength: 10, maxLength: 100 })
 	@IsString()

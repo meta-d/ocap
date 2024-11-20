@@ -12,6 +12,7 @@ import {
 } from 'apps/cloud/src/app/@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 import { CopilotFormComponent } from '../copilot-form/copilot-form.component'
+import { injectOrganizationId } from '@metad/cloud/state'
 
 @Component({
   standalone: true,
@@ -33,10 +34,11 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
   readonly copilotServer = injectCopilotServer()
   readonly copilots = injectCopilots()
   readonly #toastr = injectToastr()
+  readonly organizationId = injectOrganizationId()
 
-  readonly primary = computed(() => this.copilots()?.find((_) => _.role === AiProviderRole.Primary))
-  readonly secondary = computed(() => this.copilots()?.find((_) => _.role === AiProviderRole.Secondary))
-  readonly embedding = computed(() => this.copilots()?.find((_) => _.role === AiProviderRole.Embedding))
+  readonly primary = computed(() => this.copilots()?.find((_) => _.organizationId === this.organizationId() && _.role === AiProviderRole.Primary))
+  readonly secondary = computed(() => this.copilots()?.find((_) => _.organizationId === this.organizationId() && _.role === AiProviderRole.Secondary))
+  readonly embedding = computed(() => this.copilots()?.find((_) => _.organizationId === this.organizationId() && _.role === AiProviderRole.Embedding))
 
   onToggle(role: AiProviderRole, current: boolean) {
     ;(current ? this.copilotServer.disableCopilot(role) : this.copilotServer.enableCopilot(role)).subscribe({

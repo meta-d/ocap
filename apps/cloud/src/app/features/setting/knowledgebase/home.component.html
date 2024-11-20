@@ -1,23 +1,22 @@
 <h2 class="pac-page-title">{{ 'PAC.Knowledgebase.Knowledgebase' | translate: {Default: 'Knowledgebase' } }}</h2>
 
-<div class="filter-bar p-2 flex items-center gap-4">
-  <span class="flex-1"></span>
-</div>
-
-<div class="overflow-auto">
-  <nav class="grid content-start grid-cols-1 gap-4 px-4 pt-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grow shrink-0 pb-4 overflow-auto">
-    <ngm-card-create [title]="'创建知识库'" helpTitle="了解更多关于自定义知识库的信息" helpUrl="/docs/ai/knowledgebase/"
-      description="Import your own text data or write data in real-time via Webhook for LLM context enhancement."
+<div class="flex-1 overflow-auto">
+  <nav class="min-h-full grid content-start grid-cols-1 gap-4 px-4 pt-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grow shrink-0 pb-4 overflow-auto">
+    <ngm-card-create
+      [title]=" 'PAC.Knowledgebase.AddKnowledgebase' | translate: {Default: 'Add knowledgebase'} "
+      [helpTitle]="'PAC.Knowledgebase.AddKnowledgebaseHelp' | translate: {Default: 'Learn more about custom knowledgebases'}"
+      helpUrl="/docs/ai/knowledgebase/"
+      description="Import your own text, pdf, markdown, word data."
       (create)="newKnowledgebase()"
     />
 
     @for (item of knowledgebases(); track item.id) {
       <div class="ngm-card min-h-[160px] flex-1 flex flex-col p-4 group bg-gray-50 hover:bg-white">
         <button mat-icon-button class="ngm-card__menu transition-opacity opacity-0 group-hover:opacity-100" displayDensity="cosy"
-          [matMenuTriggerFor]="menu"
-          [matMenuTriggerData]="{item: item}"
-          #mt="matMenuTrigger"
-          [class.active]="mt.menuOpen">
+          #mt="cdkMenuTriggerFor"
+          [cdkMenuTriggerFor]="menu"
+          [cdkMenuTriggerData]="{item: item}"
+          [class.active]="mt.isOpen()">
           <mat-icon>more_vert</mat-icon>
         </button>
 
@@ -67,6 +66,23 @@
   </nav>
 </div>
 
+<ng-template #menu let-item="item">
+  <div class="ngm-cdk-menu p-2" cdkMenu>
+    <button cdkMenuItem class="ngm-cdk-menu-item p-1" (click)="edit(item)">
+      <i class="ri-pencil-line mr-1"></i>
+      <span>
+        {{ 'PAC.ACTIONS.Edit' | translate: {Default: "Edit"} }}
+      </span>
+    </button>
+
+    <button cdkMenuItem ngmAppearance="danger" class="ngm-cdk-menu-item p-1" (click)="remove(item)">
+      <i class="ri-delete-bin-line mr-1"></i>
+      <span>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- 
 <mat-menu #menu="matMenu" class="ngm-density__compact">
   <ng-template matMenuContent let-item="item">
     <button mat-menu-item (click)="edit(item)">
@@ -81,4 +97,4 @@
       <span>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}</span>
     </button>
   </ng-template>
-</mat-menu>
+</mat-menu> -->

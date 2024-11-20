@@ -4,11 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmConfirmDeleteComponent, NgmTagsComponent } from '@metad/ocap-angular/common'
-import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { BehaviorSubject, EMPTY, map, switchMap } from 'rxjs'
 import { getErrorMessage, IIntegration, IntegrationService, routeAnimations, ToastrService } from '../../../@core'
-import { AvatarComponent, MaterialModule, UserProfileInlineComponent } from '../../../@shared'
+import { CardCreateComponent, MaterialModule, UserPipe } from '../../../@shared'
+import { EmojiAvatarComponent } from '../../../@shared/avatar/emoji-avatar/avatar.component'
+import { CdkMenuModule } from '@angular/cdk/menu'
 
 @Component({
   standalone: true,
@@ -21,11 +22,11 @@ import { AvatarComponent, MaterialModule, UserProfileInlineComponent } from '../
     RouterModule,
     TranslateModule,
     MaterialModule,
-    AppearanceDirective,
-    DensityDirective,
-    AvatarComponent,
-    UserProfileInlineComponent,
-    NgmTagsComponent
+    CdkMenuModule,
+    UserPipe,
+    NgmTagsComponent,
+    CardCreateComponent,
+    EmojiAvatarComponent
   ],
   animations: [routeAnimations]
 })

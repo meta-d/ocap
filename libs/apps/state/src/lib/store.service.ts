@@ -609,3 +609,8 @@ export class Store {
 		return this.selectedOrganization$.pipe(map((org) => org?.id), distinctUntilChanged())
 	}
 }
+
+export function injectOrganizationId() {
+	const store = inject(Store)
+	return toSignal(store.selectOrganizationId())
+}

@@ -61,15 +61,6 @@ export class PACSettingComponent {
         }
       },
       {
-        link: 'xpert',
-        label: 'Digital Xpert',
-        icon: 'robot_2',
-        data: {
-          featureKey: AiFeatureEnum.FEATURE_COPILOT_XPERT,
-          permissionKeys: [AIPermissionsEnum.COPILOT_EDIT]
-        }
-      },
-      {
         link: 'knowledgebase',
         label: 'Knowledgebase',
         icon: 'school',

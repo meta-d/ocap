@@ -27,6 +27,7 @@ import {
 import { AvatarEditorComponent, MaterialModule } from '../../../../@shared'
 import { IsDirty } from '@metad/core'
 import omit from 'lodash-es/omit'
+import { EmojiAvatarComponent } from 'apps/cloud/src/app/@shared/avatar'
 
 @Component({
   standalone: true,
@@ -47,7 +48,7 @@ import omit from 'lodash-es/omit'
     DensityDirective,
     NgmSelectComponent,
     NgmInputComponent,
-    AvatarEditorComponent
+    EmojiAvatarComponent
   ],
   animations: [routeAnimations]
 })
