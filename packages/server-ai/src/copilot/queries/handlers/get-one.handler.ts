@@ -1,13 +1,21 @@
 import { ICopilot } from '@metad/contracts'
+import { RequestContext } from '@metad/server-core'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
-import { CopilotService } from '../../copilot.service'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
+import { Copilot } from '../../copilot.entity'
 import { CopilotGetOneQuery } from '../get-one.query'
 
 @QueryHandler(CopilotGetOneQuery)
 export class CopilotGetOneHandler implements IQueryHandler<CopilotGetOneQuery> {
-	constructor(private readonly service: CopilotService) {}
+	constructor(
+		@InjectRepository(Copilot)
+		private readonly repository: Repository<Copilot>
+	) {}
 
 	public async execute(command: CopilotGetOneQuery): Promise<ICopilot> {
-		return await this.service.findOne(command.id, { relations: command.relations})
+		const tenantId = RequestContext.currentTenantId()
+		// Regardless of organization restrictions when get copilot by id
+		return await this.repository.findOne(command.id, { where: { tenantId }, relations: command.relations })
 	}
 }

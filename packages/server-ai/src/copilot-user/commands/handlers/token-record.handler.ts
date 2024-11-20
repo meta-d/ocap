@@ -20,7 +20,7 @@ export class CopilotTokenRecordHandler implements ICommandHandler<CopilotTokenRe
 				...input,
 				organizationId,
 				orgId: copilot.organizationId,
-				provider: input.copilot.provider,
+				provider: input.copilot.modelProvider.providerName,
 				tokenLimit: copilot.tokenBalance
 			})
 
@@ -34,7 +34,7 @@ export class CopilotTokenRecordHandler implements ICommandHandler<CopilotTokenRe
 					tenantId: input.tenantId,
 					tokenUsed: input.tokenUsed,
 					organizationId,
-					provider: input.copilot.provider,
+					provider: input.copilot.modelProvider.providerName,
 					tokenLimit: copilot.tokenBalance
 				})
 

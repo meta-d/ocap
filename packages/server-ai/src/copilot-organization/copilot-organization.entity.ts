@@ -27,7 +27,7 @@ export class CopilotOrganization extends TenantBaseEntity implements ICopilotOrg
 	@IsString()
 	@IsOptional()
 	@Column({ nullable: true, length: 20 })
-	provider?: AiProvider
+	provider?: AiProvider | string
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()

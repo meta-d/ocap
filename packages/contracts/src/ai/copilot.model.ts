@@ -5,6 +5,9 @@ import { ICopilotProvider } from './copilot-provider.model'
 export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
   role: AiProviderRole
   enabled?: boolean
+  /**
+   * @deprecated use modelProvider
+   */
   provider?: AiProvider
   /**
    * @deprecated

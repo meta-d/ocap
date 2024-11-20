@@ -21,7 +21,7 @@ export class CopilotCheckLimitHandler implements ICommandHandler<CopilotCheckLim
 				organizationId,
 				orgId: copilot.organizationId ?? IsNull(),
 				userId,
-				provider: copilot.provider
+				provider: copilot.modelProvider.providerName
 			}
 		})
 
@@ -35,7 +35,7 @@ export class CopilotCheckLimitHandler implements ICommandHandler<CopilotCheckLim
 			where: {
 				tenantId: input.tenantId,
 				organizationId: input.organizationId,
-				provider: copilot.provider
+				provider: copilot.modelProvider.providerName
 			}
 		})
 		if (orgExisting.success) {

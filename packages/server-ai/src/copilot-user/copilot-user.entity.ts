@@ -53,7 +53,7 @@ export class CopilotUser extends TenantOrganizationBaseEntity implements ICopilo
 	@IsString()
 	@IsOptional()
 	@Column({ nullable: true, length: 20 })
-	provider?: AiProvider
+	provider?: AiProvider | string
 
 	@ApiPropertyOptional({ type: () => Number })
 	@IsNumber()

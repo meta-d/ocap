@@ -1,7 +1,7 @@
 import { TextFieldModule } from '@angular/cdk/text-field'
 import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard'
 import { CommonModule } from '@angular/common'
-import { Component, computed, DestroyRef, inject, model, signal } from '@angular/core'
+import { Component, computed, DestroyRef, effect, inject, model, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import {
   ChatConversationService,
@@ -73,9 +73,9 @@ export class XpertStudioPreviewComponent {
   })
 
   constructor() {
-    // effect(() => {
-    //   console.log(this.parameters(), this.apiService.primaryAgent())
-    // })
+    effect(() => {
+      // console.log(this.lastMessage(), this.messages())
+    })
   }
 
   chat(input: string) {
@@ -114,13 +114,11 @@ export class XpertStudioPreviewComponent {
               if (event.type === ChatMessageTypeEnum.MESSAGE) {
                 this.lastMessage.update((message) => {
                   appendMessageContent(message as any, event.data)
-                  return message
+                  return {...message}
                 })
                 if (typeof event.data === 'string') {
                   // Update last AI message
                   this.output.update((state) => state + event.data)
-                } else {
-                  // console.log(`未处理的消息：`, event)
                 }
               } else if (event.type === ChatMessageTypeEnum.EVENT) {
                 processEvents(event, this.executionService)
@@ -131,12 +129,16 @@ export class XpertStudioPreviewComponent {
         error: (err) => {
           console.error(err)
           this.loading.set(false)
-          this.executionService.appendMessage(this.lastMessage())
+          if (this.lastMessage()) {
+            this.executionService.appendMessage({...this.lastMessage()})
+          }
           this.lastMessage.set(null)
         },
         complete: () => {
           this.loading.set(false)
-          this.executionService.appendMessage(this.lastMessage())
+          if (this.lastMessage()) {
+            this.executionService.appendMessage({...this.lastMessage()})
+          }
           this.lastMessage.set(null)
         }
       })
