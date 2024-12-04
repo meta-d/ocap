@@ -1,5 +1,24 @@
 [English](./README.md) | 中文
 
+# ⚠️ 仓库迁移通知 ⚠️
+
+本仓库 [meta-d/ocap](https://github.com/meta-d/ocap) 已停止维护，相关代码和功能已迁移至新的公开仓库：[xpert-ai/xpert](https://github.com/xpert-ai/xpert)。  
+请前往新仓库获取最新的代码、文档和支持。
+
+---
+
+### 为什么迁移？
+我们将项目迁移至公开组织仓库以便更好地支持社区协作和项目长期发展。
+
+---
+
+### 如何获取新版本？
+1. 前往 [xpert-ai/xpert](https://github.com/xpert-ai/xpert)。
+2. 查看最新的文档和版本发布信息。
+3. 更新依赖项以指向新仓库（如适用）。
+
+感谢您的支持！如果您有任何问题，请在新仓库中提交 Issue 或参与讨论。
+
 # Metad 分析平台
 
 [uri_metad]: https://mtda.cloud/
