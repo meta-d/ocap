@@ -4,6 +4,25 @@ English | [中文](./README_zh.md)
 [uri_license]: https://www.gnu.org/licenses/agpl-3.0.html
 [uri_license_image]: https://img.shields.io/badge/License-AGPL%20v3-blue.svg
 
+# ⚠️ Repository Migration Notice ⚠️
+
+This repository, [meta-d/ocap](https://github.com/meta-d/ocap), is no longer maintained. The related code and features have been migrated to the new public repository: [xpert-ai/xpert](https://github.com/xpert-ai/xpert).  
+Please visit the new repository for the latest code, documentation, and support.
+
+---
+
+### Why the Migration?
+We have migrated the project to a public organization repository to better support community collaboration and ensure the project's long-term development.
+
+---
+
+### How to Access the New Version?
+1. Visit [xpert-ai/xpert](https://github.com/xpert-ai/xpert).
+2. Check the latest documentation and release information.
+3. Update your dependencies to point to the new repository (if applicable).
+
+Thank you for your support! If you have any questions, please open an issue or join discussions in the new repository.
+
 <p align="center">
   <a href="https://mtda.cloud/en/">
   <img src="https://avatars.githubusercontent.com/u/100019674?v=4" alt="Metad">
